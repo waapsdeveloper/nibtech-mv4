@@ -172,23 +172,23 @@
                             $totalQty += $item->total_quantity;
 
                             if($item->storage){
-                                $storage = $storages[$item->storage] . " - " ;
+                                $storage = " - " . $storages[$item->storage];
                             }else {
                                 $storage = null;
                             }
                             if($item->color){
-                                $color = $colors[$item->color] . " - " ;
+                                $color = " - " . $colors[$item->color];
                             }else {
                                 $color = null;
                             }
                             if($item->grade){
-                                $grade = $grades[$item->grade] . " - " ;
+                                $grade = " - " . $grades[$item->grade];
                             }else {
                                 $grade = null;
                             }
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->model . " - " . $storage . $color . $grade }}</td>
+                            <td width="320">{{ $item->model . $storage . $color . $grade }}</td>
                             <td width="80" align="right"></td>
                             <td width="40">{{ $item->total_quantity }}</td>
                             <td width="90" align="right">{{ $process->currency_id->sign }}{{ amount_formatter($item->total_price,2) }}</td>
