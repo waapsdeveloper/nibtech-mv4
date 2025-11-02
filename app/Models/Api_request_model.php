@@ -239,6 +239,7 @@ class Api_request_model extends Model
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
                         if(!$product->id){
                             // Log::info($p->model.' '.'Dual eSIM');
+                            $log = 1;
                             $log_info .= $p->model.' '.'Dual eSIM'."\n";
                             continue;
                             // $product->category = $p->category;
@@ -286,6 +287,7 @@ class Api_request_model extends Model
                         $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
                         if(!$product->id){
                             // Log::info($p->model.' '.'Dual Sim');
+                            $log = 1;
                             $log_info .= $p->model.' '.'Dual Sim'."\n";
                             continue;
                             // $product->category = $p->category;
@@ -528,9 +530,10 @@ class Api_request_model extends Model
                 }
             }
         }
-
-        $log_info .= "Add these products manually:"."\n";
-        Log::info($log_info);
+        if(isset($log) && $log == 1){
+            $log_info .= "Add these products manually:"."\n";
+            Log::info($log_info);
+        }
 
         return $return;
     }
