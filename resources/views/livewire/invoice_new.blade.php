@@ -5,7 +5,7 @@
 <style>
     body {
         font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
-        font-size: 14px;
+        font-size: 12px;
         font-weight: 700 !important;
         margin: 0;
         padding: 0;
@@ -13,7 +13,7 @@
         background-color: #fff !important;
     }
     p {
-        font-size: 14px;
+        font-size: 12px;
     }
     .invoice-container {
         width: 210mm;
@@ -44,19 +44,19 @@
     .invoice-details .invoice-info {
         /* width: 20%; */
         text-align: right;
-        font-size: 18px;
+        font-size: 14px;
     }
     .invoice-details h3, .invoice-details h4 {
         margin: 5px 0;
     }
     .invoice-details p {
-        font-size: 18px;
+        font-size: 14px;
     }
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 20px;
-        font-size: 18px;
+        font-size: 14px;
     }
     .invoice-items th, .invoice-items td {
         border: 1px solid #ddd;
