@@ -532,15 +532,6 @@ canvas {
 
             const pdfBase64 = await fetchPdfAsBase64();
 
-            const invoiceHtmlDocument = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
-                @page { size: A4 portrait; margin: 0; }
-                body { margin: 0; padding: 24px; font-family: 'Times New Roman', Times, serif; background: #fff; color: #000; }
-                h1, h2, h3, h4, h5 { margin: 0 0 6px; }
-                table { border-collapse: collapse; width: 100%; }
-                th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
-                .no-border td, .no-border th { border: none; }
-            </style></head><body>${invoiceNode.outerHTML}</body></html>`;
-
             // Print PDF first
             const pdfConfig = qz.configs.create(printer, {
                 orientation: 'portrait'
@@ -551,17 +542,17 @@ canvas {
                 data: pdfBase64
             }]);
 
-            // Then print HTML invoice
-            const htmlConfig = qz.configs.create(printer, {
+            // Convert invoice to image and print
+            const invoiceImageBase64 = await convertInvoiceToImage();
+            const imageConfig = qz.configs.create(printer, {
                 orientation: 'portrait',
-                scaleContent: true,
-                rasterize: true
+                scaleContent: true
             });
-            await qz.print(htmlConfig, [{
+            await qz.print(imageConfig, [{
                 type: 'pixel',
-                format: 'html',
-                flavor: 'plain',
-                data: invoiceHtmlDocument
+                format: 'image',
+                flavor: 'base64',
+                data: invoiceImageBase64
             }]);
         }
 
@@ -598,6 +589,64 @@ canvas {
                 console.warn('Unable to convert PDF to base64 for QZ Tray.', error);
                 throw error;
             }
+        }
+
+        async function convertInvoiceToImage() {
+            return new Promise((resolve, reject) => {
+                const canvas = document.createElement('canvas');
+                const scale = 2; // Higher resolution for better print quality
+
+                // A4 dimensions at 96 DPI scaled up
+                canvas.width = 794 * scale;
+                canvas.height = 1123 * scale;
+
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+                // Use html2canvas or similar library if available, otherwise use DOM-to-Image approach
+                const invoiceClone = invoiceNode.cloneNode(true);
+                invoiceClone.style.width = '794px';
+                invoiceClone.style.position = 'absolute';
+                invoiceClone.style.left = '-9999px';
+                invoiceClone.style.top = '0';
+                document.body.appendChild(invoiceClone);
+
+                setTimeout(() => {
+                    // Create SVG foreignObject to render HTML
+                    const svgData = `
+                        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
+                            <foreignObject width="100%" height="100%">
+                                <div xmlns="http://www.w3.org/1999/xhtml" style="transform: scale(${scale}); transform-origin: 0 0;">
+                                    ${invoiceNode.outerHTML}
+                                </div>
+                            </foreignObject>
+                        </svg>
+                    `;
+
+                    const img = new Image();
+                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+                    const url = URL.createObjectURL(blob);
+
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0);
+                        document.body.removeChild(invoiceClone);
+                        URL.revokeObjectURL(url);
+
+                        const dataUrl = canvas.toDataURL('image/png');
+                        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
+                        resolve(base64);
+                    };
+
+                    img.onerror = () => {
+                        document.body.removeChild(invoiceClone);
+                        URL.revokeObjectURL(url);
+                        reject(new Error('Failed to convert invoice to image'));
+                    };
+
+                    img.src = url;
+                }, 100);
+            });
         }
 
         function fallbackWindowPrint() {
