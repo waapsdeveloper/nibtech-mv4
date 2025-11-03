@@ -2,22 +2,9 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\UpdateOrderInDB;
 use App\Http\Controllers\BackMarketAPIController;
-use App\Models\Order_model;
 use App\Models\Order_item_model;
-use App\Models\Customer_model;
-use App\Models\Currency_model;
-use App\Models\Country_model;
-use App\Models\Variation_model;
-use App\Models\Stock_model;
-use Carbon\Carbon;
-
-
 use Illuminate\Console\Command;
-use GuzzleHttp\Client;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\DB;
 
 class RefreshLatest extends Command
 {

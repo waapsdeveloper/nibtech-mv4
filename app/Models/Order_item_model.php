@@ -133,19 +133,12 @@ class Order_item_model extends Model
     public function get_latest_care($bm)
     {
 
-        // $last_id = Order_item_model::where('care_id','!=',null)->where('created_at','>=',Carbon::now()->subDays(3))->whereHas('sale_order')->orderBy('reference_id','asc')->first()->care_id;
         $last_id = Order_item_model::select('care_id')->where('care_id','!=',null)->orderByDesc('care_id')->first()->care_id;
         echo $last_id;
         $care = $bm->getAllCare(false, ['last_id'=>$last_id,'page-size'=>50]);
-        // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // print_r($care);
-        // die;
         $care_line = collect($care)->pluck('id','orderline')->toArray();
         echo 1;
-        // Construct the raw SQL expression for the CASE statement
-        // $caseExpression = "CASE ";
         foreach ($care_line as $id => $care) {
-            // $caseExpression .= "WHEN reference_id = $id THEN $care ";
             $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
             if($order != 0){
                 print_r($order);
@@ -158,17 +151,7 @@ class Order_item_model extends Model
     {
 
         $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // $care = $bm->getAllCare(false, ['page-size'=>50]);
-        // print_r($care);
         $care_line = collect($care)->pluck('id','orderline')->toArray();
-        $care_keys = array_keys($care_line);
-
-
-        // Assuming $care_line is already defined from the previous code
-        $careLineKeys = array_keys($care_line);
-
-        // Construct the raw SQL expression for the CASE statement
-        // $caseExpression = "CASE ";
         foreach ($care_line as $id => $care) {
             // $caseExpression .= "WHEN reference_id = $id THEN $care ";
             $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
@@ -181,25 +164,8 @@ class Order_item_model extends Model
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm, $care = false)
     {
-        // Your implementation here
 
         foreach ($orderObj->orderlines as $itemObj) {
-            // $care = $bm->getAllCare(false, ['orderline'=>$itemObj->id]);
-            // // $care = $bm->getAllCare(false, ['page-size'=>50]);
-            // // print_r($care);
-            // $care_line = collect($care)->pluck('id','orderline')->toArray();
-
-            // // Construct the raw SQL expression for the CASE statement
-            // // $caseExpression = "CASE ";
-            // foreach ($care_line as $id => $care) {
-            //     // $caseExpression .= "WHEN reference_id = $id THEN $care ";
-            //     $order = Order_item_model::where('reference_id',$id)->update(['care_id' => $care]);
-
-            // }
-            // Your implementation here using Eloquent ORM
-            // Example:
-            // print_r($orderObj);
-            // echo "<br>";
             $order = Order_model::where(['reference_id' => $orderObj->order_id])->first();
             $order_id = $order->id;
             $orderItem = Order_item_model::firstOrNew(['reference_id' => $itemObj->id, 'order_id' => $order_id]);
@@ -214,8 +180,6 @@ class Order_item_model extends Model
                 $variation->status = 1;
                 $variation->state = $list->publication_state;
                 $variation->listed_stock = $list->quantity;
-                // ... other fields
-                // dd($orderObj);
             }elseif($orderItem->id == null){
                 $variation->listed_stock -= $itemObj->quantity;
             }
