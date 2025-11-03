@@ -598,11 +598,7 @@ canvas {
                     scale: 2,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    width: 794,
-                    height: 1123,
-                    windowWidth: 794,
-                    windowHeight: 1123
+                    backgroundColor: '#ffffff'
                 });
 
                 const dataUrl = canvas.toDataURL('image/png');
