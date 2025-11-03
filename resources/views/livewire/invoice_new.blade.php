@@ -532,22 +532,34 @@ canvas {
             const config = qz.configs.create(printer, {
                 orientation: 'portrait',
                 scaleContent: true,
-                rasterize: true
+                rasterize: true,
+                htmlImageTimeout: 60000
             });
 
-            const combinedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+            const invoiceHtmlDocument = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
                 @page { size: A4 portrait; margin: 0; }
-                body { margin: 0; padding: 0; font-family: 'Times New Roman', Times, serif; }
-                img { max-width: 100%; display: block; }
-                .page-break { display: block; page-break-after: always; }
-            </style></head><body>${pdfHtml}<div class="page-break"></div>${invoiceNode.outerHTML}</body></html>`;
+                body { margin: 0; padding: 24px; font-family: 'Times New Roman', Times, serif; background: #fff; color: #000; }
+                h1, h2, h3, h4, h5 { margin: 0 0 6px; }
+                table { border-collapse: collapse; width: 100%; }
+                th, td { border: 1px solid #ddd; padding: 6px; text-align: left; }
+                .no-border td, .no-border th { border: none; }
+            </style></head><body>${invoiceNode.outerHTML}</body></html>`;
 
-            await qz.print(config, [{
-                type: 'pixel',
-                format: 'html',
-                flavor: 'plain',
-                data: combinedHtml
-            }]);
+            const printItems = [
+                {
+                    type: 'pdf',
+                    format: 'pdf',
+                    data: pdfUrl
+                },
+                {
+                    type: 'pixel',
+                    format: 'html',
+                    flavor: 'plain',
+                    data: invoiceHtmlDocument
+                }
+            ];
+
+            await qz.print(config, printItems);
         }
 
         function fallbackWindowPrint() {
@@ -704,7 +716,7 @@ canvas {
         window.onafterprint = () => {
             // if (!qz?.websocket || !qz.websocket.isActive()) {
                 // Delay closing to allow any async cleanup (e.g. QZ Tray) to finish.
-                const closeTimeout = 2000; // ms
+                const closeTimeout = 500; // ms
                 setTimeout(() => {
                     window.close();
                 }, closeTimeout);
