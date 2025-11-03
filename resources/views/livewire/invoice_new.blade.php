@@ -457,88 +457,131 @@ canvas {
     @endsection
 
     @section('scripts')
-    <script src="{{ asset('js/qz-tray.js') }}"></script>
-    <script src="{{ asset('js/qz-security.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
         const pdfUrl = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
-        const invoiceHtml = document.querySelector('.invoice-container').outerHTML;
+        const invoiceNode = document.querySelector('.invoice-container');
+        let pdfImageHtml = null;
 
-        document.addEventListener('DOMContentLoaded', () => tryQzPrint().catch(() => fallbackWindowPrint()));
-
-        async function tryQzPrint() {
-            if (typeof qz === 'undefined') throw new Error('QZ missing');
-
-            await qz.security.setCertificatePromise(() =>
-                fetch('{{ route('qz.certificate') }}').then(r => r.text())
-            );
-            await qz.security.setSignaturePromise(hash =>
-                fetch('{{ route('qz.signature') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ hash })
-                }).then(r => r.text())
-            );
-
-            if (!qz.websocket.isActive()) {
-                await qz.websocket.connect();
-            }
-
-            let printer = @json(session('qz_printer'));
-            if (!printer) {
-                const printers = await qz.printers.find();
-                if (!printers.length) throw new Error('No printers');
-                printer = printers[0];
-
-                await fetch('{{ route('qz.store-printer') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ printer })
+        document.addEventListener('DOMContentLoaded', () => {
+            renderPdfPages()
+                .then(html => {
+                    pdfImageHtml = html;
+                    return tryQzPrint(html);
+                })
+                .catch(error => {
+                    console.warn('QZ print failed, falling back to browser print.', error);
+                    fallbackWindowPrint();
                 });
+        });
+
+        async function renderPdfPages() {
+            if (pdfImageHtml !== null) {
+                return pdfImageHtml;
             }
 
-            const config = qz.configs.create(printer);
-            await qz.print(config, [
-                { type: 'pdf', data: pdfUrl },
-                { type: 'html', format: 'plain', data: invoiceHtml }
-            ]);
+            const container = document.getElementById('pdf-container');
+            container.innerHTML = '';
 
-            setTimeout(closeWindow, 500);
+            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            const pdf = await loadingTask.promise;
+
+            let html = '';
+            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
+                const page = await pdf.getPage(pageNum);
+                const viewport = page.getViewport({ scale: 1.69 });
+
+                const canvas = document.createElement('canvas');
+                canvas.width = viewport.width;
+                canvas.height = viewport.height;
+                const context = canvas.getContext('2d');
+
+                await page.render({ canvasContext: context, viewport }).promise;
+                container.appendChild(canvas);
+
+                const dataUrl = canvas.toDataURL('image/png');
+                html += `<img src="${dataUrl}" style="width:100%;display:block;margin:0 auto;" />`;
+            }
+
+            pdfImageHtml = html;
+            return html;
+        }
+
+        async function tryQzPrint(pdfHtml) {
+            if (typeof qz === 'undefined' || !qz.websocket) {
+                throw new Error('QZ Tray libraries not available');
+            }
+
+            await waitForQzConnection();
+
+            const printer = resolveInvoicePrinter();
+            if (!printer) {
+                throw new Error('No invoice printer selected in QZ settings');
+            }
+
+            const config = qz.configs.create(printer, {
+                orientation: 'portrait',
+                scaleContent: true,
+                rasterize: true
+            });
+
+            const combinedHtml = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
+                @page { size: A4 portrait; margin: 0; }
+                body { margin: 0; padding: 0; font-family: 'Times New Roman', Times, serif; }
+                img { max-width: 100%; display: block; }
+                .page-break { display: block; page-break-after: always; }
+            </style></head><body>${pdfHtml}<div class="page-break"></div>${invoiceNode.outerHTML}</body></html>`;
+
+            await qz.print(config, [{
+                type: 'pixel',
+                format: 'html',
+                flavor: 'plain',
+                data: combinedHtml
+            }]);
+
+            setTimeout(closeWindow, 300);
         }
 
         function fallbackWindowPrint() {
-            const container = document.getElementById('pdf-container');
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
+            renderPdfPages()
+                .then(() => {
+                    window.print();
+                })
+                .catch(() => window.print());
+        }
 
-            loadingTask.promise.then(pdf => {
-                let rendered = 0;
-                for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                    pdf.getPage(pageNum).then(page => {
-                        const viewport = page.getViewport({ scale: 1.69 });
-                        const canvas = document.createElement('canvas');
-                        canvas.width = viewport.width;
-                        canvas.height = viewport.height;
-                        const context = canvas.getContext('2d');
-                        container.appendChild(canvas);
-
-                        page.render({ canvasContext: context, viewport }).promise.then(() => {
-                            if (++rendered === pdf.numPages) {
-                                window.print();
-                            }
-                        });
-                    });
+        function resolveInvoicePrinter() {
+            const preferredKeys = ['Invoice_Printer', 'A4_Printer', 'Default_Printer'];
+            for (const key of preferredKeys) {
+                const value = window.localStorage ? localStorage.getItem(key) : null;
+                if (value) {
+                    return value;
                 }
-            }).catch(() => window.print());
+            }
+
+            return null;
+        }
+
+        function waitForQzConnection(timeout = 7000) {
+            if (qz.websocket.isActive()) {
+                return Promise.resolve();
+            }
+
+            return new Promise((resolve, reject) => {
+                const start = Date.now();
+                const timer = setInterval(() => {
+                    if (qz.websocket.isActive()) {
+                        clearInterval(timer);
+                        resolve();
+                    } else if (Date.now() - start > timeout) {
+                        clearInterval(timer);
+                        reject(new Error('Timed out waiting for QZ Tray connection'));
+                    }
+                }, 250);
+            });
         }
 
         function closeWindow() {
-            if (qz?.websocket.isActive()) qz.websocket.disconnect();
             window.close();
         }
 
