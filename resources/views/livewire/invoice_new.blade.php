@@ -16,12 +16,10 @@
         font-size: 18px;
     }
     .invoice-container {
-        width: 100%;
-        /* max-width: 1000px; */
-        margin: 20px auto;
-        padding: 20px;
-        /* border: 1px solid #ddd;
-        border-radius: 8px; */
+        width: 210mm;
+        max-width: 210mm;
+        margin: 10mm auto;
+        padding: 15mm;
         background-color: #ffffff;
     }
     .invoice-headers {
@@ -547,7 +545,8 @@ canvas {
             const invoiceImageBase64 = await convertInvoiceToImage();
             const imageConfig = qz.configs.create(printer, {
                 orientation: 'portrait',
-                scaleContent: true
+                margins: { top: 10, right: 10, bottom: 10, left: 10 },
+                units: 'mm'
             });
             await qz.print(imageConfig, [{
                 type: 'pixel',
@@ -595,13 +594,15 @@ canvas {
         async function convertInvoiceToImage() {
             try {
                 const canvas = await html2canvas(invoiceNode, {
-                    scale: 2,
+                    scale: 1.5,
                     useCORS: true,
                     allowTaint: true,
-                    backgroundColor: '#ffffff'
+                    backgroundColor: '#ffffff',
+                    logging: false,
+                    imageTimeout: 0
                 });
 
-                const dataUrl = canvas.toDataURL('image/png');
+                const dataUrl = canvas.toDataURL('image/png', 0.92);
                 const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
                 return base64;
             } catch (error) {
