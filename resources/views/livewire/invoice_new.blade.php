@@ -701,6 +701,10 @@ canvas {
                 }, 250);
             });
         }
-        window.onafterprint = null;
+        window.onafterprint = () => {
+            if (!qz?.websocket || !qz.websocket.isActive()) {
+                window.close();
+            }
+        };
     </script>
 @endsection
