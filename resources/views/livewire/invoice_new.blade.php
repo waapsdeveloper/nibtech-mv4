@@ -457,65 +457,46 @@ canvas {
     @endsection
 
     @section('scripts')
-    <script src="{{ asset('js/qz-tray.js') }}"></script>
-    <script src="{{ asset('js/qz-security.js') }}"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', async () => {
-            await qz.security.setCertificatePromise(() =>
-                fetch('{{ route('qz.certificate') }}').then(r => r.text())
-            );
-            await qz.security.setSignaturePromise(hash =>
-                fetch('{{ route('qz.signature') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ hash })
-                }).then(r => r.text())
-            );
+        document.addEventListener('DOMContentLoaded', function () {
+            const url = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
+            // const url = '{{ $order->delivery_note_url }}';
+            const container = document.getElementById('pdf-container');
 
-            if (!qz.websocket.isActive()) {
-                await qz.websocket.connect();
-            }
+            const loadingTask = pdfjsLib.getDocument(url);
+            loadingTask.promise.then(function(pdf) {
+                const totalPages = pdf.numPages;
 
-            let printer = @json(session('qz_printer'));
-            if (!printer) {
-                const [first] = await qz.printers.find();
-                printer = first;
+                for (let pageNum = 1; pageNum <= totalPages; pageNum++) {
+                    pdf.getPage(pageNum).then(function(page) {
+                        const viewport = page.getViewport({ scale: 1.69 });
 
-                await fetch('{{ route('qz.store-printer') }}', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                    },
-                    body: JSON.stringify({ printer })
-                });
-            }
+                        const canvas = document.createElement('canvas');
+                        const context = canvas.getContext('2d');
+                        canvas.height = viewport.height;
+                        canvas.width = viewport.width;
 
-            const config = qz.configs.create(printer);
+                        container.appendChild(canvas);
 
-            const payload = [
-                {
-                    type: 'pdf',
-                    data: "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}"
-                },
-                {
-                    type: 'html',
-                    format: 'plain',
-                    data: document.querySelector('.invoice-container').outerHTML
+                        const renderContext = {
+                            canvasContext: context,
+                            viewport: viewport
+                        };
+
+                        page.render(renderContext).promise.then(function () {
+                            console.log('Page rendered');
+                            window.print();
+                        });
+                    });
                 }
-            ];
-
-            try {
-                await qz.print(config, payload);
-            } finally {
-                if (qz.websocket.isActive()) {
-                    qz.websocket.disconnect();
-                }
-                window.close();
-            }
+            }, function (reason) {
+                console.error(reason);
+            });
         });
+        // window.onload = function() { setTimeout(() => {window.print();},4000) }
+        // window.onload = function() { window.print(); }
+        window.onafterprint = function() { window.close(); }
     </script>
-@endsection
+
+    @endsection
