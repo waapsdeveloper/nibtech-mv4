@@ -600,9 +600,10 @@
                                                         <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}" onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}">
                                                             @csrf
                                                             <input type="hidden" name="sort" value="{{request('sort')}}">
+                                                            <input type="hidden" name="packing_mode" value="{{request('packing_mode')}}">
                                                             <div class="input-group">
                                                                 <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
-                                                                <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm">
+                                                                <input type="text" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
 
                                                                 <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
 
