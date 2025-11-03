@@ -1178,6 +1178,25 @@
             }
         @endif
 
+        @if (request('packing'))
+
+            var id = `imei{{$ti}}`;
+            window.onload = function() {
+                document.getElementById(id).focus();
+                document.getElementById(id).click();
+                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+            };
+            document.addEventListener('DOMContentLoaded', function() {
+                var input = document.getElementById(id);
+                input.focus();
+                input.select();
+                document.getElementById(id).click();
+                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+            });
+            if (id == 'imei0') {
+                document.querySelector('[rel="prev"]').click();
+            }
+        @endif
         $('#tracking_model').on('show.bs.modal', function (event) {
             var button = $(event.relatedTarget) // Button that triggered the modal
             var reference = button.data('bs-reference') // Extract info from data-* attributesv
