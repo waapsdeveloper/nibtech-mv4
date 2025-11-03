@@ -703,7 +703,11 @@ canvas {
         }
         window.onafterprint = () => {
             if (!qz?.websocket || !qz.websocket.isActive()) {
-                window.close();
+                // Delay closing to allow any async cleanup (e.g. QZ Tray) to finish.
+                const closeTimeout = 2000; // ms
+                setTimeout(() => {
+                    window.close();
+                }, closeTimeout);
             }
         };
     </script>
