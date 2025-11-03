@@ -5,7 +5,7 @@
 <style>
     body {
         font-family: 'Times New Roman', Times, serif, Arial, sans-serif;
-        font-size: 18px;
+        font-size: 14px;
         font-weight: 700 !important;
         margin: 0;
         padding: 0;
