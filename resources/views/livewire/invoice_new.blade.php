@@ -13,7 +13,7 @@
         background-color: #fff !important;
     }
     p {
-        font-size: 18px;
+        font-size: 14px;
     }
     .invoice-container {
         width: 210mm;
