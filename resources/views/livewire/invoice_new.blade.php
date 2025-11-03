@@ -462,12 +462,13 @@ canvas {
         const pdfUrl = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
         const invoiceNode = document.querySelector('.invoice-container');
         let pdfImageHtml = null;
+        let pdfBase64Cache = null;
 
         document.addEventListener('DOMContentLoaded', () => {
             renderPdfPages()
                 .then(html => {
                     pdfImageHtml = html;
-                    return tryQzPrint(html);
+                    return tryQzPrint();
                 })
                 .catch(error => {
                     console.warn('QZ print failed, falling back to browser print.', error);
@@ -507,7 +508,7 @@ canvas {
             return html;
         }
 
-        async function tryQzPrint(pdfHtml) {
+        async function tryQzPrint() {
             if (typeof qz === 'undefined' || !qz.websocket) {
                 throw new Error('QZ Tray libraries not available');
             }
@@ -536,6 +537,8 @@ canvas {
                 htmlImageTimeout: 60000
             });
 
+            const pdfBase64 = await fetchPdfAsBase64();
+
             const invoiceHtmlDocument = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
                 @page { size: A4 portrait; margin: 0; }
                 body { margin: 0; padding: 24px; font-family: 'Times New Roman', Times, serif; background: #fff; color: #000; }
@@ -548,8 +551,8 @@ canvas {
             const printItems = [
                 {
                     type: 'pdf',
-                    format: 'pdf',
-                    data: pdfUrl
+                    format: 'base64',
+                    data: pdfBase64
                 },
                 {
                     type: 'pixel',
@@ -560,6 +563,41 @@ canvas {
             ];
 
             await qz.print(config, printItems);
+        }
+
+        async function fetchPdfAsBase64() {
+            if (pdfBase64Cache) {
+                return pdfBase64Cache;
+            }
+
+            try {
+                const response = await fetch(pdfUrl, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch PDF: ${response.status}`);
+                }
+
+                const blob = await response.blob();
+                const base64 = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = typeof reader.result === 'string' ? reader.result : '';
+                        const commaIndex = result.indexOf(',');
+                        if (commaIndex === -1) {
+                            reject(new Error('Unexpected PDF data URL format'));
+                            return;
+                        }
+                        resolve(result.substring(commaIndex + 1));
+                    };
+                    reader.onerror = () => reject(reader.error || new Error('Failed to read PDF blob'));
+                    reader.readAsDataURL(blob);
+                });
+
+                pdfBase64Cache = base64;
+                return base64;
+            } catch (error) {
+                console.warn('Unable to convert PDF to base64 for QZ Tray.', error);
+                throw error;
+            }
         }
 
         function fallbackWindowPrint() {
