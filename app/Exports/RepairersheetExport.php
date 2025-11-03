@@ -86,6 +86,18 @@ class RepairersheetExport implements FromCollection, WithHeadings
             ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereNull('stock_operations.deleted_at')
+            ->groupBy(
+                'products.model',
+                'storage.name',
+                'color.name',
+                'grade.name',
+                'process.reference_id',
+                'stock.imei',
+                'stock.serial_number',
+                'stock_operations.description',
+                'process.updated_at',
+                'order_items.price'
+            )
             ->orderBy('products.model', 'ASC')
             ->get();
 
