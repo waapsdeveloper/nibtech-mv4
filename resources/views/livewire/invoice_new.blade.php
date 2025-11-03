@@ -555,9 +555,8 @@ canvas {
                     data: pdfBase64
                 },
                 {
-                    type: 'pixel',
-                    format: 'html',
-                    flavor: 'plain',
+                    type: 'html',
+                    format: 'plain',
                     data: invoiceHtmlDocument
                 }
             ];
