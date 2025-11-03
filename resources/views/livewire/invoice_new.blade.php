@@ -530,13 +530,6 @@ canvas {
                 storeInvoicePrinter(printer);
             }
 
-            const config = qz.configs.create(printer, {
-                orientation: 'portrait',
-                scaleContent: true,
-                rasterize: true,
-                htmlImageTimeout: 60000
-            });
-
             const pdfBase64 = await fetchPdfAsBase64();
 
             const invoiceHtmlDocument = `<!DOCTYPE html><html><head><meta charset="utf-8"><style>
@@ -548,20 +541,28 @@ canvas {
                 .no-border td, .no-border th { border: none; }
             </style></head><body>${invoiceNode.outerHTML}</body></html>`;
 
-            const printItems = [
-                {
-                    type: 'pdf',
-                    format: 'base64',
-                    data: pdfBase64
-                },
-                {
-                    type: 'html',
-                    format: 'plain',
-                    data: invoiceHtmlDocument
-                }
-            ];
+            // Print PDF first
+            const pdfConfig = qz.configs.create(printer, {
+                orientation: 'portrait'
+            });
+            await qz.print(pdfConfig, [{
+                type: 'pdf',
+                format: 'base64',
+                data: pdfBase64
+            }]);
 
-            await qz.print(config, printItems);
+            // Then print HTML invoice
+            const htmlConfig = qz.configs.create(printer, {
+                orientation: 'portrait',
+                scaleContent: true,
+                rasterize: true
+            });
+            await qz.print(htmlConfig, [{
+                type: 'pixel',
+                format: 'html',
+                flavor: 'plain',
+                data: invoiceHtmlDocument
+            }]);
         }
 
         async function fetchPdfAsBase64() {
