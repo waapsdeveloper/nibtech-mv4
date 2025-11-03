@@ -458,6 +458,7 @@ canvas {
 
     @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         const pdfUrl = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
         const invoiceNode = document.querySelector('.invoice-container');
@@ -592,61 +593,25 @@ canvas {
         }
 
         async function convertInvoiceToImage() {
-            return new Promise((resolve, reject) => {
-                const canvas = document.createElement('canvas');
-                const scale = 2; // Higher resolution for better print quality
+            try {
+                const canvas = await html2canvas(invoiceNode, {
+                    scale: 2,
+                    useCORS: true,
+                    allowTaint: true,
+                    backgroundColor: '#ffffff',
+                    width: 794,
+                    height: 1123,
+                    windowWidth: 794,
+                    windowHeight: 1123
+                });
 
-                // A4 dimensions at 96 DPI scaled up
-                canvas.width = 794 * scale;
-                canvas.height = 1123 * scale;
-
-                const ctx = canvas.getContext('2d');
-                ctx.fillStyle = '#ffffff';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-
-                // Use html2canvas or similar library if available, otherwise use DOM-to-Image approach
-                const invoiceClone = invoiceNode.cloneNode(true);
-                invoiceClone.style.width = '794px';
-                invoiceClone.style.position = 'absolute';
-                invoiceClone.style.left = '-9999px';
-                invoiceClone.style.top = '0';
-                document.body.appendChild(invoiceClone);
-
-                setTimeout(() => {
-                    // Create SVG foreignObject to render HTML
-                    const svgData = `
-                        <svg xmlns="http://www.w3.org/2000/svg" width="${canvas.width}" height="${canvas.height}">
-                            <foreignObject width="100%" height="100%">
-                                <div xmlns="http://www.w3.org/1999/xhtml" style="transform: scale(${scale}); transform-origin: 0 0;">
-                                    ${invoiceNode.outerHTML}
-                                </div>
-                            </foreignObject>
-                        </svg>
-                    `;
-
-                    const img = new Image();
-                    const blob = new Blob([svgData], { type: 'image/svg+xml' });
-                    const url = URL.createObjectURL(blob);
-
-                    img.onload = () => {
-                        ctx.drawImage(img, 0, 0);
-                        document.body.removeChild(invoiceClone);
-                        URL.revokeObjectURL(url);
-
-                        const dataUrl = canvas.toDataURL('image/png');
-                        const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
-                        resolve(base64);
-                    };
-
-                    img.onerror = () => {
-                        document.body.removeChild(invoiceClone);
-                        URL.revokeObjectURL(url);
-                        reject(new Error('Failed to convert invoice to image'));
-                    };
-
-                    img.src = url;
-                }, 100);
-            });
+                const dataUrl = canvas.toDataURL('image/png');
+                const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
+                return base64;
+            } catch (error) {
+                console.error('html2canvas failed:', error);
+                throw new Error('Failed to convert invoice to image');
+            }
         }
 
         function fallbackWindowPrint() {
