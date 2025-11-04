@@ -1182,17 +1182,22 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
-                document.getElementById(id).focus();
-                document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                if (document.getElementById('sku_input').value === ''){
+                    document.getElementById('sku_input').focus();
+                }else{
+                    document.getElementById(id).focus();
+                    document.getElementById(id).click();
+                    setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var input = document.getElementById(id);
+                        input.focus();
+                        input.select();
+                        document.getElementById(id).click();
+                        setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                    });
+                }
             };
-            document.addEventListener('DOMContentLoaded', function() {
-                var input = document.getElementById(id);
-                input.focus();
-                input.select();
-                document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
-            });
+
             if (id == 'imei0') {
                 document.querySelector('[rel="prev"]').click();
             }
