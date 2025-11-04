@@ -79,6 +79,7 @@ class PriceHandler extends Command
                 // print_r($list);
                 if(is_string($list) || is_int($list)){
                     print_r($list);
+                    echo "\n\n";
                     $error .= $list;
                     continue;
                 }
