@@ -76,7 +76,7 @@ class PriceHandler extends Command
             if (is_object($responses) && $responses->type == 'unknown-competitor') {
                 continue;
             }
-            if (is_array($responses) && $responses['type'] && $responses['type'] == 'unknown-competitor') {
+            if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
                 continue;
             }
             echo "SKU: " . $variation->sku . "\n";
