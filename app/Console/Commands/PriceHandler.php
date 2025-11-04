@@ -61,7 +61,7 @@ class PriceHandler extends Command
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
 
-            echo "Hello";
+            // echo "Hello";
 
         // print_r($listings);
         foreach ($variations as $variation) {
@@ -78,7 +78,7 @@ class PriceHandler extends Command
             foreach($responses as $list){
                 // print_r($list);
                 if(is_string($list) || is_int($list)){
-                    print_r($list);
+                    print_r($responses);
                     echo "\n\n";
                     $error .= $list;
                     continue;
