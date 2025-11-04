@@ -73,6 +73,9 @@ class PriceHandler extends Command
                 $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
             }
+            if ($responses['type'] == 'unknown-competitor') {
+                continue;
+            }
             echo "SKU: " . $variation->sku . "\n";
             echo "Response: \n";
             foreach($responses as $list){
