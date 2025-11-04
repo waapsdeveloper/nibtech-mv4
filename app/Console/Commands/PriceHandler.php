@@ -121,7 +121,7 @@ class PriceHandler extends Command
                     $new_min_price = round($new_min_price, 2);
                     $new_price = round($new_price, 2);
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
-                    print_r($response);
+                    // print_r($response);
                     $listing->price = $new_price;
                     $listing->min_price = $new_min_price;
                 }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_price < $listing->min_price_limit || $listing->buybox_price > $listing->price_limit)){
