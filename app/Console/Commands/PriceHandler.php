@@ -82,14 +82,15 @@ class PriceHandler extends Command
                     continue;
                 }
                 if(is_array($list)){
-                    if(isset($list['code']) && $list['code'] == 'unknown-competitor'){
+                    if (is_array($list) || is_object($list)) {
+                        $code = is_array($list) ? ($list['code'] ?? null) : ($list->code ?? null);
+                        if ($code === 'unknown-competitor') {
+                            continue;
+                        }
+                        $error .= json_encode($list) . "\n";
+                        $error .= "Error in response for variation: {$variation->sku}\n";
                         continue;
                     }
-                    $error .= json_encode($list);
-                    $error .= "\n";
-                    $error .= "Error in response for variation: " . $variation->sku . "\n";
-                    // echo $error;
-                    continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
