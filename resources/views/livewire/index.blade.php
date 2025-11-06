@@ -458,8 +458,15 @@
                                         </div>
                                     </div>
                                 @endif
-                                <livewire:dashboard.inventory-overview-widget :wire:key="'inventory-overview-widget'" />
-
+                                @if (
+                                    session('user')->hasPermission('dashboard_view_inventory') ||
+                                    session('user')->hasPermission('dashboard_view_listing_total') ||
+                                    session('user')->hasPermission('dashboard_view_pending_orders')
+                                )
+                                    <div class="col-md col-xs-6">
+                                        <livewire:dashboard.inventory-overview-widget :wire:key="'inventory-overview-widget'" />
+                                    </div>
+                                @endif
 
                                 @if (session('user')->hasPermission('dashboard_view_aftersale_inventory') || session('user')->hasPermission('dashboard_view_repairing'))
 

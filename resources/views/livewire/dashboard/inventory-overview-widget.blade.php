@@ -27,9 +27,7 @@
         </div>
 
         <div wire:loading.remove wire:target="loadInventoryOverview,refreshInventoryOverview">
-            @if (! $readyToLoad)
-                <p class="text-muted mb-0">Access denied or widget disabled.</p>
-            @else
+            @if ($readyToLoad)
                 <div class="row g-2">
                     @if ($canViewInventory && $gradedInventory->isNotEmpty())
                         @foreach ($gradedInventory as $inv)
