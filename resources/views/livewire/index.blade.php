@@ -458,86 +458,87 @@
                                         </div>
                                     </div>
                                 @endif
-                                @if (session('user')->hasPermission('dashboard_view_testing') || session('user')->hasPermission('dashboard_view_repairing'))
+                                @if (session('user')->hasPermission('dashboard_view_testing'))
 
                                     <div class="col-md col-xs-6">
-                                        @if (session('user')->hasPermission('dashboard_view_testing'))
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <h4 class="card-title mb-1">Testing Count</h4>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <table class="w-100">
-                                                        @foreach ($testing_count as $testing)
-                                                            @if ($testing->stock_operations_count > 0)
-
-                                                            <tr>
-                                                                <td>{{ $testing->first_name}}:</td>
-                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
-                                                            </tr>
-                                                            @endif
-                                                        @endforeach
-                                                    </table>
-
-                                                </div>
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h4 class="card-title mb-1">Testing Count</h4>
                                             </div>
-                                        @endif
-                                        @if (session('user')->hasPermission('dashboard_view_repairing'))
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <h4 class="card-title mb-1">Repairing Count</h4>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <table class="w-100">
-                                                        @foreach ($repairing_count as $repairing)
-                                                            @if ($repairing->stock_operations_count > 0)
+                                            <div class="card-body py-2">
+                                                <table class="w-100">
+                                                    @foreach ($testing_count as $testing)
+                                                        @if ($testing->stock_operations_count > 0)
 
-                                                            <tr>
-                                                                <td>{{ $repairing->first_name}}:</td>
-                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $repairing->id }}" title="Go to Move Inventory page">{{ $repairing->stock_operations_count }}</a></td>
-                                                            </tr>
-                                                            @endif
-                                                        @endforeach
-                                                    </table>
+                                                        <tr>
+                                                            <td>{{ $testing->first_name}}:</td>
+                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
+                                                        </tr>
+                                                        @endif
+                                                    @endforeach
+                                                </table>
 
-                                                </div>
                                             </div>
-                                        @endif
+                                        </div>
                                     </div>
 
                                 @endif
 
-                                @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
+                                @if (session('user')->hasPermission('dashboard_view_aftersale_inventory') || session('user')->hasPermission('dashboard_view_repairing'))
 
                                 {{-- Date search section --}}
                                 <div class="col-md col-xs-6">
-                                    <div class="card">
-                                        <div class="card-header border-bottom-0">
-                                                <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
-                                        </div>
-                                        <div class="card-body py-2">
-                                            <table class="w-100">
-                                            @foreach ($aftersale_inventory as $inv)
+                                    @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
+                                        <div class="card">
+                                            <div class="card-header border-bottom-0">
+                                                    <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
+                                            </div>
+                                            <div class="card-body py-2">
+                                                <table class="w-100">
+                                                @foreach ($aftersale_inventory as $inv)
+                                                    <tr>
+                                                        <td>{{ $inv->grade }}:</td>
+                                                        <td class="tx-right"><a href="{{url('belfast_inventory')}}?grade[]={{ $inv->grade_id }}&status={{$inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
+                                                    </tr>
+                                                @endforeach
                                                 <tr>
-                                                    <td>{{ $inv->grade }}:</td>
-                                                    <td class="tx-right"><a href="{{url('belfast_inventory')}}?grade[]={{ $inv->grade_id }}&status={{$inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
+                                                    <td title="Waiting for Approval">Returns:</td>
+                                                    <td class="tx-right"><a href="{{url('return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
                                                 </tr>
-                                            @endforeach
-                                            <tr>
-                                                <td title="Waiting for Approval">Returns:</td>
-                                                <td class="tx-right"><a href="{{url('return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
-                                            </tr>
-                                            <tr>
-                                                <td>RMA:</td>
-                                                <td class="tx-right"><a href="{{url('inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="Awaiting Replacements">Replacements:</td>
-                                                <td class="tx-right"><a href="{{url('inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
-                                            </tr>
-                                            </table>
+                                                <tr>
+                                                    <td>RMA:</td>
+                                                    <td class="tx-right"><a href="{{url('inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
+                                                </tr>
+                                                <tr>
+                                                    <td title="Awaiting Replacements">Replacements:</td>
+                                                    <td class="tx-right"><a href="{{url('inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
+                                                </tr>
+                                                </table>
+                                            </div>
                                         </div>
-                                    </div>
+                                    @endif
+                                    @if (session('user')->hasPermission('dashboard_view_repairing'))
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h4 class="card-title mb-1">Repairing Count</h4>
+                                            </div>
+                                            <div class="card-body py-2">
+                                                <table class="w-100">
+                                                    @foreach ($repairing_count as $repairing)
+                                                        @if ($repairing->stock_operations_count > 0)
+
+                                                        <tr>
+                                                            <td>{{ $repairing->first_name}}:</td>
+                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $repairing->id }}" title="Go to Move Inventory page">{{ $repairing->stock_operations_count }}</a></td>
+                                                        </tr>
+                                                        @endif
+                                                    @endforeach
+                                                </table>
+
+                                            </div>
+                                        </div>
+                                    @endif
+
                                 </div>
                                 @endif
 
@@ -749,7 +750,7 @@
                             <table class="w-100">
                                 <tr>
                                     <td>Total:</td>
-                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average ${data.ttl_average} | EUR: ${data.ttl_eur} | GBP: ${data.ttl_gbp} | Go to orders page">${data.total_orders}</a></td>
+                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_orders}</a></td>
                                 </tr>
                                 <tr>
                                     <td>Pending:</td>
