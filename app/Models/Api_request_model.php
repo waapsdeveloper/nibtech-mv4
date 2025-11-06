@@ -332,14 +332,14 @@ class Api_request_model extends Model
                     if(!$product->id){
                         // Log::info($p->model.' '.'New Battery');
                         $log_info .= $p->model.' '.'New Battery'."\n";
-                            continue;
-                            // $product->category = $p->category;
-                            // $product->brand = $p->brand;
-                            // $product->model = $p->model.' New Battery';
-                            // $product->save();
-                        }
-                        $p = $product;
+                        continue;
+                        // $product->category = $p->category;
+                        // $product->brand = $p->brand;
+                        // $product->model = $p->model.' New Battery';
+                        // $product->save();
                     }
+                    $p = $product;
+
 
                     $new_variation = [
                         'product_id' => $p->id,
