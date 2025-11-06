@@ -147,42 +147,7 @@ class Index extends Component
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
 
-        if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
-            $data['returns_in_progress'] = count($aftersale);
-            $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
-            $rma = Stock_model::Where('status',2)->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                    $q->whereIn('order_id', $rmas);
-                })->whereHas('variation', function ($q) {
-                    $q->where('grade', 10);
-                })->count();
-            $data['rma'] = $rma;
-            $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
-            ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', function ($query) {
-                $query->where('customer_id', 3955);
-            })
-            ->whereHas('sale_order', function ($query) {
-                $query->where('order_type_id', 3)->orWhere('reference_id', 999);
-            })
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->whereIn('variation.grade',[8,12,17])
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            // ->where('orders.order_type_id',3)
-            ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
-            ->orderBy('grade_id')
-            ->get();
-
-            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
-            // dd($replacements);
-            $data['awaiting_replacement'] = Stock_model::where('status', 1)
-            ->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3])
-                ->whereNotIn('reference_id', $replacements);
-            })
-            ->count();
-
-        }
+        // Aftersale inventory metrics pulled by dedicated dashboard widget
         if (session('user')->hasPermission('dashboard_view_inventory')){
             $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
             ->whereNotIn('stock.id', $aftersale)
