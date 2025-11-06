@@ -10,30 +10,68 @@ use Illuminate\Support\Facades\DB;
 
 class AftersaleInventoryWidget extends Component
 {
-    public $aftersaleInventory = [];
+    public $aftersaleInventory;
     public $returnsInProgress = 0;
     public $rma = 0;
     public $awaitingReplacement = 0;
+    public $readyToLoad = false;
 
     public function mount()
     {
-        if (!session('user')->hasPermission('dashboard_view_aftersale_inventory')) {
+        $this->aftersaleInventory = collect();
+    }
+
+    public function loadAftersaleMetrics()
+    {
+        if (! $this->userCanViewAftersale()) {
             return;
         }
 
-        $aftersale = Order_item_model::whereHas('order', function ($q) {
-            $q->where('order_type_id', 4)->where('status', '<', 3);
-        })->pluck('stock_id')->toArray();
+        $this->readyToLoad = true;
+        $this->hydrateMetrics();
+    }
 
-        $this->returnsInProgress = count($aftersale);
+    public function refreshAftersaleMetrics()
+    {
+        if ($this->readyToLoad && $this->userCanViewAftersale()) {
+            $this->hydrateMetrics();
+        }
+    }
 
-        $rmas = Order_model::whereIn('order_type_id', [2, 5])->pluck('id')->toArray();
+    public function render()
+    {
+        return view('livewire.dashboard.aftersale-inventory-widget');
+    }
 
-        $this->rma = Stock_model::whereDoesntHave('order_items', function ($q) use ($rmas) {
-                $q->whereIn('order_id', $rmas);
+    protected function userCanViewAftersale(): bool
+    {
+        $user = session('user');
+
+        return $user ? $user->hasPermission('dashboard_view_aftersale_inventory') : false;
+    }
+
+    protected function hydrateMetrics(): void
+    {
+        $aftersaleStockIds = Order_item_model::whereHas('order', function ($query) {
+                $query->where('order_type_id', 4)
+                      ->where('status', '<', 3);
             })
-            ->whereHas('variation', fn($q) => $q->where('grade', 10))
-            ->where('status', 2)
+            ->pluck('stock_id')
+            ->toArray();
+
+        $this->returnsInProgress = count($aftersaleStockIds);
+
+        $rmaOrderIds = Order_model::whereIn('order_type_id', [2, 5])
+            ->pluck('id')
+            ->toArray();
+
+        $this->rma = Stock_model::where('status', 2)
+            ->whereDoesntHave('order_items', function ($query) use ($rmaOrderIds) {
+                $query->whereIn('order_id', $rmaOrderIds);
+            })
+            ->whereHas('variation', function ($query) {
+                $query->where('grade', 10);
+            })
             ->count();
 
         $this->aftersaleInventory = Stock_model::select(
@@ -44,33 +82,32 @@ class AftersaleInventoryWidget extends Component
                 DB::raw('COUNT(*) as quantity')
             )
             ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', fn($q) => $q->where('customer_id', 3955))
-            ->whereHas('sale_order', function ($q) {
-                $q->where('order_type_id', 3)
-                  ->orWhere(['order_type_id' => 5, 'reference_id' => 999]);
+            ->whereDoesntHave('sale_order', function ($query) {
+                $query->where('customer_id', 3955);
+            })
+            ->whereHas('sale_order', function ($query) {
+                $query->where('order_type_id', 3)
+                      ->orWhere('reference_id', 999);
             })
             ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->whereIn('variation.grade', [8, 12, 17])
             ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->whereIn('grade.id', [8, 12, 17])
             ->join('orders', 'stock.order_id', '=', 'orders.id')
             ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
             ->orderBy('grade_id')
             ->get();
 
-        $replacements = Order_item_model::where(['order_id' => 8974])
+        $replacementReferenceIds = Order_item_model::where('order_id', 8974)
             ->whereNotNull('reference_id')
             ->pluck('reference_id')
             ->toArray();
 
         $this->awaitingReplacement = Stock_model::where('status', 1)
-            ->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status' => 3, 'order_type_id' => 3])
-                  ->whereNotIn('reference_id', $replacements);
-            })->count();
-    }
-
-    public function render()
-    {
-        return view('livewire.dashboard.aftersale-inventory-widget');
+            ->whereHas('order_items.order', function ($query) use ($replacementReferenceIds) {
+                $query->where('status', 3)
+                      ->where('order_type_id', 3)
+                      ->whereNotIn('reference_id', $replacementReferenceIds);
+            })
+            ->count();
     }
 }
