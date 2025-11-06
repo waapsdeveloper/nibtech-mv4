@@ -142,17 +142,9 @@ class Index extends Component
         }
 
         if(session('user')->hasPermission('dashboard_view_repairing')){
-            // Precompute counts grouped by admin to avoid expensive withCount subquery per admin
-            $counts = Stock_operations_model::whereBetween('created_at', [$start_date, $end_date])
-            ->groupBy('admin_id')
-            ->select('admin_id', DB::raw('COUNT(DISTINCT stock_id) as stock_count'))
-            ->pluck('stock_count','admin_id');
-
-            $repairing_count = Admin_model::where('role_id', 8)->get()->map(function($admin) use ($counts) {
-            $admin->stock_operations_count = $counts[$admin->id] ?? 0;
-            return $admin;
-            })->sortByDesc('stock_operations_count')->values();
-
+            $repairing_count = Admin_model::where('role_id', 8)->withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
+                $q->select(DB::raw('count(distinct stock_id)'))->whereBetween('created_at', [$start_date, $end_date]);
+            }])->orderByDesc('stock_operations_count')->get();
             $data['repairing_count'] = $repairing_count;
         }
 
