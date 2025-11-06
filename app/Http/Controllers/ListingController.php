@@ -552,23 +552,17 @@ class ListingController extends Controller
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
-        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
-        if($check_active_verification != null){
-            $new_quantity = $stock - $pending_orders;
+        // $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
+        // if($check_active_verification != null){
+        //     $new_quantity = $stock - $pending_orders;
             // $new_quantity = $stock;
-        }else{
+        // }else{
             if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
                 $new_quantity = $stock;
             }else{
-                // if($previous_qty <= 0){
-                //     $change = $variation->available_stocks->count() - $pending_orders;
-
-                //     $new_quantity = $stock - $pending_orders;
-                // }else{
-                    $new_quantity = $stock + $previous_qty;
-                // }
+                $new_quantity = $stock + $previous_qty;
             }
-        }
+        // }
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
@@ -578,24 +572,16 @@ class ListingController extends Controller
             $variation->listed_stock = $response->quantity;
             $variation->save();
         }
-        if($check_active_verification != null){
-            $listed_stock_verification = Listed_stock_verification_model::firstOrNew(['process_id'=>$check_active_verification->id, 'variation_id'=>$variation->id]);
-            $listed_stock_verification->pending_orders = $pending_orders;
-            $listed_stock_verification->qty_change = $stock;
-            $listed_stock_verification->qty_to = $response->quantity;
-            $listed_stock_verification->admin_id = session('user_id');
-            $listed_stock_verification->save();
-        }else{
-            $listed_stock_verification = new Listed_stock_verification_model();
-            $listed_stock_verification->process_id = $process_id;
-            $listed_stock_verification->variation_id = $variation->id;
-            $listed_stock_verification->pending_orders = $pending_orders;
-            $listed_stock_verification->qty_from = $previous_qty;
-            $listed_stock_verification->qty_change = $stock;
-            $listed_stock_verification->qty_to = $response->quantity;
-            $listed_stock_verification->admin_id = session('user_id');
-            $listed_stock_verification->save();
-        }
+        $listed_stock_verification = new Listed_stock_verification_model();
+        $listed_stock_verification->process_id = $process_id;
+        $listed_stock_verification->variation_id = $variation->id;
+        $listed_stock_verification->pending_orders = $pending_orders;
+        $listed_stock_verification->qty_from = $previous_qty;
+        $listed_stock_verification->qty_change = $stock;
+        $listed_stock_verification->qty_to = $response->quantity;
+        $listed_stock_verification->admin_id = session('user_id');
+        $listed_stock_verification->save();
+
         return $response->quantity;
     }
     public function update_price($id){
