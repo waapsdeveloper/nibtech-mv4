@@ -460,7 +460,6 @@
                                 @endif
                                 <livewire:dashboard.inventory-overview-widget :wire:key="'inventory-overview-widget'" />
 
-                                @endif
 
                                 @if (session('user')->hasPermission('dashboard_view_aftersale_inventory') || session('user')->hasPermission('dashboard_view_repairing'))
 
