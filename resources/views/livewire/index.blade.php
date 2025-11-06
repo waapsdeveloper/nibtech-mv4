@@ -745,22 +745,6 @@
                     url: "{{url('index/get_orders_data')}}?"+queryString,
                     type: 'GET',
                     success: function(data) {
-                        // let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
-                        // orders_data.html(data);
-                        // console.log(data);
-
-                        // <tr>
-                        //             <td title="Average Price">Average:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
-                        //         </tr>
-                        //         <tr>
-                        //             <td title="Total EUR Price">Total EUR:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
-                        //         </tr>
-                        //         <tr>
-                        //             <td title="Total GBP Price">Total GBP:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
-                        //         </tr>
                         let new_data = `
                             <table class="w-100">
                                 <tr>
@@ -782,14 +766,19 @@
                                     <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="${data.invoiced_items} Total Items | ${data.missing_imei} Dispatched without Device | Go to orders page">${data.invoiced_orders}</a></td>
                                 </tr>
                         `;
-                        for (const [key, value] of Object.entries(data.ttl)) {
-                            currency_code = key.split(' ')[1];
+                        for (const [currency_code, value] of Object.entries(data.ttl)) {
                             currency_id = Object.keys(data.currencies).find(key => data.currencies[key] === currency_code);
                             new_data += `
                                 <tr>
-                                    <td>${key}:</td>
+                                    <td title="Order Average">${currency_code} Ord Avg:</td>
                                     <td class="tx-right">
-                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page" target="_blank">${value}</a>
+                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Total: ${value.order_total} | Go to orders page" target="_blank">${value.order_average}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td title="Invoice Average">${currency_code} Inv Avg:</td>
+                                    <td class="tx-right">
+                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Total: ${value.invoice_total} | Go to orders page" target="_blank">${value.invoice_average}</a>
                                     </td>
                                 </tr>
                             `;
