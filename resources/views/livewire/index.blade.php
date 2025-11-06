@@ -518,25 +518,11 @@
                                         </div>
                                     @endif
                                     @if (session('user')->hasPermission('dashboard_view_repairing'))
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h4 class="card-title mb-1">Repairing Count</h4>
-                                            </div>
-                                            <div class="card-body py-2">
-                                                <table class="w-100">
-                                                    @foreach ($repairing_count as $repairing)
-                                                        @if ($repairing->stock_operations_count > 0)
-
-                                                        <tr>
-                                                            <td>{{ $repairing->first_name}}:</td>
-                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $repairing->id }}" title="Go to Move Inventory page">{{ $repairing->stock_operations_count }}</a></td>
-                                                        </tr>
-                                                        @endif
-                                                    @endforeach
-                                                </table>
-
-                                            </div>
-                                        </div>
+                                        <livewire:dashboard.repairing-count
+                                            :start-date="$start_date"
+                                            :end-date="$end_date"
+                                            :wire:key="'repairing-count-' . $start_date . '-' . $end_date"
+                                        />
                                     @endif
 
                                 </div>
