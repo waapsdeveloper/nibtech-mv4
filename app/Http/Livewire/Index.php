@@ -148,26 +148,7 @@ class Index extends Component
         })->pluck('stock_id')->toArray();
 
         // Aftersale inventory metrics pulled by dedicated dashboard widget
-        if (session('user')->hasPermission('dashboard_view_inventory')){
-            $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-            ->whereNotIn('stock.id', $aftersale)
-            ->where('stock.status', 1)
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            ->groupBy('variation.grade', 'grade.name', 'orders.status')
-            ->orderBy('grade_id')
-            ->get();
-        }
-        if (session('user')->hasPermission('dashboard_view_listing_total')){
-            $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
-            $data['should_be_listed'] = $data['graded_inventory']->where('grade_id', '<', 6)->sum('quantity') - Process_stock_model::whereHas('process', function ($q) {
-                $q->where('process_type_id', 22)->where('status', '<', 3);
-            })->count() - Order_model::where('status',2)->where('order_type_id',3)->count();
-        }
-        if (session('user')->hasPermission('dashboard_view_pending_orders')){
-            $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
-        }
+        // Inventory overview metrics provided by Livewire dashboard widget
 
 
 
