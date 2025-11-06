@@ -458,29 +458,7 @@
                                         </div>
                                     </div>
                                 @endif
-                                @if (session('user')->hasPermission('dashboard_view_testing'))
-
-                                    <div class="col-md col-xs-6">
-                                        <div class="card">
-                                            <div class="card-header">
-                                                <h4 class="card-title mb-1">Testing Count</h4>
-                                            </div>
-                                            <div class="card-body py-2">
-                                                <table class="w-100">
-                                                    @foreach ($testing_count as $testing)
-                                                        @if ($testing->stock_operations_count > 0)
-
-                                                        <tr>
-                                                            <td>{{ $testing->first_name}}:</td>
-                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
-                                                        </tr>
-                                                        @endif
-                                                    @endforeach
-                                                </table>
-
-                                            </div>
-                                        </div>
-                                    </div>
+                                <livewire:dashboard.inventory-overview-widget :wire:key="'inventory-overview-widget'" />
 
                                 @endif
 
@@ -505,29 +483,6 @@
                             </div>
 								{{-- Welcome Box end --}}
 								{{-- Date search section --}}
-                            @if (session('user')->hasPermission('dashboard_view_inventory'))
-                            <div class="card custom-card">
-                                <div class="card-header border-bottom-0 d-flex justify-content-between">
-                                    <h3 class="card-title mb-2 ">Available Inventory by Grade</h3>
-                                    @if (session('user')->hasPermission('dashboard_view_listing_total'))
-                                        <h3 class="card-title mb-2 " title="Should Be : {{ $should_be_listed }}">Total Listed Inventory: {{ $listed_inventory }}</h3>
-                                    @endif
-                                </div>
-                                <div class="card-body row">
-                                    @foreach ($graded_inventory as $inv)
-                                        <div class="col-lg-3 col-md-4"><h6><a href="{{url('inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
-                                    @endforeach
-                                </div>
-                                @if (session('user')->hasPermission('dashboard_view_pending_orders'))
-                                    <h6 class="tx-right mb-3">
-                                        Pending Orders:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        @foreach ($pending_orders_count as $pending)
-                                            <span title="Value: {{$pending->price}}">{{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                        @endforeach
-                                    </h6>
-                                @endif
-                            </div>
-                            @endif
                             @if (session('user')->hasPermission('monthly_sales_chart'))
                                 <div class="card custom-card overflow-hidden">
                                     <div class="card-header border-bottom-0">
