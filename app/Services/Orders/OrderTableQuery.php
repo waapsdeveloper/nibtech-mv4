@@ -103,17 +103,31 @@ class OrderTableQuery
                 ->toArray();
         }
 
-        $orders = Order_model::with([
-                'customer',
-                'customer.orders',
-                'order_items',
-                'order_items.variation',
-                'order_items.variation.product',
+        $orders = Order_model::select([
+                'orders.id',
+                'orders.reference_id',
+                'orders.customer_id',
+                'orders.delivery_note_url',
+                'orders.label_url',
+                'orders.tracking_number',
+                'orders.status',
+                'orders.processed_by',
+                'orders.created_at',
+                'orders.processed_at',
+                'orders.currency',
+                'orders.price',
+                'orders.charges',
+                'orders.payment_method_id',
+            ])
+            ->with([
+                'customer:id,company,first_name,last_name,phone',
+                'order_items:id,order_id,variation_id,quantity,stock_id,status,care_id,check_return',
+                'order_items.variation:id,sku,product_id,storage,color,grade,grade_id',
+                'order_items.variation.product:id,model',
                 'order_items.variation.grade_id',
-                'order_items.stock',
-                'order_items.replacement',
-                'transactions',
-                'order_charges',
+                'order_items.stock:id,imei,serial_number,status,tester',
+                'payment_method:id,name',
+                'order_status:id,name',
             ])
             ->when($request->input('type') === null || $request->input('type') === '', function ($query) {
                 $query->where('orders.order_type_id', 3);

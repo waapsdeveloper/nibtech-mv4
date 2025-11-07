@@ -6,25 +6,26 @@
     $rowItemIndex = 0;
     $testerIndex = $rowCounter['tester_start'] ? $rowCounter['tester_start'] - 1 : null;
     $imeiIndex = $rowCounter['imei_start'] ? $rowCounter['imei_start'] - 1 : null;
+    $anchor = isset($inputAnchor) && $inputAnchor !== null ? $inputAnchor : ('order-' . $order->id);
 
-    $getNextTesterId = function () use (&$testerIndex) {
+    $getNextTesterId = function () use (&$testerIndex, $anchor) {
         if ($testerIndex === null) {
             return null;
         }
 
         $testerIndex++;
 
-        return 'tester' . $testerIndex;
+        return 'tester-' . $anchor . '-' . $testerIndex;
     };
 
-    $getNextImeiId = function () use (&$imeiIndex) {
+    $getNextImeiId = function () use (&$imeiIndex, $anchor) {
         if ($imeiIndex === null) {
             return null;
         }
 
         $imeiIndex++;
 
-        return 'imei' . $imeiIndex;
+        return 'imei-' . $anchor . '-' . $imeiIndex;
     };
 
     static $globalImeiTracker;
