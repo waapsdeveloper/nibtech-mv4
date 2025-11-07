@@ -80,9 +80,11 @@ class OrdersTable extends Component
     public function render()
     {
         $orders = $this->readyToLoad ? $this->fetchOrders() : $this->emptyPaginator();
+        $rowCounters = $this->readyToLoad ? $this->computeRowCounters($orders) : [];
+        $imeiList = $this->readyToLoad ? $this->collectImeiList($orders) : [];
 
         if ($this->readyToLoad) {
-            $meta = $this->computeInputMeta($orders);
+            $meta = $this->computeInputMeta($orders, $rowCounters);
             $this->lastTesterInputId = $meta['lastTesterId'];
             $this->lastImeiInputId = $meta['lastImeiId'];
 
@@ -107,6 +109,8 @@ class OrdersTable extends Component
             'admins' => $this->admins,
             'currencies' => $this->currencies,
             'order_statuses' => $this->orderStatuses,
+            'rowCounters' => $rowCounters,
+            'pageImeiList' => $imeiList,
         ]);
     }
 
@@ -133,55 +137,13 @@ class OrdersTable extends Component
 
     /**
      * @param  LengthAwarePaginator  $orders
+     * @param  array<int, array<string, int|null>>  $rowCounters
      * @return array{testerCount:int, imeiCount:int, lastTesterId:?string, lastImeiId:?string}
      */
-    protected function computeInputMeta(LengthAwarePaginator $orders): array
+    protected function computeInputMeta(LengthAwarePaginator $orders, array $rowCounters): array
     {
-        $testerCount = 0;
-        $imeiCount = 0;
-        $packingEnabled = request()->filled('packing');
-
-        foreach ($orders as $order) {
-            $items = $order->order_items;
-            $itemCount = $items->count();
-
-            foreach ($items as $index => $item) {
-                if ($order->status == 3) {
-                    continue;
-                }
-
-                if ($index !== 0) {
-                    continue;
-                }
-
-                if ($itemCount < 2 && $item->quantity >= 2) {
-                    for ($in = 1; $in <= $item->quantity; $in++) {
-                        if (! $packingEnabled) {
-                            $testerCount++;
-                        }
-                        $imeiCount++;
-                    }
-                    continue;
-                }
-
-                if ($itemCount >= 2) {
-                    foreach ($items as $subItem) {
-                        for ($in = 1; $in <= $subItem->quantity; $in++) {
-                            if (! $packingEnabled) {
-                                $testerCount++;
-                            }
-                            $imeiCount++;
-                        }
-                    }
-                    continue;
-                }
-
-                if (! $packingEnabled) {
-                    $testerCount++;
-                }
-                $imeiCount++;
-            }
-        }
+        $testerCount = array_sum(array_column($rowCounters, 'tester_count'));
+        $imeiCount = array_sum(array_column($rowCounters, 'imei_count'));
 
         return [
             'testerCount' => $testerCount,
@@ -189,5 +151,123 @@ class OrdersTable extends Component
             'lastTesterId' => $testerCount > 0 ? 'tester' . $testerCount : null,
             'lastImeiId' => $imeiCount > 0 ? 'imei' . $imeiCount : null,
         ];
+    }
+
+    /**
+     * @param  iterable<int, mixed>  $orders
+     * @return array<int, array<string, int|null>>
+     */
+    protected function computeRowCounters(iterable $orders): array
+    {
+        $counters = [];
+        $testerCursor = 0;
+        $imeiCursor = 0;
+        $packingEnabled = request()->filled('packing');
+
+        foreach ($orders as $order) {
+            $orderCounts = $this->countInputsForOrder($order, $packingEnabled);
+
+            $testerStart = $orderCounts['tester'] > 0 ? $testerCursor + 1 : null;
+            $imeiStart = $orderCounts['imei'] > 0 ? $imeiCursor + 1 : null;
+
+            $counters[$order->id] = [
+                'tester_start' => $testerStart,
+                'tester_count' => $orderCounts['tester'],
+                'imei_start' => $imeiStart,
+                'imei_count' => $orderCounts['imei'],
+            ];
+
+            $testerCursor += $orderCounts['tester'];
+            $imeiCursor += $orderCounts['imei'];
+        }
+
+        return $counters;
+    }
+
+    /**
+     * @param  mixed  $order
+     * @return array{tester:int, imei:int}
+     */
+    protected function countInputsForOrder($order, bool $packingEnabled): array
+    {
+        $testerCount = 0;
+        $imeiCount = 0;
+
+        $items = $order->order_items;
+        $itemCount = $items->count();
+
+        foreach ($items as $index => $item) {
+            if ($order->status == 3) {
+                continue;
+            }
+
+            if ($index !== 0) {
+                continue;
+            }
+
+            if ($itemCount < 2 && $item->quantity >= 2) {
+                for ($in = 1; $in <= $item->quantity; $in++) {
+                    if (! $packingEnabled) {
+                        $testerCount++;
+                    }
+                    $imeiCount++;
+                }
+                continue;
+            }
+
+            if ($itemCount >= 2) {
+                foreach ($items as $subItem) {
+                    for ($in = 1; $in <= $subItem->quantity; $in++) {
+                        if (! $packingEnabled) {
+                            $testerCount++;
+                        }
+                        $imeiCount++;
+                    }
+                }
+                continue;
+            }
+
+            if (! $packingEnabled) {
+                $testerCount++;
+            }
+            $imeiCount++;
+        }
+
+        return [
+            'tester' => $testerCount,
+            'imei' => $imeiCount,
+        ];
+    }
+
+    /**
+     * @param  iterable<int, mixed>  $orders
+     * @return array<int, string>
+     */
+    protected function collectImeiList(iterable $orders): array
+    {
+        if (! (request('missing_refund') || request('missing') || request('items'))) {
+            return [];
+        }
+
+        $imeis = [];
+
+        foreach ($orders as $order) {
+            foreach ($order->order_items as $item) {
+                $stock = $item->stock;
+                if (! $stock) {
+                    continue;
+                }
+
+                $value = $stock->imei . $stock->serial_number;
+
+                if ($value === '') {
+                    continue;
+                }
+
+                $imeis[] = $value;
+            }
+        }
+
+        return array_values(array_unique($imeis));
     }
 }
