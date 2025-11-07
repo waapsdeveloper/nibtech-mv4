@@ -40,7 +40,6 @@ class OrdersTable extends Component
 
     public bool $readyToLoad = false;
     public int $perPage = 10;
-    public int $page = 1;
 
     protected ?string $lastTesterInputId = null;
     protected ?string $lastImeiInputId = null;
