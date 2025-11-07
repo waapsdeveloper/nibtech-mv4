@@ -18,8 +18,8 @@ class OrdersTable extends Component
     /** @var array<string, mixed> */
     public array $filters = [];
 
-    /** @var array<int, string>|Collection<int, string> */
-    public Collection|array $testers = [];
+    /** @var array<int, string> */
+    public array $testers = [];
 
     /** @var mixed */
     public $storages = [];
@@ -46,9 +46,9 @@ class OrdersTable extends Component
     protected ?string $lastImeiInputId = null;
 
     public function mount(
-        array $filters = [],
-        array $testers = [],
-        array $storages = [],
+    array $filters = [],
+    Collection|array $testers = [],
+    array $storages = [],
         array $colors = [],
         array $grades = [],
         $admins = [],
@@ -56,8 +56,8 @@ class OrdersTable extends Component
         array $orderStatuses = []
     ): void
     {
-        $this->filters = $filters;
-        $this->testers = $testers;
+    $this->filters = $filters;
+    $this->testers = $testers instanceof Collection ? $testers->all() : $testers;
         $this->storages = $storages;
         $this->colors = $colors;
         $this->grades = $grades;
