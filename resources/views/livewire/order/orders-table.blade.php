@@ -82,44 +82,43 @@
                                             <th></th>
                                         </tr>
                                     </thead>
-                                    <tbody>
+                                    @php
+                                        $rowNumber = $orders->firstItem() - 1;
+                                        $renderedOrderIds = [];
+                                    @endphp
+                                    @foreach ($orders as $order)
+                                        @if (in_array($order->id, $renderedOrderIds, true))
+                                            @continue
+                                        @endif
                                         @php
-                                            $rowNumber = $orders->firstItem() - 1;
-                                            $renderedOrderIds = [];
+                                            $renderedOrderIds[] = $order->id;
+                                            $rowNumber++;
+                                            $rowCounter = $rowCounters[$order->id] ?? [
+                                                'tester_start' => null,
+                                                'tester_count' => 0,
+                                                'imei_start' => null,
+                                                'imei_count' => 0,
+                                            ];
                                         @endphp
-                                        @foreach ($orders as $order)
-                                            @if (in_array($order->id, $renderedOrderIds, true))
-                                                @continue
-                                            @endif
-                                            @php
-                                                $renderedOrderIds[] = $order->id;
-                                                $rowNumber++;
-                                                $rowCounter = $rowCounters[$order->id] ?? [
-                                                    'tester_start' => null,
-                                                    'tester_count' => 0,
-                                                    'imei_start' => null,
-                                                    'imei_count' => 0,
-                                                ];
-                                            @endphp
 
-                                            @include('livewire.order.partials.order-row', [
-                                                'order' => $order,
-                                                'rowNumber' => $rowNumber,
-                                                'rowCounter' => $rowCounter,
-                                                'storages' => $storages,
-                                                'colors' => $colors,
-                                                'grades' => $grades,
-                                                'admins' => $admins,
-                                                'currencies' => $currencies,
-                                                'order_statuses' => $order_statuses,
-                                            ])
-                                        @endforeach
-                                        @php
-                                            if (session()->has('refresh')) {
-                                                session()->forget('refresh');
-                                            }
-                                        @endphp
-                                    </tbody>
+                                        <livewire:order.order-row
+                                            :order-id="$order->id"
+                                            :row-number="$rowNumber"
+                                            :row-counter="$rowCounter"
+                                            :storages="$storages"
+                                            :colors="$colors"
+                                            :grades="$grades"
+                                            :admins="$admins"
+                                            :currencies="$currencies"
+                                            :order-statuses="$order_statuses"
+                                            :key="'order-row-' . $order->id"
+                                        />
+                                    @endforeach
+                                    @php
+                                        if (session()->has('refresh')) {
+                                            session()->forget('refresh');
+                                        }
+                                    @endphp
                                     @php
                                         $paginationColspan = session('user')->hasPermission('view_profit') ? 5 : 4;
                                         $totalsColspan = 3;
