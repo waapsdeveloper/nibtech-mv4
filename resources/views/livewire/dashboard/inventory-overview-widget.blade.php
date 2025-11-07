@@ -2,9 +2,7 @@
     <div class="card-header border-bottom-0 d-flex justify-content-between align-items-center">
         <div>
             <h3 class="card-title mb-2">Available Inventory by Grade</h3>
-            @if ($canViewListingTotal && $readyToLoad)
-                <small class="text-muted">Should be listed: {{ $shouldBeListed }}</small>
-            @endif
+
         </div>
         <div class="d-flex align-items-center gap-2">
             @if ($canViewListingTotal && $readyToLoad)
@@ -28,7 +26,7 @@
 
         <div wire:loading.remove wire:target="loadInventoryOverview,refreshInventoryOverview">
             @if ($readyToLoad)
-                <div class="row g-2">
+                <div class="row g-1">
                     @if ($canViewInventory && $gradedInventory->isNotEmpty())
                         @foreach ($gradedInventory as $inv)
                             <div class="col-lg-3 col-md-4">
