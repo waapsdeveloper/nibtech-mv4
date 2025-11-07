@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Order;
 
 use App\Services\Orders\OrderTableQuery;
 use Illuminate\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -17,8 +18,8 @@ class OrdersTable extends Component
     /** @var array<string, mixed> */
     public array $filters = [];
 
-    /** @var array<int, string> */
-    public array $testers = [];
+    /** @var array<int, string>|Collection<int, string> */
+    public Collection|array $testers = [];
 
     /** @var mixed */
     public $storages = [];
