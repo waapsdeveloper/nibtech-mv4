@@ -2886,9 +2886,9 @@ class Order extends Component
                     session()->put('error', "Product Color not matched");
                     return redirect()->back();
                 }
-                if ($tester[$i] == null && $stock[$i]->latest_testing()) {
-                    $tester[$i] = $stock[$i]->latest_testing()->admin->last_name;
-                }
+                // if ($tester[$i] == null && $stock[$i]->latest_testing()) {
+                //     $tester[$i] = $stock[$i]->latest_testing()->admin->last_name;
+                // }
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
                     if (confirm('System Model: " . $stock_variation->product->model . " - " . $storage . $color . $stock_variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
