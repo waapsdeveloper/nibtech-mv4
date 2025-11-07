@@ -1,7 +1,7 @@
 <div class="card custom-card" wire:init="loadInventoryOverview">
     <div class="card-header border-bottom-0 d-flex justify-content-between align-items-center">
         <div>
-            <h3 class="card-title mb-2">Available Inventory by Grade</h3>
+            <h3 class="card-title">Available Inventory by Grade</h3>
 
         </div>
         <div class="d-flex align-items-center gap-2">
