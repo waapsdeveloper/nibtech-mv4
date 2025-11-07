@@ -586,6 +586,9 @@ class ListingController extends Controller
     }
     public function update_price($id){
         $listing = Listing_model::find($id);
+        if($listing == null){
+            return "Listing not found.";
+        }
         $bm = new BackMarketAPIController();
         if(request('min_price')){
             $listing->min_price = request('min_price');
