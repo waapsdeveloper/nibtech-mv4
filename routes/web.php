@@ -289,6 +289,7 @@ Route::get('order/delete_replacement_item/{id}', [Order::class,'delete_replaceme
 Route::get('order/recheck/{id}/{refresh?}/{invoice?}/{tester?}/{data?}/{care?}', [Order::class,'recheck'])->name('view_order');
 Route::post('export_order', [Order::class,'export'])->name('dispatch_order');
 Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
+Route::get('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispatch_order');
 Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispatch_order');
