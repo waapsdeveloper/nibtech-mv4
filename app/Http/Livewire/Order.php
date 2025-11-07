@@ -41,6 +41,7 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 
@@ -2888,6 +2889,9 @@ class Order extends Component
                 }
                 if ($tester[$i] == null && isset($stock[$i]->latest_testing)) {
                     $tester[$i] = $stock[$i]->latest_testing->admin->last_name;
+                }
+                if (isset($stock[$i]->latest_testing) && $stock[$i]->latest_testing->admin->last_name != $tester[$i]) {
+                    Log::info('Tester Mismatch for Stock ID ' . $stock[$i]->id . ': Expected ' . $tester[$i] . ', Found ' . $stock[$i]->latest_testing->admin->last_name);
                 }
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
