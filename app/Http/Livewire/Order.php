@@ -2891,7 +2891,7 @@ class Order extends Component
                     $tester[$i] = $stock[$i]->latest_testing->admin->last_name;
                 }
                 if (isset($stock[$i]->latest_testing) && strtoupper($stock[$i]->latest_testing->admin->last_name) != strtoupper($tester[$i])) {
-                    Log::info('Tester Mismatch for Stock ID ' . $stock[$i]->id . ': Expected ' . strtoupper($tester[$i]) . ', Found ' . strtoupper($stock[$i]->latest_testing->admin->last_name));
+                    Log::info('Tester Mismatch for Stock IMEI ' . $stock[$i]->imei.$stock[$i]->serial_number . ': Expected ' . strtoupper($tester[$i]) . ', Found ' . strtoupper($stock[$i]->latest_testing->admin->last_name));
                 }
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
