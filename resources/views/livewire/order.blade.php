@@ -191,6 +191,10 @@
                         <input class="form-check-input" type="checkbox" id="invoice" name="invoice" value="1" @if (request('invoice') == "1") {{'checked'}} @endif>
                         <label class="form-check-label" for="invoice">Invoice Mode</label>
                     </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="packing" name="packing" value="1" @if (request('packing') == "1") {{'checked'}} @endif>
+                        <label class="form-check-label" for="packing">Packing Mode</label>
+                    </div>
                 </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 @if (Request::get('care') == 1)
