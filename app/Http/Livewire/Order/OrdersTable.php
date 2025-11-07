@@ -114,7 +114,7 @@ class OrdersTable extends Component
     {
         $query = OrderTableQuery::build();
 
-        $paginator = $query->paginate($this->perPage, ['*'], $this->pageName());
+        $paginator = $query->paginate($this->perPage);
 
         if (method_exists($paginator, 'onEachSide')) {
             $paginator->onEachSide(5);
@@ -127,7 +127,7 @@ class OrdersTable extends Component
     {
         return new LengthAwarePaginator([], 0, $this->perPage, $this->page, [
             'path' => request()->url(),
-            'pageName' => $this->pageName(),
+            'pageName' => 'page',
         ]);
     }
 
