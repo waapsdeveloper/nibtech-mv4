@@ -2886,7 +2886,7 @@ class Order extends Component
                     session()->put('error', "Product Color not matched");
                     return redirect()->back();
                 }
-                if ($tester[$i] == null && $stock[$i]->latest_testing) {
+                if ($tester[$i] == null && isset($stock[$i]->latest_testing)) {
                     $tester[$i] = $stock[$i]->latest_testing->admin->last_name;
                 }
                 if($stock[$i]->variation_id != $variant->id){
