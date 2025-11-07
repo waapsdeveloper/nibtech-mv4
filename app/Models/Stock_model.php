@@ -143,6 +143,12 @@ class Stock_model extends Model
         // ->where('new_variation_id', $this->variation_id)
         ->orderByDesc('id');
     }
+    public function latest_testing()
+    {
+        return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')
+        ->where('process_id',  1)
+        ->orderByDesc('id');
+    }
     public function stock_operation($process_id)
     {
         // Define a custom method to retrieve only one order item
