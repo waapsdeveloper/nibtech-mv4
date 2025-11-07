@@ -19,7 +19,7 @@ class OrdersTable extends Component
     public array $filters = [];
 
     /** @var array<int, string> */
-    public array $testers = [];
+    public $testers = [];
 
     /** @var mixed */
     public $storages = [];
