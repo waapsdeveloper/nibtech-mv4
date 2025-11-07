@@ -48,22 +48,22 @@ class OrdersTable extends Component
     public function mount(
     array $filters = [],
     Collection|array $testers = [],
-    array $storages = [],
-        array $colors = [],
-        array $grades = [],
+    Collection|array $storages = [],
+    Collection|array $colors = [],
+    Collection|array $grades = [],
         $admins = [],
         $currencies = [],
-        array $orderStatuses = []
+    Collection|array $orderStatuses = []
     ): void
     {
     $this->filters = $filters;
     $this->testers = $testers instanceof Collection ? $testers->all() : $testers;
-        $this->storages = $storages;
-        $this->colors = $colors;
-        $this->grades = $grades;
+    $this->storages = $storages instanceof Collection ? $storages->all() : $storages;
+    $this->colors = $colors instanceof Collection ? $colors->all() : $colors;
+    $this->grades = $grades instanceof Collection ? $grades->all() : $grades;
         $this->admins = $admins;
         $this->currencies = $currencies;
-        $this->orderStatuses = $orderStatuses;
+    $this->orderStatuses = $orderStatuses instanceof Collection ? $orderStatuses->all() : $orderStatuses;
         $this->perPage = OrderTableQuery::perPage();
         $this->page = isset($filters['page']) && is_numeric($filters['page'])
             ? max(1, (int) $filters['page'])
