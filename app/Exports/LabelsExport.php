@@ -40,7 +40,23 @@ class LabelsExport
         // Output PDF to the browser
         $pdf = $this->generateMergedPdf($data);
 
-        $pdf->Output('orders.pdf', 'I');
+        if (request('missing') === 'scan') {
+            return response(
+                '<!DOCTYPE html><html><head><meta charset="utf-8"><title>Label Refresh</title></head><body><script>window.close();</script></body></html>',
+                200,
+                ['Content-Type' => 'text/html; charset=UTF-8']
+            );
+        }
+
+        $pdfBinary = $pdf->Output('orders.pdf', 'S');
+
+        if ((string) request('packing') === '1') {
+            return $this->buildPackingPrintResponse($pdfBinary);
+        }
+
+        return response($pdfBinary, 200)
+            ->header('Content-Type', 'application/pdf')
+            ->header('Content-Disposition', 'inline; filename="orders.pdf"');
     }
 
     private function generateMergedPdf($data)
@@ -91,5 +107,14 @@ class LabelsExport
         // }
 
         return $pdf;
+    }
+
+    protected function buildPackingPrintResponse(string $pdfBinary)
+    {
+        $pdfBase64 = base64_encode($pdfBinary);
+
+        return response()->view('exports.packing-label-print', [
+            'pdfBase64' => $pdfBase64,
+        ]);
     }
 }

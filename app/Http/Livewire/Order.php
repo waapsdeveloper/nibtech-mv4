@@ -3834,8 +3834,7 @@ class Order extends Component
         // return Excel::download(new OrdersExport, 'your_export_file.xlsx');
         // dd(request('ids'));
         $pdfExport = new LabelsExport();
-        $pdfExport->generatePdf();
-        echo "<script>window.close();</script>";
+        return $pdfExport->generatePdf();
     }
     public function export_note()
     {
