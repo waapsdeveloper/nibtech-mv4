@@ -26,7 +26,7 @@
 
         <div wire:loading.remove wire:target="loadInventoryOverview,refreshInventoryOverview">
             @if ($readyToLoad)
-                <div class="row g-1">
+                <div class="row">
                     @if ($canViewInventory && $gradedInventory->isNotEmpty())
                         @foreach ($gradedInventory as $inv)
                             <div class="col-lg-3 col-md-4">
