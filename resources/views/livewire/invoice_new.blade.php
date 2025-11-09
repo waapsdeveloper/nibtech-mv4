@@ -18,7 +18,7 @@
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 5mm auto;
+        margin: 10mm auto;
         padding: 10mm;
         background-color: #ffffff;
     }
@@ -109,8 +109,6 @@ canvas {
 
     <div id="pdf-container" style="width: 100%;"></div>
 
-    <br>
-    <br>
     <br>
     <br>
     <br>
