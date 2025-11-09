@@ -307,8 +307,8 @@ canvas {
 
                 await page.render({ canvasContext: context, viewport }).promise;
                 canvas.style.display = 'block';
-                canvas.style.margin = '0 auto 12px';
-                canvas.style.maxWidth = '100%';
+                // canvas.style.margin = '0 auto 12px';
+                // canvas.style.maxWidth = '100%';
 
                 container.appendChild(canvas);
             }
