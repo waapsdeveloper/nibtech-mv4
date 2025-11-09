@@ -19,7 +19,7 @@
         width: 210mm;
         max-width: 210mm;
         margin: 10mm auto;
-        padding: 10mm;
+        padding: 10mm 0;
         background-color: #ffffff;
     }
     .invoice-headers {
