@@ -122,6 +122,10 @@ canvas {
 
     <div id="pdf-container" style="width: 100%;"></div>
 
+    <br>
+    <br>
+    <br>
+    <br>
     <div class="invoice-container">
 
         <div class="invoice-headers">
@@ -242,6 +246,7 @@ canvas {
                     <td align="right">{{ $order->currency_id->sign }}0.00</td>
                 </tr>
             </tbody>
+<br>
 <tfoot>
                 <tr>
                     <td colspan="3" style="text-align: right;"><strong>Sub Total:</strong></td>
