@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="utf-8">
-    <title>Printing Label</title>
+    <title>Printing Delivery Note</title>
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <style>
@@ -40,20 +40,20 @@
 <body>
     <div class="status-wrapper">
         <div class="spinner" aria-hidden="true"></div>
-        <p id="status">Preparing shipping label...</p>
+        <p id="status">Preparing delivery note...</p>
     </div>
 
     <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
-    <script src="{{ asset('assets/js/functions.js') }}"></script>
     <script>
         (function () {
-            sessionStorage.setItem('packing_label_window_opened', Date.now().toString());
+            sessionStorage.setItem('packing_delivery_window_opened', Date.now().toString());
+
             const statusNode = document.getElementById('status');
-            const pdfBase64 = @json($pdfBase64);
-            const autoCloseDelay = 1200;
-            let serverLabelPrinter = @json(session('label_printer'));
+            const pdfUrl = @json($pdfProxyUrl);
+            let serverA4Printer = @json($sessionA4Printer);
             const printerEndpoint = @json(route('order.store_printer_preferences'));
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const autoCloseDelay = 1200;
 
             function updateStatus(text) {
                 if (statusNode) {
@@ -65,34 +65,9 @@
                 return new Promise(resolve => setTimeout(resolve, ms));
             }
 
-            function base64ToBlob(base64, mimeType) {
-                const byteCharacters = atob(base64);
-                const byteArrays = [];
-                const sliceSize = 1024;
-
-                for (let offset = 0; offset < byteCharacters.length; offset += sliceSize) {
-                    const slice = byteCharacters.slice(offset, offset + sliceSize);
-                    const byteNumbers = new Array(slice.length);
-                    for (let i = 0; i < slice.length; i++) {
-                        byteNumbers[i] = slice.charCodeAt(i);
-                    }
-                    byteArrays.push(new Uint8Array(byteNumbers));
-                }
-
-                return new Blob(byteArrays, { type: mimeType });
-            }
-
             function fallbackToPdf() {
-                updateStatus('Opening label for manual printing...');
-                try {
-                    const blob = base64ToBlob(pdfBase64, 'application/pdf');
-                    const url = URL.createObjectURL(blob);
-                    window.location.replace(url);
-                    setTimeout(() => URL.revokeObjectURL(url), 12000);
-                } catch (error) {
-                    console.error('Failed to open fallback PDF:', error);
-                    document.body.innerHTML = '<p style="padding:16px;text-align:center;">Unable to auto print. Please download the label manually.</p>';
-                }
+                updateStatus('Opening delivery note for manual printing...');
+                window.location.replace(pdfUrl);
             }
 
             async function waitForQzConnection(timeout = 7000) {
@@ -114,16 +89,32 @@
                     await sleep(250);
                 }
 
+                try {
+                    window.location.assign('qz:launch');
+                } catch (error) {
+                    console.debug('Unable to invoke qz:launch protocol.', error);
+                }
+
+                const extendedStart = Date.now();
+                while (Date.now() - extendedStart < timeout * 2) {
+                    if (qz.websocket.isActive()) {
+                        return;
+                    }
+                    await sleep(250);
+                }
+
                 throw new Error('Timed out waiting for QZ Tray connection');
             }
 
-            function resolveStoredPrinter(keys) {
-                if (serverLabelPrinter) {
-                    return serverLabelPrinter;
+            function resolveStoredPrinter() {
+                if (serverA4Printer) {
+                    return serverA4Printer;
                 }
+
+                const keys = ['A4_Printer', 'Invoice_Printer', 'Default_Printer'];
                 const stores = [];
-                try { stores.push(window.localStorage); } catch (error) { /* ignore */ }
                 try { stores.push(window.sessionStorage); } catch (error) { /* ignore */ }
+                try { stores.push(window.localStorage); } catch (error) { /* ignore */ }
 
                 for (const store of stores) {
                     if (!store) {
@@ -136,73 +127,12 @@
                                 return value;
                             }
                         } catch (error) {
-                            console.debug('Storage access failed for key', key, error);
+                            console.debug('Unable to read printer preference', key, error);
                         }
                     }
                 }
 
                 return null;
-            }
-
-            function storeLabelPrinter(printerName) {
-                const normalized = (function(name) {
-                serverLabelPrinter = normalized;
-                    if (name && typeof name === 'object') {
-                        if (name.name) {
-                            return name.name;
-                        }
-                        if (name.file) {
-                            return name.file;
-                        }
-                        if (name.host && name.port) {
-                            return name.host + ':' + name.port;
-                        }
-                        try {
-                            return JSON.stringify(name);
-                        } catch (error) {
-                            return String(name);
-                        }
-                    }
-                    return String(name);
-                })(printerName);
-
-                const keys = ['Label_Printer', 'Sticker_Printer'];
-                const storages = [];
-                try { storages.push(window.localStorage); } catch (error) { /* ignore */ }
-                try { storages.push(window.sessionStorage); } catch (error) { /* ignore */ }
-
-                storages.forEach(storage => {
-                    if (!storage) {
-                        return;
-                    }
-                    keys.forEach(key => {
-                        try {
-                            storage.setItem(key, normalized);
-                        } catch (error) {
-                            console.debug('Unable to persist printer preference', key, error);
-                        }
-                    });
-                });
-
-                if (!printerEndpoint) {
-                    return;
-                }
-
-                try {
-                    fetch(printerEndpoint, {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                            'X-CSRF-TOKEN': csrfToken,
-                            'Accept': 'application/json',
-                        },
-                        body: JSON.stringify({ label_printer: normalized })
-                    }).catch(error => {
-                        console.debug('Unable to persist label printer preference.', error);
-                    });
-                } catch (error) {
-                    console.debug('Failed to persist label printer via fetch.', error);
-                }
             }
 
             function promptForPrinterSelection(printers) {
@@ -211,8 +141,8 @@
                     overlay.style.position = 'fixed';
                     overlay.style.top = '0';
                     overlay.style.left = '0';
-                    overlay.style.width = '100%';
-                    overlay.style.height = '100%';
+                    overlay.style.width = '100vw';
+                    overlay.style.height = '100vh';
                     overlay.style.background = 'rgba(15, 23, 42, 0.45)';
                     overlay.style.display = 'flex';
                     overlay.style.alignItems = 'center';
@@ -230,13 +160,13 @@
                     dialog.style.fontFamily = 'Arial, sans-serif';
 
                     const title = document.createElement('h2');
-                    title.textContent = 'Select Label Printer';
+                    title.textContent = 'Select A4 Printer';
                     title.style.margin = '0 0 16px';
                     title.style.fontSize = '20px';
                     title.style.color = '#0f172a';
 
                     const description = document.createElement('p');
-                    description.textContent = 'Choose the printer to use for shipping labels. The selection will be remembered for future packing sessions.';
+                    description.textContent = 'Choose the printer to use for delivery notes.';
                     description.style.margin = '0 0 16px';
                     description.style.fontSize = '14px';
                     description.style.color = '#475569';
@@ -249,10 +179,10 @@
                     select.style.borderRadius = '8px';
                     select.style.marginBottom = '20px';
 
-                    printers.forEach(printer => {
+                    printers.forEach(name => {
                         const option = document.createElement('option');
-                        option.value = printer;
-                        option.textContent = printer;
+                        option.value = name;
+                        option.textContent = name;
                         select.appendChild(option);
                     });
 
@@ -305,46 +235,65 @@
                 });
             }
 
-            async function resolvePrinter() {
-                const preferredKeys = [
-                    'Sticker_Printer',
-                    'Label_Printer',
-                    'DHL_Printer',
-                    'Shipping_Printer',
-                    'Default_Printer'
-                ];
-
-                const stored = resolveStoredPrinter(preferredKeys);
-                if (stored) {
-                    return stored;
+            function storeA4Printer(printerName) {
+                if (!printerName) {
+                    return;
                 }
 
-                try {
-                    const defaultPrinter = await qz.printers.getDefault();
-                    if (defaultPrinter) {
-                        storeLabelPrinter(defaultPrinter);
-                        return defaultPrinter;
+                serverA4Printer = printerName;
+
+                const keys = ['A4_Printer', 'Invoice_Printer'];
+                const stores = [];
+                try { stores.push(window.sessionStorage); } catch (error) { /* ignore */ }
+                try { stores.push(window.localStorage); } catch (error) { /* ignore */ }
+
+                stores.forEach(store => {
+                    if (!store) {
+                        return;
                     }
-                } catch (error) {
-                    console.debug('No default printer detected via QZ Tray.', error);
-                }
-
-                try {
-                    const printers = await qz.printers.find();
-                    if (printers && printers.length) {
-                        updateStatus('Waiting for printer selection...');
-                        const choice = await promptForPrinterSelection(printers);
-                        if (choice) {
-                            storeLabelPrinter(choice);
-                            return choice;
+                    keys.forEach(key => {
+                        try {
+                            store.setItem(key, printerName);
+                        } catch (error) {
+                            console.debug('Unable to save printer preference', key, error);
                         }
-                        throw new Error('Printer selection cancelled');
-                    }
-                } catch (error) {
-                    console.debug('Printer enumeration failed.', error);
+                    });
+                });
+
+                if (!printerEndpoint) {
+                    return;
                 }
 
-                return null;
+                fetch(printerEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify({ a4_printer: printerName })
+                }).catch(error => {
+                    console.debug('Unable to persist A4 printer preference on server.', error);
+                });
+            }
+
+            async function fetchPdfAsBase64() {
+                const response = await fetch(pdfUrl, { cache: 'no-store' });
+                if (!response.ok) {
+                    throw new Error(`Failed to fetch PDF (${response.status})`);
+                }
+
+                const blob = await response.blob();
+                return new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => {
+                        const result = typeof reader.result === 'string' ? reader.result : '';
+                        const commaIndex = result.indexOf(',');
+                        resolve(commaIndex === -1 ? result : result.substring(commaIndex + 1));
+                    };
+                    reader.onerror = () => reject(reader.error || new Error('Failed to convert PDF to base64'));
+                    reader.readAsDataURL(blob);
+                });
             }
 
             async function sendToPrinter() {
@@ -352,30 +301,33 @@
                     throw new Error('QZ Tray library is not loaded');
                 }
 
+                if (!pdfUrl) {
+                    throw new Error('Delivery note URL not provided');
+                }
+
                 updateStatus('Connecting to QZ Tray...');
-                try {
-                    await waitForQzConnection();
-                } catch (error) {
-                    console.debug('Attempting to launch QZ Tray client.');
-                    try {
-                        window.location.assign('qz:launch');
-                    } catch (launchError) {
-                        console.debug('Unable to invoke qz:launch protocol.', launchError);
-                    }
-                    await waitForQzConnection(12000);
-                }
+                await waitForQzConnection();
 
-                const printer = await resolvePrinter();
+                let printer = resolveStoredPrinter();
                 if (!printer) {
-                    throw new Error('No printer configured for labels');
+                    const availablePrinters = await qz.printers.find();
+                    if (!availablePrinters.length) {
+                        throw new Error('No printers detected by QZ Tray');
+                    }
+
+                    printer = await promptForPrinterSelection(availablePrinters);
+                    if (!printer) {
+                        throw new Error('Printer selection cancelled');
+                    }
                 }
 
-                updateStatus('Sending label to printer...');
+                const pdfBase64 = await fetchPdfAsBase64();
+
+                updateStatus('Sending delivery note to printer...');
                 const config = qz.configs.create(printer, {
-                    size: { width: 102, height: 210 },
-                    units: 'mm',
-                    copies: 1,
-                    margins: { top: 0, right: 0, bottom: 0, left: 0 }
+                    orientation: 'portrait',
+                    margins: { top: 5, right: 5, bottom: 5, left: 5 },
+                    units: 'mm'
                 });
 
                 await qz.print(config, [{
@@ -384,16 +336,16 @@
                     data: pdfBase64
                 }]);
 
-                storeLabelPrinter(printer);
+                storeA4Printer(printer);
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await sendToPrinter();
-                    updateStatus('Label sent to printer.');
+                    updateStatus('Delivery note sent to printer.');
                     setTimeout(() => window.close(), autoCloseDelay);
                 } catch (error) {
-                    console.error('Automatic label printing failed:', error);
+                    console.error('Automatic delivery note printing failed:', error);
                     fallbackToPdf();
                 }
             });

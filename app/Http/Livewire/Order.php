@@ -43,6 +43,7 @@ use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 
 class Order extends Component
@@ -2617,7 +2618,7 @@ class Order extends Component
         // Pass the PDF content to the view
         return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
-    public function export_invoice($orderId)
+    public function export_invoice($orderId, $packing = null)
     {
         $data['title_page'] = "Invoice";
         session()->put('page_title', $data['title_page']);
@@ -2634,11 +2635,18 @@ class Order extends Component
             $order_items = $order_items->get();
         }
 
+        $packingMode = (string) request('packing') === '1' || (string) $packing === '1';
+
         // Generate PDF for the invoice content
         $data = [
             'order' => $order,
             'customer' => $order->customer,
             'orderItems' => $order_items,
+            'packingMode' => $packingMode,
+            'deliveryNoteUrl' => $order->delivery_note_url,
+            'labelUrl' => $order->label_url,
+            'sessionA4Printer' => session('a4_printer'),
+            'sessionLabelPrinter' => session('label_printer'),
         ];
 
         // Create a new TCPDF instance
@@ -2661,6 +2669,50 @@ class Order extends Component
         }
 
         return view('livewire.invoice_new')->with($data);
+    }
+
+    public function storePrinterPreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'a4_printer' => ['nullable', 'string', 'max:255'],
+            'label_printer' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (array_key_exists('a4_printer', $validated)) {
+            $value = $validated['a4_printer'];
+            if ($value === null || $value === '') {
+                session()->forget('a4_printer');
+            } else {
+                session()->put('a4_printer', $value);
+            }
+        }
+
+        if (array_key_exists('label_printer', $validated)) {
+            $value = $validated['label_printer'];
+            if ($value === null || $value === '') {
+                session()->forget('label_printer');
+            } else {
+                session()->put('label_printer', $value);
+            }
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function packingDeliveryPrint($orderId)
+    {
+        $order = Order_model::find($orderId);
+
+        if (!$order || !$order->delivery_note_url) {
+            abort(404, 'Delivery note not available for printing');
+        }
+
+        $pdfProxyUrl = url('order/proxy_server') . '?url=' . urlencode($order->delivery_note_url);
+
+        return view('exports.packing-delivery-print', [
+            'pdfProxyUrl' => $pdfProxyUrl,
+            'sessionA4Printer' => session('a4_printer'),
+        ]);
     }
     public function proxy_server(){
 
@@ -3025,7 +3077,11 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+
         $invoice_url = url('export_invoice').'/'.$id;
+        if(request('packing') == 1){
+            $invoice_url .= '/1';
+        }
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
             $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
@@ -3056,13 +3112,6 @@ class Order extends Component
         </script>';
 
         // Open Label in new tab if request(packing) = 1
-        if(request('packing') == 1){
-            $label_url = url('export_label').'?ids=['.$id.']&packing=1';
-            echo '<script>
-            var newTab = window.open("'.$label_url.'", "_blank");
-            </script>';
-        }
-
         if(request('sort') == 4 && !isset($detail)){
             echo "<script> window.close(); </script>";
         }

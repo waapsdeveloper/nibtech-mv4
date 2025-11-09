@@ -292,11 +292,13 @@ Route::get('export_note', [Order::class,'export_note'])->name('dispatch_order');
 Route::get('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispatch_order');
-Route::get('export_invoice/{id}', [Order::class,'export_invoice'])->name('dispatch_order');
+Route::get('export_invoice/{id}/{packing?}', [Order::class,'export_invoice'])->name('dispatch_order');
 Route::get('order/export_invoice_new/{id}', [Order::class,'export_invoice_new'])->name('dispatch_order');
 Route::get('order/proxy_server', [Order::class,'proxy_server'])->name('dispatch_order');
 Route::get('order/export_refund_invoice/{id}', [Order::class,'export_refund_invoice'])->name('dispatch_order');
 Route::get('order/label/{id}/{data?}/{update?}', [Order::class,'getLabel'])->name('dispatch_order');
+Route::post('order/printer-preferences', [Order::class,'storePrinterPreferences'])->name('order.store_printer_preferences');
+Route::get('order/packing/delivery-print/{id}', [Order::class,'packingDeliveryPrint'])->name('order.packing_delivery_print');
 
 Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admin');
 Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->name('dispatch_admin');
