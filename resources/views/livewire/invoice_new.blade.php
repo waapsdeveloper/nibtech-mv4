@@ -18,7 +18,7 @@
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 0 auto;
+        margin: 10mm auto;
         padding: 0 0;
         background-color: #ffffff;
     }
