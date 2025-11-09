@@ -569,7 +569,7 @@ canvas {
     </script>
 @endsection
                         </tr>
-                    @endif
+                    {{-- @endif --}}
                     <tr>
                         <td class="px-2"><strong>Order Date:</strong></td>
                         <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</td>
