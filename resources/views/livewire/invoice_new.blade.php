@@ -18,9 +18,10 @@
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 10mm auto;
+        margin: 20mm auto;
         /* padding: 10mm 0; */
         background-color: #ffffff;
+        scale: 1.2;
     }
     .invoice-headers {
         border-bottom: 2px solid #000;
