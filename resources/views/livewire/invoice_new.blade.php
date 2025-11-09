@@ -18,8 +18,8 @@
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 10mm auto;
-        padding: 0 0;
+        /* margin: 10mm auto;
+        padding: 10mm 0; */
         background-color: #ffffff;
     }
     .invoice-headers {
@@ -298,7 +298,7 @@ canvas {
 
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.5 });
+                const viewport = page.getViewport({ scale: 1.6 });
 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
