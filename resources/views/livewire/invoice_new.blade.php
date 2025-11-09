@@ -21,7 +21,7 @@
         margin: 20mm auto;
         /* padding: 10mm 0; */
         background-color: #ffffff;
-        scale: 1.2;
+        scale: 1.1;
     }
     .invoice-headers {
         border-bottom: 2px solid #000;
@@ -110,6 +110,8 @@ canvas {
 
     <div id="pdf-container" style="width: 100%;"></div>
 
+    <br>
+    <br>
     <br>
     <br>
     <br>
