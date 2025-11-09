@@ -270,320 +270,54 @@ canvas {
 
     @section('scripts')
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const pdfUrl = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
-        const invoiceNode = document.querySelector('.invoice-container');
-        let pdfImageHtml = null;
-        let pdfBase64Cache = null;
+        const pdfUrl = @json($order->delivery_note_url ? url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) : null);
 
-        document.addEventListener('DOMContentLoaded', () => {
-            renderPdfPages()
-                .then(html => {
-                    pdfImageHtml = html;
-                    return tryQzPrint();
-                })
-                .catch(error => {
-                    console.warn('QZ print failed, falling back to browser print.', error);
-                    fallbackWindowPrint();
-                });
+        document.addEventListener('DOMContentLoaded', async () => {
+            if (pdfUrl) {
+                try {
+                    await renderPdfPages();
+                } catch (error) {
+                    console.warn('Unable to render delivery note PDF.', error);
+                }
+            }
+
+            requestAnimationFrame(() => window.print());
         });
 
         async function renderPdfPages() {
-            if (pdfImageHtml !== null) {
-                return pdfImageHtml;
+            const container = document.getElementById('pdf-container');
+            if (!container) {
+                return;
             }
 
-            const container = document.getElementById('pdf-container');
             container.innerHTML = '';
 
             const loadingTask = pdfjsLib.getDocument(pdfUrl);
             const pdf = await loadingTask.promise;
 
-            let html = '';
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.69 });
+                const viewport = page.getViewport({ scale: 1.4 });
 
                 const canvas = document.createElement('canvas');
+                const context = canvas.getContext('2d');
                 canvas.width = viewport.width;
                 canvas.height = viewport.height;
-                const context = canvas.getContext('2d');
 
                 await page.render({ canvasContext: context, viewport }).promise;
+                canvas.style.display = 'block';
+                canvas.style.margin = '0 auto 12px';
+                canvas.style.maxWidth = '100%';
+
                 container.appendChild(canvas);
-
-                const dataUrl = canvas.toDataURL('image/png');
-                html += `<img src="${dataUrl}" style="width:100%;display:block;margin:0 auto;" />`;
-            }
-
-            pdfImageHtml = html;
-            return html;
-        }
-
-        async function tryQzPrint() {
-            if (typeof qz === 'undefined' || !qz.websocket) {
-                throw new Error('QZ Tray libraries not available');
-            }
-
-            await waitForQzConnection();
-
-            let printer = resolveInvoicePrinter();
-            if (!printer) {
-                const availablePrinters = await qz.printers.find();
-                if (!availablePrinters.length) {
-                    throw new Error('No printers detected by QZ Tray');
-                }
-
-                printer = await promptForPrinterSelection(availablePrinters);
-                if (!printer) {
-                    throw new Error('Printer selection cancelled');
-                }
-
-                storeInvoicePrinter(printer);
-            }
-
-            const pdfBase64 = await fetchPdfAsBase64();
-
-            // Print PDF first
-            const pdfConfig = qz.configs.create(printer, {
-                orientation: 'portrait'
-            });
-            await qz.print(pdfConfig, [{
-                type: 'pdf',
-                format: 'base64',
-                data: pdfBase64
-            }]);
-
-            // Convert invoice to image and print
-            const invoiceImageBase64 = await convertInvoiceToImage();
-            const imageConfig = qz.configs.create(printer, {
-                orientation: 'portrait',
-                margins: { top: 5, right: 5, bottom: 5, left: 5 },
-                units: 'mm'
-            });
-            await qz.print(imageConfig, [{
-                type: 'pixel',
-                format: 'image',
-                flavor: 'base64',
-                data: invoiceImageBase64
-            }]);
-        }
-
-        async function fetchPdfAsBase64() {
-            if (pdfBase64Cache) {
-                return pdfBase64Cache;
-            }
-
-            try {
-                const response = await fetch(pdfUrl, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch PDF: ${response.status}`);
-                }
-
-                const blob = await response.blob();
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const result = typeof reader.result === 'string' ? reader.result : '';
-                        const commaIndex = result.indexOf(',');
-                        if (commaIndex === -1) {
-                            reject(new Error('Unexpected PDF data URL format'));
-                            return;
-                        }
-                        resolve(result.substring(commaIndex + 1));
-                    };
-                    reader.onerror = () => reject(reader.error || new Error('Failed to read PDF blob'));
-                    reader.readAsDataURL(blob);
-                });
-
-                pdfBase64Cache = base64;
-                return base64;
-            } catch (error) {
-                console.warn('Unable to convert PDF to base64 for QZ Tray.', error);
-                throw error;
             }
         }
 
-        async function convertInvoiceToImage() {
-            try {
-                const canvas = await html2canvas(invoiceNode, {
-                    scale: 2,
-                    useCORS: true,
-                    allowTaint: true,
-                    backgroundColor: '#ffffff',
-                    logging: false,
-                    imageTimeout: 0
-                });
-
-                const dataUrl = canvas.toDataURL('image/png', 0.95);
-                const base64 = dataUrl.substring(dataUrl.indexOf(',') + 1);
-                return base64;
-            } catch (error) {
-                console.error('html2canvas failed:', error);
-                throw new Error('Failed to convert invoice to image');
-            }
-        }
-
-        function fallbackWindowPrint() {
-            renderPdfPages()
-                .then(() => {
-                    window.print();
-                })
-                .catch(() => window.print());
-        }
-
-        function resolveInvoicePrinter() {
-            const preferredKeys = ['Invoice_Printer', 'A4_Printer', 'Default_Printer'];
-            for (const key of preferredKeys) {
-                const value = window.localStorage ? localStorage.getItem(key) : null;
-                if (value) {
-                    return value;
-                }
-            }
-
-            return null;
-        }
-
-        function storeInvoicePrinter(printerName) {
-            if (window.localStorage) {
-                localStorage.setItem('Invoice_Printer', printerName);
-                localStorage.setItem('A4_Printer', printerName);
-            }
-            if (window.sessionStorage) {
-                sessionStorage.setItem('Invoice_Printer', printerName);
-                sessionStorage.setItem('A4_Printer', printerName);
-            }
-        }
-
-        function promptForPrinterSelection(printers) {
-            return new Promise(resolve => {
-                const overlay = document.createElement('div');
-                overlay.style.position = 'fixed';
-                overlay.style.top = '0';
-                overlay.style.left = '0';
-                overlay.style.width = '100vw';
-                overlay.style.height = '100vh';
-                overlay.style.background = 'rgba(0,0,0,0.45)';
-                overlay.style.zIndex = '9999';
-                overlay.style.display = 'flex';
-                overlay.style.alignItems = 'center';
-                overlay.style.justifyContent = 'center';
-
-                const dialog = document.createElement('div');
-                dialog.style.background = '#fff';
-                dialog.style.padding = '24px';
-                dialog.style.borderRadius = '8px';
-                dialog.style.boxShadow = '0 10px 30px rgba(0,0,0,0.2)';
-                dialog.style.width = 'min(90vw, 420px)';
-                dialog.style.fontFamily = 'Arial, sans-serif';
-
-                const title = document.createElement('h2');
-                title.textContent = 'Select A4 Printer';
-                title.style.marginTop = '0';
-                title.style.fontSize = '20px';
-                title.style.marginBottom = '12px';
-
-                const description = document.createElement('p');
-                description.textContent = 'Choose the printer you want to use for invoices.';
-                description.style.marginTop = '0';
-                description.style.fontSize = '14px';
-                description.style.marginBottom = '16px';
-
-                const select = document.createElement('select');
-                select.style.width = '100%';
-                select.style.padding = '8px';
-                select.style.fontSize = '14px';
-                select.style.border = '1px solid #ccc';
-                select.style.borderRadius = '4px';
-                select.style.marginBottom = '20px';
-
-                printers.forEach(name => {
-                    const option = document.createElement('option');
-                    option.value = name;
-                    option.textContent = name;
-                    select.appendChild(option);
-                });
-
-                const actions = document.createElement('div');
-                actions.style.display = 'flex';
-                actions.style.justifyContent = 'flex-end';
-                actions.style.gap = '8px';
-
-                const cancelBtn = document.createElement('button');
-                cancelBtn.type = 'button';
-                cancelBtn.textContent = 'Cancel';
-                cancelBtn.style.padding = '8px 14px';
-                cancelBtn.style.fontSize = '14px';
-                cancelBtn.style.border = '1px solid #ccc';
-                cancelBtn.style.borderRadius = '4px';
-                cancelBtn.style.background = '#f1f1f1';
-                cancelBtn.addEventListener('click', () => {
-                    document.body.removeChild(overlay);
-                    resolve(null);
-                });
-
-                const confirmBtn = document.createElement('button');
-                confirmBtn.type = 'button';
-                confirmBtn.textContent = 'Use Printer';
-                confirmBtn.style.padding = '8px 14px';
-                confirmBtn.style.fontSize = '14px';
-                confirmBtn.style.border = 'none';
-                confirmBtn.style.borderRadius = '4px';
-                confirmBtn.style.background = '#2563eb';
-                confirmBtn.style.color = '#fff';
-                confirmBtn.style.cursor = 'pointer';
-                confirmBtn.addEventListener('click', () => {
-                    const value = select.value || null;
-                    document.body.removeChild(overlay);
-                    resolve(value);
-                });
-
-                actions.appendChild(cancelBtn);
-                actions.appendChild(confirmBtn);
-
-                dialog.appendChild(title);
-                dialog.appendChild(description);
-                dialog.appendChild(select);
-                dialog.appendChild(actions);
-
-                overlay.appendChild(dialog);
-                document.body.appendChild(overlay);
-            });
-        }
-
-        function waitForQzConnection(timeout = 7000) {
-            if (qz.websocket.isActive()) {
-                return Promise.resolve();
-            }
-
-            try {
-                qz.websocket.connect();
-            } catch (error) {
-                console.debug('QZ connection attempt rejected immediately.', error);
-            }
-
-            return new Promise((resolve, reject) => {
-                const start = Date.now();
-                const timer = setInterval(() => {
-                    if (qz.websocket.isActive()) {
-                        clearInterval(timer);
-                        resolve();
-                    } else if (Date.now() - start > timeout) {
-                        clearInterval(timer);
-                        reject(new Error('Timed out waiting for QZ Tray connection'));
-                    }
-                }, 250);
-            });
-        }
         window.onafterprint = () => {
-            // if (!qz?.websocket || !qz.websocket.isActive()) {
-                // Delay closing to allow any async cleanup (e.g. QZ Tray) to finish.
-                const closeTimeout = 500; // ms
-                setTimeout(() => {
-                    window.close();
-                }, closeTimeout);
-            // }
+            setTimeout(() => {
+                window.close();
+            }, 200);
         };
     </script>
 @endsection

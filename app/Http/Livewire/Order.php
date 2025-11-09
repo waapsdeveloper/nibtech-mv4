@@ -2740,6 +2740,9 @@ class Order extends Component
             return redirect()->back();
         }
         $tester = request('tester');
+        if (!is_array($tester)) {
+            $tester = $tester !== null ? (array) $tester : [];
+        }
         $sku = request('sku');
         $imeis = request('imei');
 
@@ -2887,12 +2890,20 @@ class Order extends Component
                     session()->put('error', "Product Color not matched");
                     return redirect()->back();
                 }
-                if ($tester[$i] == null && isset($stock[$i]->latest_testing)) {
-                    $tester[$i] = $stock[$i]->latest_testing->admin->last_name;
+                $testerValue = $tester[$i] ?? null;
+
+                if ($testerValue === null && isset($stock[$i]->latest_testing)) {
+                    $testerValue = $stock[$i]->latest_testing->admin->last_name;
+                    $tester[$i] = $testerValue;
                 }
-                if (isset($stock[$i]->latest_testing) && strtoupper($stock[$i]->latest_testing->admin->last_name) != strtoupper($tester[$i])) {
+                if (
+                    isset($stock[$i]->latest_testing) &&
+                    $testerValue !== null &&
+                    strtoupper($stock[$i]->latest_testing->admin->last_name) != strtoupper($testerValue)
+                ) {
                     Log::info('Tester Mismatch for Stock IMEI ' . $stock[$i]->imei.$stock[$i]->serial_number . ': Expected ' . strtoupper($tester[$i]) . ', Found ' . strtoupper($stock[$i]->latest_testing->admin->last_name));
                 }
+                $testerValue = $tester[$i] ?? null;
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
                     if (confirm('System Model: " . $stock_variation->product->model . " - " . $storage . $color . $stock_variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
