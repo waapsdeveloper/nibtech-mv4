@@ -298,7 +298,7 @@ canvas {
 
             for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
                 const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.4 });
+                const viewport = page.getViewport({ scale: 1.5 });
 
                 const canvas = document.createElement('canvas');
                 const context = canvas.getContext('2d');
@@ -307,7 +307,7 @@ canvas {
 
                 await page.render({ canvasContext: context, viewport }).promise;
                 canvas.style.display = 'block';
-                // canvas.style.margin = '0 auto 12px';
+                canvas.style.margin = '0 auto';
                 canvas.style.maxWidth = '100%';
 
                 container.appendChild(canvas);
