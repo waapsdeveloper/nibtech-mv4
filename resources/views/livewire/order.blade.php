@@ -1164,20 +1164,20 @@
         }
         @if (request('invoice'))
 
-            var id = `tester{{$t}}`;
+            var id = `imei{{$ti}}`;
             window.onload = function() {
                 document.getElementById(id).focus();
                 document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
+                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
             };
             document.addEventListener('DOMContentLoaded', function() {
                 var input = document.getElementById(id);
                 input.focus();
                 input.select();
                 document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#tester').focus(); }, 500);
+                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
             });
-            if (id == 'tester0') {
+            if (id == 'imei0') {
                 document.querySelector('[rel="prev"]').click();
             }
         @endif
