@@ -12,20 +12,32 @@
         color: #000;
         background-color: #fff !important;
     }
+    @media print {
+        @page {
+            margin: 12mm 10mm;
+        }
+        body {
+            margin: 0;
+        }
+    }
     p {
         font-size: 12px;
+    }
+    #pdf-container {
+        max-width: 210mm;
+        margin: 0 auto 16px;
     }
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 5mm auto;
-        /* padding: 10mm; */
+        margin: 5mm auto 8mm;
+        padding: 15mm 18mm;
         background-color: #ffffff;
     }
     .invoice-headers {
         border-bottom: 2px solid #000;
-        padding-bottom: 10px;
-        margin-bottom: 20px;
+        padding-bottom: 12px;
+        margin-bottom: 18px;
     }
     .invoice-headers img {
         max-height: 80px;
@@ -36,10 +48,11 @@
     .invoice-details {
         display: flex;
         justify-content: space-between;
-        margin-bottom: 20px;
+        gap: 32px;
+        margin-bottom: 22px;
     }
     .invoice-details .bill-to {
-        width: 30%;
+        width: 32%;
     }
     .invoice-details .invoice-info {
         /* width: 20%; */
@@ -55,7 +68,7 @@
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 20px;
+        margin-bottom: 22px;
         font-size: 14px;
     }
     .invoice-items th, .invoice-items td {
@@ -75,9 +88,9 @@
         text-align: right;
     }
     .store-policy {
-        margin-top: 20px;
+        margin-top: 28px;
         border-top: 2px solid #000;
-        padding-top: 10px;
+        padding-top: 12px;
     }
     .store-policy h3, .store-policy h4 {
         margin: 5px 0;
@@ -109,10 +122,6 @@ canvas {
 
     <div id="pdf-container" style="width: 100%;"></div>
 
-    <br>
-    <br>
-    <br>
-    <br>
     <div class="invoice-container">
 
         <div class="invoice-headers">
@@ -233,7 +242,6 @@ canvas {
                     <td align="right">{{ $order->currency_id->sign }}0.00</td>
                 </tr>
             </tbody>
-<br>
 <tfoot>
                 <tr>
                     <td colspan="3" style="text-align: right;"><strong>Sub Total:</strong></td>
