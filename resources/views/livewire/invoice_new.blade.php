@@ -12,32 +12,20 @@
         color: #000;
         background-color: #fff !important;
     }
-    @media print {
-        @page {
-            margin: 12mm 10mm;
-        }
-        body {
-            margin: 0;
-        }
-    }
     p {
         font-size: 12px;
-    }
-    #pdf-container {
-        max-width: 210mm;
-        margin: 0 auto 16px;
     }
     .invoice-container {
         width: 210mm;
         max-width: 210mm;
-        margin: 5mm auto 8mm;
-        padding: 15mm 18mm;
+        margin: 5mm auto;
+        padding: 10mm;
         background-color: #ffffff;
     }
     .invoice-headers {
         border-bottom: 2px solid #000;
-        padding-bottom: 12px;
-        margin-bottom: 18px;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
     }
     .invoice-headers img {
         max-height: 80px;
@@ -48,11 +36,10 @@
     .invoice-details {
         display: flex;
         justify-content: space-between;
-        gap: 32px;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
     }
     .invoice-details .bill-to {
-        width: 32%;
+        width: 30%;
     }
     .invoice-details .invoice-info {
         /* width: 20%; */
@@ -68,7 +55,7 @@
     .invoice-items {
         width: 100%;
         border-collapse: collapse;
-        margin-bottom: 22px;
+        margin-bottom: 20px;
         font-size: 14px;
     }
     .invoice-items th, .invoice-items td {
@@ -88,9 +75,9 @@
         text-align: right;
     }
     .store-policy {
-        margin-top: 28px;
+        margin-top: 20px;
         border-top: 2px solid #000;
-        padding-top: 12px;
+        padding-top: 10px;
     }
     .store-policy h3, .store-policy h4 {
         margin: 5px 0;
