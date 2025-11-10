@@ -104,6 +104,7 @@
         </div>
     </div>
 
+    <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
     <script src="{{ asset('assets/js/functions.js') }}"></script>
     <script>
@@ -609,13 +610,10 @@
                 try {
                     await sendToPrinter();
                     updateStatus('Label sent to printer.', 'success');
-                    updatePrinterStatus('Print completed - window will close in 5s', 'success');
+                    updatePrinterStatus('Print completed - closing in 1s', 'success');
                     setTimeout(() => {
-                        const confirmClose = confirm('Label has been sent to printer. Close this window?');
-                        if (confirmClose) {
-                            window.close();
-                        }
-                    }, 5000);
+                        window.close();
+                    }, 1000);
                 } catch (error) {
                     console.error('Automatic label printing failed:', error);
                     updateStatus('Printing failed - use buttons to retry or change printer', 'error');
