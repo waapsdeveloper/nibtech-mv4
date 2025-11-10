@@ -39,7 +39,7 @@ class Api_request_model extends Model
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status', null)->orderBy('id','desc')->limit(300)->get();
+        $requests = Api_request_model::where('status', null)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
@@ -234,20 +234,20 @@ class Api_request_model extends Model
 
             if($stock != null){
                 $p = $stock->variation->product ?? null;
-                if((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual e-sim')) && $p->brand == 1){
-                    if(!str_contains($p->model, 'Dual eSIM')){
-                        $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
-                        if(!$product->id){
-                            // Log::info($p->model.' '.'Dual eSIM');
-                            $log_info .= $p->model.' '.'Dual eSIM'."\n";
-                            continue;
-                            // $product->category = $p->category;
-                            // $product->brand = $p->brand;
-                            // $product->model = $p->model.' Dual eSIM';
-                            // $product->save();
-                        }
-                        $p = $product;
+                if(((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual e-sim')) && $p->brand == 1) && !str_contains($p->model, 'Dual eSIM')){
+                    $product = Products_model::firstOrNew(['model'=>$p->model.' Dual eSIM']);
+                    if(!$product->id){
+                        // Log::info($p->model.' '.'Dual eSIM');
+                        $log = 1;
+                        $log_info .= $p->model.' '.'Dual eSIM'."\n";
+                        continue;
+                        // $product->category = $p->category;
+                        // $product->brand = $p->brand;
+                        // $product->model = $p->model.' Dual eSIM';
+                        // $product->save();
                     }
+                    $p = $product;
+
 
                     $new_variation = [
                         'product_id' => $p->id,
@@ -281,20 +281,20 @@ class Api_request_model extends Model
 
                 }
 
-                if((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual sim') || str_contains(strtolower($datas->Comments), 'dual-sim') || str_contains(strtolower($datas->Comments), 'dual_sim')) && $p->brand == 2){
-                    if(!str_contains($p->model, 'Dual Sim')){
-                        $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
-                        if(!$product->id){
-                            // Log::info($p->model.' '.'Dual Sim');
-                            $log_info .= $p->model.' '.'Dual Sim'."\n";
-                            continue;
-                            // $product->category = $p->category;
-                            // $product->brand = $p->brand;
-                            // $product->model = $p->model.' Dual Sim';
-                            // $product->save();
-                        }
-                        $p = $product;
+                if(((str_contains(strtolower($datas->Comments), 'dual-esim') || str_contains(strtolower($datas->Comments), 'dual esim') || str_contains(strtolower($datas->Comments), 'dual_esim') || str_contains(strtolower($datas->Comments), 'dual sim') || str_contains(strtolower($datas->Comments), 'dual-sim') || str_contains(strtolower($datas->Comments), 'dual_sim')) && $p->brand == 2) && !str_contains($p->model, 'Dual Sim')){
+                    $product = Products_model::firstOrNew(['model'=>$p->model.' Dual Sim']);
+                    if(!$product->id){
+                        // Log::info($p->model.' '.'Dual Sim');
+                        $log = 1;
+                        $log_info .= $p->model.' '.'Dual Sim'."\n";
+                        continue;
+                        // $product->category = $p->category;
+                        // $product->brand = $p->brand;
+                        // $product->model = $p->model.' Dual Sim';
+                        // $product->save();
                     }
+                    $p = $product;
+
 
                     $new_variation = [
                         'product_id' => $p->id,
@@ -327,20 +327,19 @@ class Api_request_model extends Model
                     $stock = Stock_model::find($stock->id);
 
                 }
-                if(str_contains(strtolower($datas->Comments), 'new-battery') || str_contains(strtolower($datas->Comments), 'new battery') || str_contains(strtolower($datas->Comments), 'new_battery')){
-                    if(!str_contains($p->model, 'New Battery')){
-                        $product = Products_model::firstOrNew(['model'=>$p->model.' New Battery']);
-                        if(!$product->id){
-                            // Log::info($p->model.' '.'New Battery');
-                            $log_info .= $p->model.' '.'New Battery'."\n";
-                            continue;
-                            // $product->category = $p->category;
-                            // $product->brand = $p->brand;
-                            // $product->model = $p->model.' New Battery';
-                            // $product->save();
-                        }
-                        $p = $product;
+                if((str_contains(strtolower($datas->Comments), 'new-battery') || str_contains(strtolower($datas->Comments), 'new battery') || str_contains(strtolower($datas->Comments), 'new_battery')) && !str_contains($p->model, 'New Battery')){
+                    $product = Products_model::firstOrNew(['model'=>$p->model.' New Battery']);
+                    if(!$product->id){
+                        // Log::info($p->model.' '.'New Battery');
+                        $log_info .= $p->model.' '.'New Battery'."\n";
+                        continue;
+                        // $product->category = $p->category;
+                        // $product->brand = $p->brand;
+                        // $product->model = $p->model.' New Battery';
+                        // $product->save();
                     }
+                    $p = $product;
+
 
                     $new_variation = [
                         'product_id' => $p->id,
@@ -528,9 +527,10 @@ class Api_request_model extends Model
                 }
             }
         }
-
-        $log_info .= "Add these products manually:"."\n";
-        Log::info($log_info);
+        if(isset($log) && $log == 1){
+            $log_info .= "Add these products manually:"."\n";
+            Log::info($log_info);
+        }
 
         return $return;
     }

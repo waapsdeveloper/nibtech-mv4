@@ -141,73 +141,14 @@ class Index extends Component
             $data['testing_count'] = $testing_count;
         }
 
-        if(session('user')->hasPermission('dashboard_view_repairing')){
-            $repairing_count = Admin_model::where('role_id', 8)->withCount(['stock_operations' => function($q) use ($start_date,$end_date) {
-                $q->select(DB::raw('count(distinct stock_id)'))->whereBetween('created_at', [$start_date, $end_date]);
-            }])->orderByDesc('stock_operations_count')->get();
-            $data['repairing_count'] = $repairing_count;
-        }
+        // Repairing counts moved to dedicated Livewire widget for lazy loading
 
         $aftersale = Order_item_model::whereHas('order', function ($q) {
             $q->where('order_type_id',4)->where('status','<',3);
         })->pluck('stock_id')->toArray();
 
-        if (session('user')->hasPermission('dashboard_view_aftersale_inventory')){
-            $data['returns_in_progress'] = count($aftersale);
-            $rmas = Order_model::whereIn('order_type_id',[2,5])->pluck('id')->toArray();
-            $rma = Stock_model::Where('status',2)->whereDoesntHave('order_items', function ($q) use ($rmas) {
-                    $q->whereIn('order_id', $rmas);
-                })->whereHas('variation', function ($q) {
-                    $q->where('grade', 10);
-                })->count();
-            $data['rma'] = $rma;
-            $data['aftersale_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', 'stock.status as stock_status', DB::raw('COUNT(*) as quantity'))
-            ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', function ($query) {
-                $query->where('customer_id', 3955);
-            })
-            ->whereHas('sale_order', function ($query) {
-                $query->where('order_type_id', 3)->orWhere('reference_id', 999);
-            })
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->whereIn('variation.grade',[8,12,17])
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            // ->where('orders.order_type_id',3)
-            ->groupBy('variation.grade', 'grade.name', 'orders.status', 'stock.status')
-            ->orderBy('grade_id')
-            ->get();
-
-            $replacements = Order_item_model::where(['order_id'=>8974])->where('reference_id','!=',null)->pluck('reference_id')->toArray();
-            // dd($replacements);
-            $data['awaiting_replacement'] = Stock_model::where('status', 1)
-            ->whereHas('order_items.order', function ($q) use ($replacements) {
-                $q->where(['status'=>3, 'order_type_id'=>3])
-                ->whereNotIn('reference_id', $replacements);
-            })
-            ->count();
-
-        }
-        if (session('user')->hasPermission('dashboard_view_inventory')){
-            $data['graded_inventory'] = Stock_model::select('grade.name as grade', 'variation.grade as grade_id', 'orders.status as status_id', DB::raw('COUNT(*) as quantity'))
-            ->whereNotIn('stock.id', $aftersale)
-            ->where('stock.status', 1)
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->join('grade', 'variation.grade', '=', 'grade.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            ->groupBy('variation.grade', 'grade.name', 'orders.status')
-            ->orderBy('grade_id')
-            ->get();
-        }
-        if (session('user')->hasPermission('dashboard_view_listing_total')){
-            $data['listed_inventory'] = Variation_model::where('listed_stock','>',0)->sum('listed_stock');
-            $data['should_be_listed'] = $data['graded_inventory']->where('grade_id', '<', 6)->sum('quantity') - Process_stock_model::whereHas('process', function ($q) {
-                $q->where('process_type_id', 22)->where('status', '<', 3);
-            })->count() - Order_model::where('status',2)->where('order_type_id',3)->count();
-        }
-        if (session('user')->hasPermission('dashboard_view_pending_orders')){
-            $data['pending_orders_count'] = Order_model::where('status',2)->groupBy('order_type_id')->select('order_type_id', DB::raw('COUNT(id) as count'), DB::raw('SUM(price) as price'))->orderBy('order_type_id','asc')->get();
-        }
+        // Aftersale inventory metrics pulled by dedicated dashboard widget
+        // Inventory overview metrics provided by Livewire dashboard widget
 
 
 
@@ -384,10 +325,10 @@ class Index extends Component
                 $data['currency_signs'] = Currency_model::whereIn('id', $currency_ids)->pluck('sign', 'id');
 
                 foreach($data['currencies'] as $key => $currency){
-                    $data['ttl']['Ord Avg '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_average'][$key] ?? 0), 2);
-                    $data['ttl']['Ord Ttl '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_total'][$key] ?? 0), 2);
-                    $data['ttl']['Inv Avg '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_average'][$key] ?? 0), 2);
-                    $data['ttl']['Inv Ttl '.$currency] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_total'][$key] ?? 0), 2);
+                    $data['ttl'][$currency]['order_average'] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_average'][$key] ?? 0), 2);
+                    $data['ttl'][$currency]['order_total'] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_total'][$key] ?? 0), 2);
+                    $data['ttl'][$currency]['invoice_average'] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_average'][$key] ?? 0), 2);
+                    $data['ttl'][$currency]['invoice_total'] = $data['currency_signs'][$key] . amount_formatter(($data['ttl_invoiced_total'][$key] ?? 0), 2);
                 }
             }
             // $data['currencies'] = Currency_model::whereIn('id', key($data['ttl_average']))->pluck('code', 'id');

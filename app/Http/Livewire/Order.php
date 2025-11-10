@@ -41,7 +41,9 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
+use Illuminate\Http\Request;
 
 
 class Order extends Component
@@ -259,22 +261,6 @@ class Order extends Component
                 $q->where('stock_id','>', 0);
             });
         })
-        // ->orderBy($sort, $by) // Order by variation name
-        // ->when(request('sort') == 4, function ($q) {
-        //     return $q->whereHas('order_items.variation.product', function ($q) {
-        //         $q->orderBy('model', 'ASC');
-        //     })->whereHas('order_items.variation', function ($q) {
-        //         $q->orderBy('variation.storage', 'ASC');
-        //     })->whereHas('order_items.variation', function ($q) {
-        //         $q->orderBy('variation.color', 'ASC');
-        //     })->whereHas('order_items.variation', function ($q) {
-        //         $q->orderBy('variation.grade', 'ASC');
-        //     });
-
-        // ->when(request('exclude_topup') != [] && request('exclude_topup') != null, function ($q) use ($difference_variations) {
-        //     // if Variation ID is in difference_variations, exclude it until quantity is sufficient
-
-        // })
 
         ->when(request('sort') == 4, function ($q) {
             return $q->join('order_items', 'order_items.order_id', '=', 'orders.id')
@@ -338,10 +324,6 @@ class Order extends Component
                 ];
 
                 Mail::mailer('no-reply')->to($order->customer->email)->send(new InvoiceMail($data2));
-                // $recipientEmail = $order->customer->email;
-                // $subject = 'Invoice for Your Recent Purchase';
-
-                // app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data2));
                 sleep(2);
 
             }
@@ -467,11 +449,6 @@ class Order extends Component
         }else{
             $per_page = 10;
         }
-        // if(request('care')){
-        //     foreach(Order_model::where('status',2)->pluck('reference_id') as $pend){
-        //         $this->recheck($pend);
-        //     }
-        // }
 
         switch (request('sort')){
             case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
@@ -2634,18 +2611,6 @@ class Order extends Component
             session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
             }
         }
-        // if(session('user_id') == 1){
-
-        // $recipientEmail = $order->customer->email;
-        // $subject = 'Invoice for Your Recent Purchase';
-
-        // app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
-        // die;
-        // }
-        // file_put_contents('invoice.pdf', $pdfContent);
-
-        // Get the PDF content
-        // $pdf->Output('', 'I');
 
         $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
@@ -2653,7 +2618,7 @@ class Order extends Component
         // Pass the PDF content to the view
         return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
     }
-    public function export_invoice($orderId)
+    public function export_invoice($orderId, $packing = null)
     {
         $data['title_page'] = "Invoice";
         session()->put('page_title', $data['title_page']);
@@ -2670,36 +2635,21 @@ class Order extends Component
             $order_items = $order_items->get();
         }
 
+        $packingMode = (string) request('packing') === '1' || (string) $packing === '1';
+
         // Generate PDF for the invoice content
         $data = [
             'order' => $order,
             'customer' => $order->customer,
             'orderItems' => $order_items,
+            'packingMode' => $packingMode,
+            'deliveryNoteUrl' => $order->delivery_note_url,
+            'labelUrl' => $order->label_url,
+            'sessionA4Printer' => session('a4_printer'),
+            'sessionLabelPrinter' => session('label_printer'),
         ];
 
-        // // Create a new TCPDF instance
-        // $pdf = new TCPDF();
-
-        // // Set document information
-        // $pdf->SetCreator(PDF_CREATOR);
-        // // $pdf->SetTitle('Invoice');
-        // // $pdf->SetHeaderData('', 0, 'Invoice', '');
-
-        // // Add a page
-        // $pdf->AddPage();
-
-        // // Set font
-        // // $fontname = TCPDF_FONTS::addTTFfont(asset('assets/font/OpenSans_Condensed-Regular.ttf'), 'TrueTypeUnicode', '', 96);
-
-        // $pdf->SetFont('dejavusans', '', 12);
-
-
-        // // Additional content from your view
-        // $html = view('export.invoice', $data)->render();
-        // $pdf->writeHTML($html, true, false, true, false, '');
-
-        // dd($pdfContent);
-        // Send the invoice via email
+        // Create a new TCPDF instance
 
         if($order->customer->email == null){
             session()->put('error', 'Customer Email Not Found');
@@ -2717,25 +2667,52 @@ class Order extends Component
             session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
             }
         }
-        // if(session('user_id') == 1){
 
-        // $recipientEmail = $order->customer->email;
-        // $subject = 'Invoice for Your Recent Purchase';
-
-        // app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new InvoiceMail($data));
-        // die;
-        // }
-        // file_put_contents('invoice.pdf', $pdfContent);
-
-        // Get the PDF content
-        // $pdf->Output('', 'I');
-
-        // $pdfContent = $pdf->Output('', 'S');
-        // Return a response or redirect
-
-        // Pass the PDF content to the view
-        // return view('livewire.show_pdf')->with(['pdfContent'=> $pdfContent, 'delivery_note'=>$order->delivery_note_url]);
         return view('livewire.invoice_new')->with($data);
+    }
+
+    public function storePrinterPreferences(Request $request)
+    {
+        $validated = $request->validate([
+            'a4_printer' => ['nullable', 'string', 'max:255'],
+            'label_printer' => ['nullable', 'string', 'max:255'],
+        ]);
+
+        if (array_key_exists('a4_printer', $validated)) {
+            $value = $validated['a4_printer'];
+            if ($value === null || $value === '') {
+                session()->forget('a4_printer');
+            } else {
+                session()->put('a4_printer', $value);
+            }
+        }
+
+        if (array_key_exists('label_printer', $validated)) {
+            $value = $validated['label_printer'];
+            if ($value === null || $value === '') {
+                session()->forget('label_printer');
+            } else {
+                session()->put('label_printer', $value);
+            }
+        }
+
+        return response()->json(['status' => 'ok']);
+    }
+
+    public function packingDeliveryPrint($orderId)
+    {
+        $order = Order_model::find($orderId);
+
+        if (!$order || !$order->delivery_note_url) {
+            abort(404, 'Delivery note not available for printing');
+        }
+
+        $pdfProxyUrl = url('order/proxy_server') . '?url=' . urlencode($order->delivery_note_url);
+
+        return view('exports.packing-delivery-print', [
+            'pdfProxyUrl' => $pdfProxyUrl,
+            'sessionA4Printer' => session('a4_printer'),
+        ]);
     }
     public function proxy_server(){
 
@@ -2808,15 +2785,16 @@ class Order extends Component
         $bm = new BackMarketAPIController();
         // $orderObj = $bm->getOneOrder($order->reference_id);
         $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
-        // if(session('user_id') == 1){
-        //     dd("Hello");
-        // }
+
         if($orderObj == null){
 
             session()->put('error', "Order Not Found");
             return redirect()->back();
         }
         $tester = request('tester');
+        if (!is_array($tester)) {
+            $tester = $tester !== null ? (array) $tester : [];
+        }
         $sku = request('sku');
         $imeis = request('imei');
 
@@ -2902,6 +2880,10 @@ class Order extends Component
                     // if(session('user_id') == 1){
                     //     dd($last_item);
                     // }
+                    if($stock[$i]->stock_repairs()->where('status',1)->exists()){
+                        session()->put('error', "Stock Under Repair");
+                        return redirect()->back();
+                    }
                     if(in_array($last_item->order->order_type_id,[1,4,6])){
 
                         if($stock[$i]->status == 2){
@@ -2921,7 +2903,8 @@ class Order extends Component
                     session()->put('error', "Stock List Awaiting Approval");
                     return redirect()->back();
                 }
-                if($stock[$i]->variation->grade == 17){
+                $stock_variation = $stock[$i]->variation;
+                if($stock_variation->grade == 17){
                     session()->put('error', "IMEI Flagged | Contact Admin");
                     return redirect()->back();
                 }
@@ -2932,41 +2915,50 @@ class Order extends Component
                     session()->put('error', "Missing Exit Entry");
                     return redirect()->back();
                 }
-                if($stock[$i]->variation->storage != null){
-                    $storage = $stock[$i]->variation->storage_id->name . " - ";
+                if($stock_variation->storage != null){
+                    $storage = $stock_variation->storage_id->name . " - ";
                 }else{
                     $storage = null;
                 }
-                if($stock[$i]->variation->color != null){
-                    $color = $stock[$i]->variation->color_id->name . " - ";
+                if($stock_variation->color != null){
+                    $color = $stock_variation->color_id->name . " - ";
                 }else{
                     $color = null;
                 }
-                // if(($stock[$i]->variation->product_id == $variant->product_id) || ($variant->product_id == 144 && $stock[$i]->variation->product_id == 229) || ($variant->product_id == 142 && $stock[$i]->variation->product_id == 143) || ($variant->product_id == 54 && $stock[$i]->variation->product_id == 55) || ($variant->product_id == 55 && $stock[$i]->variation->product_id == 54) || ($variant->product_id == 58 && $stock[$i]->variation->product_id == 59) || ($variant->product_id == 59 && $stock[$i]->variation->product_id == 58) || ($variant->product_id == 200 && $stock[$i]->variation->product_id == 160)){
-                // }else{
-                if($stock[$i]->variation->product_id != $variant->product_id) {
+                if($stock_variation->product_id != $variant->product_id) {
                     session()->put('error', "Product Model not matched");
                     return redirect()->back();
                 }
-                // if(($stock[$i]->variation->storage == $variant->storage) || ($variant->storage == 5 && in_array($stock[$i]->variation->storage,[0,6]) && $variant->product->brand == 2) || (in_array($variant->product_id, [78,58,59]) && $variant->storage == 4 && in_array($stock[$i]->variation->storage,[0,5]))){
-                // }else{
-                if($stock[$i]->variation->storage != $variant->storage) {
+                if($stock_variation->storage != $variant->storage) {
                     session()->put('error', "Product Storage not matched");
                     return redirect()->back();
                 }
-                if($stock[$i]->variation->grade != $variant->grade) {
+                if($stock_variation->grade != $variant->grade) {
                     session()->put('error', "Product Grade not matched");
                     return redirect()->back();
 
                 }
-                if($stock[$i]->variation->color != $variant->color && !session('user')->hasPermission('allow_change_color_dispatch')){
+                if($stock_variation->color != $variant->color && !session('user')->hasPermission('allow_change_color_dispatch')){
                     session()->put('error', "Product Color not matched");
                     return redirect()->back();
                 }
+                $testerValue = $tester[$i] ?? null;
 
+                if ($testerValue === null && isset($stock[$i]->latest_testing)) {
+                    $testerValue = $stock[$i]->latest_testing->admin->last_name;
+                    $tester[$i] = $testerValue;
+                }
+                if (
+                    isset($stock[$i]->latest_testing) &&
+                    $testerValue !== null &&
+                    strtoupper($stock[$i]->latest_testing->admin->last_name) != strtoupper($testerValue)
+                ) {
+                    Log::info('Tester Mismatch for Stock IMEI ' . $stock[$i]->imei.$stock[$i]->serial_number . ': Expected ' . strtoupper($tester[$i]) . ', Found ' . strtoupper($stock[$i]->latest_testing->admin->last_name));
+                }
+                $testerValue = $tester[$i] ?? null;
                 if($stock[$i]->variation_id != $variant->id){
                     echo "<script>
-                    if (confirm('System Model: " . $stock[$i]->variation->product->model . " - " . $storage . $color . $stock[$i]->variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
+                    if (confirm('System Model: " . $stock_variation->product->model . " - " . $storage . $color . $stock_variation->grade_id->name . "\\nRequired Model: " . $variant->product->model . " - " . $storage2 . $color2 . $variant->grade_id->name . "')) {
                         // User clicked OK, do nothing or perform any other action
                     } else {
                         // User clicked Cancel, redirect to the previous page
@@ -2992,9 +2984,7 @@ class Order extends Component
                     'status' => 3,
                 ]);
 
-                // $orderObj = $this->updateBMOrder($order->reference_id, true, $tester[$i], true);
             }
-            // $order = Order_model::find($order->id);
             $items = $order->order_items;
             if(count($items) > 1 || $items[0]->quantity > 1){
                 $indexes = 0;
@@ -3087,7 +3077,11 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+
         $invoice_url = url('export_invoice').'/'.$id;
+        if(request('packing') == 1){
+            $invoice_url .= '/1';
+        }
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
             $content = "Hi, here are the IMEIs/Serial numbers for this order. \n";
@@ -3116,6 +3110,8 @@ class Order extends Component
         var newTab2 = window.open("'.$invoice_url.'", "_blank");
 
         </script>';
+
+        // Open Label in new tab if request(packing) = 1
         if(request('sort') == 4 && !isset($detail)){
             echo "<script> window.close(); </script>";
         }
@@ -3898,8 +3894,7 @@ class Order extends Component
         // return Excel::download(new OrdersExport, 'your_export_file.xlsx');
         // dd(request('ids'));
         $pdfExport = new LabelsExport();
-        $pdfExport->generatePdf();
-        echo "<script>window.close();</script>";
+        return $pdfExport->generatePdf();
     }
     public function export_note()
     {

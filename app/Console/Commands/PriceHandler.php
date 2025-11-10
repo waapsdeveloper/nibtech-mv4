@@ -61,7 +61,7 @@ class PriceHandler extends Command
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
 
-            echo "Hello";
+            // echo "Hello";
 
         // print_r($listings);
         foreach ($variations as $variation) {
@@ -73,23 +73,32 @@ class PriceHandler extends Command
                 $error .= "No response for variation: " . $variation->sku . "\n";
                 continue;
             }
+            if (is_object($responses) && $responses->type == 'unknown-competitor') {
+                continue;
+            }
+            if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
+                continue;
+            }
             echo "SKU: " . $variation->sku . "\n";
             echo "Response: \n";
             foreach($responses as $list){
-                print_r($list);
+                // print_r($list);
                 if(is_string($list) || is_int($list)){
+                    print_r($responses);
+                    echo "\n\n";
                     $error .= $list;
                     continue;
                 }
                 if(is_array($list)){
-                    if(isset($list['code']) && $list['code'] == 'unknown-competitor'){
+                    if (is_array($list) || is_object($list)) {
+                        $code = is_array($list) ? ($list['code'] ?? null) : ($list->code ?? null);
+                        if ($code === 'unknown-competitor') {
+                            continue;
+                        }
+                        $error .= json_encode($list) . "\n";
+                        $error .= "Error in response for variation: {$variation->sku}\n";
                         continue;
                     }
-                    $error .= json_encode($list);
-                    $error .= "\n";
-                    $error .= "Error in response for variation: " . $variation->sku . "\n";
-                    // echo $error;
-                    continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
@@ -120,7 +129,7 @@ class PriceHandler extends Command
                     $new_min_price = round($new_min_price, 2);
                     $new_price = round($new_price, 2);
                     $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
-                    print_r($response);
+                    // print_r($response);
                     $listing->price = $new_price;
                     $listing->min_price = $new_min_price;
                 }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_price < $listing->min_price_limit || $listing->buybox_price > $listing->price_limit)){

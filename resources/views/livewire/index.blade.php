@@ -458,114 +458,59 @@
                                         </div>
                                     </div>
                                 @endif
-                                @if (session('user')->hasPermission('dashboard_view_testing') || session('user')->hasPermission('dashboard_view_repairing'))
+                                @if (session('user')->hasPermission('dashboard_view_testing'))
 
                                     <div class="col-md col-xs-6">
-                                        @if (session('user')->hasPermission('dashboard_view_testing'))
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <h4 class="card-title mb-1">Testing Count</h4>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <table class="w-100">
-                                                        @foreach ($testing_count as $testing)
-                                                            @if ($testing->stock_operations_count > 0)
-
-                                                            <tr>
-                                                                <td>{{ $testing->first_name}}:</td>
-                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
-                                                            </tr>
-                                                            @endif
-                                                        @endforeach
-                                                    </table>
-
-                                                </div>
+                                        <div class="card">
+                                            <div class="card-header">
+                                                <h4 class="card-title mb-1">Testing Count</h4>
                                             </div>
-                                        @endif
-                                        @if (session('user')->hasPermission('dashboard_view_repairing'))
-                                            <div class="card">
-                                                <div class="card-header">
-                                                    <h4 class="card-title mb-1">Repairing Count</h4>
-                                                </div>
-                                                <div class="card-body py-2">
-                                                    <table class="w-100">
-                                                        @foreach ($repairing_count as $repairing)
-                                                            @if ($repairing->stock_operations_count > 0)
+                                            <div class="card-body py-2">
+                                                <table class="w-100">
+                                                    @foreach ($testing_count as $testing)
+                                                        @if ($testing->stock_operations_count > 0)
 
-                                                            <tr>
-                                                                <td>{{ $repairing->first_name}}:</td>
-                                                                <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $repairing->id }}" title="Go to Move Inventory page">{{ $repairing->stock_operations_count }}</a></td>
-                                                            </tr>
-                                                            @endif
-                                                        @endforeach
-                                                    </table>
+                                                        <tr>
+                                                            <td>{{ $testing->first_name}}:</td>
+                                                            <td class="tx-right"><a href="{{url('move_inventory')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&adm={{ $testing->id }}" title="Go to Move Inventory page">{{ $testing->stock_operations_count }}</a></td>
+                                                        </tr>
+                                                        @endif
+                                                    @endforeach
+                                                </table>
 
-                                                </div>
                                             </div>
-                                        @endif
+                                        </div>
                                     </div>
 
                                 @endif
 
-                                @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
+                                @if (session('user')->hasPermission('dashboard_view_aftersale_inventory') || session('user')->hasPermission('dashboard_view_repairing'))
 
                                 {{-- Date search section --}}
                                 <div class="col-md col-xs-6">
-                                    <div class="card">
-                                        <div class="card-header border-bottom-0">
-                                                <h3 class="card-title mb-0">Aftersale Inventory</h3> <span class="d-block tx-12 mb-0 text-muted"></span>
-                                        </div>
-                                        <div class="card-body py-2">
-                                            <table class="w-100">
-                                            @foreach ($aftersale_inventory as $inv)
-                                                <tr>
-                                                    <td>{{ $inv->grade }}:</td>
-                                                    <td class="tx-right"><a href="{{url('belfast_inventory')}}?grade[]={{ $inv->grade_id }}&status={{$inv->stock_status }}" title="Go to orders page">{{ $inv->quantity }}</a></td>
-                                                </tr>
-                                            @endforeach
-                                            <tr>
-                                                <td title="Waiting for Approval">Returns:</td>
-                                                <td class="tx-right"><a href="{{url('return')}}" title="Returns in Progress">{{$returns_in_progress}}</a></td>
-                                            </tr>
-                                            <tr>
-                                                <td>RMA:</td>
-                                                <td class="tx-right"><a href="{{url('inventory')}}?rma=1" title="Not Returned RMA">{{$rma}}</a></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="Awaiting Replacements">Replacements:</td>
-                                                <td class="tx-right"><a href="{{url('inventory')}}?stock_status=1&replacement=1" title="Pending Replacements">{{$awaiting_replacement}}</a></td>
-                                            </tr>
-                                            </table>
-                                        </div>
-                                    </div>
+                                    @if (session('user')->hasPermission('dashboard_view_aftersale_inventory'))
+                                        <livewire:dashboard.aftersale-inventory-widget :wire:key="'aftersale-inventory-widget'" />
+                                    @endif
+                                    @if (session('user')->hasPermission('dashboard_view_repairing'))
+                                        <livewire:dashboard.repairing-count
+                                            :start-date="$start_date"
+                                            :end-date="$end_date"
+                                            :wire:key="'repairing-count-' . $start_date . '-' . $end_date"
+                                        />
+                                    @endif
+
                                 </div>
                                 @endif
 
                             </div>
 								{{-- Welcome Box end --}}
 								{{-- Date search section --}}
-                            @if (session('user')->hasPermission('dashboard_view_inventory'))
-                            <div class="card custom-card">
-                                <div class="card-header border-bottom-0 d-flex justify-content-between">
-                                    <h3 class="card-title mb-2 ">Available Inventory by Grade</h3>
-                                    @if (session('user')->hasPermission('dashboard_view_listing_total'))
-                                        <h3 class="card-title mb-2 " title="Should Be : {{ $should_be_listed }}">Total Listed Inventory: {{ $listed_inventory }}</h3>
-                                    @endif
-                                </div>
-                                <div class="card-body row">
-                                    @foreach ($graded_inventory as $inv)
-                                        <div class="col-lg-3 col-md-4"><h6><a href="{{url('inventory')}}?grade[]={{ $inv->grade_id }}&status={{ $inv->status_id }}" title="Go to orders page">{{ $inv->grade.": ".$inv->quantity." ".$purchase_status[$inv->status_id] }}</a></h6></div>
-                                    @endforeach
-                                </div>
-                                @if (session('user')->hasPermission('dashboard_view_pending_orders'))
-                                    <h6 class="tx-right mb-3">
-                                        Pending Orders:&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                                        @foreach ($pending_orders_count as $pending)
-                                            <span title="Value: {{$pending->price}}">{{ $pending->order_type->name.": ".$pending->count }}&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span>
-                                        @endforeach
-                                    </h6>
-                                @endif
-                            </div>
+                            @if (
+                                session('user')->hasPermission('dashboard_view_inventory') ||
+                                session('user')->hasPermission('dashboard_view_listing_total') ||
+                                session('user')->hasPermission('dashboard_view_pending_orders')
+                            )
+                                <livewire:dashboard.inventory-overview-widget :wire:key="'inventory-overview-widget'" />
                             @endif
                             @if (session('user')->hasPermission('monthly_sales_chart'))
                                 <div class="card custom-card overflow-hidden">
@@ -745,27 +690,11 @@
                     url: "{{url('index/get_orders_data')}}?"+queryString,
                     type: 'GET',
                     success: function(data) {
-                        // let data = load_data("{{ url('index/get_orders_data') }}"+'?'+queryString);
-                        // orders_data.html(data);
-                        // console.log(data);
-
-                        // <tr>
-                        //             <td title="Average Price">Average:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.average}</a></td>
-                        //         </tr>
-                        //         <tr>
-                        //             <td title="Total EUR Price">Total EUR:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_eur}</a></td>
-                        //         </tr>
-                        //         <tr>
-                        //             <td title="Total GBP Price">Total GBP:</td>
-                        //             <td class="tx-right"><a href="{{url('order')}}?currency=5&status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_gbp}</a></td>
-                        //         </tr>
                         let new_data = `
                             <table class="w-100">
                                 <tr>
                                     <td>Total:</td>
-                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="EUR Average ${data.ttl_average} | EUR: ${data.ttl_eur} | GBP: ${data.ttl_gbp} | Go to orders page">${data.total_orders}</a></td>
+                                    <td class="tx-right"><a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}" title="Go to orders page">${data.total_orders}</a></td>
                                 </tr>
                                 <tr>
                                     <td>Pending:</td>
@@ -782,14 +711,19 @@
                                     <td class="tx-right"><a href="{{url('order')}}?status=3&start_date={{ $start_date }}&end_date={{ $end_date }}" title="${data.invoiced_items} Total Items | ${data.missing_imei} Dispatched without Device | Go to orders page">${data.invoiced_orders}</a></td>
                                 </tr>
                         `;
-                        for (const [key, value] of Object.entries(data.ttl)) {
-                            currency_code = key.split(' ')[1];
+                        for (const [currency_code, value] of Object.entries(data.ttl)) {
                             currency_id = Object.keys(data.currencies).find(key => data.currencies[key] === currency_code);
                             new_data += `
                                 <tr>
-                                    <td>${key}:</td>
+                                    <td title="Order Average">${currency_code} Ord Avg:</td>
                                     <td class="tx-right">
-                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Go to orders page" target="_blank">${value}</a>
+                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Total: ${value.order_total} | Go to orders page" target="_blank">${value.order_average}</a>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td title="Invoice Average">${currency_code} Inv Avg:</td>
+                                    <td class="tx-right">
+                                        <a href="{{url('order')}}?start_date={{ $start_date }}&end_date={{ $end_date }}&currency=${currency_id}" title="Total: ${value.invoice_total} | Go to orders page" target="_blank">${value.invoice_average}</a>
                                     </td>
                                 </tr>
                             `;

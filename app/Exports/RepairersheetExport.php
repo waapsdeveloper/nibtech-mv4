@@ -33,6 +33,10 @@ class RepairersheetExport implements FromCollection, WithHeadings
                     ->whereNull('order_items.deleted_at')
                     ->where('order_items.order_id', '=', DB::raw('stock.order_id'));
             })
+            ->leftJoin('process_stock as p_stock_old', function ($join) {
+                $join->on('stock.id', '=', 'p_stock_old.stock_id')
+                    ->whereNull('p_stock_old.deleted_at');
+            })
             ->leftJoin('stock_operations', function ($join) {
                 $join->on('stock.id', '=', 'stock_operations.stock_id')
                     ->whereNull('stock_operations.deleted_at')
@@ -67,7 +71,8 @@ class RepairersheetExport implements FromCollection, WithHeadings
                 // 'p_stock.status as status',
                 'process.updated_at as created_at',
                 // 'p_stock.updated_at as updated_at',
-                // 'order_items.price as price',
+                'order_items.price as price',
+                DB::raw('SUM(p_stock_old.price) as previous_repair_cost'),
                 // DB::raw('order_items.price * process.exchange_rate as ex_price'),
             )
             ->where('process.customer_id', request('id'))
@@ -81,6 +86,18 @@ class RepairersheetExport implements FromCollection, WithHeadings
             ->whereNull('orders.deleted_at')
             ->whereNull('order_items.deleted_at')
             ->whereNull('stock_operations.deleted_at')
+            ->groupBy(
+                'products.model',
+                'storage.name',
+                'color.name',
+                'grade.name',
+                'process.reference_id',
+                'stock.imei',
+                'stock.serial_number',
+                'stock_operations.description',
+                'process.updated_at',
+                'order_items.price'
+            )
             ->orderBy('products.model', 'ASC')
             ->get();
 
@@ -103,7 +120,8 @@ class RepairersheetExport implements FromCollection, WithHeadings
             // 'Status',
             'Created At',
             // 'Updated At',
-            // 'Price',
+            'Price',
+            'Previous Repair Cost',
             // 'Exchange Price',
         ];
     }
