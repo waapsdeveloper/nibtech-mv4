@@ -657,13 +657,10 @@ canvas {
             });
         }
         window.onafterprint = () => {
-            // if (!qz?.websocket || !qz.websocket.isActive()) {
-                // Delay closing to allow any async cleanup (e.g. QZ Tray) to finish.
-                const closeTimeout = 500; // ms
-                setTimeout(() => {
-                    window.close();
-                }, closeTimeout);
-            // }
+            // Close window 1 second after printing
+            setTimeout(() => {
+                window.close();
+            }, 1000);
         };
 
         // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs
