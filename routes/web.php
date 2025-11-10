@@ -464,11 +464,11 @@ Route::get('oauth2/google', [GoogleController::class, 'redirectToGoogle'])->name
 Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
 
 
-Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange_rates');
 
 Route::get('request_drfones', [ApiRequestController::class, 'request_drfones'])->name('request_drfones');
 
-Route::get('/qz-sign', [Controller::class, 'verify_signature']);
+Route::get('/qz-sign', [Controller::class, 'verify_signature'])->name('qz_sign');
 
 
 
