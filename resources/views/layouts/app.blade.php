@@ -136,61 +136,17 @@
 
         {{-- Global QZ Tray Connection Manager --}}
         <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
+        <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
              * Global QZ Tray Connection Manager
              * Establishes and maintains a single WebSocket connection across all pages
-             * Prevents multiple redundant connections and improves performance
+             * Uses existing functions.js for certificate configuration
              */
             (function() {
                 // Global flag to track connection state
                 window.qzGlobalConnectionEstablished = false;
                 window.qzGlobalConnectionInProgress = false;
-
-                /**
-                 * Configure QZ Tray security certificates
-                 */
-                function setupQzCertificates() {
-                    if (typeof qz === 'undefined') {
-                        console.warn('QZ Tray library not loaded');
-                        return Promise.reject('QZ Tray not available');
-                    }
-
-                    return Promise.all([
-                        fetch("{{ asset('qz-certs/certificate.crt') }}").then(r => r.text()),
-                        fetch("{{ asset('private-key.pem') }}").then(r => r.text())
-                    ]).then(function(results) {
-                        var certificate = results[0];
-                        var privateKey = results[1];
-
-                        qz.security.setCertificatePromise(function(resolve) {
-                            resolve(certificate);
-                        });
-
-                        qz.security.setSignatureAlgorithm("SHA512");
-                        qz.security.setSignaturePromise(function(toSign) {
-                            return function(resolve, reject) {
-                                try {
-                                    var pk = KEYUTIL.getKey(privateKey);
-                                    var sig = new KJUR.crypto.Signature({"alg": "SHA512withRSA"});
-                                    sig.init(pk);
-                                    sig.updateString(toSign);
-                                    var hex = sig.sign();
-                                    resolve(stob64(hextorstr(hex)));
-                                } catch (err) {
-                                    console.error("Signature error:", err);
-                                    reject(err);
-                                }
-                            };
-                        });
-
-                        console.log('✓ QZ Tray certificates configured');
-                        return true;
-                    }).catch(function(err) {
-                        console.error('Failed to load QZ Tray certificates:', err);
-                        throw err;
-                    });
-                }
 
                 /**
                  * Initialize QZ Tray connection once per session
@@ -219,20 +175,41 @@
                     window.qzGlobalConnectionInProgress = true;
                     console.log('Initializing global QZ Tray connection...');
 
-                    // Configure certificates first, then connect
-                    setupQzCertificates()
-                        .then(function() {
-                            return qz.websocket.connect();
-                        })
-                        .then(function() {
-                            window.qzGlobalConnectionEstablished = true;
-                            window.qzGlobalConnectionInProgress = false;
-                            console.log('✓ Global QZ Tray connection established successfully');
-                        })
-                        .catch(function(err) {
-                            window.qzGlobalConnectionInProgress = false;
-                            console.log('⚠ Global QZ Tray connection failed (will retry when needed):', err.message || err);
-                        });
+                    // Use existing startConnection from functions.js
+                    if (typeof startConnection === 'function') {
+                        startConnection({ retries: 3, delay: 1 });
+
+                        // Monitor connection success
+                        var checkInterval = setInterval(function() {
+                            if (qz.websocket.isActive()) {
+                                clearInterval(checkInterval);
+                                window.qzGlobalConnectionEstablished = true;
+                                window.qzGlobalConnectionInProgress = false;
+                                console.log('✓ Global QZ Tray connection established successfully');
+                            }
+                        }, 500);
+
+                        // Timeout after 10 seconds
+                        setTimeout(function() {
+                            clearInterval(checkInterval);
+                            if (!qz.websocket.isActive()) {
+                                window.qzGlobalConnectionInProgress = false;
+                                console.log('⚠ Global QZ Tray connection timeout (will retry when needed)');
+                            }
+                        }, 10000);
+                    } else {
+                        // Fallback to direct connection
+                        qz.websocket.connect()
+                            .then(function() {
+                                window.qzGlobalConnectionEstablished = true;
+                                window.qzGlobalConnectionInProgress = false;
+                                console.log('✓ Global QZ Tray connection established successfully');
+                            })
+                            .catch(function(err) {
+                                window.qzGlobalConnectionInProgress = false;
+                                console.log('⚠ Global QZ Tray connection failed (will retry when needed):', err.message || err);
+                            });
+                    }
                 }
 
                 /**
@@ -255,13 +232,10 @@
                             return;
                         }
 
-                        // Check if connection is in progress
-                        const isConnecting = qz.websocket.isConnecting && qz.websocket.isConnecting();
-                        if (!isConnecting && !qz.websocket.isActive()) {
+                        // Use existing startConnection from functions.js
+                        if (typeof startConnection === 'function' && !qz.websocket.isActive()) {
                             try {
-                                setupQzCertificates()
-                                    .then(() => qz.websocket.connect())
-                                    .catch(err => console.debug('Connection attempt failed:', err));
+                                startConnection({ retries: 2, delay: 1 });
                             } catch (error) {
                                 console.debug('Connection attempt failed:', error);
                             }
