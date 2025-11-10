@@ -81,6 +81,51 @@
                 window.qzGlobalConnectionInProgress = false;
 
                 /**
+                 * Configure QZ Tray security certificates
+                 */
+                function setupQzCertificates() {
+                    if (typeof qz === 'undefined') {
+                        console.warn('QZ Tray library not loaded');
+                        return Promise.reject('QZ Tray not available');
+                    }
+
+                    return Promise.all([
+                        fetch("{{ asset('qz-certs/certificate.crt') }}").then(r => r.text()),
+                        fetch("{{ asset('private-key.pem') }}").then(r => r.text())
+                    ]).then(function(results) {
+                        var certificate = results[0];
+                        var privateKey = results[1];
+
+                        qz.security.setCertificatePromise(function(resolve) {
+                            resolve(certificate);
+                        });
+
+                        qz.security.setSignatureAlgorithm("SHA512");
+                        qz.security.setSignaturePromise(function(toSign) {
+                            return function(resolve, reject) {
+                                try {
+                                    var pk = KEYUTIL.getKey(privateKey);
+                                    var sig = new KJUR.crypto.Signature({"alg": "SHA512withRSA"});
+                                    sig.init(pk);
+                                    sig.updateString(toSign);
+                                    var hex = sig.sign();
+                                    resolve(stob64(hextorstr(hex)));
+                                } catch (err) {
+                                    console.error("Signature error:", err);
+                                    reject(err);
+                                }
+                            };
+                        });
+
+                        console.log('✓ QZ Tray certificates configured');
+                        return true;
+                    }).catch(function(err) {
+                        console.error('Failed to load QZ Tray certificates:', err);
+                        throw err;
+                    });
+                }
+
+                /**
                  * Initialize QZ Tray connection once per session
                  * This will be called automatically when the page loads
                  */
@@ -107,7 +152,11 @@
                     window.qzGlobalConnectionInProgress = true;
                     console.log('Initializing global QZ Tray connection...');
 
-                    qz.websocket.connect()
+                    // Configure certificates first, then connect
+                    setupQzCertificates()
+                        .then(function() {
+                            return qz.websocket.connect();
+                        })
                         .then(function() {
                             window.qzGlobalConnectionEstablished = true;
                             window.qzGlobalConnectionInProgress = false;
@@ -143,7 +192,9 @@
                         const isConnecting = qz.websocket.isConnecting && qz.websocket.isConnecting();
                         if (!isConnecting && !qz.websocket.isActive()) {
                             try {
-                                qz.websocket.connect();
+                                setupQzCertificates()
+                                    .then(() => qz.websocket.connect())
+                                    .catch(err => console.debug('Connection attempt failed:', err));
                             } catch (error) {
                                 console.debug('Connection attempt failed:', error);
                             }
