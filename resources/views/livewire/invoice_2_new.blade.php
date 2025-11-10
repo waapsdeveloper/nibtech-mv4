@@ -267,39 +267,182 @@ canvas {
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         const invoiceNode = document.querySelector('.invoice-container');
+        let currentPrinterName = null;
+        let isQzConnected = false;
 
         document.addEventListener('DOMContentLoaded', () => {
+            createPrinterInfoPanel();
             tryQzPrint()
                 .catch(error => {
                     console.warn('QZ print failed, falling back to browser print.', error);
+                    updatePrinterStatus('Error: ' + error.message, 'error');
                     fallbackWindowPrint();
                 });
         });
+
+        function createPrinterInfoPanel() {
+            const panel = document.createElement('div');
+            panel.id = 'printer-info-panel';
+            panel.style.position = 'fixed';
+            panel.style.top = '10px';
+            panel.style.right = '10px';
+            panel.style.background = 'white';
+            panel.style.border = '2px solid #cbd5e1';
+            panel.style.borderRadius = '8px';
+            panel.style.padding = '12px 16px';
+            panel.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            panel.style.fontFamily = 'Arial, sans-serif';
+            panel.style.fontSize = '13px';
+            panel.style.zIndex = '10000';
+            panel.style.minWidth = '280px';
+
+            panel.innerHTML = `
+                <div style="margin-bottom: 8px; font-weight: bold; color: #0f172a; font-size: 14px;">
+                    🖨️ Invoice Printer Status
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <strong>QZ Tray:</strong> <span id="qz-status" style="color: #94a3b8;">Connecting...</span>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <strong>Printer:</strong> <span id="printer-name" style="color: #94a3b8;">Detecting...</span>
+                </div>
+                <div style="margin-bottom: 6px;">
+                    <strong>Status:</strong> <span id="print-status" style="color: #94a3b8;">Initializing...</span>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 8px;">
+                    <button id="change-printer-btn" style="flex: 1; padding: 6px 12px; background: #2563eb; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" disabled>
+                        Change Printer
+                    </button>
+                    <button id="retry-print-btn" style="flex: 1; padding: 6px 12px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;" disabled>
+                        Retry Print
+                    </button>
+                </div>
+            `;
+
+            document.body.appendChild(panel);
+
+            document.getElementById('change-printer-btn').addEventListener('click', async () => {
+                try {
+                    await changePrinterManually();
+                } catch (error) {
+                    console.error('Error changing printer:', error);
+                }
+            });
+
+            document.getElementById('retry-print-btn').addEventListener('click', async () => {
+                updatePrinterStatus('Retrying...', 'info');
+                try {
+                    await tryQzPrint();
+                } catch (error) {
+                    console.error('Retry failed:', error);
+                    updatePrinterStatus('Retry failed', 'error');
+                }
+            });
+        }
+
+        function updateQzStatus(connected) {
+            isQzConnected = connected;
+            const statusEl = document.getElementById('qz-status');
+            if (statusEl) {
+                statusEl.textContent = connected ? 'Connected ✓' : 'Disconnected ✗';
+                statusEl.style.color = connected ? '#059669' : '#dc2626';
+            }
+
+            const changePrinterBtn = document.getElementById('change-printer-btn');
+            const retryBtn = document.getElementById('retry-print-btn');
+            if (changePrinterBtn) {
+                changePrinterBtn.disabled = !connected;
+            }
+            if (retryBtn) {
+                retryBtn.disabled = !connected;
+            }
+        }
+
+        function updatePrinterName(name) {
+            currentPrinterName = name;
+            const nameEl = document.getElementById('printer-name');
+            if (nameEl) {
+                nameEl.textContent = name || 'None selected';
+                nameEl.style.color = name ? '#0f172a' : '#94a3b8';
+            }
+        }
+
+        function updatePrinterStatus(status, type = 'info') {
+            const statusEl = document.getElementById('print-status');
+            if (statusEl) {
+                statusEl.textContent = status;
+                const colors = {
+                    'info': '#0ea5e9',
+                    'success': '#059669',
+                    'error': '#dc2626',
+                    'warning': '#f59e0b'
+                };
+                statusEl.style.color = colors[type] || colors['info'];
+            }
+        }
+
+        async function changePrinterManually() {
+            if (!isQzConnected) {
+                alert('QZ Tray is not connected. Please ensure QZ Tray is running.');
+                return;
+            }
+
+            updatePrinterStatus('Loading printers...', 'info');
+            try {
+                const availablePrinters = await qz.printers.find();
+                if (!availablePrinters.length) {
+                    alert('No printers detected by QZ Tray');
+                    updatePrinterStatus('No printers found', 'error');
+                    return;
+                }
+
+                const newPrinter = await promptForPrinterSelection(availablePrinters);
+                if (newPrinter) {
+                    storeInvoicePrinter(newPrinter);
+                    updatePrinterName(newPrinter);
+                    updatePrinterStatus('Printer updated', 'success');
+                }
+            } catch (error) {
+                console.error('Failed to change printer:', error);
+                updatePrinterStatus('Failed to load printers', 'error');
+            }
+        }
 
         async function tryQzPrint() {
             if (typeof qz === 'undefined' || !qz.websocket) {
                 throw new Error('QZ Tray libraries not available');
             }
 
+            updatePrinterStatus('Connecting to QZ Tray...', 'info');
             await waitForQzConnection();
+            updateQzStatus(true);
+            updatePrinterStatus('QZ Tray connected', 'success');
 
             let printer = resolveInvoicePrinter();
+            updatePrinterName(printer);
+
             if (!printer) {
+                updatePrinterStatus('No printer configured', 'warning');
                 const availablePrinters = await qz.printers.find();
                 if (!availablePrinters.length) {
                     throw new Error('No printers detected by QZ Tray');
                 }
 
+                updatePrinterStatus('Waiting for printer selection...', 'info');
                 printer = await promptForPrinterSelection(availablePrinters);
                 if (!printer) {
                     throw new Error('Printer selection cancelled');
                 }
 
                 storeInvoicePrinter(printer);
+                updatePrinterName(printer);
             }
 
+            updatePrinterStatus('Converting invoice to image...', 'info');
             // Convert invoice to image and print
             const invoiceImageBase64 = await convertInvoiceToImage();
+
+            updatePrinterStatus('Sending to printer...', 'info');
             const imageConfig = qz.configs.create(printer, {
                 orientation: 'portrait',
                 margins: { top: 5, right: 5, bottom: 5, left: 5 },
@@ -311,6 +454,8 @@ canvas {
                 flavor: 'base64',
                 data: invoiceImageBase64
             }]);
+
+            updatePrinterStatus('Printed successfully ✓', 'success');
         }
 
         async function convertInvoiceToImage() {
@@ -458,6 +603,7 @@ canvas {
 
         function waitForQzConnection(timeout = 7000) {
             if (qz.websocket.isActive()) {
+                updateQzStatus(true);
                 return Promise.resolve();
             }
 
@@ -472,9 +618,11 @@ canvas {
                 const timer = setInterval(() => {
                     if (qz.websocket.isActive()) {
                         clearInterval(timer);
+                        updateQzStatus(true);
                         resolve();
                     } else if (Date.now() - start > timeout) {
                         clearInterval(timer);
+                        updateQzStatus(false);
                         reject(new Error('Timed out waiting for QZ Tray connection'));
                     }
                 }, 250);
