@@ -506,11 +506,22 @@
                 try {
                     await sendToPrinter();
                     updateStatus('Delivery note sent to printer.');
-                    setTimeout(() => window.close(), autoCloseDelay);
+                    updatePrinterStatus('Print completed - window will close in 5s', 'success');
+                    setTimeout(() => {
+                        const confirmClose = confirm('Delivery note has been sent to printer. Close this window?');
+                        if (confirmClose) {
+                            window.close();
+                        }
+                    }, 5000);
                 } catch (error) {
                     console.error('Automatic delivery note printing failed:', error);
+                    updateStatus('Printing failed - use buttons to retry or change printer');
                     updatePrinterStatus('Print failed: ' + error.message, 'error');
-                    fallbackToPdf();
+                    // Don't auto-close or redirect on error - let user interact with the panel
+                    const spinnerEl = document.querySelector('.spinner');
+                    if (spinnerEl) {
+                        spinnerEl.style.display = 'none';
+                    }
                 }
             });
         })();
