@@ -581,18 +581,19 @@
 
                 updateStatus('Sending label to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
-                const config = qz.configs.create(printer, {
-                    size: { width: 102, height: 210 },
-                    units: 'mm',
-                    copies: 1,
-                    margins: { top: 0, right: 0, bottom: 0, left: 0 }
-                });
 
-                await qz.print(config, [{
+                const config = qz.configs.create(printer);
+                const printData = [{
                     type: 'pdf',
                     format: 'base64',
-                    data: pdfBase64
-                }]);
+                    data: pdfBase64,
+                    options: {
+                        size: { width: 102, height: 210 },
+                        units: 'mm'
+                    }
+                }];
+
+                await qz.print(config, printData);
 
                 storeLabelPrinter(printer);
                 updateStatus('Label sent to printer.', 'success');

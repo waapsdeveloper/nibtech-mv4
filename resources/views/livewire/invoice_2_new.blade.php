@@ -456,6 +456,11 @@ canvas {
             }]);
 
             updatePrinterStatus('Printed successfully ✓', 'success');
+
+            // Close window after successful QZ print
+            setTimeout(() => {
+                window.close();
+            }, 1000);
         }
 
         async function convertInvoiceToImage() {
