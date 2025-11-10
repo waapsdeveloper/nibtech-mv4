@@ -1329,19 +1329,31 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
-                document.getElementById(id).focus();
-                document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                var elem = document.getElementById(id);
+                if (elem) {
+                    elem.focus();
+                    elem.click();
+                    setTimeout(function(){
+                        if (elem) elem.focus();
+                        $('#imei').focus();
+                    }, 500);
+                }
             };
             document.addEventListener('DOMContentLoaded', function() {
                 var input = document.getElementById(id);
-                input.focus();
-                input.select();
-                document.getElementById(id).click();
-                setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                if (input) {
+                    input.focus();
+                    input.select();
+                    input.click();
+                    setTimeout(function(){
+                        if (input) input.focus();
+                        $('#imei').focus();
+                    }, 500);
+                }
             });
             if (id == 'imei0') {
-                document.querySelector('[rel="prev"]').click();
+                var prevBtn = document.querySelector('[rel="prev"]');
+                if (prevBtn) prevBtn.click();
             }
         @endif
 
@@ -1349,24 +1361,37 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
-                if (document.getElementById('sku_input').value === ''){
-                    document.getElementById('sku_input').focus();
+                var skuInput = document.getElementById('sku_input');
+                if (skuInput && skuInput.value === ''){
+                    skuInput.focus();
                 }else{
-                    document.getElementById(id).focus();
-                    document.getElementById(id).click();
-                    setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                    var elem = document.getElementById(id);
+                    if (elem) {
+                        elem.focus();
+                        elem.click();
+                        setTimeout(function(){
+                            if (elem) elem.focus();
+                            $('#imei').focus();
+                        }, 500);
+                    }
                     document.addEventListener('DOMContentLoaded', function() {
                         var input = document.getElementById(id);
-                        input.focus();
-                        input.select();
-                        document.getElementById(id).click();
-                        setTimeout(function(){ document.getElementById(id).focus();$('#imei').focus(); }, 500);
+                        if (input) {
+                            input.focus();
+                            input.select();
+                            input.click();
+                            setTimeout(function(){
+                                if (input) input.focus();
+                                $('#imei').focus();
+                            }, 500);
+                        }
                     });
                 }
             };
 
             if (id == 'imei0') {
-                document.querySelector('[rel="prev"]').click();
+                var prevBtn = document.querySelector('[rel="prev"]');
+                if (prevBtn) prevBtn.click();
             }
         @endif
         $('#tracking_model').on('show.bs.modal', function (event) {
