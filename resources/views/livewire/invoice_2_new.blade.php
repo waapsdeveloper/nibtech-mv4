@@ -602,6 +602,25 @@ canvas {
         }
 
         function waitForQzConnection(timeout = 7000) {
+            // Use global connection manager if available (from main layout)
+            if (typeof window.ensureQzConnection === 'function') {
+                console.log('Using global QZ Tray connection manager');
+                return window.ensureQzConnection(timeout)
+                    .then(function() {
+                        updateQzStatus(true);
+                        console.log('Connected via global manager');
+                    })
+                    .catch(function(error) {
+                        console.log('Global manager failed, falling back to local connection');
+                        return fallbackLocalConnection(timeout);
+                    });
+            }
+
+            // Fallback: Local connection logic (for standalone pages)
+            return fallbackLocalConnection(timeout);
+        }
+
+        function fallbackLocalConnection(timeout) {
             // Check if already connected - don't reconnect
             if (qz.websocket.isActive()) {
                 updateQzStatus(true);
