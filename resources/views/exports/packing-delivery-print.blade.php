@@ -111,6 +111,7 @@
             sessionStorage.setItem('packing_delivery_window_opened', Date.now().toString());
 
             const statusNode = document.getElementById('status');
+            const spinnerEl = document.querySelector('.spinner');
             const pdfUrl = @json($pdfProxyUrl);
             let serverA4Printer = @json($sessionA4Printer);
             const printerEndpoint = @json(route('order.store_printer_preferences'));
@@ -162,6 +163,7 @@
 
             document.getElementById('change-printer-btn').addEventListener('click', async () => {
                 try {
+                    updateStatus('Loading printers...', 'info');
                     await changePrinterManually();
                 } catch (error) {
                     console.error('Error changing printer:', error);
@@ -169,6 +171,7 @@
             });
 
             document.getElementById('retry-print-btn').addEventListener('click', async () => {
+                updateStatus('Retrying...', 'info');
                 updatePrinterStatus('Retrying...', 'info');
                 try {
                     await sendToPrinter();
@@ -205,11 +208,33 @@
                 }
             }
 
-            function updateStatus(text) {
+            function setSpinnerVisible(visible) {
+                if (!spinnerEl) {
+                    return;
+                }
+                spinnerEl.style.display = visible ? 'block' : 'none';
+            }
+
+            function updateStatus(text, type = 'info') {
+                const colors = {
+                    'info': '#0ea5e9',
+                    'success': '#059669',
+                    'error': '#dc2626',
+                    'warning': '#f59e0b'
+                };
+
                 if (statusNode) {
                     statusNode.textContent = text;
+                    statusNode.style.color = colors[type] || colors['info'];
                 }
-                updatePrinterStatus(text, 'info');
+
+                updatePrinterStatus(text, type);
+
+                if (type === 'success' || type === 'error' || type === 'warning') {
+                    setSpinnerVisible(false);
+                } else if (type === 'info') {
+                    setSpinnerVisible(true);
+                }
             }
 
             function sleep(ms) {
@@ -217,7 +242,7 @@
             }
 
             function fallbackToPdf() {
-                updateStatus('Opening delivery note for manual printing...');
+                updateStatus('Opening delivery note for manual printing...', 'warning');
                 window.location.replace(pdfUrl);
             }
 
@@ -524,13 +549,21 @@
                 }]);
 
                 storeA4Printer(printer);
+                updateStatus('Delivery note sent to printer.', 'success');
                 updatePrinterStatus('Printed successfully ✓', 'success');
+                if (window.sessionStorage) {
+                    try {
+                        sessionStorage.setItem('packing_delivery_print_status', 'success');
+                    } catch (error) {
+                        console.debug('Unable to persist delivery note print status in sessionStorage.', error);
+                    }
+                }
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
                 try {
                     await sendToPrinter();
-                    updateStatus('Delivery note sent to printer.');
+                    updateStatus('Delivery note sent to printer.', 'success');
                     updatePrinterStatus('Print completed - window will close in 5s', 'success');
                     setTimeout(() => {
                         const confirmClose = confirm('Delivery note has been sent to printer. Close this window?');
@@ -540,13 +573,9 @@
                     }, 5000);
                 } catch (error) {
                     console.error('Automatic delivery note printing failed:', error);
-                    updateStatus('Printing failed - use buttons to retry or change printer');
+                    updateStatus('Printing failed - use buttons to retry or change printer', 'error');
                     updatePrinterStatus('Print failed: ' + error.message, 'error');
                     // Don't auto-close or redirect on error - let user interact with the panel
-                    const spinnerEl = document.querySelector('.spinner');
-                    if (spinnerEl) {
-                        spinnerEl.style.display = 'none';
-                    }
                 }
             });
 
