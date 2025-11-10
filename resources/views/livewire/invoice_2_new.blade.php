@@ -602,15 +602,23 @@ canvas {
         }
 
         function waitForQzConnection(timeout = 7000) {
+            // Check if already connected - don't reconnect
             if (qz.websocket.isActive()) {
                 updateQzStatus(true);
+                console.log('QZ Tray already connected - reusing existing connection');
                 return Promise.resolve();
             }
 
-            try {
-                qz.websocket.connect();
-            } catch (error) {
-                console.debug('QZ connection attempt rejected immediately.', error);
+            // Only attempt connection if not already active
+            const isConnecting = qz.websocket.isConnecting && qz.websocket.isConnecting();
+            if (isConnecting) {
+                console.log('QZ Tray connection already in progress - waiting...');
+            } else {
+                try {
+                    qz.websocket.connect();
+                } catch (error) {
+                    console.debug('QZ connection attempt rejected immediately.', error);
+                }
             }
 
             return new Promise((resolve, reject) => {
@@ -619,6 +627,7 @@ canvas {
                     if (qz.websocket.isActive()) {
                         clearInterval(timer);
                         updateQzStatus(true);
+                        console.log('QZ Tray connection established');
                         resolve();
                     } else if (Date.now() - start > timeout) {
                         clearInterval(timer);
@@ -637,5 +646,11 @@ canvas {
                 }, closeTimeout);
             // }
         };
+
+        // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs
+        window.addEventListener('beforeunload', (event) => {
+            // Do NOT disconnect QZ Tray - other windows may be using it
+            console.log('Window closing - preserving QZ Tray connection for other tabs');
+        });
     </script>
 @endsection

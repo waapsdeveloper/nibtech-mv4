@@ -221,21 +221,30 @@
             }
 
             async function waitForQzConnection(timeout = 7000) {
+                // Check if already connected - don't reconnect
                 if (qz.websocket.isActive()) {
                     updateQzStatus(true);
+                    console.log('QZ Tray already connected - reusing existing connection');
                     return;
                 }
 
-                try {
-                    qz.websocket.connect();
-                } catch (error) {
-                    console.debug('Initial QZ connection attempt failed.', error);
+                // Only attempt connection if not already active
+                const isConnecting = qz.websocket.isConnecting && qz.websocket.isConnecting();
+                if (isConnecting) {
+                    console.log('QZ Tray connection already in progress - waiting...');
+                } else {
+                    try {
+                        qz.websocket.connect();
+                    } catch (error) {
+                        console.debug('Initial QZ connection attempt failed.', error);
+                    }
                 }
 
                 const start = Date.now();
                 while (Date.now() - start < timeout) {
                     if (qz.websocket.isActive()) {
                         updateQzStatus(true);
+                        console.log('QZ Tray connection established');
                         return;
                     }
                     await sleep(250);
@@ -251,6 +260,7 @@
                 while (Date.now() - extendedStart < timeout * 2) {
                     if (qz.websocket.isActive()) {
                         updateQzStatus(true);
+                        console.log('QZ Tray connection established after launch');
                         return;
                     }
                     await sleep(250);
@@ -523,6 +533,12 @@
                         spinnerEl.style.display = 'none';
                     }
                 }
+            });
+
+            // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs
+            window.addEventListener('beforeunload', (event) => {
+                // Do NOT disconnect QZ Tray - other windows may be using it
+                console.log('Window closing - preserving QZ Tray connection for other tabs');
             });
         })();
     </script>
