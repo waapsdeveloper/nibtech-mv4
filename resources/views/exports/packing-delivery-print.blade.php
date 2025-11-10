@@ -105,6 +105,7 @@
     </div>
 
     <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
+    <script src="{{ asset('assets/js/functions.js') }}"></script>
     <script>
         (function () {
             sessionStorage.setItem('packing_delivery_window_opened', Date.now().toString());
