@@ -263,6 +263,7 @@ canvas {
     @endsection
 
     @section('scripts')
+    <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
         const invoiceNode = document.querySelector('.invoice-container');
