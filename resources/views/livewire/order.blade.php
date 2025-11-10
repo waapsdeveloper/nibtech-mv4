@@ -789,6 +789,9 @@
                                             @if ($order->status == 6)
                                             <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
                                             @endif
+                                            @if (request('packing') == '1')
+                                            <a class="dropdown-item" href="{{ route('order.packing_reprint', ['id' => $order->id]) }}@if(request()->filled('sort')){{ '?sort='.request('sort') }}@endif">Reprint Packing Docs</a>
+                                            @endif
                                             @if (session('user')->hasPermission('view_api_data'))
                                             <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true/true" target="_blank">Data</a>
                                             <a class="dropdown-item" href="{{url('order')}}/label/{{ $order->reference_id }}/true/true" target="_blank">Label Data</a>
