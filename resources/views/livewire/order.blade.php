@@ -27,6 +27,69 @@
             .form-floating>label {
             padding: 0.5rem 0.75rem;
             }
+
+            body.tracking-verify-active {
+                overflow: hidden;
+            }
+
+            .tracking-verify-overlay {
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100vw;
+                height: 100vh;
+                display: none;
+                align-items: center;
+                justify-content: center;
+                background: rgba(15, 23, 42, 0.55);
+                z-index: 2000;
+                padding: 16px;
+            }
+
+            .tracking-verify-overlay.show {
+                display: flex;
+            }
+
+            .tracking-verify-dialog {
+                width: min(440px, 100%);
+                background: #ffffff;
+                border-radius: 12px;
+                padding: 24px 28px;
+                box-shadow: 0 18px 48px rgba(15, 23, 42, 0.35);
+                font-family: Arial, sans-serif;
+            }
+
+            .tracking-verify-dialog h2 {
+                font-size: 20px;
+                margin-bottom: 12px;
+            }
+
+            .tracking-verify-dialog p {
+                margin-bottom: 14px;
+                font-size: 15px;
+            }
+
+            .tracking-verify-input {
+                width: 100%;
+                padding: 12px 14px;
+                font-size: 18px;
+                border: 1px solid #cbd5f5;
+                border-radius: 8px;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+            }
+
+            .tracking-verify-feedback {
+                margin-top: 10px;
+                font-size: 14px;
+            }
+
+            .tracking-verify-feedback.tracking-verify-mismatch {
+                color: #b91c1c;
+            }
+            .tracking-verify-feedback.tracking-verify-match {
+                color: #166534;
+            }
         </style>
     @endsection
 <br>
@@ -66,6 +129,16 @@
         session()->forget('copy');
         @endphp
     @endif
+</div>
+
+
+<div id="tracking-verify-overlay" class="tracking-verify-overlay" aria-hidden="true">
+    <div class="tracking-verify-dialog" role="dialog" aria-modal="true" aria-labelledby="tracking-verify-title">
+        <h2 id="tracking-verify-title">Confirm Tracking Number</h2>
+        <p class="tracking-verify-instructions">Enter the tracking number <span id="tracking-verify-expected" class="fw-bold"></span> to confirm dispatch.</p>
+        <input id="tracking-verify-input" class="tracking-verify-input" type="text" autocomplete="off" autocapitalize="characters" spellcheck="false" placeholder="Type tracking number" inputmode="text">
+        <p id="tracking-verify-feedback" class="tracking-verify-feedback text-muted">The popup closes automatically once the number matches.</p>
+    </div>
 </div>
 
 
@@ -1098,10 +1171,10 @@
                         <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
                         @php
-                            if(session('user')->role_id == 4){
+                            $sessionUser = session('user');
+                            $replacement_url = url('order/replacement/1');
+                            if ($sessionUser && isset($sessionUser->role_id) && (int) $sessionUser->role_id === 4) {
                                 $replacement_url = url('order/replacement');
-                            }else {
-                                $replacement_url = url('order/replacement/1');
                             }
                         @endphp
                         <form action="{{ $replacement_url }}" method="POST">
@@ -1150,6 +1223,93 @@
     @section('scripts')
 
     <script>
+
+        document.addEventListener('DOMContentLoaded', function () {
+            try {
+                if (!window.sessionStorage) {
+                    return;
+                }
+
+                const storedTracking = window.sessionStorage.getItem('packing_tracking_verify');
+                const packingModeActive = document.getElementById('packing')?.checked === true;
+
+                if (!storedTracking || !packingModeActive) {
+                    return;
+                }
+
+                const overlay = document.getElementById('tracking-verify-overlay');
+                const input = document.getElementById('tracking-verify-input');
+                const expected = document.getElementById('tracking-verify-expected');
+                const feedback = document.getElementById('tracking-verify-feedback');
+
+                if (!overlay || !input || !expected || !feedback) {
+                    window.sessionStorage.removeItem('packing_tracking_verify');
+                    return;
+                }
+
+                const normalizedTarget = storedTracking.trim().toUpperCase();
+
+                function closeOverlay() {
+                    overlay.classList.remove('show');
+                    overlay.setAttribute('aria-hidden', 'true');
+                    document.body.classList.remove('tracking-verify-active');
+                    window.sessionStorage.removeItem('packing_tracking_verify');
+                    input.removeEventListener('input', handleInput);
+                    document.removeEventListener('keydown', handleEscape, true);
+                }
+
+                function handleEscape(event) {
+                    if (event.key === 'Escape') {
+                        closeOverlay();
+                    }
+                }
+
+                function handleInput() {
+                    const value = (input.value || '').trim().toUpperCase();
+                    if (!value.length) {
+                        feedback.textContent = 'The popup closes automatically once the number matches.';
+                        feedback.classList.remove('tracking-verify-mismatch', 'tracking-verify-match', 'text-success');
+                        feedback.classList.add('text-muted');
+                        return;
+                    }
+
+                    if (value === normalizedTarget) {
+                        feedback.textContent = 'Tracking number matched. Great job!';
+                        feedback.classList.remove('tracking-verify-mismatch', 'text-muted');
+                        feedback.classList.add('tracking-verify-match', 'text-success');
+                        setTimeout(closeOverlay, 250);
+                    } else {
+                        feedback.textContent = 'Tracking number does not match. Please try again.';
+                        feedback.classList.remove('tracking-verify-match', 'text-success', 'text-muted');
+                        feedback.classList.add('tracking-verify-mismatch');
+                    }
+                }
+
+                expected.textContent = storedTracking;
+                overlay.classList.add('show');
+                overlay.setAttribute('aria-hidden', 'false');
+                document.body.classList.add('tracking-verify-active');
+                input.value = '';
+                try {
+                    input.focus({ preventScroll: true });
+                } catch (focusError) {
+                    input.focus();
+                }
+
+                input.addEventListener('input', handleInput);
+                document.addEventListener('keydown', handleEscape, true);
+                overlay.addEventListener('click', function (event) {
+                    if (event.target === overlay) {
+                        closeOverlay();
+                    }
+                }, { once: true });
+            } catch (error) {
+                console.debug('Tracking verification prompt failed to initialize.', error);
+                if (window.sessionStorage) {
+                    window.sessionStorage.removeItem('packing_tracking_verify');
+                }
+            }
+        });
 
         function moveToNextInput(currentInput, prefix, moveUp = false) {
             const inputs = document.querySelectorAll(`input[id^="${prefix}"]`);

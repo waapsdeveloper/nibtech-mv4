@@ -2668,7 +2668,9 @@ class Order extends Component
             }
         }
 
-        return view('livewire.invoice_new')->with($data);
+        $view = $packingMode ? 'livewire.invoice_2_new' : 'livewire.invoice_new';
+
+        return view($view)->with($data);
     }
 
     public function storePrinterPreferences(Request $request)
@@ -3077,10 +3079,28 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+        $order->refresh();
+    $resolvedTrackingNumber = $order->tracking_number ?? ($orderObj->tracking_number ?? null);
 
         $invoice_url = url('export_invoice').'/'.$id;
-        if(request('packing') == 1){
+        $packingEnabled = (string) request('packing') === '1';
+        $label_url = null;
+        $delivery_print_url = null;
+
+        if ($packingEnabled) {
             $invoice_url .= '/1';
+
+            if ($order->label_url) {
+                $labelQuery = ['ids' => [$id], 'packing' => 1];
+                if (request()->filled('sort')) {
+                    $labelQuery['sort'] = request('sort');
+                }
+                $label_url = url('export_label') . '?' . http_build_query($labelQuery, '', '&', PHP_QUERY_RFC3986);
+            }
+
+            if ($order->delivery_note_url) {
+                $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
+            }
         }
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
@@ -3106,10 +3126,24 @@ class Order extends Component
         }
 
         // JavaScript to open two tabs and print
-        echo '<script>
-        var newTab2 = window.open("'.$invoice_url.'", "_blank");
+        $scriptStatements = [];
 
-        </script>';
+        if ($packingEnabled) {
+            if ($label_url) {
+                $scriptStatements[] = 'window.open("'.$label_url.'", "_blank");';
+            }
+            if ($delivery_print_url) {
+                $scriptStatements[] = 'window.open("'.$delivery_print_url.'", "_blank");';
+            }
+        }
+
+        $scriptStatements[] = 'window.open("'.$invoice_url.'", "_blank");';
+
+        if ($packingEnabled && !empty($resolvedTrackingNumber)) {
+            array_unshift($scriptStatements, 'window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($resolvedTrackingNumber).');');
+        }
+
+        echo '<script>' . implode('\n', $scriptStatements) . '</script>';
 
         // Open Label in new tab if request(packing) = 1
         if(request('sort') == 4 && !isset($detail)){
@@ -3326,23 +3360,50 @@ class Order extends Component
 
         $orderObj = $this->updateBMOrder($order->reference_id, true);
         $order = Order_model::find($order->id);
+    $resolvedTrackingNumber = $order->tracking_number ?? ($orderObj->tracking_number ?? null);
+
+        $invoice_url = url('export_invoice').'/'.$id;
+        $packingEnabled = (string) request('packing') === '1';
+        $label_url = null;
+        $delivery_print_url = null;
+
+        if ($packingEnabled) {
+            $invoice_url .= '/1';
+
+            if ($order->label_url) {
+                $labelQuery = ['ids' => [$id], 'packing' => 1];
+                if (request()->filled('sort')) {
+                    $labelQuery['sort'] = request('sort');
+                }
+                $label_url = url('export_label') . '?' . http_build_query($labelQuery, '', '&', PHP_QUERY_RFC3986);
+            }
+
+            if ($order->delivery_note_url) {
+                $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
+            }
+        }
+
+        $baseScriptStatements = [];
+        if ($packingEnabled) {
+            if ($label_url) {
+                $baseScriptStatements[] = 'window.open("'.$label_url.'", "_blank");';
+            }
+            if ($delivery_print_url) {
+                $baseScriptStatements[] = 'window.open("'.$delivery_print_url.'", "_blank");';
+            }
+        }
+        $baseScriptStatements[] = 'window.open("'.$invoice_url.'", "_blank");';
+
+        if ($packingEnabled && !empty($resolvedTrackingNumber)) {
+            array_unshift($baseScriptStatements, 'window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($resolvedTrackingNumber).');');
+        }
+
         if(!isset($detail)){
 
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = 'window.location.href = document.referrer;';
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-
-            window.location.href = document.referrer;
-            </script>';
+            echo '<script>' . implode('\n', $scriptLines) . '</script>';
 
         }
         if(!$detail->orderlines){
@@ -3369,27 +3430,17 @@ class Order extends Component
 
 
             // JavaScript to open two tabs and print
-            echo '<script>
-            window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");
-            window.location.href = document.referrer;
-            </script>';
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = 'window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");';
+            $scriptLines[] = 'window.location.href = document.referrer;';
+
+            echo '<script>' . implode('\n', $scriptLines) . '</script>';
         }else{
 
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = 'window.location.href = document.referrer;';
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-
-            window.location.href = document.referrer;
-            </script>';
+            echo '<script>' . implode('\n', $scriptLines) . '</script>';
         }
 
 
