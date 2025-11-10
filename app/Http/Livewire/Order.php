@@ -3149,7 +3149,7 @@ class Order extends Component
             . 'var __packingTarget = document.referrer || __packingFallback;'
             . 'if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
 
-        echo '<script>' . implode('\n', $scriptStatements) . '</script>';
+        echo '<script>' . implode("\n", $scriptStatements) . '</script>';
 
         // Open Label in new tab if request(packing) = 1
         if(request('sort') == 4 && !isset($detail)){
@@ -3414,7 +3414,7 @@ class Order extends Component
             $scriptLines = $baseScriptStatements;
             $scriptLines[] = $redirectStatement;
 
-            echo '<script>' . implode('\n', $scriptLines) . '</script>';
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
 
         }
         if(!$detail->orderlines){
@@ -3445,13 +3445,13 @@ class Order extends Component
             $scriptLines[] = 'window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");';
             $scriptLines[] = $redirectStatement;
 
-            echo '<script>' . implode('\n', $scriptLines) . '</script>';
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }else{
 
             $scriptLines = $baseScriptStatements;
             $scriptLines[] = $redirectStatement;
 
-            echo '<script>' . implode('\n', $scriptLines) . '</script>';
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }
 
 
@@ -3517,9 +3517,13 @@ class Order extends Component
             . 'var __packingTarget = document.referrer || __packingFallback;'
             . 'if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
 
-        echo '<script>' . implode('\n', $scriptStatements) . '</script>';
+        $scriptContent = implode("\n", $scriptStatements);
 
-        return null;
+        return response()->make(
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reprinting Packing Documents</title></head><body><script>' . $scriptContent . '</script></body></html>',
+            200,
+            ['Content-Type' => 'text/html']
+        );
     }
 
     public function delete_item($id){
