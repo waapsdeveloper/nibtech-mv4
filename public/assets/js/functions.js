@@ -188,14 +188,20 @@
     function displayMessage(msg, css, time) {
         if (css == undefined) { css = 'alert-info'; }
 
-        var timeout = setTimeout(function() { $('#' + timeout).alert('close'); }, time ? time : 5000);
+        // Check if Bootstrap alert is available
+        if (typeof $ !== 'undefined' && $.fn && $.fn.alert) {
+            var timeout = setTimeout(function() { $('#' + timeout).alert('close'); }, time ? time : 5000);
 
-        var alert = $("<div/>").addClass('alert alert-dismissible ' + css)
-            .css('max-height', '20em').css('overflow', 'auto')
-            .attr('id', timeout).attr('role', 'alert');
-        alert.html("<button type='button' class='close' data-dismiss='alert'>&times;</button>" + msg);
+            var alert = $("<div/>").addClass('alert alert-dismissible ' + css)
+                .css('max-height', '20em').css('overflow', 'auto')
+                .attr('id', timeout).attr('role', 'alert');
+            alert.html("<button type='button' class='close' data-dismiss='alert'>&times;</button>" + msg);
 
-        $("#qz-alert").append(alert);
+            $("#qz-alert").append(alert);
+        } else {
+            // Fallback to console if Bootstrap not available
+            console.log('[QZ]', msg);
+        }
     }
 
     var qzVersion = 0;
