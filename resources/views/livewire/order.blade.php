@@ -1276,7 +1276,10 @@
                         return;
                     }
 
-                    if (value === normalizedTarget) {
+                    // Accept exact match OR tracking numbers starting with "JJ"
+                    const isMatch = value === normalizedTarget || value.startsWith('JJ');
+
+                    if (isMatch) {
                         feedback.textContent = 'Tracking number matched. Great job!';
                         feedback.classList.remove('tracking-verify-mismatch', 'text-muted');
                         feedback.classList.add('tracking-verify-match', 'text-success');
