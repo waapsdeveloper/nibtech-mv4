@@ -221,6 +221,20 @@
             }
 
             async function waitForQzConnection(timeout = 7000) {
+                // Use global connection manager if available (from main layout)
+                if (typeof window.ensureQzConnection === 'function') {
+                    console.log('Using global QZ Tray connection manager');
+                    try {
+                        await window.ensureQzConnection(timeout);
+                        updateQzStatus(true);
+                        console.log('Connected via global manager');
+                        return;
+                    } catch (error) {
+                        console.log('Global manager failed, falling back to local connection');
+                    }
+                }
+
+                // Fallback: Local connection logic (for standalone pages)
                 // Check if already connected - don't reconnect
                 if (qz.websocket.isActive()) {
                     updateQzStatus(true);
