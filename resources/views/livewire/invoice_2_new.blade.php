@@ -107,12 +107,6 @@ canvas {
 
     @section('content')
 
-    <div id="pdf-container" style="width: 100%;"></div>
-
-    <br>
-    <br>
-    <br>
-    <br>
     <div class="invoice-container">
 
         <div class="invoice-headers">
@@ -269,57 +263,17 @@ canvas {
     @endsection
 
     @section('scripts')
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <script>
-        const pdfUrl = "{{ url('order/proxy_server').'?url='.urlencode($order->delivery_note_url) }}";
         const invoiceNode = document.querySelector('.invoice-container');
-        let pdfImageHtml = null;
-        let pdfBase64Cache = null;
 
         document.addEventListener('DOMContentLoaded', () => {
-            renderPdfPages()
-                .then(html => {
-                    pdfImageHtml = html;
-                    return tryQzPrint();
-                })
+            tryQzPrint()
                 .catch(error => {
                     console.warn('QZ print failed, falling back to browser print.', error);
                     fallbackWindowPrint();
                 });
         });
-
-        async function renderPdfPages() {
-            if (pdfImageHtml !== null) {
-                return pdfImageHtml;
-            }
-
-            const container = document.getElementById('pdf-container');
-            container.innerHTML = '';
-
-            const loadingTask = pdfjsLib.getDocument(pdfUrl);
-            const pdf = await loadingTask.promise;
-
-            let html = '';
-            for (let pageNum = 1; pageNum <= pdf.numPages; pageNum++) {
-                const page = await pdf.getPage(pageNum);
-                const viewport = page.getViewport({ scale: 1.69 });
-
-                const canvas = document.createElement('canvas');
-                canvas.width = viewport.width;
-                canvas.height = viewport.height;
-                const context = canvas.getContext('2d');
-
-                await page.render({ canvasContext: context, viewport }).promise;
-                container.appendChild(canvas);
-
-                const dataUrl = canvas.toDataURL('image/png');
-                html += `<img src="${dataUrl}" style="width:100%;display:block;margin:0 auto;" />`;
-            }
-
-            pdfImageHtml = html;
-            return html;
-        }
 
         async function tryQzPrint() {
             if (typeof qz === 'undefined' || !qz.websocket) {
@@ -343,18 +297,6 @@ canvas {
                 storeInvoicePrinter(printer);
             }
 
-            const pdfBase64 = await fetchPdfAsBase64();
-
-            // Print PDF first
-            const pdfConfig = qz.configs.create(printer, {
-                orientation: 'portrait'
-            });
-            await qz.print(pdfConfig, [{
-                type: 'pdf',
-                format: 'base64',
-                data: pdfBase64
-            }]);
-
             // Convert invoice to image and print
             const invoiceImageBase64 = await convertInvoiceToImage();
             const imageConfig = qz.configs.create(printer, {
@@ -368,41 +310,6 @@ canvas {
                 flavor: 'base64',
                 data: invoiceImageBase64
             }]);
-        }
-
-        async function fetchPdfAsBase64() {
-            if (pdfBase64Cache) {
-                return pdfBase64Cache;
-            }
-
-            try {
-                const response = await fetch(pdfUrl, { cache: 'no-store' });
-                if (!response.ok) {
-                    throw new Error(`Failed to fetch PDF: ${response.status}`);
-                }
-
-                const blob = await response.blob();
-                const base64 = await new Promise((resolve, reject) => {
-                    const reader = new FileReader();
-                    reader.onload = () => {
-                        const result = typeof reader.result === 'string' ? reader.result : '';
-                        const commaIndex = result.indexOf(',');
-                        if (commaIndex === -1) {
-                            reject(new Error('Unexpected PDF data URL format'));
-                            return;
-                        }
-                        resolve(result.substring(commaIndex + 1));
-                    };
-                    reader.onerror = () => reject(reader.error || new Error('Failed to read PDF blob'));
-                    reader.readAsDataURL(blob);
-                });
-
-                pdfBase64Cache = base64;
-                return base64;
-            } catch (error) {
-                console.warn('Unable to convert PDF to base64 for QZ Tray.', error);
-                throw error;
-            }
         }
 
         async function convertInvoiceToImage() {
@@ -426,11 +333,7 @@ canvas {
         }
 
         function fallbackWindowPrint() {
-            renderPdfPages()
-                .then(() => {
-                    window.print();
-                })
-                .catch(() => window.print());
+            window.print();
         }
 
         function resolveInvoicePrinter() {

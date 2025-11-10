@@ -3126,28 +3126,35 @@ class Order extends Component
             </script>';
         }
 
-        // JavaScript to open print tabs and store tracking confirmation marker
+        // JavaScript to open print tabs with delays and store tracking confirmation marker
         $scriptStatements = [];
+
+        $scriptStatements[] = '(async function() {';
+        $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
 
         if ($packingEnabled) {
             if ($label_url) {
-                $scriptStatements[] = 'window.open('.json_encode($label_url).', "_blank");';
+                $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
+                $scriptStatements[] = '    await delay(600);';
             }
             if ($delivery_print_url) {
-                $scriptStatements[] = 'window.open('.json_encode($delivery_print_url).', "_blank");';
+                $scriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
+                $scriptStatements[] = '    await delay(600);';
             }
         }
 
-        $scriptStatements[] = 'window.open('.json_encode($invoice_url).', "_blank");';
+        $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
 
         if ($packingEnabled && $trackingPromptValue) {
-            $scriptStatements[] = 'try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+            $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
         }
 
+        $scriptStatements[] = '    await delay(400);';
         $fallbackUrl = url()->previous() ?? url('order');
-        $scriptStatements[] = 'var __packingFallback = '.json_encode($fallbackUrl).';'
-            . 'var __packingTarget = document.referrer || __packingFallback;'
-            . 'if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '    var __packingFallback = '.json_encode($fallbackUrl).';';
+        $scriptStatements[] = '    var __packingTarget = document.referrer || __packingFallback;';
+        $scriptStatements[] = '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '})();';
 
         echo '<script>' . implode("\n", $scriptStatements) . '</script>';
 
@@ -3390,29 +3397,36 @@ class Order extends Component
         }
 
         $baseScriptStatements = [];
+        $baseScriptStatements[] = '(async function() {';
+        $baseScriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
+
         if ($packingEnabled) {
             if ($label_url) {
-                $baseScriptStatements[] = 'window.open('.json_encode($label_url).', "_blank");';
+                $baseScriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
+                $baseScriptStatements[] = '    await delay(600);';
             }
             if ($delivery_print_url) {
-                $baseScriptStatements[] = 'window.open('.json_encode($delivery_print_url).', "_blank");';
+                $baseScriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
+                $baseScriptStatements[] = '    await delay(600);';
             }
         }
-        $baseScriptStatements[] = 'window.open('.json_encode($invoice_url).', "_blank");';
+        $baseScriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
 
         if ($packingEnabled && $trackingPromptValue) {
-            $baseScriptStatements[] = 'try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+            $baseScriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
         }
 
+        $baseScriptStatements[] = '    await delay(400);';
         $fallbackUrlAllowed = url()->previous() ?? url('order');
-        $redirectStatement = 'var __packingFallback = '.json_encode($fallbackUrlAllowed).';'
-            . 'var __packingTarget = document.referrer || __packingFallback;'
-            . 'if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $redirectStatement = '    var __packingFallback = '.json_encode($fallbackUrlAllowed).';'
+            . '    var __packingTarget = document.referrer || __packingFallback;'
+            . '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
 
         if(!isset($detail)){
 
             $scriptLines = $baseScriptStatements;
             $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
 
             echo '<script>' . implode("\n", $scriptLines) . '</script>';
 
@@ -3442,14 +3456,16 @@ class Order extends Component
 
             // JavaScript to open two tabs and print
             $scriptLines = $baseScriptStatements;
-            $scriptLines[] = 'window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");';
+            $scriptLines[] = '    window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");';
             $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
 
             echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }else{
 
             $scriptLines = $baseScriptStatements;
             $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
 
             echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }
@@ -3484,19 +3500,24 @@ class Order extends Component
 
         $scriptStatements = [];
 
+        $scriptStatements[] = '(async function() {';
+        $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
+
         if ($labelUrl) {
-            $scriptStatements[] = 'window.open('.json_encode($labelUrl).', "_blank");';
+            $scriptStatements[] = '    window.open('.json_encode($labelUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(600);';
         }
 
         if ($deliveryPrintUrl) {
-            $scriptStatements[] = 'window.open('.json_encode($deliveryPrintUrl).', "_blank");';
+            $scriptStatements[] = '    window.open('.json_encode($deliveryPrintUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(600);';
         }
 
-        $scriptStatements[] = 'window.open('.json_encode($invoiceUrl).', "_blank");';
+        $scriptStatements[] = '    window.open('.json_encode($invoiceUrl).', "_blank");';
 
         $trackingPromptValue = $order->tracking_number ? strtoupper(trim($order->tracking_number)) : null;
         if ($trackingPromptValue) {
-            $scriptStatements[] = 'try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+            $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
         }
 
         $missingDocs = [];
@@ -3509,13 +3530,15 @@ class Order extends Component
 
         if (!empty($missingDocs)) {
             $missingMessage = 'Missing '.implode(' and ', $missingDocs).' for this order. Only available documents were opened.';
-            $scriptStatements[] = 'alert('.json_encode(ucfirst($missingMessage)).');';
+            $scriptStatements[] = '    alert('.json_encode(ucfirst($missingMessage)).');';
         }
 
+        $scriptStatements[] = '    await delay(400);';
         $fallbackUrl = url()->previous() ?? url('order');
-        $scriptStatements[] = 'var __packingFallback = '.json_encode($fallbackUrl).';'
-            . 'var __packingTarget = document.referrer || __packingFallback;'
-            . 'if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '    var __packingFallback = '.json_encode($fallbackUrl).';';
+        $scriptStatements[] = '    var __packingTarget = document.referrer || __packingFallback;';
+        $scriptStatements[] = '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '})();';
 
         $scriptContent = implode("\n", $scriptStatements);
 
