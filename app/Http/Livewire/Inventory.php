@@ -889,7 +889,7 @@ class Inventory extends Component
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $new_variation->id,
-                        'description' => 'Variation changed during inventory verification',
+                        'description' => 'Variation changed during inventory verification' . request('description'),
                         'admin_id' => session('user_id'),
                     ]);
                     session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);
