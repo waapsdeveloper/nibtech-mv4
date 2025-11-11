@@ -37,9 +37,9 @@
                         <option value="{{ $id }}" @if ($id == session('grade')) {{'selected'}}@endif>{{ $name }}</option>
                     @endforeach
                 </select>
-            <div class="input-group">
-                <label for="description" class="">Description: &nbsp;</label>
-                <input type="text" class="form-control form-control-sm" name="description" id="description" placeholder="Enter description" value="">
+            <div class="form-floating">
+                <input type="text" class="form-control" name="description" id="description" placeholder="Description" value="">
+                <label for="description">Description</label>
             </div>
 
 
