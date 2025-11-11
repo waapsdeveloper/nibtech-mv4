@@ -434,7 +434,7 @@ class Inventory extends Component
         $data['active_inventory_verification'] = $active_inventory_verification;
         if(!$active_inventory_verification){
             session()->flash('error', 'No active inventory verification found.');
-            return redirect()->back();
+            return redirect()->route('inventory');
         }
         $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')
         ->paginate($per_page)
