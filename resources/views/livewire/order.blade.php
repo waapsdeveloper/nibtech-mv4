@@ -1279,7 +1279,13 @@
                 }
 
                 function handleInput() {
-                    const value = (input.value || '').trim().toUpperCase();
+                    let value = (input.value || '').trim().toUpperCase();
+
+                    // If scanned value starts with JJ, remove one J
+                    if (value.startsWith('JJ')) {
+                        value = value.substring(1);
+                    }
+
                     if (!value.length) {
                         feedback.textContent = 'The popup closes automatically once the number matches.';
                         feedback.classList.remove('tracking-verify-mismatch', 'tracking-verify-match', 'text-success');
