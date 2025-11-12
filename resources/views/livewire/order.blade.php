@@ -1296,11 +1296,16 @@
                 overlay.setAttribute('aria-hidden', 'false');
                 document.body.classList.add('tracking-verify-active');
                 input.value = '';
-                try {
-                    input.focus({ preventScroll: true });
-                } catch (focusError) {
-                    input.focus();
-                }
+
+                // Focus input after a small delay to ensure overlay is fully rendered
+                setTimeout(() => {
+                    try {
+                        input.focus({ preventScroll: false });
+                        input.select();
+                    } catch (focusError) {
+                        input.focus();
+                    }
+                }, 100);
 
                 input.addEventListener('input', handleInput);
                 document.addEventListener('keydown', handleEscape, true);
