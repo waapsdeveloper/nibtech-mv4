@@ -285,7 +285,7 @@ class InventoryVerification extends Component
             $data['scanned_total'] = $scanned_total;
         }
         $data['active_inventory_verification'] = $active_inventory_verification;
-        $data['last_verification_date'] = Process_model::where(['process_type_id'=>20,'status'=>2])->latest()->first()->created_at;
+        $data['last_verification_date'] = Process_model::where(['process_type_id'=>20,'status'=>2])->latest()->first()->created_at ?? null;
 
         $data['stocks'] = Stock_model::
             with(['variation','variation.product','order','latest_operation','latest_return','admin'])
