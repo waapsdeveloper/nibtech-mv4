@@ -582,15 +582,14 @@
                 updateStatus('Sending label to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
 
-                const config = qz.configs.create(printer);
+                const config = qz.configs.create(printer, {
+                    size: { width: 102, height: 210 },
+                    units: 'mm'
+                });
                 const printData = [{
                     type: 'pdf',
                     format: 'base64',
-                    data: pdfBase64,
-                    options: {
-                        size: { width: 102, height: 210 },
-                        units: 'mm'
-                    }
+                    data: pdfBase64
                 }];
 
                 await qz.print(config, printData);
