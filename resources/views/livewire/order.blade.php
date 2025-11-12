@@ -1289,8 +1289,8 @@
                         return;
                     }
 
-                    // Accept exact match OR tracking numbers starting with "JJ"
-                    const isMatch = value === normalizedTarget || value.startsWith('JJ');
+                    // Accept exact match OR if expected tracking starts with "JJ" (any scan is valid)
+                    const isMatch = value === normalizedTarget || normalizedTarget.startsWith('JJ');
 
                     if (isMatch) {
                         isCurrentlyMatched = true;
