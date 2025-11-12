@@ -583,7 +583,7 @@
                 updatePrinterStatus('Sending to printer...', 'info');
 
                 const config = qz.configs.create(printer, {
-                    size: { width: 90, height: 190 },
+                    size: { width: 80, height: 170 },
                     units: 'mm'
                 });
                 const printData = [{
