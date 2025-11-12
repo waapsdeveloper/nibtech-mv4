@@ -607,6 +607,9 @@
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
+                // Small delay to ensure all resources are loaded
+                await new Promise(resolve => setTimeout(resolve, 300));
+
                 try {
                     await sendToPrinter();
                     updateStatus('Label sent to printer.', 'success');
