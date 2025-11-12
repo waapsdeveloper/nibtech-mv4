@@ -1251,6 +1251,7 @@
                 }
 
                 const normalizedTarget = storedTracking.trim().toUpperCase();
+                let isCurrentlyMatched = false;
 
                 function closeOverlay() {
                     overlay.classList.remove('show');
@@ -1263,6 +1264,16 @@
 
                 function handleEscape(event) {
                     if (event.key === 'Escape') {
+                        if (!isCurrentlyMatched) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            feedback.textContent = '⚠ Please scan the correct tracking number before closing.';
+                            feedback.classList.remove('tracking-verify-match', 'text-success', 'text-muted');
+                            feedback.classList.add('tracking-verify-mismatch');
+                            feedback.style.fontWeight = 'bold';
+                            input.focus();
+                            return false;
+                        }
                         closeOverlay();
                     }
                 }
@@ -1273,6 +1284,8 @@
                         feedback.textContent = 'The popup closes automatically once the number matches.';
                         feedback.classList.remove('tracking-verify-mismatch', 'tracking-verify-match', 'text-success');
                         feedback.classList.add('text-muted');
+                        feedback.style.fontWeight = '';
+                        isCurrentlyMatched = false;
                         return;
                     }
 
@@ -1280,14 +1293,25 @@
                     const isMatch = value === normalizedTarget || value.startsWith('JJ');
 
                     if (isMatch) {
-                        feedback.textContent = 'Tracking number matched. Great job!';
+                        isCurrentlyMatched = true;
+                        feedback.textContent = '✓ Tracking number matched. Great job!';
                         feedback.classList.remove('tracking-verify-mismatch', 'text-muted');
                         feedback.classList.add('tracking-verify-match', 'text-success');
-                        setTimeout(closeOverlay, 250);
+                        feedback.style.fontWeight = 'bold';
+                        feedback.style.fontSize = '16px';
+                        input.style.borderColor = '#22c55e';
+                        input.style.borderWidth = '2px';
+                        input.readOnly = true;
+                        setTimeout(closeOverlay, 800);
                     } else {
+                        isCurrentlyMatched = false;
                         feedback.textContent = 'Tracking number does not match. Please try again.';
                         feedback.classList.remove('tracking-verify-match', 'text-success', 'text-muted');
                         feedback.classList.add('tracking-verify-mismatch');
+                        feedback.style.fontWeight = '';
+                        feedback.style.fontSize = '';
+                        input.style.borderColor = '';
+                        input.style.borderWidth = '';
                     }
                 }
 
@@ -1311,9 +1335,19 @@
                 document.addEventListener('keydown', handleEscape, true);
                 overlay.addEventListener('click', function (event) {
                     if (event.target === overlay) {
+                        if (!isCurrentlyMatched) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            feedback.textContent = '⚠ Please scan the correct tracking number before closing.';
+                            feedback.classList.remove('tracking-verify-match', 'text-success', 'text-muted');
+                            feedback.classList.add('tracking-verify-mismatch');
+                            feedback.style.fontWeight = 'bold';
+                            input.focus();
+                            return false;
+                        }
                         closeOverlay();
                     }
-                }, { once: true });
+                });
             } catch (error) {
                 console.debug('Tracking verification prompt failed to initialize.', error);
                 if (window.sessionStorage) {
