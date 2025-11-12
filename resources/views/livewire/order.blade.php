@@ -1302,7 +1302,23 @@
                         input.style.borderColor = '#22c55e';
                         input.style.borderWidth = '2px';
                         input.readOnly = true;
-                        setTimeout(closeOverlay, 800);
+
+                        setTimeout(() => {
+                            closeOverlay();
+                            // Focus the last IMEI input after overlay closes
+                            setTimeout(() => {
+                                const imeiInputs = document.querySelectorAll('input[id^="imei"]');
+                                if (imeiInputs.length > 0) {
+                                    const lastImeiInput = imeiInputs[imeiInputs.length - 1];
+                                    lastImeiInput.focus();
+                                    try {
+                                        lastImeiInput.select();
+                                    } catch (e) {
+                                        // Ignore selection errors
+                                    }
+                                }
+                            }, 100);
+                        }, 800);
                     } else {
                         isCurrentlyMatched = false;
                         feedback.textContent = 'Tracking number does not match. Please try again.';
