@@ -81,25 +81,34 @@ class LabelsExport
                 $oc->getLabel($ref, false, true);
                 continue;
             }
-            // Add a new page with fixed size for the next label
-            $pdf->AddPage('P', array(102, 210));
-            // Fetch PDF content using Guzzle
+
+            // Fetch PDF content using Guzzle first to get the template size
             $response = $client->get($order);
             $pdfContent = $response->getBody()->getContents();
 
             // Convert Guzzle stream to StreamReader
             $streamReader = StreamReader::createByString($pdfContent);
+
+            $tplIdx = null;
+            $size = null;
+
             try {
-            // Set the source file for the PDF
-            $pdf->setSourceFile($streamReader);
+                // Set the source file for the PDF
+                $pdf->setSourceFile($streamReader);
+
+                // Import the first page to get its size
+                $tplIdx = $pdf->importPage(1);
+                $size = $pdf->getTemplateSize($tplIdx);
             } catch (PdfParserException $e) {
                 // echo 'An error occurred while parsing the PDF: ' . $e->getMessage();
                 continue;
             }
 
-            // Use the imported template
-            $tplIdx = $pdf->importPage(1);
-            $pdf->useTemplate($tplIdx);
+            // Add page with the exact size of the imported template to prevent scaling
+            $pdf->AddPage('P', array($size['width'], $size['height']));
+
+            // Use template at original size without scaling to preserve barcode quality
+            $pdf->useTemplate($tplIdx, 0, 0, $size['width'], $size['height']);
 
         }
         // if(request('missing') == 'scan'){
