@@ -270,7 +270,9 @@ canvas {
         let currentPrinterName = null;
         let isQzConnected = false;
 
+        // Cache logo image as base64 for faster rendering
         document.addEventListener('DOMContentLoaded', () => {
+            cacheLogoImage();
             createPrinterInfoPanel();
             tryQzPrint()
                 .catch(error => {
@@ -279,6 +281,36 @@ canvas {
                     fallbackWindowPrint();
                 });
         });
+
+        function cacheLogoImage() {
+            const logo = document.querySelector('.invoice-headers img');
+            if (!logo || !window.localStorage) return;
+
+            const cacheKey = 'company_logo_base64';
+            const cachedLogo = localStorage.getItem(cacheKey);
+
+            if (cachedLogo) {
+                // Use cached logo immediately
+                logo.src = cachedLogo;
+                console.log('Using cached logo image');
+            } else {
+                // Cache logo after it loads
+                logo.addEventListener('load', function() {
+                    try {
+                        const canvas = document.createElement('canvas');
+                        canvas.width = this.naturalWidth;
+                        canvas.height = this.naturalHeight;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(this, 0, 0);
+                        const base64 = canvas.toDataURL('image/png');
+                        localStorage.setItem(cacheKey, base64);
+                        console.log('Logo cached successfully');
+                    } catch (error) {
+                        console.warn('Failed to cache logo:', error);
+                    }
+                }, { once: true });
+            }
+        }
 
         function createPrinterInfoPanel() {
             const panel = document.createElement('div');
