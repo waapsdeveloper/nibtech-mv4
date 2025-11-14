@@ -99,6 +99,12 @@ class Order_model extends Model
                         $change = true;
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                         $add = true;
+                    }elseif($description == 'refunds' && -$transaction->amount == $this->price){
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $add = true;
+                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }
                 }
 
