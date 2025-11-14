@@ -105,6 +105,21 @@ class Order_model extends Model
                         $transaction->save();
                         $add = true;
                         // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                    }elseif($description == 'avoir_sales_fees'){
+                        $amount = $transaction->amount;
+                        $amount = $amount * -1;
+
+                        $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'avoir_sales_fees'])->first();
+                        $order_charge = Order_charge_model::firstOrNew(['order_id'=>$this->id,'charge_value_id'=>$charge->current_value->id]);
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $add = true;
                     }
                 }
 
