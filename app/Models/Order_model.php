@@ -62,6 +62,20 @@ class Order_model extends Model
                         $transaction->status = 1;
                         $transaction->save();
                         // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                    }elseif($description == 'refunds' && -$transaction->amount != $this->price && $charge_name == '	refunds'){
+                        $amount = $transaction->amount;
+                        if($amount < 0){
+                            $amount = $amount * -1;
+                        }
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $add = true;
                     }elseif($charge_name == $description){
                         $amount = $transaction->amount;
                         if($amount < 0){
