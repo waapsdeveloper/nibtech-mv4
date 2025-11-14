@@ -388,7 +388,7 @@ class BMInvoice extends Component
                     'description' => $description,
                     'transaction_total' => $transactionTotal,
                     'charge_total' => $chargeTotal,
-                    'difference' => abs($transactionTotal) - abs($chargeTotal),
+                    'difference' => $transactionTotal - $chargeTotal,
                 ];
             })
             ->values();

@@ -349,7 +349,7 @@
                                             <span class="fw-semibold {{ $chargeVarianceClass }}">{{ number_format($chargeVariance, 2) }}</span>
                                         </div>
                                     </div>
-                                    <p class="text-muted small mb-0 mt-2">Variance compares absolute ledger totals to invoice charges.</p>
+                                    <p class="text-muted small mb-0 mt-2">Displays absolute values for totals. Variance = Ledger - Invoice (preserving signs).</p>
                                 </div>
                             </div>
                         @endif
