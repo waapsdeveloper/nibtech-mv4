@@ -335,7 +335,7 @@
                                             ? 'text-success'
                                             : ($chargeVariance < 0 ? 'text-warning' : 'text-danger');
                                     @endphp
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Ledger Total</span>
                                             <span class="fw-semibold">{{ number_format($chargeLedger, 2) }}</span>
@@ -349,7 +349,7 @@
                                             <span class="fw-semibold {{ $chargeVarianceClass }}">{{ number_format($chargeVariance, 2) }}</span>
                                         </div>
                                     </div>
-                                    <p class="text-muted small mb-0 mt-2">Displays absolute values for totals. Variance = Ledger - Invoice (preserving signs).</p>
+                                    <p class="text-muted mb-0 mt-2">Displays absolute values for totals. Variance = Ledger - Invoice (preserving signs).</p>
                                 </div>
                             </div>
                         @endif
@@ -364,7 +364,7 @@
                                             ? 'text-success'
                                             : ($refundVariance < 0 ? 'text-warning' : 'text-danger');
                                     @endphp
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         @if($refundSummary['is_single_currency'] && $refundSummary['primary_currency'])
                                             <div class="d-flex justify-content-between">
                                                 <span>Ledger Refunds ({{ $refundSummary['primary_currency'] }})</span>
@@ -381,7 +381,7 @@
                                         @else
                                             <p class="mb-2">Multiple currencies detected. See breakdown below.</p>
                                         @endif
-                                        <p class="text-muted small mb-0">Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? 0 }} refunds.</p>
+                                        <p class="text-muted mb-0">Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? 0 }} refunds.</p>
                                     </div>
                                 </div>
                             </div>
@@ -397,7 +397,7 @@
                                             ? 'text-success'
                                             : ($partialVariance < 0 ? 'text-warning' : 'text-danger');
                                     @endphp
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Ledger Total</span>
                                             <span class="fw-semibold">{{ number_format($partialRefundSummary['transaction_total'] ?? 0, 2) }}</span>
@@ -425,7 +425,7 @@
                                             ? 'text-success'
                                             : ($fullVariance < 0 ? 'text-warning' : 'text-danger');
                                     @endphp
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Ledger Total</span>
                                             <span class="fw-semibold">{{ number_format($fullRefundSummary['transaction_total'] ?? 0, 2) }}</span>
@@ -455,7 +455,7 @@
                                             ? 'text-success'
                                             : ($deferredVariance < 0 ? 'text-warning' : 'text-danger');
                                     @endphp
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Ledger Total</span>
                                             <span class="fw-semibold">{{ number_format($deferredLedger, 2) }}</span>
@@ -544,7 +544,7 @@
                                 </tfoot>
                             </table>
                         </div>
-                        <p class="text-muted small mb-0 mt-2">Sales transactions are excluded from this table; they are summarised above. Partial and full refunds, along with deferred payout adjustments, each appear in their dedicated sections below.</p>
+                        <p class="text-muted mb-0 mt-2">Sales transactions are excluded from this table; they are summarised above. Partial and full refunds, along with deferred payout adjustments, each appear in their dedicated sections below.</p>
                     @endif
 
                     @if($partialRefundSummary && $partialRefundSummary['rows']->isNotEmpty())
@@ -727,7 +727,7 @@
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                     <h4 class="card-title mg-b-0">Order-Level Variance (Invoice vs Recorded Amounts)</h4>
                     @if($hasMultipleOrderCurrencies)
-                        <span class="text-muted small">Showing {{ $groupedOrderComparisons->count() }} currencies</span>
+                        <span class="text-muted">Showing {{ $groupedOrderComparisons->count() }} currencies</span>
                     @endif
                 </div>
                 <div class="card-body">
@@ -819,7 +819,7 @@
                                             <td class="text-end">
                                                 {{ number_format($comparisonAmount, 2) }}
                                                 @if($showOriginalAmount)
-                                                    <div class="text-muted small">Original: {{ number_format($originalAmount, 2) }}</div>
+                                                    <div class="text-muted">Original: {{ number_format($originalAmount, 2) }}</div>
                                                 @endif
                                             </td>
                                             <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
@@ -842,7 +842,7 @@
                                             <td colspan="8" class="bg-light">
                                                 <div class="mb-2">
                                                     <strong>Variance Summary:</strong>
-                                                    <ul class="mb-2 small">
+                                                    <ul class="mb-2">
                                                         <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
                                                         <li>Invoice Amount (comparison): {{ number_format($comparisonAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
                                                         @if($showOriginalAmount)
@@ -922,7 +922,7 @@
                             <div class="mb-4">
                                 <div class="d-flex justify-content-between align-items-center mb-2">
                                     <h5 class="mb-0">Currency: {{ $orderCurrencyLabel }}</h5>
-                                    <span class="text-muted small">Orders: {{ $ordersInCurrency->count() }}</span>
+                                    <span class="text-muted">Orders: {{ $ordersInCurrency->count() }}</span>
                                 </div>
                                 <div class="table-responsive">
                                     <table class="table table-bordered table-hover mb-0 text-md-nowrap align-middle">
@@ -1000,7 +1000,7 @@
                                                     <td class="text-end">
                                                         {{ number_format($comparisonAmount, 2) }}
                                                         @if($showOriginalAmount)
-                                                            <div class="text-muted small">Original: {{ number_format($originalAmount, 2) }}</div>
+                                                            <div class="text-muted">Original: {{ number_format($originalAmount, 2) }}</div>
                                                         @endif
                                                     </td>
                                                     <td class="text-center">{{ $order['sales_currency'] ?? '—' }}</td>
@@ -1023,7 +1023,7 @@
                                                     <td colspan="8" class="bg-light">
                                                         <div class="mb-2">
                                                             <strong>Variance Summary:</strong>
-                                                            <ul class="mb-2 small">
+                                                            <ul class="mb-2">
                                                                 <li>Order Type: {{ $typeLabel === '—' ? 'Unknown' : $typeLabel }}</li>
                                                                 <li>Invoice Amount (comparison): {{ number_format($comparisonAmount, 2) }} {{ $order['order_currency'] ?? '—' }}</li>
                                                                 @if($showOriginalAmount)
@@ -1115,7 +1115,7 @@
                     <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                         <h4 class="card-title mg-b-0">Refund Validation Details</h4>
                         @if($refundSummary)
-                            <span class="text-muted small">
+                            <span class="text-muted">
                                 Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? $refundDetails->count() }}
                                 | Missing {{ $refundSummary['missing_count'] ?? 0 }}
                             </span>
