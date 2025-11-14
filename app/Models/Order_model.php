@@ -43,6 +43,7 @@ class Order_model extends Model
         $change = false;
         $add = false;
         $transactions = $this->transactions->where('status',null);
+        $charges_sum = $this->order_charges->sum('amount');
         if($transactions->count() > 0){
             $order_charges = $this->order_charges;
             foreach($transactions as $transaction){
@@ -135,8 +136,8 @@ class Order_model extends Model
             //     $this->save();
             // }
         }
-        if($this->charges != $this->order_charges->sum('amount')){
-            $this->charges = $this->order_charges->sum('amount');
+        if($this->charges != $charges_sum){
+            $this->charges = $charges_sum;
             $this->save();
         }
 
