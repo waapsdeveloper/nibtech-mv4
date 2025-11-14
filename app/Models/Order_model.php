@@ -88,7 +88,7 @@ class Order_model extends Model
                         if($amount < 0){
                             $amount = $amount * -1;
                         }
-                        $charge = Charge_model::where(['charge_frequency_id'=>2,'order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->first();
+                        $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->first();
                         $order_charge = Order_charge_model::firstOrNew(['order_id'=>$this->id,'charge_value_id'=>$charge->current_value->id]);
                         $order_charge->transaction_id = $transaction->id;
                         $order_charge->amount = $amount;
