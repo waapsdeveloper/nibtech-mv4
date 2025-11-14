@@ -58,13 +58,11 @@ class Order_model extends Model
 
                     // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n";
                     if($description == 'sales'){
-                        $message .= "Sales condition met for order ".$this->reference_id." and transaction ".$transaction->reference_id . "\n";
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
                         // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($description == 'refunds' && -$transaction->amount != $this->price && $charge_name == '	refunds'){
-                        $message .= "Refunds condition met for order ".$this->reference_id." and transaction ".$transaction->reference_id . "\n";
                         $amount = $transaction->amount;
                         if($amount < 0){
                             $amount = $amount * -1;
@@ -93,7 +91,7 @@ class Order_model extends Model
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                         $add = true;
                     }else{
-                        // $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description. " with charge ".$charge_name;
+                        $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description. " with charge ".$charge_name;
                     }
                 }
 
