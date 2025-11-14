@@ -230,9 +230,14 @@
 
                 $buildRefundRows = function ($items) use ($formatRefundAmount) {
                     return collect($items)
-                        // Only include refunds that have matched orders
+                        // Only include refunds that have matched orders with real references
                         ->filter(function ($row) {
-                            return (bool) ($row['order_found'] ?? false);
+                            $hasOrder = (bool) ($row['order_found'] ?? false);
+                            $hasOrderReference = ! empty($row['order_reference']);
+                            $normalizedDescription = \Illuminate\Support\Str::lower(trim((string) ($row['transaction_description'] ?? '')));
+                            $isGenericCharge = in_array($normalizedDescription, ['refund', 'refunds'], true);
+
+                            return $hasOrder && $hasOrderReference && ! $isGenericCharge;
                         })
                         ->groupBy(function ($row) {
                             $reference = $row['order_reference'] ?? $row['transaction_reference'] ?? ('txn-' . $row['transaction_id']);
