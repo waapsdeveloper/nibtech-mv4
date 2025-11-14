@@ -53,11 +53,11 @@ class Order_model extends Model
                     ->first()
                     ->reference_id;
                 $description = trim($transaction->description);
-                // $message .= "Order Transaction name: ".$description . "\n";
+                $message .= "Order Transaction name: ".$description . "\n";
                 foreach($order_charges as $order_charge){
                     $charge_name = trim($order_charge->charge->name);
 
-                    $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n\n <br>";
+                    // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n\n <br>";
                     if($description == 'sales'){
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
