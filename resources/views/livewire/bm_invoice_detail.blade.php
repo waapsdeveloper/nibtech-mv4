@@ -228,17 +228,18 @@
                     ]);
                 })->values();
 
-                $buildRefundRows = function ($items) {
+                $buildRefundRows = function ($items) use ($formatRefundAmount) {
                     return collect($items)
                         ->groupBy(function ($row) {
                             $reference = $row['order_reference'] ?? $row['transaction_reference'] ?? ('txn-' . $row['transaction_id']);
                             $currency = $row['transaction_currency'] ?? '—';
                             return $reference . '|' . $currency;
                         })
-                        ->map(function ($group, $key) {
+                        ->map(function ($group, $key) use ($formatRefundAmount) {
                             [$reference, $currency] = array_pad(explode('|', $key, 2), 2, '—');
-                            $transactionTotal = (float) $group->sum('transaction_amount');
-                            $orderTotal = (float) $group->sum('order_amount');
+                            // Normalize both to negative values (refunds should be negative)
+                            $transactionTotal = ($formatRefundAmount)((float) $group->sum('transaction_amount'));
+                            $orderTotal = ($formatRefundAmount)((float) $group->sum('order_amount'));
 
                             return [
                                 'description' => $reference,
@@ -400,11 +401,11 @@
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Actual Ledger</span>
-                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($partialRefundSummary['transaction_total'] ?? 0), 2) }}</span>
+                                            <span class="fw-semibold">{{ number_format($partialRefundSummary['transaction_total'] ?? 0, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Calculated Refunds</span>
-                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($partialRefundSummary['charge_total'] ?? 0), 2) }}</span>
+                                            <span class="fw-semibold">{{ number_format($partialRefundSummary['charge_total'] ?? 0, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
@@ -428,11 +429,11 @@
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
                                             <span>Actual Ledger</span>
-                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($fullRefundSummary['transaction_total'] ?? 0), 2) }}</span>
+                                            <span class="fw-semibold">{{ number_format($fullRefundSummary['transaction_total'] ?? 0, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Calculated Refunds</span>
-                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($fullRefundSummary['charge_total'] ?? 0), 2) }}</span>
+                                            <span class="fw-semibold">{{ number_format($fullRefundSummary['charge_total'] ?? 0, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
