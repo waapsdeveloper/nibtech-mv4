@@ -292,7 +292,7 @@
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
                                     <small class="text-uppercase">Sales vs Invoice</small>
-                                    <div class="mt-2 small">
+                                    <div class="mt-2">
                                         @if(! $salesSummary['is_multi_currency'] && $salesSummary['primary_currency'])
                                             @php
                                                 $salesCurrency = $salesSummary['primary_currency'];
