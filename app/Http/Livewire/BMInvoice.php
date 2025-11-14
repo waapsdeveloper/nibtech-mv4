@@ -433,6 +433,9 @@ class BMInvoice extends Component
             $order = null;
             $matchSource = null;
 
+            $orderCurrencyId = null;
+            $orderCurrency = null;
+
             if (! empty($transaction->order_id) && $ordersById->has($transaction->order_id)) {
                 $order = $ordersById->get($transaction->order_id);
                 $matchSource = 'order_id';
@@ -444,7 +447,6 @@ class BMInvoice extends Component
             $orderId = null;
             $orderReference = null;
             $orderAmount = 0.0;
-            $orderCurrency = null;
 
             if ($order) {
                 $orderId = $order->id;
@@ -457,6 +459,7 @@ class BMInvoice extends Component
             return [
                 'transaction_id' => $transaction->id,
                 'transaction_reference' => $transaction->reference_id,
+                'transaction_description' => (string) $transaction->description,
                 'transaction_currency_id' => $transactionCurrencyId,
                 'transaction_currency' => $transactionCurrency,
                 'transaction_amount' => $transactionAmount,
