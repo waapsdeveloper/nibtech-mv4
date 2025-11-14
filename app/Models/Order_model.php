@@ -100,6 +100,7 @@ class Order_model extends Model
                 $this->charges = $order_charges->sum('amount');
                 $this->save();
             }
+            $message .= "<br>";
             // if($add == false){
             //     $this->charges = null;
             //     $this->save();
