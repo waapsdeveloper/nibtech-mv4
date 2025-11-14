@@ -328,8 +328,8 @@
                                 <div class="border rounded p-3 h-100">
                                     <small class="text-uppercase">Non-Sales Charges</small>
                                     @php
-                                        $chargeLedger = abs((float) ($chargeSummary['transaction_total'] ?? 0));
-                                        $chargeInvoice = abs((float) ($chargeSummary['charge_total'] ?? 0));
+                                        $chargeLedger = (float) ($chargeSummary['transaction_total'] ?? 0);
+                                        $chargeInvoice = (float) ($chargeSummary['charge_total'] ?? 0);
                                         $chargeVariance = (float) ($chargeSummary['difference_total'] ?? 0);
                                         $chargeVarianceClass = abs($chargeVariance) < 0.01
                                             ? 'text-success'
@@ -337,11 +337,11 @@
                                     @endphp
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
-                                            <span>Ledger Total</span>
+                                            <span>Actual Ledger</span>
                                             <span class="fw-semibold">{{ number_format($chargeLedger, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>Invoice Total</span>
+                                            <span>Calculated Charges</span>
                                             <span class="fw-semibold">{{ number_format($chargeInvoice, 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
@@ -349,7 +349,7 @@
                                             <span class="fw-semibold {{ $chargeVarianceClass }}">{{ number_format($chargeVariance, 2) }}</span>
                                         </div>
                                     </div>
-                                    <p class="text-muted mb-0 mt-2">Displays absolute values for totals. Variance = Ledger - Invoice (preserving signs).</p>
+                                    <p class="text-muted mb-0 mt-2">Variance = Actual - Calculated. Negative values = charges.</p>
                                 </div>
                             </div>
                         @endif
@@ -514,8 +514,8 @@
                                 <thead>
                                     <tr>
                                         <th><small><b>Description</b></small></th>
-                                        <th class="text-end"><small><b>Ledger Transactions</b></small></th>
-                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Actual Ledger</b></small></th>
+                                        <th class="text-end"><small><b>Calculated Charges</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
                                     </tr>
                                 </thead>
