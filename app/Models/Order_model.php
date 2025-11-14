@@ -63,6 +63,7 @@ class Order_model extends Model
                         $transaction->save();
                         // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($description == 'refunds' && -$transaction->amount != $this->price && $charge_name == '	refunds'){
+                        $message .= "Refunds condition met for order ".$this->reference_id." and transaction ".$transaction->reference_id . "\n";
                         $amount = $transaction->amount;
                         if($amount < 0){
                             $amount = $amount * -1;
