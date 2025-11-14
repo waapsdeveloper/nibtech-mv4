@@ -125,7 +125,8 @@ class Order_model extends Model
 
             }
             if($change == true){
-                $this->charges = $this->order_charges->sum('amount');
+                $charges_sum = Order_charge_model::where('order_id',$this->id)->sum('amount');
+                $this->charges = $charges_sum;
                 $this->save();
             }
             $message .= "<br>";
