@@ -230,6 +230,10 @@
 
                 $buildRefundRows = function ($items) use ($formatRefundAmount) {
                     return collect($items)
+                        // Only include refunds that have matched orders
+                        ->filter(function ($row) {
+                            return (bool) ($row['order_found'] ?? false);
+                        })
                         ->groupBy(function ($row) {
                             $reference = $row['order_reference'] ?? $row['transaction_reference'] ?? ('txn-' . $row['transaction_id']);
                             $currency = $row['transaction_currency'] ?? '—';
