@@ -399,12 +399,12 @@
                                     @endphp
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
-                                            <span>Ledger Total</span>
-                                            <span class="fw-semibold">{{ number_format($partialRefundSummary['transaction_total'] ?? 0, 2) }}</span>
+                                            <span>Actual Ledger</span>
+                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($partialRefundSummary['transaction_total'] ?? 0), 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>Invoice Total</span>
-                                            <span class="fw-semibold">{{ number_format($partialRefundSummary['charge_total'] ?? 0, 2) }}</span>
+                                            <span>Calculated Refunds</span>
+                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($partialRefundSummary['charge_total'] ?? 0), 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
@@ -427,12 +427,12 @@
                                     @endphp
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
-                                            <span>Ledger Total</span>
-                                            <span class="fw-semibold">{{ number_format($fullRefundSummary['transaction_total'] ?? 0, 2) }}</span>
+                                            <span>Actual Ledger</span>
+                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($fullRefundSummary['transaction_total'] ?? 0), 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
-                                            <span>Invoice Total</span>
-                                            <span class="fw-semibold">{{ number_format($fullRefundSummary['charge_total'] ?? 0, 2) }}</span>
+                                            <span>Calculated Refunds</span>
+                                            <span class="fw-semibold">{{ number_format(($formatRefundAmount)($fullRefundSummary['charge_total'] ?? 0), 2) }}</span>
                                         </div>
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
