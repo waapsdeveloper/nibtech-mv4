@@ -1061,7 +1061,7 @@
                                     @endphp
                                     <tr class="bg-warning text-dark">
                                         <td colspan="2">{{ $charge->type ?? 'Charge' }}</td>
-                                        <td colspan="3">{{ $charge->description ?? 'Charge without transaction' }}</td>
+                                        <td colspan="3">{{ $charge->charge->name ?? 'Charge without transaction' }}</td>
                                         <td>{{ $chargeCurrencySign . amount_formatter($charge->amount) }}</td>
                                         <td>{{ amount_formatter($charge->amount) }}</td>
                                         <td>{{ $charge->created_at ?? '' }}</td>
