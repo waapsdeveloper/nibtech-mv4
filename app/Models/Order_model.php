@@ -135,6 +135,11 @@ class Order_model extends Model
             //     $this->save();
             // }
         }
+        if($this->charges != $this->order_charges->sum('amount')){
+            $this->charges = $this->order_charges->sum('amount');
+            $this->save();
+        }
+
         return $message;
 
     }
