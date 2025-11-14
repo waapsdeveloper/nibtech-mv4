@@ -291,7 +291,7 @@
                         @if($salesSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Sales vs Invoice</small>
+                                    <small class="text-uppercase">Sales vs Invoice</small>
                                     <div class="mt-2 small">
                                         @if(! $salesSummary['is_multi_currency'] && $salesSummary['primary_currency'])
                                             @php
@@ -316,7 +316,7 @@
                                                 <span class="fw-semibold {{ $salesVarianceClass }}">{{ number_format($salesVariance, 2) }}</span>
                                             </div>
                                         @else
-                                            <p class="mb-2 text-muted">Multiple currencies detected. See breakdown below.</p>
+                                            <p class="mb-2">Multiple currencies detected. See breakdown below.</p>
                                         @endif
                                     </div>
                                 </div>
@@ -326,7 +326,7 @@
                         @if($chargeSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Non-Sales Charges</small>
+                                    <small class="text-uppercase">Non-Sales Charges</small>
                                     @php
                                         $chargeLedger = abs((float) ($chargeSummary['transaction_total'] ?? 0));
                                         $chargeInvoice = abs((float) ($chargeSummary['charge_total'] ?? 0));
@@ -357,7 +357,7 @@
                         @if($refundSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Refund Variance</small>
+                                    <small class="text-uppercase">Refund Variance</small>
                                     @php
                                         $refundVariance = (float) ($refundSummary['difference'] ?? 0);
                                         $refundVarianceClass = abs($refundVariance) < 0.01
@@ -379,7 +379,7 @@
                                                 <span class="fw-semibold {{ $refundVarianceClass }}">{{ number_format($refundVariance, 2) }}</span>
                                             </div>
                                         @else
-                                            <p class="mb-2 text-muted">Multiple currencies detected. See breakdown below.</p>
+                                            <p class="mb-2">Multiple currencies detected. See breakdown below.</p>
                                         @endif
                                         <p class="text-muted small mb-0">Matched {{ $refundSummary['matched_count'] ?? 0 }} of {{ $refundSummary['total_count'] ?? 0 }} refunds.</p>
                                     </div>
@@ -390,7 +390,7 @@
                         @if($partialRefundSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Partial Refunds</small>
+                                    <small class="text-uppercase">Partial Refunds</small>
                                     @php
                                         $partialVariance = (float) ($partialRefundSummary['difference_total'] ?? 0);
                                         $partialVarianceClass = abs($partialVariance) < 0.01
@@ -418,7 +418,7 @@
                         @if($fullRefundSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Full Refunds</small>
+                                    <small class="text-uppercase">Full Refunds</small>
                                     @php
                                         $fullVariance = (float) ($fullRefundSummary['difference_total'] ?? 0);
                                         $fullVarianceClass = abs($fullVariance) < 0.01
@@ -446,7 +446,7 @@
                         @if($deferredSummary)
                             <div class="col-lg-3 col-md-6">
                                 <div class="border rounded p-3 h-100">
-                                    <small class="text-uppercase text-muted">Deferred Payouts</small>
+                                    <small class="text-uppercase">Deferred Payouts</small>
                                     @php
                                         $deferredLedger = (float) ($deferredSummary['transaction_total'] ?? 0);
                                         $deferredInvoice = (float) ($deferredSummary['charge_total'] ?? 0);
@@ -899,7 +899,7 @@
                                                         </table>
                                                     </div>
                                                 @else
-                                                    <p class="mb-0 text-muted">No related transactions.</p>
+                                                    <p class="mb-0">No related transactions.</p>
                                                 @endif
                                             </td>
                                         </tr>
@@ -1080,7 +1080,7 @@
                                                                 </table>
                                                             </div>
                                                         @else
-                                                            <p class="mb-0 text-muted">No related transactions.</p>
+                                                            <p class="mb-0">No related transactions.</p>
                                                         @endif
                                                     </td>
                                                 </tr>
