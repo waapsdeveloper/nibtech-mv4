@@ -349,16 +349,21 @@ class BMInvoice extends Component
             return [];
         }
 
-        return Order_charge_model::query()
+        $charges = Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
             ->with('charge')
             ->whereIn('order_id', $orderIds)
             ->groupBy('charge_value_id')
-            ->get()
-            ->mapWithKeys(fn ($charge) => [
-                trim(optional($charge->charge)->name ?? '') => (float) $charge->charge_total,
-            ])
+            ->get();
+
+        return $charges
+            ->groupBy(function ($charge) {
+                return trim(optional($charge->charge)->name ?? '');
+            })
             ->filter(fn ($_, $key) => $key !== '')
+            ->map(function ($group) {
+                return (float) $group->sum('charge_total');
+            })
             ->all();
     }
 
