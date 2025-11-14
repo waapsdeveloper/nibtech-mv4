@@ -83,26 +83,28 @@ class Order_model extends Model
                 }
                 if($add == false){
                     if($description == 'refunds' && -$transaction->amount != $this->price){
-                        $message .= $transaction->amount."  ".$this->price;
-                        // $amount = $transaction->amount;
-                        // if($amount < 0){
-                        //     $amount = $amount * -1;
-                        // }
-                        // $order_charge->transaction_id = $transaction->id;
-                        // $order_charge->amount = $amount;
-                        // $order_charge->save();
-                        // $transaction->reference_id = $latest_transaction_ref+1;
-                        // $transaction->status = 1;
-                        // $transaction->save();
-                        // $change = true;
-                        // $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
-                        // $add = true;
+                        // $message .= $transaction->amount."  ".$this->price;
+                        $amount = $transaction->amount;
+                        if($amount < 0){
+                            $amount = $amount * -1;
+                        }
+                        $charge = Charge_model::where(['charge_frequency_id'=>2,'order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->get();
+                        $order_charge = Order_charge_model::firstOrNew(['order_id'=>$this->id,'charge_value_id'=>$charge->current_value->id]);
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $add = true;
                     }
                 }
 
             }
             if($change == true){
-                $this->charges = $order_charges->sum('amount');
+                $this->charges = $this->order_charges->sum('amount');
                 $this->save();
             }
             $message .= "<br>";
