@@ -35,6 +35,48 @@
             font-size: 16px;
             margin: 0;
         }
+        #printer-info-panel {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: white;
+            border: 2px solid #cbd5e1;
+            border-radius: 8px;
+            padding: 12px 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            font-family: Arial, sans-serif;
+            font-size: 13px;
+            z-index: 10000;
+            min-width: 280px;
+        }
+        .info-row {
+            margin-bottom: 6px;
+        }
+        .btn-row {
+            margin-top: 10px;
+            display: flex;
+            gap: 8px;
+        }
+        .btn {
+            flex: 1;
+            padding: 6px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        .btn-success {
+            background: #059669;
+            color: white;
+        }
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
     </style>
 </head>
 <body>
@@ -43,21 +85,155 @@
         <p id="status">Preparing shipping label...</p>
     </div>
 
+    <div id="printer-info-panel">
+        <div style="margin-bottom: 8px; font-weight: bold; color: #0f172a; font-size: 14px;">
+            🏷️ Label Printer Status
+        </div>
+        <div class="info-row">
+            <strong>QZ Tray:</strong> <span id="qz-status" style="color: #94a3b8;">Connecting...</span>
+        </div>
+        <div class="info-row">
+            <strong>Printer:</strong> <span id="printer-name" style="color: #94a3b8;">Detecting...</span>
+        </div>
+        <div class="info-row">
+            <strong>Status:</strong> <span id="print-status" style="color: #94a3b8;">Initializing...</span>
+        </div>
+        <div class="btn-row">
+            <button id="change-printer-btn" class="btn btn-primary" disabled>Change Printer</button>
+            <button id="retry-print-btn" class="btn btn-success" disabled>Retry Print</button>
+        </div>
+    </div>
+
+    <script src="{{ asset('assets/plugins/jquery/jquery.min.js') }}"></script>
     <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
     <script src="{{ asset('assets/js/functions.js') }}"></script>
     <script>
         (function () {
             sessionStorage.setItem('packing_label_window_opened', Date.now().toString());
             const statusNode = document.getElementById('status');
+            const spinnerEl = document.querySelector('.spinner');
             const pdfBase64 = @json($pdfBase64);
             const autoCloseDelay = 1200;
             let serverLabelPrinter = @json(session('label_printer'));
             const printerEndpoint = @json(route('order.store_printer_preferences'));
             const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            let currentPrinterName = null;
+            let isQzConnected = false;
 
-            function updateStatus(text) {
+            function updateQzStatus(connected) {
+                isQzConnected = connected;
+                const statusEl = document.getElementById('qz-status');
+                if (statusEl) {
+                    statusEl.textContent = connected ? 'Connected ✓' : 'Disconnected ✗';
+                    statusEl.style.color = connected ? '#059669' : '#dc2626';
+                }
+
+                const changePrinterBtn = document.getElementById('change-printer-btn');
+                const retryBtn = document.getElementById('retry-print-btn');
+                if (changePrinterBtn) {
+                    changePrinterBtn.disabled = !connected;
+                }
+                if (retryBtn) {
+                    retryBtn.disabled = !connected;
+                }
+            }
+
+            function updatePrinterName(name) {
+                currentPrinterName = name;
+                const nameEl = document.getElementById('printer-name');
+                if (nameEl) {
+                    nameEl.textContent = name || 'None selected';
+                    nameEl.style.color = name ? '#0f172a' : '#94a3b8';
+                }
+            }
+
+            function updatePrinterStatus(status, type = 'info') {
+                const statusEl = document.getElementById('print-status');
+                if (statusEl) {
+                    statusEl.textContent = status;
+                    const colors = {
+                        'info': '#0ea5e9',
+                        'success': '#059669',
+                        'error': '#dc2626',
+                        'warning': '#f59e0b'
+                    };
+                    statusEl.style.color = colors[type] || colors['info'];
+                }
+            }
+
+            document.getElementById('change-printer-btn').addEventListener('click', async () => {
+                try {
+                    updateStatus('Loading printers...', 'info');
+                    await changePrinterManually();
+                } catch (error) {
+                    console.error('Error changing printer:', error);
+                }
+            });
+
+            document.getElementById('retry-print-btn').addEventListener('click', async () => {
+                updateStatus('Retrying...', 'info');
+                updatePrinterStatus('Retrying...', 'info');
+                try {
+                    await sendToPrinter();
+                } catch (error) {
+                    console.error('Retry failed:', error);
+                    updatePrinterStatus('Retry failed', 'error');
+                }
+            });
+
+            async function changePrinterManually() {
+                if (!isQzConnected) {
+                    alert('QZ Tray is not connected. Please ensure QZ Tray is running.');
+                    return;
+                }
+
+                updatePrinterStatus('Loading printers...', 'info');
+                try {
+                    const availablePrinters = await qz.printers.find();
+                    if (!availablePrinters.length) {
+                        alert('No printers detected by QZ Tray');
+                        updatePrinterStatus('No printers found', 'error');
+                        return;
+                    }
+
+                    const newPrinter = await promptForPrinterSelection(availablePrinters);
+                    if (newPrinter) {
+                        storeLabelPrinter(newPrinter);
+                        updatePrinterName(newPrinter);
+                        updatePrinterStatus('Printer updated', 'success');
+                    }
+                } catch (error) {
+                    console.error('Failed to change printer:', error);
+                    updatePrinterStatus('Failed to load printers', 'error');
+                }
+            }
+
+            function setSpinnerVisible(visible) {
+                if (!spinnerEl) {
+                    return;
+                }
+                spinnerEl.style.display = visible ? 'block' : 'none';
+            }
+
+            function updateStatus(text, type = 'info') {
+                const colors = {
+                    'info': '#0ea5e9',
+                    'success': '#059669',
+                    'error': '#dc2626',
+                    'warning': '#f59e0b'
+                };
+
                 if (statusNode) {
                     statusNode.textContent = text;
+                    statusNode.style.color = colors[type] || colors['info'];
+                }
+
+                updatePrinterStatus(text, type);
+
+                if (type === 'success' || type === 'error' || type === 'warning') {
+                    setSpinnerVisible(false);
+                } else if (type === 'info') {
+                    setSpinnerVisible(true);
                 }
             }
 
@@ -83,7 +259,7 @@
             }
 
             function fallbackToPdf() {
-                updateStatus('Opening label for manual printing...');
+                updateStatus('Opening label for manual printing...', 'warning');
                 try {
                     const blob = base64ToBlob(pdfBase64, 'application/pdf');
                     const url = URL.createObjectURL(blob);
@@ -96,24 +272,50 @@
             }
 
             async function waitForQzConnection(timeout = 7000) {
+                // Use global connection manager if available (from main layout)
+                if (typeof window.ensureQzConnection === 'function') {
+                    console.log('Using global QZ Tray connection manager');
+                    try {
+                        await window.ensureQzConnection(timeout);
+                        updateQzStatus(true);
+                        console.log('Connected via global manager');
+                        return;
+                    } catch (error) {
+                        console.log('Global manager failed, falling back to local connection');
+                    }
+                }
+
+                // Fallback: Local connection logic (for standalone pages)
+                // Check if already connected - don't reconnect
                 if (qz.websocket.isActive()) {
+                    updateQzStatus(true);
+                    console.log('QZ Tray already connected - reusing existing connection');
                     return;
                 }
 
-                try {
-                    qz.websocket.connect();
-                } catch (error) {
-                    console.debug('Initial QZ connection attempt failed.', error);
+                // Only attempt connection if not already active
+                const isConnecting = qz.websocket.isConnecting && qz.websocket.isConnecting();
+                if (isConnecting) {
+                    console.log('QZ Tray connection already in progress - waiting...');
+                } else {
+                    try {
+                        qz.websocket.connect();
+                    } catch (error) {
+                        console.debug('Initial QZ connection attempt failed.', error);
+                    }
                 }
 
                 const start = Date.now();
                 while (Date.now() - start < timeout) {
                     if (qz.websocket.isActive()) {
+                        updateQzStatus(true);
+                        console.log('QZ Tray connection established');
                         return;
                     }
                     await sleep(250);
                 }
 
+                updateQzStatus(false);
                 throw new Error('Timed out waiting for QZ Tray connection');
             }
 
@@ -146,7 +348,6 @@
 
             function storeLabelPrinter(printerName) {
                 const normalized = (function(name) {
-                serverLabelPrinter = normalized;
                     if (name && typeof name === 'object') {
                         if (name.name) {
                             return name.name;
@@ -165,6 +366,8 @@
                     }
                     return String(name);
                 })(printerName);
+
+                serverLabelPrinter = normalized;
 
                 const keys = ['Label_Printer', 'Sticker_Printer'];
                 const storages = [];
@@ -316,13 +519,16 @@
 
                 const stored = resolveStoredPrinter(preferredKeys);
                 if (stored) {
+                    updatePrinterName(stored);
                     return stored;
                 }
 
+                updatePrinterStatus('No printer configured', 'warning');
                 try {
                     const defaultPrinter = await qz.printers.getDefault();
                     if (defaultPrinter) {
                         storeLabelPrinter(defaultPrinter);
+                        updatePrinterName(defaultPrinter);
                         return defaultPrinter;
                     }
                 } catch (error) {
@@ -333,9 +539,11 @@
                     const printers = await qz.printers.find();
                     if (printers && printers.length) {
                         updateStatus('Waiting for printer selection...');
+                        updatePrinterStatus('Waiting for selection...', 'warning');
                         const choice = await promptForPrinterSelection(printers);
                         if (choice) {
                             storeLabelPrinter(choice);
+                            updatePrinterName(choice);
                             return choice;
                         }
                         throw new Error('Printer selection cancelled');
@@ -353,6 +561,7 @@
                 }
 
                 updateStatus('Connecting to QZ Tray...');
+                updatePrinterStatus('Connecting...', 'info');
                 try {
                     await waitForQzConnection();
                 } catch (error) {
@@ -371,31 +580,55 @@
                 }
 
                 updateStatus('Sending label to printer...');
-                const config = qz.configs.create(printer, {
-                    size: { width: 102, height: 210 },
-                    units: 'mm',
-                    copies: 1,
-                    margins: { top: 0, right: 0, bottom: 0, left: 0 }
-                });
+                updatePrinterStatus('Sending to printer...', 'info');
 
-                await qz.print(config, [{
+                const config = qz.configs.create(printer, {
+                    size: { width: 80, height: 170 },
+                    units: 'mm'
+                });
+                const printData = [{
                     type: 'pdf',
                     format: 'base64',
                     data: pdfBase64
-                }]);
+                }];
+
+                await qz.print(config, printData);
 
                 storeLabelPrinter(printer);
+                updateStatus('Label sent to printer.', 'success');
+                updatePrinterStatus('Printed successfully ✓', 'success');
+                if (window.sessionStorage) {
+                    try {
+                        sessionStorage.setItem('packing_label_print_status', 'success');
+                    } catch (error) {
+                        console.debug('Unable to persist label print status in sessionStorage.', error);
+                    }
+                }
             }
 
             document.addEventListener('DOMContentLoaded', async () => {
+                // Small delay to ensure all resources are loaded
+                await new Promise(resolve => setTimeout(resolve, 300));
+
                 try {
                     await sendToPrinter();
-                    updateStatus('Label sent to printer.');
-                    setTimeout(() => window.close(), autoCloseDelay);
+                    updateStatus('Label sent to printer.', 'success');
+                    updatePrinterStatus('Print completed - closing in 1s', 'success');
+                    setTimeout(() => {
+                        window.close();
+                    }, 1000);
                 } catch (error) {
                     console.error('Automatic label printing failed:', error);
-                    fallbackToPdf();
+                    updateStatus('Printing failed - use buttons to retry or change printer', 'error');
+                    updatePrinterStatus('Print failed: ' + error.message, 'error');
+                    // Don't auto-close or redirect on error - let user interact with the panel
                 }
+            });
+
+            // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs
+            window.addEventListener('beforeunload', (event) => {
+                // Do NOT disconnect QZ Tray - other windows may be using it
+                console.log('Window closing - preserving QZ Tray connection for other tabs');
             });
         })();
     </script>

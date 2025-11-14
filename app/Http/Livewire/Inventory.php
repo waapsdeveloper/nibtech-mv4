@@ -432,6 +432,10 @@ class Inventory extends Component
         $active_inventory_verification = Process_model::where(['process_type_id'=>20,'status'=>1])->first();
 
         $data['active_inventory_verification'] = $active_inventory_verification;
+        if(!$active_inventory_verification){
+            session()->flash('error', 'No active inventory verification found.');
+            return redirect()->route('inventory');
+        }
         $last_ten = Process_stock_model::where('process_id', $active_inventory_verification->id)->where('admin_id',session('user_id'))->orderBy('id','desc')
         ->paginate($per_page)
         ->onEachSide(5)
@@ -885,7 +889,7 @@ class Inventory extends Component
                         'stock_id' => $stock->id,
                         'old_variation_id' => $stock->variation_id,
                         'new_variation_id' => $new_variation->id,
-                        'description' => 'Variation changed during inventory verification',
+                        'description' => 'Variation changed during inventory verification' . (request('description') ?? ''),
                         'admin_id' => session('user_id'),
                     ]);
                     session()->put('success', 'Stock Variation changed successfully from '.$stock->variation_id.' to '.$new_variation->id);

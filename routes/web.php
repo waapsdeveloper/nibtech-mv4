@@ -293,6 +293,7 @@ Route::get('export_label', [Order::class,'export_label'])->name('dispatch_order'
 Route::post('export_label', [Order::class,'export_label'])->name('dispatch_order');
 Route::get('export_ordersheet', [Order::class,'export_ordersheet'])->name('dispatch_order');
 Route::get('export_invoice/{id}/{packing?}', [Order::class,'export_invoice'])->name('dispatch_order');
+Route::get('order/packing/reprint/{id}', [Order::class,'packingReprint'])->name('order.packing_reprint');
 Route::get('order/export_invoice_new/{id}', [Order::class,'export_invoice_new'])->name('dispatch_order');
 Route::get('order/proxy_server', [Order::class,'proxy_server'])->name('dispatch_order');
 Route::get('order/export_refund_invoice/{id}', [Order::class,'export_refund_invoice'])->name('dispatch_order');
@@ -463,11 +464,11 @@ Route::get('oauth2/google', [GoogleController::class, 'redirectToGoogle'])->name
 Route::get('oauth2/callback', [GoogleController::class, 'handleGoogleCallback'])->name('google.callback');
 
 
-Route::get('/exchange-rates', [ExchangeRateController::class, 'index']);
+Route::get('/exchange-rates', [ExchangeRateController::class, 'index'])->name('exchange_rates');
 
 Route::get('request_drfones', [ApiRequestController::class, 'request_drfones'])->name('request_drfones');
 
-Route::get('/qz-sign', [Controller::class, 'verify_signature']);
+Route::get('/qz-sign', [Controller::class, 'verify_signature'])->name('qz_sign');
 
 
 

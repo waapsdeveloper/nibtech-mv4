@@ -3,7 +3,18 @@
     qz.security.setCertificatePromise(function(resolve, reject) {
         //Preferred method - from server
        fetch("/qz-certs/certificate.crt", {cache: 'no-store', headers: {'Content-Type': 'text/plain'}})
-         .then(function(data) { data.ok ? resolve(data.text()) : reject(data.text()); });
+         .then(function(data) {
+             if (data.ok) {
+                 data.text().then(resolve);
+             } else {
+                 console.error('Failed to load certificate:', data.status, data.statusText);
+                 reject('Certificate file not found: ' + data.status);
+             }
+         })
+         .catch(function(err) {
+             console.error('Certificate fetch error:', err);
+             reject(err);
+         });
 
     });
 
@@ -20,7 +31,18 @@
         return function(resolve, reject) {
             //Preferred method - from server
            fetch("/qz-sign?request=" + toSign, {cache: 'no-store', headers: {'Content-Type': 'text/plain'}})
-             .then(function(data) { data.ok ? resolve(data.text()) : reject(data.text()); });
+             .then(function(data) {
+                 if (data.ok) {
+                     data.text().then(resolve);
+                 } else {
+                     console.error('Signature verification failed:', data.status);
+                     reject('Signature failed: ' + data.status);
+                 }
+             })
+             .catch(function(err) {
+                 console.error('Signature fetch error:', err);
+                 reject(err);
+             });
 
             //Alternate method - unsigned
             // resolve(); // remove this line in live environment
@@ -166,14 +188,20 @@
     function displayMessage(msg, css, time) {
         if (css == undefined) { css = 'alert-info'; }
 
-        var timeout = setTimeout(function() { $('#' + timeout).alert('close'); }, time ? time : 5000);
+        // Check if Bootstrap alert is available
+        if (typeof $ !== 'undefined' && $.fn && $.fn.alert) {
+            var timeout = setTimeout(function() { $('#' + timeout).alert('close'); }, time ? time : 5000);
 
-        var alert = $("<div/>").addClass('alert alert-dismissible ' + css)
-            .css('max-height', '20em').css('overflow', 'auto')
-            .attr('id', timeout).attr('role', 'alert');
-        alert.html("<button type='button' class='close' data-dismiss='alert'>&times;</button>" + msg);
+            var alert = $("<div/>").addClass('alert alert-dismissible ' + css)
+                .css('max-height', '20em').css('overflow', 'auto')
+                .attr('id', timeout).attr('role', 'alert');
+            alert.html("<button type='button' class='close' data-dismiss='alert'>&times;</button>" + msg);
 
-        $("#qz-alert").append(alert);
+            $("#qz-alert").append(alert);
+        } else {
+            // Fallback to console if Bootstrap not available
+            console.log('[QZ]', msg);
+        }
     }
 
     var qzVersion = 0;

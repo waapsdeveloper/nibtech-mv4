@@ -2668,7 +2668,9 @@ class Order extends Component
             }
         }
 
-        return view('livewire.invoice_new')->with($data);
+        $view = $packingMode ? 'livewire.invoice_2_new' : 'livewire.invoice_new';
+
+        return view($view)->with($data);
     }
 
     public function storePrinterPreferences(Request $request)
@@ -2975,7 +2977,7 @@ class Order extends Component
                     ]);
                 }
                 $stock[$i]->variation_id = $variant->id;
-                $stock[$i]->tester = $tester[$i];
+                $stock[$i]->tester = $tester[$i] ?? null;
                 $stock[$i]->sale_order_id = $id;
                 $stock[$i]->status = 2;
                 $stock[$i]->save();
@@ -3077,10 +3079,29 @@ class Order extends Component
         }
 
         $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+        $order->refresh();
+    $resolvedTrackingNumber = $order->tracking_number ?? ($orderObj->tracking_number ?? null);
+    $trackingPromptValue = $resolvedTrackingNumber ? strtoupper(trim($resolvedTrackingNumber)) : null;
 
         $invoice_url = url('export_invoice').'/'.$id;
-        if(request('packing') == 1){
+        $packingEnabled = (string) request('packing') === '1';
+        $label_url = null;
+        $delivery_print_url = null;
+
+        if ($packingEnabled) {
             $invoice_url .= '/1';
+
+            if ($order->label_url) {
+                $labelQuery = ['ids' => [$id], 'packing' => 1];
+                if (request()->filled('sort')) {
+                    $labelQuery['sort'] = request('sort');
+                }
+                $label_url = url('export_label') . '?' . http_build_query($labelQuery, '', '&', PHP_QUERY_RFC3986);
+            }
+
+            if ($order->delivery_note_url) {
+                $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
+            }
         }
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
@@ -3105,17 +3126,42 @@ class Order extends Component
             </script>';
         }
 
-        // JavaScript to open two tabs and print
-        echo '<script>
-        var newTab2 = window.open("'.$invoice_url.'", "_blank");
+        // JavaScript to open print tabs with delays and store tracking confirmation marker
+        $scriptStatements = [];
 
-        </script>';
+        $scriptStatements[] = '(async function() {';
+        $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
+
+        if ($packingEnabled) {
+            if ($label_url) {
+                $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
+                $scriptStatements[] = '    await delay(600);';
+            }
+            if ($delivery_print_url) {
+                $scriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
+                $scriptStatements[] = '    await delay(600);';
+            }
+        }
+
+        $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
+
+        if ($packingEnabled && $trackingPromptValue) {
+            $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+        }
+
+        $scriptStatements[] = '    await delay(400);';
+        $fallbackUrl = url()->previous() ?? url('order');
+        $scriptStatements[] = '    var __packingFallback = '.json_encode($fallbackUrl).';';
+        $scriptStatements[] = '    var __packingTarget = document.referrer || __packingFallback;';
+        $scriptStatements[] = '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '})();';
+
+        echo '<script>' . implode("\n", $scriptStatements) . '</script>';
 
         // Open Label in new tab if request(packing) = 1
         if(request('sort') == 4 && !isset($detail)){
             echo "<script> window.close(); </script>";
         }
-            echo "<script> window.location.href = document.referrer; </script>";
 
 
 
@@ -3326,23 +3372,63 @@ class Order extends Component
 
         $orderObj = $this->updateBMOrder($order->reference_id, true);
         $order = Order_model::find($order->id);
+    $resolvedTrackingNumber = $order->tracking_number ?? ($orderObj->tracking_number ?? null);
+    $trackingPromptValue = $resolvedTrackingNumber ? strtoupper(trim($resolvedTrackingNumber)) : null;
+
+        $invoice_url = url('export_invoice').'/'.$id;
+        $packingEnabled = (string) request('packing') === '1';
+        $label_url = null;
+        $delivery_print_url = null;
+
+        if ($packingEnabled) {
+            $invoice_url .= '/1';
+
+            if ($order->label_url) {
+                $labelQuery = ['ids' => [$id], 'packing' => 1];
+                if (request()->filled('sort')) {
+                    $labelQuery['sort'] = request('sort');
+                }
+                $label_url = url('export_label') . '?' . http_build_query($labelQuery, '', '&', PHP_QUERY_RFC3986);
+            }
+
+            if ($order->delivery_note_url) {
+                $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
+            }
+        }
+
+        $baseScriptStatements = [];
+        $baseScriptStatements[] = '(async function() {';
+        $baseScriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
+
+        if ($packingEnabled) {
+            if ($label_url) {
+                $baseScriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
+                $baseScriptStatements[] = '    await delay(600);';
+            }
+            if ($delivery_print_url) {
+                $baseScriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
+                $baseScriptStatements[] = '    await delay(600);';
+            }
+        }
+        $baseScriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
+
+        if ($packingEnabled && $trackingPromptValue) {
+            $baseScriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+        }
+
+        $baseScriptStatements[] = '    await delay(400);';
+        $fallbackUrlAllowed = url()->previous() ?? url('order');
+        $redirectStatement = '    var __packingFallback = '.json_encode($fallbackUrlAllowed).';'
+            . '    var __packingTarget = document.referrer || __packingFallback;'
+            . '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+
         if(!isset($detail)){
 
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-
-            window.location.href = document.referrer;
-            </script>';
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
 
         }
         if(!$detail->orderlines){
@@ -3369,31 +3455,100 @@ class Order extends Component
 
 
             // JavaScript to open two tabs and print
-            echo '<script>
-            window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");
-            window.location.href = document.referrer;
-            </script>';
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = '    window.open("https://backmarket.fr/bo-seller/orders/all?orderId='.$order->reference_id.'", "_blank");';
+            $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
+
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }else{
 
-            $invoice_url = url('export_invoice').'/'.$id;
-            // JavaScript to open two tabs and print
-            echo '<script>
-            // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-            // var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            $scriptLines = $baseScriptStatements;
+            $scriptLines[] = $redirectStatement;
+            $scriptLines[] = '})();';
 
-            // newTab2.onload = function() {
-            //     newTab2.print();
-            // };
-            // newTab1.onload = function() {
-            //     newTab1.print();
-            // };
-
-            window.location.href = document.referrer;
-            </script>';
+            echo '<script>' . implode("\n", $scriptLines) . '</script>';
         }
 
 
     }
+
+    public function packingReprint($id)
+    {
+        $order = Order_model::find($id);
+
+        if (!$order) {
+            session()->flash('error', 'Order not found');
+            return redirect(url('order'));
+        }
+
+        $invoiceUrl = url('export_invoice').'/'.$id.'/1';
+        $labelUrl = null;
+        $deliveryPrintUrl = null;
+
+        if ($order->label_url) {
+            $labelQuery = ['ids' => [$id], 'packing' => 1];
+            if (request()->filled('sort')) {
+                $labelQuery['sort'] = request('sort');
+            }
+            $labelUrl = url('export_label') . '?' . http_build_query($labelQuery, '', '&', PHP_QUERY_RFC3986);
+        }
+
+        if ($order->delivery_note_url) {
+            $deliveryPrintUrl = route('order.packing_delivery_print', ['id' => $id]);
+        }
+
+        $scriptStatements = [];
+
+        $scriptStatements[] = '(async function() {';
+        $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
+
+        if ($labelUrl) {
+            $scriptStatements[] = '    window.open('.json_encode($labelUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(600);';
+        }
+
+        if ($deliveryPrintUrl) {
+            $scriptStatements[] = '    window.open('.json_encode($deliveryPrintUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(600);';
+        }
+
+        $scriptStatements[] = '    window.open('.json_encode($invoiceUrl).', "_blank");';
+
+        $trackingPromptValue = $order->tracking_number ? strtoupper(trim($order->tracking_number)) : null;
+        if ($trackingPromptValue) {
+            $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
+        }
+
+        $missingDocs = [];
+        if (!$order->label_url) {
+            $missingDocs[] = 'label';
+        }
+        if (!$order->delivery_note_url) {
+            $missingDocs[] = 'delivery note';
+        }
+
+        if (!empty($missingDocs)) {
+            $missingMessage = 'Missing '.implode(' and ', $missingDocs).' for this order. Only available documents were opened.';
+            $scriptStatements[] = '    alert('.json_encode(ucfirst($missingMessage)).');';
+        }
+
+        $scriptStatements[] = '    await delay(400);';
+        $fallbackUrl = url()->previous() ?? url('order');
+        $scriptStatements[] = '    var __packingFallback = '.json_encode($fallbackUrl).';';
+        $scriptStatements[] = '    var __packingTarget = document.referrer || __packingFallback;';
+        $scriptStatements[] = '    if (__packingTarget) { window.location.href = __packingTarget; } else if (window.history.length > 1) { window.history.back(); } else { window.location.href = __packingFallback; }';
+        $scriptStatements[] = '})();';
+
+        $scriptContent = implode("\n", $scriptStatements);
+
+        return response()->make(
+            '<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Reprinting Packing Documents</title></head><body><script>' . $scriptContent . '</script></body></html>',
+            200,
+            ['Content-Type' => 'text/html']
+        );
+    }
+
     public function delete_item($id){
         Order_item_model::find($id)->delete();
         return redirect()->back();
