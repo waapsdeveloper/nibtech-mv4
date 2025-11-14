@@ -58,6 +58,7 @@ class Order_model extends Model
 
                     // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n";
                     if($description == 'sales'){
+                        $message .= "Sales condition met for order ".$this->reference_id." and transaction ".$transaction->reference_id . "\n";
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
