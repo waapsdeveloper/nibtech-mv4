@@ -344,7 +344,7 @@
                             <tr>
                                 <td>{{ $i + 1 }}</td>
                                 <td>
-                                    <a href="{{ url('listing').'?sku='.$variant->sku }}">
+                                    <a href="{{ url('listing').'?sku='.$variant->sku.'&process_id='.$process_id }}">
                                     {{ $products[$variant->product_id] ?? "Product not defined" }} {{$storages[$variant->storage] ?? null}} {{$colors[$variant->color] ?? null}} {{$grades[$variant->grade] ?? "Grade not added" }} {{$grades[$variant->sub_grade] ?? '' }}
                                     </a>
                                 </td>
