@@ -1032,17 +1032,39 @@
                             @if (request('transaction') == 1 || request('missing'))
                                 @php
                                     echo $order->merge_transaction_charge();
+                                    $order_charges = $order->order_charges;
                                 @endphp
                                 @foreach ($order->transactions as $transaction)
                                     @php
-
+                                        $charge_amount = $order_charges->where('transaction_id', $transaction->id)->sum('amount');
                                     @endphp
                                     <tr class="bg-info text-white">
                                         <td colspan="2">{{ $transaction->transaction_type->name }}</td>
                                         <td colspan="3">{{ $transaction->description }}</td>
                                         <td>{{ $transaction->currency_id->sign. amount_formatter($transaction->amount) }}</td>
-                                        <td></td>
+                                        <td>{{ $order_charges->where('transaction_id', $transaction->id)->sum('amount') }}</td>
                                         <td>{{ $transaction->date }}</td>
+                                        <td></td>
+                                    </tr>
+                                @endforeach
+                                @php
+                                    $orphanCharges = $order_charges->whereNull('transaction_id');
+                                @endphp
+                                @foreach ($orphanCharges as $charge)
+                                    @php
+                                        $chargeCurrencySign = '';
+                                        if (!empty($charge->currency_id) && is_object($charge->currency_id) && property_exists($charge->currency_id, 'sign')) {
+                                            $chargeCurrencySign = $charge->currency_id->sign;
+                                        } elseif (isset($currencies[$order->currency])) {
+                                            $chargeCurrencySign = $currencies[$order->currency];
+                                        }
+                                    @endphp
+                                    <tr class="bg-warning text-dark">
+                                        <td colspan="2">{{ $charge->type ?? 'Charge' }}</td>
+                                        <td colspan="3">{{ $charge->charge->name ?? 'Charge without transaction' }}</td>
+                                        <td></td>
+                                        <td>{{ $chargeCurrencySign . amount_formatter($charge->amount) }}</td>
+                                        <td>{{ $charge->created_at ?? '' }}</td>
                                         <td></td>
                                     </tr>
                                 @endforeach

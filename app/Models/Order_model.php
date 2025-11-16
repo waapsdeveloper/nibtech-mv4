@@ -43,6 +43,7 @@ class Order_model extends Model
         $change = false;
         $add = false;
         $transactions = $this->transactions->where('status',null);
+        $charges_sum = $this->order_charges->sum('amount');
         if($transactions->count() > 0){
             $order_charges = $this->order_charges;
             foreach($transactions as $transaction){
@@ -56,26 +57,13 @@ class Order_model extends Model
                 foreach($order_charges as $order_charge){
                     $charge_name = trim($order_charge->charge->name);
 
-                    // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n";
+                    // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n\n <br>";
                     if($description == 'sales'){
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
-                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
-                    }elseif($description == 'refunds' && -$transaction->amount != $this->price && $charge_name == '	refunds'){
-                        $amount = $transaction->amount;
-                        if($amount < 0){
-                            $amount = $amount * -1;
-                        }
-                        $order_charge->transaction_id = $transaction->id;
-                        $order_charge->amount = $amount;
-                        $order_charge->save();
-                        $transaction->reference_id = $latest_transaction_ref+1;
-                        $transaction->status = 1;
-                        $transaction->save();
-                        $change = true;
-                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                         $add = true;
+                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($charge_name == $description){
                         $amount = $transaction->amount;
                         if($amount < 0){
@@ -94,17 +82,65 @@ class Order_model extends Model
                         // $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description. " with charge ".$charge_name;
                     }
                 }
+                if($add == false){
+                    if($description == 'refunds' && -$transaction->amount != $this->price){
+                        // $message .= $transaction->amount."  ".$this->price;
+                        $amount = $transaction->amount;
+                        if($amount < 0){
+                            $amount = $amount * -1;
+                        }
+                        $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->first();
+                        $order_charge = Order_charge_model::firstOrNew(['order_id'=>$this->id,'charge_value_id'=>$charge->current_value->id]);
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $add = true;
+                    }elseif($description == 'refunds' && -$transaction->amount == $this->price){
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $add = true;
+                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                    }elseif($description == 'avoir_sales_fees'){
+                        $amount = $transaction->amount;
+                        $amount = $amount * -1;
+
+                        $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'avoir_sales_fees'])->first();
+                        $order_charge = Order_charge_model::firstOrNew(['order_id'=>$this->id,'charge_value_id'=>$charge->current_value->id]);
+                        $order_charge->transaction_id = $transaction->id;
+                        $order_charge->amount = $amount;
+                        $order_charge->save();
+                        $transaction->reference_id = $latest_transaction_ref+1;
+                        $transaction->status = 1;
+                        $transaction->save();
+                        $change = true;
+                        $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
+                        $add = true;
+                    }
+                }
 
             }
             if($change == true){
-                $this->charges = $order_charges->sum('amount');
+                $charges_sum = Order_charge_model::where('order_id',$this->id)->sum('amount');
+                $this->charges = $charges_sum;
                 $this->save();
             }
+            $message .= "<br>";
             // if($add == false){
             //     $this->charges = null;
             //     $this->save();
             // }
         }
+        if($this->charges != $charges_sum){
+            $this->charges = $charges_sum;
+            $this->save();
+        }
+
         return $message;
 
     }

@@ -349,16 +349,21 @@ class BMInvoice extends Component
             return [];
         }
 
-        return Order_charge_model::query()
+        $charges = Order_charge_model::query()
             ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
             ->with('charge')
             ->whereIn('order_id', $orderIds)
             ->groupBy('charge_value_id')
-            ->get()
-            ->mapWithKeys(fn ($charge) => [
-                trim(optional($charge->charge)->name ?? '') => (float) $charge->charge_total,
-            ])
+            ->get();
+
+        return $charges
+            ->groupBy(function ($charge) {
+                return trim(optional($charge->charge)->name ?? '');
+            })
             ->filter(fn ($_, $key) => $key !== '')
+            ->map(function ($group) {
+                return (float) $group->sum('charge_total');
+            })
             ->all();
     }
 
@@ -433,6 +438,9 @@ class BMInvoice extends Component
             $order = null;
             $matchSource = null;
 
+            $orderCurrencyId = null;
+            $orderCurrency = null;
+
             if (! empty($transaction->order_id) && $ordersById->has($transaction->order_id)) {
                 $order = $ordersById->get($transaction->order_id);
                 $matchSource = 'order_id';
@@ -444,7 +452,6 @@ class BMInvoice extends Component
             $orderId = null;
             $orderReference = null;
             $orderAmount = 0.0;
-            $orderCurrency = null;
 
             if ($order) {
                 $orderId = $order->id;
@@ -457,6 +464,7 @@ class BMInvoice extends Component
             return [
                 'transaction_id' => $transaction->id,
                 'transaction_reference' => $transaction->reference_id,
+                'transaction_description' => (string) $transaction->description,
                 'transaction_currency_id' => $transactionCurrencyId,
                 'transaction_currency' => $transactionCurrency,
                 'transaction_amount' => $transactionAmount,

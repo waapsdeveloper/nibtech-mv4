@@ -335,11 +335,19 @@
                             $total_qty_from = 0;
                             $total_qty_change = 0;
                             $total_qty_to = 0;
+
                         @endphp
                         @foreach ($changed_listed_stocks as $item)
+                            @php
+                                $variant = $item->variation;
+                            @endphp
                             <tr>
                                 <td>{{ $i + 1 }}</td>
-                                <td>{{ $products[$item->variation->product_id] ?? "Product not defined" }} {{$storages[$item->variation->storage] ?? null}} {{$colors[$item->variation->color] ?? null}} {{$grades[$item->variation->grade] ?? "Grade not added" }} {{$grades[$item->variation->sub_grade] ?? '' }}</td>
+                                <td>
+                                    <a href="{{ url('listing').'?sku='.$variant->sku.'&process_id='.$process_id }}" title="Go to Listing Page" target="_blank">
+                                    {{ $products[$variant->product_id] ?? "Product not defined" }} {{$storages[$variant->storage] ?? null}} {{$colors[$variant->color] ?? null}} {{$grades[$variant->grade] ?? "Grade not added" }} {{$grades[$variant->sub_grade] ?? '' }}
+                                    </a>
+                                </td>
                                 <td>{{ $item->pending_orders }}</td>
                                 <td>{{ $item->qty_from }}</td>
                                 <td>{{ $item->qty_change }}</td>
