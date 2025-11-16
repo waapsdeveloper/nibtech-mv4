@@ -552,17 +552,17 @@ class ListingController extends Controller
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
-        // $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->first();
-        // if($check_active_verification != null){
-        //     $new_quantity = $stock - $pending_orders;
-            // $new_quantity = $stock;
-        // }else{
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
+        if($check_active_verification != null){
+            $new_quantity = $stock - $pending_orders;
+            $new_quantity = $stock;
+        }else{
             if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
                 $new_quantity = $stock;
             }else{
                 $new_quantity = $stock + $previous_qty;
             }
-        // }
+        }
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
