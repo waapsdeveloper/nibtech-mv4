@@ -345,6 +345,7 @@ Route::post('variation/merge/{id}', [Variation::class,'merge'])->name('merge_var
 
 Route::get('listing', [ListingController::class, 'index'])->name('view_listing');
 Route::get('listing/get_variations', [ListingController::class, 'get_variations'])->name('view_listing');
+Route::get('listing/export', [ListingController::class, 'exportFilteredListings'])->name('listing.export');
 Route::get('listing/get_target_variations', [ListingController::class, 'get_target_variations'])->name('view_listing');
 Route::get('listing/get_sales/{id}', [ListingController::class, 'get_sales'])->name('view_listing');
 Route::get('listing/get_variation_available_stocks/{id}', [ListingController::class, 'get_variation_available_stocks'])->name('view_listing');
