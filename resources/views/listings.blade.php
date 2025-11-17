@@ -82,6 +82,7 @@
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
             {{-- <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button> --}}
             <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#bulkModal">Bulk&nbsp;Update</button>
+            <button class="btn btn-success btn-sm ms-2" type="button" id="exportListingsBtn">Export&nbsp;CSV</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             @endif
             <label for="perPage" class="form-label">Sort:</label>
@@ -229,7 +230,8 @@
         }
 
 
-        $('#bulkModal').on('show.bs.modal', function (event) {
+        function buildListingFilters(overrides) {
+            overrides = overrides || {};
 
             let params = {
                 product_name: $('#product_name').val(),
@@ -238,7 +240,7 @@
                 sku: $('input[name="sku"]').val(),
                 color: $('select[name="color"]').val(),
                 storage: $('select[name="storage"]').val(),
-                grade: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
+                grade: $('select[name="grade[]"]').val(),
                 category: $('select[name="category"]').val(),
                 brand: $('select[name="brand"]').val(),
                 listed_stock: $('select[name="listed_stock"]').val(),
@@ -248,13 +250,26 @@
                 sort: $('select[name="sort"]').val(),
                 per_page: $('select[name="per_page"]').val(),
                 open_all: $('input[name="open_all"]').val(),
-                page: "{{ Request::get('page') ?? 1 }}",
                 special: "{{ Request::get('special') }}",
-                csrf: "{{ csrf_token() }}",
+                sale_40: "{{ Request::get('sale_40') }}",
+                variation_id: "{{ Request::get('variation_id') }}",
+                process_id: "{{ Request::get('process_id') }}",
+                show: "{{ Request::get('show') }}",
+                csrf: "{{ csrf_token() }}"
             };
 
+            return Object.assign(params, overrides);
+        }
+
+
+        $('#bulkModal').on('show.bs.modal', function (event) {
+
+            let filters = buildListingFilters({
+                page: "{{ Request::get('page') ?? 1 }}"
+            });
+
             // Convert params object to a query string
-            let queryString = $.param(params);
+            let queryString = $.param(filters);
 
             // Append query string to the URL
             let url = "{{ url('listing/get_target_variations') }}" + '?' + queryString;
@@ -798,36 +813,8 @@
             let grades = {!! json_encode($grades) !!};
             let eurToGbp = {!! json_encode($eur_gbp) !!};
 
-            let page = new URL(window.location.href).searchParams.get('page') || 1;
-            fetchVariations(page); // Fetch variations on page load
-
-            function fetchVariations(page = 1) {
-                // Collect form data or input values to create query parameters
-                let params = {
-                    product_name: $('#product_name').val(),
-                    reference_id: $('#reference_id').val(),
-                    product: $('#product').val(),
-                    sku: $('input[name="sku"]').val(),
-                    color: $('select[name="color"]').val(),
-                    storage: $('select[name="storage"]').val(),
-                    grade: $('select[name="grade[]"]').val(), // Use .val() for multiple selects if needed
-                    category: $('select[name="category"]').val(),
-                    brand: $('select[name="brand"]').val(),
-                    listed_stock: $('select[name="listed_stock"]').val(),
-                    available_stock: $('select[name="available_stock"]').val(),
-                    handler_status: $('select[name="handler_status"]').val(),
-                    state: $('select[name="state"]').val(),
-                    sort: $('select[name="sort"]').val(),
-                    per_page: $('select[name="per_page"]').val(),
-                    open_all: $('input[name="open_all"]').val(),
-                    page: page,
-                    special: "{{ Request::get('special') }}",
-                    sale_40: "{{ Request::get('sale_40') }}",
-                    variation_id: "{{ Request::get('variation_id') }}",
-                    process_id: "{{ Request::get('process_id') }}",
-                    show: "{{ Request::get('show') }}",
-                    csrf: "{{ csrf_token() }}"
-                };
+            window.fetchVariations = function(page = 1) {
+                let params = buildListingFilters({ page: page });
 
                 // Convert params object to a query string
                 let queryString = $.param(params);
@@ -847,7 +834,16 @@
                         console.error(xhr.responseText); // Log any errors for debugging
                     }
                 });
-            }
+            };
+
+            $('#exportListingsBtn').on('click', function () {
+                let params = buildListingFilters();
+                let queryString = $.param(params);
+                window.open("{{ url('listing/export') }}" + '?' + queryString, '_blank');
+            });
+
+            let page = new URL(window.location.href).searchParams.get('page') || 1;
+            fetchVariations(page); // Fetch variations on page load
 
             function updatePagination(response) {
                 let paginationContainer = $('#pagination-container');
