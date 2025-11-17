@@ -324,7 +324,7 @@ class ListingController extends Controller
             $availableCount,
             $pendingCount,
             optional($listing)->id,
-            $listing ? (optional($listing->country_id)->name ?? $listing->country) : null,
+            $listing ? (optional($listing->country_id)->title ?? $listing->country) : null,
             $listing ? $this->formatHandlerStatus($listing->handler_status) : null,
             $listing ? (optional($listing->currency)->code ?? optional($listing->currency)->symbol ?? null) : null,
             optional($listing)->min_price,
