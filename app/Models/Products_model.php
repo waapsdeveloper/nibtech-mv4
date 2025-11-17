@@ -18,6 +18,15 @@ class Products_model extends Model
         // other fields...
         'model',
     ];
+
+    public function brand_id()
+    {
+        return $this->belongsTo(Brand_model::class, 'brand', 'id');
+    }
+    public function category_id()
+    {
+        return $this->belongsTo(Category_model::class, 'category', 'id');
+    }
     public function variations()
     {
         return $this->hasMany(Variation_model::class, 'product_id', 'id');
