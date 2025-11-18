@@ -128,6 +128,8 @@ $status = $bmpro->getStatus(options: ['marketplace_id' => 2]);
 
 If the referenced marketplace record does not contain an API key (or the database is unavailable), the controller automatically falls back to the `BMPRO_API_TOKEN` value. Make sure `.env` still contains a valid backup token for development and automated tests.
 
+> Tip: you can store the token column either as the raw credential (the controller will prepend `Bearer`) or with an explicit prefix such as `Bearer abc123` / `Basic base64-credentials`. Whatever prefix you provide will be passed straight through to the `Authorization` header.
+
 ### Test URL for listings
 
 Need a quick sanity check without writing code? Hit `GET /api/bmpro/listings/test` (optionally pass `currency`, `marketplace_id`, `publication_state`, `per_page`, `page`, or `auto_paginate=false`). The endpoint proxies through to Back Market Pro using the same controller logic and responds with the raw API payload plus metadata about the filters/options that were applied.
