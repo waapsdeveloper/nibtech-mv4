@@ -1,7 +1,9 @@
 <?php
 
 use App\Http\Controllers\ApiRequestController;
+use App\Http\Controllers\BMPROListingsController;
 use App\Http\Controllers\InternalApiController;
+use App\Http\Controllers\RefurbedListingsController;
 use App\Http\Controllers\TestingController;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
@@ -45,6 +47,14 @@ Route::group(['middleware' => ['internal.only']], function () {
     // Route::get('/internal/get_competitors/{id}/{no_check?}', [InternalApiController::class, 'getCompetitors']);
     // Route::get('/internal/inventory_get_vendor_wise_average', [InternalApiController::class, 'inventoryGetVendorWiseAverage']);
     // Route::get('/internal/inventory_get_average_cost', [InternalApiController::class, 'inventoryGetAverageCost']);
+
+    Route::prefix('refurbed')->group(function () {
+        Route::get('/listings/active', [RefurbedListingsController::class, 'active'])
+            ->name('refurbed.listings.active');
+    });
+
+    Route::get('/bmpro/listings/test', [BMPROListingsController::class, 'index'])
+        ->name('bmpro.listings.test');
 
 
 

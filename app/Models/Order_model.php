@@ -201,6 +201,10 @@ class Order_model extends Model
     {
         return $this->hasMany(Order_issue_model::class, 'order_id', 'id');
     }
+    public function marketplace()
+    {
+        return $this->hasOne(Marketplace_model::class, 'id', 'marketplace_id');
+    }
     public function process()
     {
         return $this->hasMany(Process_model::class, 'order_id', 'id');
