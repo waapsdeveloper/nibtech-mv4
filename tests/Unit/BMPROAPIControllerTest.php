@@ -85,6 +85,32 @@ class BMPROAPIControllerTest extends TestCase
         });
     }
 
+    public function test_marketplace_token_with_prefix_is_passed_through(): void
+    {
+        $fakeResolver = new class extends MarketplaceTokenResolver {
+            public function resolve(?int $marketplaceId = null, ?string $currency = null): ?string
+            {
+                return 'Basic base64-credentials';
+            }
+        };
+
+        $this->app->instance(MarketplaceTokenResolver::class, $fakeResolver);
+
+        Http::fake([
+            'https://api.pro.backmarket.com/sellers-prod/2024-03/orders/abc' => Http::response([
+                'id' => 'abc',
+            ], 200),
+        ]);
+
+        $controller = app(BMPROAPIController::class);
+
+        $controller->getOrder('abc', 'prod', ['marketplace_id' => 99]);
+
+        Http::assertSent(function (Request $request) {
+            return $request->hasHeader('Authorization', 'Basic base64-credentials');
+        });
+    }
+
     protected function setEnv(string $key, ?string $value): void
     {
         if ($value === null) {

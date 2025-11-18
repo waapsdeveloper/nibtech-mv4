@@ -298,9 +298,24 @@ class BMPROAPIController extends Controller
     {
         return [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $token,
+            'Authorization' => $this->formatAuthorizationHeader($token),
             'User-Agent' => $this->userAgent,
         ];
+    }
+
+    private function formatAuthorizationHeader(string $token): string
+    {
+        $token = trim($token);
+
+        if ($token === '') {
+            throw new RuntimeException('BMPRO API token is not configured.');
+        }
+
+        if (stripos($token, 'bearer ') === 0 || stripos($token, 'basic ') === 0) {
+            return $token;
+        }
+
+        return 'Bearer ' . $token;
     }
 
     private function resolveAccessToken(array $options = []): string
