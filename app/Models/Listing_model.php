@@ -51,5 +51,9 @@ class Listing_model extends Model
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
     }
+    public function marketplace()
+    {
+        return $this->hasOne(Marketplace_model::class, 'id', 'marketplace_id');
+    }
 
 }

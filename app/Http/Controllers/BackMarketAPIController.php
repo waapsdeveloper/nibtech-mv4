@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Country_model;
+use App\Models\Marketplace_model;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -19,7 +20,7 @@ class BackMarketAPIController extends Controller
     protected static $YOUR_USER_AGENT;
 
     public function __construct() {
-        self::$YOUR_ACCESS_TOKEN = env('BM_API1');
+        self::$YOUR_ACCESS_TOKEN = Marketplace_model::where('name', 'BackMarket')->first()->api_key ?? env('BM_API1');
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
     public function requestGet($end_point, $retryCount = 0){
