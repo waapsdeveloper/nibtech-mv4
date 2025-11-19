@@ -196,6 +196,7 @@
                         'transaction_total' => (float) $otherChargeRows->sum('transaction_total'),
                         'charge_total' => (float) $otherChargeRows->sum('charge_total'),
                         'difference_total' => (float) $otherChargeRows->sum('difference'),
+                        'transaction_count' => (int) $otherChargeRows->sum('transaction_count'),
                     ];
                 }
 
@@ -397,6 +398,7 @@
                                         $chargeLedger = (float) ($chargeSummary['transaction_total'] ?? 0);
                                         $chargeInvoice = (float) ($chargeSummary['charge_total'] ?? 0);
                                         $chargeVariance = (float) ($chargeSummary['difference_total'] ?? 0);
+                                        $chargeTxnCount = (int) ($chargeSummary['transaction_count'] ?? 0);
                                         $chargeVarianceClass = abs($chargeVariance) < 0.01
                                             ? 'text-success'
                                             : ($chargeVariance < 0 ? 'text-warning' : 'text-danger');
@@ -413,6 +415,10 @@
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
                                             <span class="fw-semibold {{ $chargeVarianceClass }}">{{ number_format($chargeVariance, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Transaction Count</span>
+                                            <span class="fw-semibold">{{ $chargeTxnCount }}</span>
                                         </div>
                                     </div>
                                     <p class="text-muted mb-0 mt-2">Variance = Actual - Calculated. Negative values = charges.</p>
@@ -666,6 +672,7 @@
                                         <th class="text-end"><small><b>Actual Ledger</b></small></th>
                                         <th class="text-end"><small><b>Calculated Charges</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
+                                        <th class="text-end"><small><b>Txn Count</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -680,6 +687,7 @@
                                             <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
                                             <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
                                             <td class="text-end {{ $rowVarianceClass }}">{{ number_format($row['difference'], 2) }}</td>
+                                            <td class="text-end">{{ $row['transaction_count'] ?? 0 }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>
@@ -689,6 +697,7 @@
                                         <td class="text-end"><b>{{ number_format($chargeSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($chargeSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($chargeSummary['difference_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ $chargeSummary['transaction_count'] ?? 0 }}</b></td>
                                     </tr>
                                 </tfoot>
                             </table>
