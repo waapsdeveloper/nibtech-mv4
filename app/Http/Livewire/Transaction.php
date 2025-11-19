@@ -168,7 +168,7 @@ class Transaction extends Component
             // die;
         }
 
-        $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->first();
+        $process = Process_model::where(['process_type_id' => 19, 'description' => request()->file('sheet')->getClientOriginalName()])->when(request('reference_id'), fn($query) => $query->where('reference_id', request('reference_id')))->first();
         if($process){
             // session()->put('error', "This file has already been processed");
             // return redirect()->back();
@@ -177,6 +177,15 @@ class Transaction extends Component
             $process->process_type_id = 19;
             $process->description = request()->file('sheet')->getClientOriginalName();
             $process->admin_id = session('user_id');
+            if(request('started_at')){
+                $process->started_at = request('started_at');
+            }
+            if(request('ended_at')){
+                $process->ended_at = request('ended_at');
+            }
+            if(request('reference_id')){
+                $process->reference_id = request('reference_id');
+            }
             $process->status = 1;
             $process->save();
 
