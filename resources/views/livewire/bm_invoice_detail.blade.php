@@ -1162,7 +1162,7 @@
                                         @endphp
                                         <tr>
                                             <td>{{ $refund['transaction_id'] }}</td>
-                                            <td>{{ $refund['transaction_reference'] ?? '—' }}</td>
+                                            <td>{{ $refund['order_reference'] ?? $refund['transaction_reference'] ?? '—' }}</td>
                                             <td class="text-center">{{ $refund['transaction_currency'] ?? '—' }}</td>
                                             <td class="text-end">{{ number_format(($formatRefundAmount)($refund['transaction_amount'] ?? 0), 2) }}</td>
                                             <td class="text-center {{ $matchClass }}">{{ $matchLabel }}</td>
