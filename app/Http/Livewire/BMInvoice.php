@@ -67,7 +67,7 @@ class BMInvoice extends Component
             ->when(request('end_date'), fn ($query, $end) => $query->where('created_at', '<=', $end . ' 23:59:59'))
             ->when(request('batch_id'), fn ($query, $batchId) => $query->where('reference_id', 'LIKE', $batchId . '%'))
             ->when(request('status'), fn ($query, $status) => $query->where('status', $status))
-            ->orderBy('reference_id', 'desc')
+            ->orderByRaw('CAST(reference_id AS UNSIGNED) DESC')
             ->paginate($perPage)
             ->appends(request()->except('page'));
     }
