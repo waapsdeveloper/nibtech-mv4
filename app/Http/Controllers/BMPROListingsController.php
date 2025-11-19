@@ -15,8 +15,14 @@ class BMPROListingsController extends Controller
     {
         $perPage = $this->clamp((int) $request->input('per_page', 50), 1, 200);
 
+        $publicationState = $request->input('publication_state');
+
+        if ($publicationState === null || $publicationState === '') {
+            $publicationState = 'active';
+        }
+
         $filters = array_filter([
-            'publication_state' => $request->input('publication_state'),
+            'publication_state' => $publicationState,
             'page-size' => $perPage,
             'page' => $request->input('page'),
         ], fn ($value) => $value !== null && $value !== '');
