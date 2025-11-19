@@ -671,9 +671,21 @@ class BMInvoice extends Component
     {
         $normalizedFilter = $this->normalizeDescription($descriptionFilter);
 
-        $filteredTransactions = $transactions->filter(function ($transaction) use ($normalizedFilter) {
+        // Handle both singular and plural variations
+        $filterVariations = [$normalizedFilter];
+        if (substr($normalizedFilter, -1) === 'k') {
+            // regularization_chargeback -> regularization_chargebacks
+            $filterVariations[] = $normalizedFilter . 's';
+        } elseif (substr($normalizedFilter, -1) === 't') {
+            // credit_request -> credit_requests
+            $filterVariations[] = $normalizedFilter . 's';
+        } else {
+            $filterVariations[] = $normalizedFilter . 's';
+        }
+
+        $filteredTransactions = $transactions->filter(function ($transaction) use ($filterVariations) {
             $normalized = $this->normalizeDescription($transaction->description);
-            return $normalized === $normalizedFilter || $normalized === $normalizedFilter . 's';
+            return in_array($normalized, $filterVariations, true);
         });
 
         if ($filteredTransactions->isEmpty()) {
