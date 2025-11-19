@@ -688,13 +688,15 @@ class BMInvoice extends Component
             ]);
         }
 
-        $ordersById = $orders->keyBy('id');
-
-        $details = $filteredTransactions
+        $transactionsWithOrders = $filteredTransactions
             ->filter(fn ($transaction) => !empty($transaction->order_id))
+            ->load('order:id,reference_id,price,currency');
+
+        $details = $transactionsWithOrders
             ->groupBy('order_id')
-            ->map(function ($group, $orderId) use ($ordersById) {
-                $order = $ordersById->get($orderId);
+            ->map(function ($group) {
+                $transaction = $group->first();
+                $order = $transaction->order;
                 $transactionTotal = (float) $group->sum('amount');
                 $orderAmount = $order ? (float) ($order->price ?? 0) : 0;
 
@@ -702,7 +704,7 @@ class BMInvoice extends Component
                 $currency = $currencies->count() === 1 ? $this->formatCurrencyId($currencies->first()) : 'Mixed';
 
                 return [
-                    'order_id' => $orderId,
+                    'order_id' => $transaction->order_id,
                     'order_reference' => $order ? $order->reference_id : '—',
                     'currency' => $currency,
                     'transaction_total' => $transactionTotal,
