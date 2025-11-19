@@ -180,6 +180,7 @@ class BMInvoice extends Component
             ->map(fn ($group) => (float) $group->sum('amount'));
 
         $ordersPerCurrency = $orders
+            ->filter(fn ($order) => (float) ($order->price ?? 0) >= 0)
             ->groupBy('currency')
             ->map(function ($group) {
                 return (float) $group->sum(function ($order) {
