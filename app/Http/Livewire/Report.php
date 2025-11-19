@@ -973,6 +973,36 @@ class Report extends Component
                 return amount_formatter($items);
             }
         );
+        // Lets create B2C stock cost by getting all stock ids from b2c order items by currency
+        $b2c_items_by_currency = $b2c_order_items->groupBy('currency')
+            ->map->pluck('stock_id');
+
+        $b2c_totals_exchanged = $b2c_total;
+        foreach ($b2c_items_by_currency as $currency => $stock_ids) {
+            $b2c_curr_stock_cost = Order_item_model::whereIn('stock_id', $stock_ids)
+                ->whereIn('order_id', $all_po)
+                ->orderBy('id')
+                ->pluck('price', 'stock_id')
+                ->sum();
+
+            $b2c_curr_stock_repair_cost = Process_stock_model::whereIn('stock_id', $stock_ids)
+                ->whereHas('process', function ($q) {
+                    $q->where('process_type_id', 9);
+                })
+                ->sum('price');
+
+            if (isset($b2c_totals_exchanged[$currency])) {
+                if($currency != 4){
+                    $currency_code = Currency_model::find($currency)->code;
+                    $exchange_rate = ExchangeRate::where('target_currency', $currency_code)->first();
+                    if ($exchange_rate) {
+                        $b2c_curr_stock_cost = $b2c_curr_stock_cost * $exchange_rate->rate;
+                        $b2c_curr_stock_repair_cost = $b2c_curr_stock_repair_cost * $exchange_rate->rate;
+                    }
+                }
+                $b2c_totals_exchanged[$currency] = $b2c_totals_exchanged[$currency] - $b2c_curr_stock_cost - $b2c_curr_stock_repair_cost;
+            }
+        }
 
         $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
         $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
@@ -980,6 +1010,8 @@ class Report extends Component
             ->orderBy('id')
             ->pluck('price', 'stock_id')
             ->sum();
+
+
 
         $b2c_total[4] = $b2c_total[4] - $b2c_stock_cost;
 
@@ -994,6 +1026,9 @@ class Report extends Component
         $b2c_total = collect($b2c_total)->map(function ($price) {
             return amount_formatter($price);
         });
+        $b2c_totals_exchanged = collect($b2c_totals_exchanged)->map(function ($price) {
+            return amount_formatter($price);
+        });
 
         // dd($b2c_total);
         $sale_data['b2c_orders'] = $b2c_order_items->pluck('order_id')->unique()->count();
@@ -1003,6 +1038,7 @@ class Report extends Component
         $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
         $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
         $sale_data['b2c_total'] = $b2c_total;
+        $sale_data['b2c_total_exchanged'] = $b2c_totals_exchanged;
 
 
 
