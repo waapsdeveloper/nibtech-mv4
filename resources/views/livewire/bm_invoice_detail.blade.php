@@ -357,9 +357,13 @@
                                                 $salesRecorded = (float) ($salesSummary['recorded_total'] ?? 0);
                                                 $salesInvoice = (float) ($salesSummary['invoice_total'] ?? 0);
                                                 $salesVariance = (float) ($salesSummary['variance'] ?? 0);
+                                                $salesTxnCount = (int) ($salesSummary['transaction_count'] ?? 0);
+                                                $salesOrderCount = (int) ($salesSummary['order_count'] ?? 0);
+                                                $salesCountDiff = (int) ($salesSummary['count_difference'] ?? 0);
                                                 $salesVarianceClass = abs($salesVariance) < 0.01
                                                     ? 'text-success'
                                                     : ($salesVariance < 0 ? 'text-warning' : 'text-danger');
+                                                $salesCountClass = $salesCountDiff == 0 ? 'text-success' : 'text-danger';
                                             @endphp
                                             <div class="d-flex justify-content-between">
                                                 <span>Recorded ({{ $salesCurrency }})</span>
@@ -372,6 +376,10 @@
                                             <div class="d-flex justify-content-between">
                                                 <span>Variance</span>
                                                 <span class="fw-semibold {{ $salesVarianceClass }}">{{ number_format($salesVariance, 2) }}</span>
+                                            </div>
+                                            <div class="d-flex justify-content-between">
+                                                <span>Transactions/Orders</span>
+                                                <span class="fw-semibold {{ $salesCountClass }}">{{ $salesTxnCount }} / {{ $salesOrderCount }}</span>
                                             </div>
                                         @else
                                             <p class="mb-2">Multiple currencies detected. See breakdown below.</p>
@@ -451,6 +459,8 @@
                                     <small class="text-uppercase">Partial Refunds</small>
                                     @php
                                         $partialVariance = (float) ($partialRefundSummary['difference_total'] ?? 0);
+                                        $partialTxnCount = (int) ($partialRefundSummary['transaction_count'] ?? 0);
+                                        $partialOrderCount = (int) ($partialRefundSummary['order_count'] ?? 0);
                                         $partialVarianceClass = abs($partialVariance) < 0.01
                                             ? 'text-success'
                                             : ($partialVariance < 0 ? 'text-warning' : 'text-danger');
@@ -468,6 +478,10 @@
                                             <span>Variance</span>
                                             <span class="fw-semibold {{ $partialVarianceClass }}">{{ number_format($partialVariance, 2) }}</span>
                                         </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Transactions/Orders</span>
+                                            <span class="fw-semibold">{{ $partialTxnCount }} / {{ $partialOrderCount }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -479,6 +493,8 @@
                                     <small class="text-uppercase">Full Refunds</small>
                                     @php
                                         $fullVariance = (float) ($fullRefundSummary['difference_total'] ?? 0);
+                                        $fullTxnCount = (int) ($fullRefundSummary['transaction_count'] ?? 0);
+                                        $fullOrderCount = (int) ($fullRefundSummary['order_count'] ?? 0);
                                         $fullVarianceClass = abs($fullVariance) < 0.01
                                             ? 'text-success'
                                             : ($fullVariance < 0 ? 'text-warning' : 'text-danger');
@@ -496,6 +512,10 @@
                                             <span>Variance</span>
                                             <span class="fw-semibold {{ $fullVarianceClass }}">{{ number_format($fullVariance, 2) }}</span>
                                         </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Transactions/Orders</span>
+                                            <span class="fw-semibold">{{ $fullTxnCount }} / {{ $fullOrderCount }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -509,6 +529,8 @@
                                         $creditLedger = (float) ($creditRequestSummary['transaction_total'] ?? 0);
                                         $creditInvoice = (float) ($creditRequestSummary['charge_total'] ?? 0);
                                         $creditVariance = (float) ($creditRequestSummary['difference_total'] ?? 0);
+                                        $creditTxnCount = (int) ($creditRequestSummary['transaction_count'] ?? 0);
+                                        $creditOrderCount = (int) ($creditRequestSummary['order_count'] ?? 0);
                                         $creditVarianceClass = abs($creditVariance) < 0.01
                                             ? 'text-success'
                                             : ($creditVariance < 0 ? 'text-warning' : 'text-danger');
@@ -526,6 +548,14 @@
                                             <span>Variance</span>
                                             <span class="fw-semibold {{ $creditVarianceClass }}">{{ number_format($creditVariance, 2) }}</span>
                                         </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Transaction Count</span>
+                                            <span class="fw-semibold">{{ $creditTxnCount }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Order Count</span>
+                                            <span class="fw-semibold">{{ $creditOrderCount }}</span>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -537,7 +567,7 @@
                                     <small class="text-uppercase">Regularization Chargeback</small>
                                     @php
                                         $regCBLedger = (float) ($regularizationChargebackSummary['transaction_total'] ?? 0);
-                                        $regCBCount = (int) ($regularizationChargebackSummary['count'] ?? 0);
+                                        $regCBCount = (int) ($regularizationChargebackSummary['transaction_count'] ?? 0);
                                     @endphp
                                     <div class="mt-2">
                                         <div class="d-flex justify-content-between">
@@ -593,8 +623,11 @@
                                     <tr>
                                         <th><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>Recorded Sales</b></small></th>
+                                        <th class="text-end"><small><b>Sales Count</b></small></th>
                                         <th class="text-end"><small><b>BM Invoice</b></small></th>
-                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                        <th class="text-end"><small><b>Order Count</b></small></th>
+                                        <th class="text-end"><small><b>Amount Variance</b></small></th>
+                                        <th class="text-end"><small><b>Count Variance</b></small></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -603,12 +636,18 @@
                                             $varianceClass = abs($row['difference']) < 0.01
                                                 ? 'text-success'
                                                 : ($row['difference'] < 0 ? 'text-warning' : 'text-danger');
+                                            $countVarianceClass = ($row['count_difference'] ?? 0) == 0
+                                                ? 'text-success'
+                                                : 'text-danger';
                                         @endphp
                                         <tr>
                                             <td>{{ $row['currency'] }}</td>
                                             <td class="text-end">{{ number_format($row['sales_total'], 2) }}</td>
+                                            <td class="text-end">{{ $row['sales_count'] ?? 0 }}</td>
                                             <td class="text-end">{{ number_format($row['order_total'], 2) }}</td>
+                                            <td class="text-end">{{ $row['order_count'] ?? 0 }}</td>
                                             <td class="text-end {{ $varianceClass }}">{{ number_format($row['difference'], 2) }}</td>
+                                            <td class="text-end {{ $countVarianceClass }}">{{ $row['count_difference'] ?? 0 }}</td>
                                         </tr>
                                     @endforeach
                                 </tbody>

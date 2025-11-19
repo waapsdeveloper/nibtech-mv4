@@ -231,25 +231,27 @@ class BMInvoice extends Component
 
     private function summarizeSalesVsOrders(Collection $orders, Collection $salesTransactions): array
     {
-        $salesPerCurrency = $salesTransactions
-            ->groupBy('currency')
-            ->map(fn ($group) => (float) $group->sum('amount'));
+        $salesByGroup = $salesTransactions->groupBy('currency');
+        $salesPerCurrency = $salesByGroup->map(fn ($group) => (float) $group->sum('amount'));
+        $salesCountPerCurrency = $salesByGroup->map(fn ($group) => $group->count());
 
-        $ordersPerCurrency = $orders
-            ->groupBy('currency')
-            ->map(function ($group) {
-                return (float) $group->sum(function ($order) {
-                    return (float) ($order->price ?? 0);
-                });
+        $ordersByGroup = $orders->groupBy('currency');
+        $ordersPerCurrency = $ordersByGroup->map(function ($group) {
+            return (float) $group->sum(function ($order) {
+                return (float) ($order->price ?? 0);
             });
+        });
+        $ordersCountPerCurrency = $ordersByGroup->map(fn ($group) => $group->count());
 
         $currencyBreakdown = $ordersPerCurrency
             ->keys()
             ->merge($salesPerCurrency->keys())
             ->unique()
-            ->map(function ($currencyId) use ($salesPerCurrency, $ordersPerCurrency) {
+            ->map(function ($currencyId) use ($salesPerCurrency, $ordersPerCurrency, $salesCountPerCurrency, $ordersCountPerCurrency) {
                 $salesTotal = $salesPerCurrency->get($currencyId, 0.0);
                 $orderTotal = $ordersPerCurrency->get($currencyId, 0.0);
+                $salesCount = $salesCountPerCurrency->get($currencyId, 0);
+                $orderCount = $ordersCountPerCurrency->get($currencyId, 0);
 
                 return [
                     'currency_id' => (string) $currencyId,
@@ -257,6 +259,9 @@ class BMInvoice extends Component
                     'sales_total' => $salesTotal,
                     'order_total' => $orderTotal,
                     'difference' => $salesTotal - $orderTotal,
+                    'sales_count' => $salesCount,
+                    'order_count' => $orderCount,
+                    'count_difference' => $salesCount - $orderCount,
                 ];
             })
             ->filter(function ($row) {
@@ -270,6 +275,9 @@ class BMInvoice extends Component
             'transaction_total' => $isSingleCurrency ? ($currencyBreakdown[0]['sales_total'] ?? 0.0) : null,
             'order_total' => $isSingleCurrency ? ($currencyBreakdown[0]['order_total'] ?? 0.0) : null,
             'difference' => $isSingleCurrency ? ($currencyBreakdown[0]['difference'] ?? 0.0) : null,
+            'transaction_count' => $isSingleCurrency ? ($currencyBreakdown[0]['sales_count'] ?? 0) : null,
+            'order_count' => $isSingleCurrency ? ($currencyBreakdown[0]['order_count'] ?? 0) : null,
+            'count_difference' => $isSingleCurrency ? ($currencyBreakdown[0]['count_difference'] ?? 0) : null,
             'primary_currency' => $isSingleCurrency ? ($currencyBreakdown[0]['currency'] ?? null) : null,
             'breakdown' => $currencyBreakdown,
         ];
@@ -378,6 +386,7 @@ class BMInvoice extends Component
                 'sales_total_currency' => $recordedTotal,
                 'difference_currency' => $differenceCurrency,
                 'transactions' => $transactionRows,
+                'transaction_count' => $primaryTransactions->count(),
                 'primary_transaction_type' => $primaryType,
             ];
         })->filter(function ($row) {
@@ -605,6 +614,8 @@ class BMInvoice extends Component
                 'transaction_total' => $primaryRow['transaction_total'] ?? null,
                 'order_total' => $primaryRow['order_total'] ?? null,
                 'difference' => $primaryRow['difference'] ?? null,
+                'transaction_count' => $details->count(),
+                'order_count' => $details->where('order_found', true)->count(),
                 'matched_count' => $details->where('order_found', true)->count(),
                 'missing_order_count' => $details->where('order_found', false)->count(),
                 'total' => $details->count(),
@@ -732,7 +743,8 @@ class BMInvoice extends Component
                 'transaction_total' => (float) $details->sum('transaction_total'),
                 'charge_total' => (float) $details->sum('charge_total'),
                 'difference_total' => (float) $details->sum('difference'),
-                'count' => $details->count(),
+                'order_count' => $details->count(),
+                'transaction_count' => (int) $details->sum('transaction_count'),
             ],
             'details' => $details,
         ]);
