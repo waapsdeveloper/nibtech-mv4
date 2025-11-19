@@ -519,10 +519,12 @@ class BMInvoice extends Component
             $orderId = null;
             $orderReference = null;
             $orderAmount = 0.0;
+            $salesOrderReference = null;
 
             if ($order) {
                 $orderId = $order->id;
                 $orderReference = $order->reference_id;
+                $salesOrderReference = $order->reference_id;
                 $orderAmount = (float) ($order->price ?? 0.0);
                 $orderCurrencyId = (string) ($order->currency ?? '');
                 $orderCurrency = $this->formatCurrencyId($orderCurrencyId);
@@ -534,7 +536,8 @@ class BMInvoice extends Component
                 if ($ordersById->has($transaction->order_id)) {
                     $originalOrder = $ordersById->get($transaction->order_id);
                     $orderId = $originalOrder->id;
-                    $orderReference = $originalOrder->reference_id;
+                    $salesOrderReference = $originalOrder->reference_id;
+                    $orderReference = $linkedRefunds->first()->reference_id ?? null;
                     $orderCurrencyId = (string) ($originalOrder->currency ?? '');
                     $orderCurrency = $this->formatCurrencyId($orderCurrencyId);
                 }
@@ -551,6 +554,7 @@ class BMInvoice extends Component
                 'match_source' => $matchSource,
                 'order_id' => $orderId,
                 'order_reference' => $orderReference,
+                'sales_order_reference' => $salesOrderReference,
                 'order_currency_id' => $orderCurrencyId,
                 'order_currency' => $orderCurrency,
                 'order_amount' => $orderAmount,
