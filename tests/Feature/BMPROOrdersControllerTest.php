@@ -57,7 +57,7 @@ class BMPROOrdersControllerTest extends TestCase
         Http::assertSent(function (Request $request) {
             return str_starts_with($request->url(), 'https://api.pro.backmarket.com/sellers-prod/2024-03/orders')
                 && str_contains($request->url(), 'page-size=25')
-                && str_contains($request->url(), 'fulfillment_status=pending')
+                && str_contains($request->url(), 'fulfillment_status=fulfilled')
                 && $request->hasHeader('Authorization', 'Bearer db-token');
         });
     }
