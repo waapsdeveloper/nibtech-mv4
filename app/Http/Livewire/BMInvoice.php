@@ -191,7 +191,7 @@ class BMInvoice extends Component
             return collect();
         }
 
-        return Order_model::whereIn('id', $orderIds)->where('order_type_id', 4)
+        return Order_model::whereIn('id', $orderIds)->where('order_type_id', 3)
             ->get(['id', 'price', 'currency', 'reference_id']);
     }
 
