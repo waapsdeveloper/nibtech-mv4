@@ -129,6 +129,8 @@ class BMInvoice extends Component
 
         $descriptionSummary = $this->buildDescriptionReport($transactions, $chargeMap, $orders);
         $refundReport = $this->buildRefundReport($refundTransactions, $refundOrders, $allRefundOrders);
+        $creditRequestReport = $this->buildOrderWiseReport($transactions, $orders, 'credit_request');
+        $regularizationChargebackReport = $this->buildOrderWiseReport($transactions, $orders, 'regularization_chargeback');
 
         return [
             'duplicateTransactions' => $duplicateTransactions,
@@ -137,6 +139,8 @@ class BMInvoice extends Component
             'report' => $descriptionSummary->get('report'),
             'reportSalesRow' => $descriptionSummary->get('sales'),
             'refundReport' => $refundReport,
+            'creditRequestReport' => $creditRequestReport,
+            'regularizationChargebackReport' => $regularizationChargebackReport,
         ];
     }
 
@@ -661,6 +665,63 @@ class BMInvoice extends Component
     private function isRefundDescription($description): bool
     {
         return in_array($this->normalizeDescription($description), ['refund', 'refunds'], true);
+    }
+
+    private function buildOrderWiseReport(Collection $transactions, Collection $orders, string $descriptionFilter): Collection
+    {
+        $normalizedFilter = $this->normalizeDescription($descriptionFilter);
+
+        $filteredTransactions = $transactions->filter(function ($transaction) use ($normalizedFilter) {
+            $normalized = $this->normalizeDescription($transaction->description);
+            return $normalized === $normalizedFilter || $normalized === $normalizedFilter . 's';
+        });
+
+        if ($filteredTransactions->isEmpty()) {
+            return collect([
+                'summary' => [
+                    'transaction_total' => 0,
+                    'charge_total' => 0,
+                    'difference_total' => 0,
+                    'count' => 0,
+                ],
+                'details' => collect(),
+            ]);
+        }
+
+        $ordersById = $orders->keyBy('id');
+
+        $details = $filteredTransactions
+            ->filter(fn ($transaction) => !empty($transaction->order_id))
+            ->groupBy('order_id')
+            ->map(function ($group, $orderId) use ($ordersById) {
+                $order = $ordersById->get($orderId);
+                $transactionTotal = (float) $group->sum('amount');
+                $orderAmount = $order ? (float) ($order->price ?? 0) : 0;
+
+                $currencies = $group->pluck('currency')->filter()->unique();
+                $currency = $currencies->count() === 1 ? $this->formatCurrencyId($currencies->first()) : 'Mixed';
+
+                return [
+                    'order_id' => $orderId,
+                    'order_reference' => $order ? $order->reference_id : '—',
+                    'currency' => $currency,
+                    'transaction_total' => $transactionTotal,
+                    'charge_total' => $orderAmount,
+                    'difference' => $transactionTotal - $orderAmount,
+                    'transaction_count' => $group->count(),
+                ];
+            })
+            ->values();
+
+        return collect([
+            'summary' => [
+                'transaction_total' => (float) $details->sum('transaction_total'),
+                'charge_total' => (float) $details->sum('charge_total'),
+                'difference_total' => (float) $details->sum('difference'),
+                'count' => $details->count(),
+            ],
+            'details' => $details,
+        ]);
     }
 }
 
