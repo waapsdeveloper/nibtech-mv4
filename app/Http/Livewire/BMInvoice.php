@@ -415,7 +415,7 @@ class BMInvoice extends Component
         }
 
         $charges = Order_charge_model::query()
-            ->selectRaw('charge_value_id, SUM(amount) AS charge_total')
+            ->selectRaw('charge_value_id, SUM(amount) AS charge_total, COUNT(*) AS charge_count')
             ->with('charge')
             ->whereIn('order_id', $orderIds)
             ->groupBy('charge_value_id')
@@ -427,7 +427,10 @@ class BMInvoice extends Component
             })
             ->filter(fn ($_, $key) => $key !== '')
             ->map(function ($group) {
-                return (float) $group->sum('charge_total');
+                return [
+                    'total' => (float) $group->sum('charge_total'),
+                    'count' => (int) $group->sum('charge_count'),
+                ];
             })
             ->all();
     }
@@ -442,12 +445,15 @@ class BMInvoice extends Component
             ->groupBy(function ($transaction) {
                 return trim((string) $transaction->description) ?: '—';
             })
-            ->map(function ($group, $description) use ($chargeMap, $orderPriceTotal) {
+            ->map(function ($group, $description) use ($chargeMap, $orderPriceTotal, $orders) {
                 $transactionTotal = (float) $group->sum('amount');
-                $chargeTotal = $chargeMap[$description] ?? 0.0;
+                $chargeData = $chargeMap[$description] ?? ['total' => 0.0, 'count' => 0];
+                $chargeTotal = is_array($chargeData) ? ($chargeData['total'] ?? 0.0) : $chargeData;
+                $chargeCount = is_array($chargeData) ? ($chargeData['count'] ?? 0) : 0;
 
                 if ($this->isSalesDescription($description)) {
                     $chargeTotal = $orderPriceTotal;
+                    $chargeCount = $orders->count();
                 }
 
                 if ($chargeTotal > 0) {
@@ -460,6 +466,7 @@ class BMInvoice extends Component
                     'charge_total' => $chargeTotal,
                     'difference' => $transactionTotal - $chargeTotal,
                     'transaction_count' => $group->count(),
+                    'charge_count' => $chargeCount,
                 ];
             })
             ->values();
