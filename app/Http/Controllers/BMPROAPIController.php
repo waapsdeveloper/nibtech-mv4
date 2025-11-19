@@ -211,16 +211,15 @@ class BMPROAPIController extends Controller
     {
         $token = $this->resolveAccessToken($options);
 
+        $url = $this->resolveEndpoint($endpoint, $environment);
+
         try {
-            $response = $this->sendRequest($method, $endpoint, $query, $payload, $environment, $token);
+            $response = $this->sendRequest($method, $url, $query, $payload, $token);
         } catch (Exception $exception) {
+            $requestContext = $this->buildRequestContext($method, $url, $query, $payload, $options);
+
             Log::warning('BMPRO API request failed.', [
-                'method' => strtoupper($method),
-                'endpoint' => $endpoint,
-                'query' => $query,
-                'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
-                'environment' => $environment,
-                'options' => $options,
+                'request' => $requestContext,
                 'message' => $exception->getMessage(),
             ]);
 
@@ -228,6 +227,7 @@ class BMPROAPIController extends Controller
                 'success' => false,
                 'status' => 0,
                 'error' => $exception->getMessage(),
+                'request' => $requestContext,
             ];
         }
 
@@ -243,28 +243,24 @@ class BMPROAPIController extends Controller
         $payload = $response->json();
         $errorBody = $payload ?? $response->body();
 
+        $requestContext = $this->buildRequestContext($method, $url, $query, $payload, $options);
+
         Log::warning('BMPRO API returned error response.', [
-            'method' => strtoupper($method),
-            'endpoint' => $endpoint,
-            'query' => $query,
-            'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
-            'environment' => $environment,
+            'request' => $requestContext,
             'status' => $response->status(),
             'body' => $errorBody,
-            'options' => $options,
         ]);
 
         return [
             'success' => false,
             'status' => $response->status(),
             'error' => $errorBody,
+            'request' => $requestContext,
         ];
     }
 
-    private function sendRequest(string $method, string $endpoint, array $query, array|string|null $payload, string $environment, string $token): Response
+    private function sendRequest(string $method, string $url, array $query, array|string|null $payload, string $token): Response
     {
-        $url = $this->resolveEndpoint($endpoint, $environment);
-
         $request = Http::withHeaders($this->buildHeaders($token))
             ->timeout((int) env('BMPRO_API_TIMEOUT', 30))
             ->retry((int) env('BMPRO_API_RETRIES', 2), 200);
@@ -334,6 +330,17 @@ class BMPROAPIController extends Controller
         }
 
         return $this->fallbackAccessToken;
+    }
+
+    private function buildRequestContext(string $method, string $url, array $query, array|string|null $payload, array $options = []): array
+    {
+        return [
+            'method' => strtoupper($method),
+            'url' => $url,
+            'query' => $query,
+            'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
+            'options' => $options,
+        ];
     }
 
     private function extractItems($data): array

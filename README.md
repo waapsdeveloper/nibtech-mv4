@@ -132,7 +132,7 @@ If the referenced marketplace record does not contain an API key (or the databas
 
 ### Test URL for listings
 
-Need a quick sanity check without writing code? Hit `GET /api/bmpro/listings/test` (optionally pass `currency`, `marketplace_id`, `publication_state`, `per_page`, `page`, or `auto_paginate=false`). The endpoint proxies through to Back Market Pro using the same controller logic and responds with the raw API payload plus metadata about the filters/options that were applied.
+Need a quick sanity check without writing code? Hit `GET /api/bmpro/listings/test` (optionally pass `currency`, `marketplace_id`, `publication_state`, `per_page`, `page`, or `auto_paginate=false`). If you omit `publication_state`, the controller automatically requests `publication_state=active` so the response only contains active listings. The endpoint proxies through to Back Market Pro using the same controller logic and responds with the raw API payload plus metadata about the filters/options that were applied.
 
 Refer to the controller's docblocks for more available helpers (offers, shipping profiles, shipping labels, etc.). When adding new marketplace flows, prefer extending the controller so we keep all Refurbed wiring in a single place.
 

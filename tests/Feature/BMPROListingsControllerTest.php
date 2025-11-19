@@ -60,4 +60,23 @@ class BMPROListingsControllerTest extends TestCase
                 && $request->hasHeader('Authorization', 'Bearer db-token');
         });
     }
+
+    public function test_publication_state_defaults_to_active_when_missing(): void
+    {
+        Http::fake([
+            '*' => Http::response([
+                'items' => [],
+                'links' => [],
+            ], 200),
+        ]);
+
+        $response = $this->withoutExceptionHandling()
+            ->getJson('/api/bmpro/listings/test?currency=EUR');
+
+        $response->assertOk();
+
+        Http::assertSent(function (Request $request) {
+            return str_contains($request->url(), 'publication_state=active');
+        });
+    }
 }
