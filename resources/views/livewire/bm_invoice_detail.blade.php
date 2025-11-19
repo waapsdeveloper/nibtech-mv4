@@ -207,22 +207,32 @@
                         'difference_total' => (float) $deferredRows->sum('difference'),
                     ];
                 }
+            }
 
-                if ($creditRequestRows->isNotEmpty()) {
+            if (isset($creditRequestReport) && $creditRequestReport instanceof \Illuminate\Support\Collection) {
+                $creditSummary = $creditRequestReport->get('summary');
+                $creditDetails = $creditRequestReport->get('details', collect());
+
+                if ($creditDetails->isNotEmpty()) {
                     $creditRequestSummary = [
-                        'rows' => $creditRequestRows,
-                        'transaction_total' => (float) $creditRequestRows->sum('transaction_total'),
-                        'charge_total' => (float) $creditRequestRows->sum('charge_total'),
-                        'difference_total' => (float) $creditRequestRows->sum('difference'),
+                        'rows' => $creditDetails,
+                        'transaction_total' => (float) ($creditSummary['transaction_total'] ?? 0),
+                        'charge_total' => (float) ($creditSummary['charge_total'] ?? 0),
+                        'difference_total' => (float) ($creditSummary['difference_total'] ?? 0),
                     ];
                 }
+            }
 
-                if ($regularizationChargebackRows->isNotEmpty()) {
+            if (isset($regularizationChargebackReport) && $regularizationChargebackReport instanceof \Illuminate\Support\Collection) {
+                $regCBSummary = $regularizationChargebackReport->get('summary');
+                $regCBDetails = $regularizationChargebackReport->get('details', collect());
+
+                if ($regCBDetails->isNotEmpty()) {
                     $regularizationChargebackSummary = [
-                        'rows' => $regularizationChargebackRows,
-                        'transaction_total' => (float) $regularizationChargebackRows->sum('transaction_total'),
-                        'charge_total' => (float) $regularizationChargebackRows->sum('charge_total'),
-                        'difference_total' => (float) $regularizationChargebackRows->sum('difference'),
+                        'rows' => $regCBDetails,
+                        'transaction_total' => (float) ($regCBSummary['transaction_total'] ?? 0),
+                        'charge_total' => (float) ($regCBSummary['charge_total'] ?? 0),
+                        'difference_total' => (float) ($regCBSummary['difference_total'] ?? 0),
                     ];
                 }
             }
@@ -792,9 +802,10 @@
                             <table class="table table-sm table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Order Reference</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>Ledger Transactions</b></small></th>
-                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Order Amount</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
                                     </tr>
                                 </thead>
@@ -807,9 +818,10 @@
                                                 : ($creditRowVariance < 0 ? 'text-warning' : 'text-danger');
                                         @endphp
                                         <tr>
-                                            <td>{{ $row['description'] }}</td>
-                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td>{{ $row['order_reference'] ?? '—' }}</td>
+                                            <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'] ?? 0, 2) }}</td>
                                             <td class="text-end {{ $creditRowClass }}">{{ number_format($creditRowVariance, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -817,6 +829,7 @@
                                 <tfoot>
                                     <tr>
                                         <td><b>Total</b></td>
+                                        <td class="text-center">—</td>
                                         <td class="text-end"><b>{{ number_format($creditRequestSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($creditRequestSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($creditRequestSummary['difference_total'], 2) }}</b></td>
@@ -833,9 +846,10 @@
                             <table class="table table-sm table-hover mb-0 text-md-nowrap">
                                 <thead>
                                     <tr>
-                                        <th><small><b>Description</b></small></th>
+                                        <th><small><b>Order Reference</b></small></th>
+                                        <th class="text-center"><small><b>Currency</b></small></th>
                                         <th class="text-end"><small><b>Ledger Transactions</b></small></th>
-                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Order Amount</b></small></th>
                                         <th class="text-end"><small><b>Variance</b></small></th>
                                     </tr>
                                 </thead>
@@ -848,9 +862,10 @@
                                                 : ($regChargebackVariance < 0 ? 'text-warning' : 'text-danger');
                                         @endphp
                                         <tr>
-                                            <td>{{ $row['description'] }}</td>
-                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
-                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td>{{ $row['order_reference'] ?? '—' }}</td>
+                                            <td class="text-center">{{ $row['currency'] ?? '—' }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'] ?? 0, 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'] ?? 0, 2) }}</td>
                                             <td class="text-end {{ $regChargebackClass }}">{{ number_format($regChargebackVariance, 2) }}</td>
                                         </tr>
                                     @endforeach
@@ -858,6 +873,7 @@
                                 <tfoot>
                                     <tr>
                                         <td><b>Total</b></td>
+                                        <td class="text-center">—</td>
                                         <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['difference_total'], 2) }}</b></td>
