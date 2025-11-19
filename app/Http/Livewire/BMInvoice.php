@@ -164,7 +164,7 @@ class BMInvoice extends Component
 
     private function loadOrders(Collection $transactions): Collection
     {
-        $orderIds = $transactions->pluck('order_id')->filter()->unique();
+        $orderIds = $transactions->where('description', 'sales')->pluck('order_id')->filter()->unique();
 
         if ($orderIds->isEmpty()) {
             return collect();
