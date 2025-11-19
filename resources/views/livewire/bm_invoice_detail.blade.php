@@ -109,6 +109,8 @@
             $refundSummary = null;
             $partialRefundSummary = null;
             $fullRefundSummary = null;
+            $creditRequestSummary = null;
+            $regularizationChargebackSummary = null;
 
             $formatRefundAmount = function ($value) {
                 $value = (float) $value;
@@ -138,6 +140,8 @@
 
             if (isset($report) && $report instanceof \Illuminate\Support\Collection && $report->isNotEmpty()) {
                 $deferredKeys = collect(['deferred_payout_released', 'deferred_payout_retained']);
+                $creditRequestKeys = collect(['credit_requests', 'credit_request']);
+                $regularizationChargebackKeys = collect(['regularization_chargeback', 'regularization_chargebacks']);
 
                 $normalizedReport = $report->map(function ($row) {
                     $description = (string) ($row['description'] ?? '');
@@ -158,10 +162,27 @@
                     })
                     ->values();
 
-                $otherChargeRows = $normalizedReport
-                    ->reject(function ($row) use ($deferredKeys) {
+                $creditRequestRows = $normalizedReport
+                    ->filter(function ($row) use ($creditRequestKeys) {
                         $key = $row['normalized_description'] ?? '';
-                        return $deferredKeys->contains($key) || \Illuminate\Support\Str::contains($key, 'refund');
+                        return $creditRequestKeys->contains($key);
+                    })
+                    ->values();
+
+                $regularizationChargebackRows = $normalizedReport
+                    ->filter(function ($row) use ($regularizationChargebackKeys) {
+                        $key = $row['normalized_description'] ?? '';
+                        return $regularizationChargebackKeys->contains($key);
+                    })
+                    ->values();
+
+                $otherChargeRows = $normalizedReport
+                    ->reject(function ($row) use ($deferredKeys, $creditRequestKeys, $regularizationChargebackKeys) {
+                        $key = $row['normalized_description'] ?? '';
+                        return $deferredKeys->contains($key)
+                            || $creditRequestKeys->contains($key)
+                            || $regularizationChargebackKeys->contains($key)
+                            || \Illuminate\Support\Str::contains($key, 'refund');
                     })
                     ->map(function ($row) {
                         unset($row['normalized_description']);
@@ -184,6 +205,24 @@
                         'transaction_total' => (float) $deferredRows->sum('transaction_total'),
                         'charge_total' => (float) $deferredRows->sum('charge_total'),
                         'difference_total' => (float) $deferredRows->sum('difference'),
+                    ];
+                }
+
+                if ($creditRequestRows->isNotEmpty()) {
+                    $creditRequestSummary = [
+                        'rows' => $creditRequestRows,
+                        'transaction_total' => (float) $creditRequestRows->sum('transaction_total'),
+                        'charge_total' => (float) $creditRequestRows->sum('charge_total'),
+                        'difference_total' => (float) $creditRequestRows->sum('difference'),
+                    ];
+                }
+
+                if ($regularizationChargebackRows->isNotEmpty()) {
+                    $regularizationChargebackSummary = [
+                        'rows' => $regularizationChargebackRows,
+                        'transaction_total' => (float) $regularizationChargebackRows->sum('transaction_total'),
+                        'charge_total' => (float) $regularizationChargebackRows->sum('charge_total'),
+                        'difference_total' => (float) $regularizationChargebackRows->sum('difference'),
                     ];
                 }
             }
@@ -291,7 +330,7 @@
             }
         @endphp
 
-    @if($salesSummary || $chargeSummary || $refundSummary || $deferredSummary || $partialRefundSummary || $fullRefundSummary)
+    @if($salesSummary || $chargeSummary || $refundSummary || $deferredSummary || $partialRefundSummary || $fullRefundSummary || $creditRequestSummary || $regularizationChargebackSummary)
             <div class="card mt-3">
                 <div class="card-header pb-0">
                     <h4 class="card-title mg-b-0">Financial Summary</h4>
@@ -447,6 +486,66 @@
                                         <div class="d-flex justify-content-between">
                                             <span>Variance</span>
                                             <span class="fw-semibold {{ $fullVarianceClass }}">{{ number_format($fullVariance, 2) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($creditRequestSummary)
+                            <div class="col-lg-3 col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase">Credit Requests</small>
+                                    @php
+                                        $creditLedger = (float) ($creditRequestSummary['transaction_total'] ?? 0);
+                                        $creditInvoice = (float) ($creditRequestSummary['charge_total'] ?? 0);
+                                        $creditVariance = (float) ($creditRequestSummary['difference_total'] ?? 0);
+                                        $creditVarianceClass = abs($creditVariance) < 0.01
+                                            ? 'text-success'
+                                            : ($creditVariance < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <div class="mt-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Ledger Total</span>
+                                            <span class="fw-semibold">{{ number_format($creditLedger, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Invoice Total</span>
+                                            <span class="fw-semibold">{{ number_format($creditInvoice, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Variance</span>
+                                            <span class="fw-semibold {{ $creditVarianceClass }}">{{ number_format($creditVariance, 2) }}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endif
+
+                        @if($regularizationChargebackSummary)
+                            <div class="col-lg-3 col-md-6">
+                                <div class="border rounded p-3 h-100">
+                                    <small class="text-uppercase">Regularization Chargeback</small>
+                                    @php
+                                        $regCBLedger = (float) ($regularizationChargebackSummary['transaction_total'] ?? 0);
+                                        $regCBInvoice = (float) ($regularizationChargebackSummary['charge_total'] ?? 0);
+                                        $regCBVariance = (float) ($regularizationChargebackSummary['difference_total'] ?? 0);
+                                        $regCBVarianceClass = abs($regCBVariance) < 0.01
+                                            ? 'text-success'
+                                            : ($regCBVariance < 0 ? 'text-warning' : 'text-danger');
+                                    @endphp
+                                    <div class="mt-2">
+                                        <div class="d-flex justify-content-between">
+                                            <span>Ledger Total</span>
+                                            <span class="fw-semibold">{{ number_format($regCBLedger, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Invoice Total</span>
+                                            <span class="fw-semibold">{{ number_format($regCBInvoice, 2) }}</span>
+                                        </div>
+                                        <div class="d-flex justify-content-between">
+                                            <span>Variance</span>
+                                            <span class="fw-semibold {{ $regCBVarianceClass }}">{{ number_format($regCBVariance, 2) }}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -680,6 +779,88 @@
                                         <td class="text-end"><b>{{ number_format($deferredSummary['transaction_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($deferredSummary['charge_total'], 2) }}</b></td>
                                         <td class="text-end"><b>{{ number_format($deferredSummary['difference_total'], 2) }}</b></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    @endif
+
+                    @if($creditRequestSummary && $creditRequestSummary['rows']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Credit Requests Breakdown</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Description</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Transactions</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($creditRequestSummary['rows'] as $row)
+                                        @php
+                                            $creditRowVariance = (float) ($row['difference'] ?? 0);
+                                            $creditRowClass = abs($creditRowVariance) < 0.01
+                                                ? 'text-success'
+                                                : ($creditRowVariance < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['description'] }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end {{ $creditRowClass }}">{{ number_format($creditRowVariance, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><b>Total</b></td>
+                                        <td class="text-end"><b>{{ number_format($creditRequestSummary['transaction_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($creditRequestSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($creditRequestSummary['difference_total'], 2) }}</b></td>
+                                    </tr>
+                                </tfoot>
+                            </table>
+                        </div>
+                    @endif
+
+                    @if($regularizationChargebackSummary && $regularizationChargebackSummary['rows']->isNotEmpty())
+                        <hr class="my-4">
+                        <h6 class="mb-2">Regularization Chargeback Breakdown</h6>
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Description</b></small></th>
+                                        <th class="text-end"><small><b>Ledger Transactions</b></small></th>
+                                        <th class="text-end"><small><b>BM Invoice Charges</b></small></th>
+                                        <th class="text-end"><small><b>Variance</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach ($regularizationChargebackSummary['rows'] as $row)
+                                        @php
+                                            $regChargebackVariance = (float) ($row['difference'] ?? 0);
+                                            $regChargebackClass = abs($regChargebackVariance) < 0.01
+                                                ? 'text-success'
+                                                : ($regChargebackVariance < 0 ? 'text-warning' : 'text-danger');
+                                        @endphp
+                                        <tr>
+                                            <td>{{ $row['description'] }}</td>
+                                            <td class="text-end">{{ number_format($row['transaction_total'], 2) }}</td>
+                                            <td class="text-end">{{ number_format($row['charge_total'], 2) }}</td>
+                                            <td class="text-end {{ $regChargebackClass }}">{{ number_format($regChargebackVariance, 2) }}</td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                                <tfoot>
+                                    <tr>
+                                        <td><b>Total</b></td>
+                                        <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['transaction_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['charge_total'], 2) }}</b></td>
+                                        <td class="text-end"><b>{{ number_format($regularizationChargebackSummary['difference_total'], 2) }}</b></td>
                                     </tr>
                                 </tfoot>
                             </table>
