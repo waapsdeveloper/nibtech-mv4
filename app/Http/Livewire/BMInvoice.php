@@ -478,7 +478,26 @@ class BMInvoice extends Component
         $ordersById = $orders->keyBy('id');
         $ordersByReference = $referenceOrders->keyBy('reference_id');
 
-        $details = $refundTransactions->map(function ($transaction) use ($ordersById, $ordersByReference) {
+        $systemRefundsByOriginalOrderId = collect();
+
+        if ($referenceOrders->isNotEmpty()) {
+            $refundOrderIds = $referenceOrders->pluck('id')->filter()->unique();
+
+            if ($refundOrderIds->isNotEmpty()) {
+                $systemRefundsByOriginalOrderId = DB::table('order_items as refund_items')
+                    ->join('order_items as sales_items', 'refund_items.linked_id', '=', 'sales_items.id')
+                    ->whereIn('refund_items.order_id', $refundOrderIds)
+                    ->select('sales_items.order_id as original_order_id', 'refund_items.order_id as refund_order_id')
+                    ->get()
+                    ->groupBy('original_order_id')
+                    ->map(function ($group) use ($referenceOrders) {
+                        $refundOrderIds = $group->pluck('refund_order_id')->unique();
+                        return $referenceOrders->whereIn('id', $refundOrderIds);
+                    });
+            }
+        }
+
+        $details = $refundTransactions->map(function ($transaction) use ($ordersById, $ordersByReference, $systemRefundsByOriginalOrderId) {
             $transactionAmount = (float) $transaction->amount;
             $transactionCurrencyId = (string) ($transaction->currency ?? '');
             $transactionCurrency = $this->formatCurrencyId($transactionCurrencyId);
@@ -507,6 +526,18 @@ class BMInvoice extends Component
                 $orderAmount = (float) ($order->price ?? 0.0);
                 $orderCurrencyId = (string) ($order->currency ?? '');
                 $orderCurrency = $this->formatCurrencyId($orderCurrencyId);
+            } elseif (! empty($transaction->order_id) && $systemRefundsByOriginalOrderId->has($transaction->order_id)) {
+                $linkedRefunds = $systemRefundsByOriginalOrderId->get($transaction->order_id);
+                $orderAmount = (float) $linkedRefunds->sum('price');
+                $matchSource = 'system_refund';
+
+                if ($ordersById->has($transaction->order_id)) {
+                    $originalOrder = $ordersById->get($transaction->order_id);
+                    $orderId = $originalOrder->id;
+                    $orderReference = $originalOrder->reference_id;
+                    $orderCurrencyId = (string) ($originalOrder->currency ?? '');
+                    $orderCurrency = $this->formatCurrencyId($orderCurrencyId);
+                }
             }
 
             return [
@@ -516,7 +547,7 @@ class BMInvoice extends Component
                 'transaction_currency_id' => $transactionCurrencyId,
                 'transaction_currency' => $transactionCurrency,
                 'transaction_amount' => $transactionAmount,
-                'order_found' => (bool) $order,
+                'order_found' => (bool) $order || $matchSource === 'system_refund',
                 'match_source' => $matchSource,
                 'order_id' => $orderId,
                 'order_reference' => $orderReference,
