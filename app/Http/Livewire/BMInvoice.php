@@ -170,7 +170,9 @@ class BMInvoice extends Component
             return collect();
         }
 
-        return Order_model::whereIn('id', $orderIds)->get(['id', 'price', 'currency', 'reference_id']);
+        return Order_model::whereIn('id', $orderIds)
+            ->where('price', '>=', 0)
+            ->get(['id', 'price', 'currency', 'reference_id']);
     }
 
     private function summarizeSalesVsOrders(Collection $orders, Collection $salesTransactions): array
@@ -180,7 +182,6 @@ class BMInvoice extends Component
             ->map(fn ($group) => (float) $group->sum('amount'));
 
         $ordersPerCurrency = $orders
-            ->filter(fn ($order) => (float) ($order->price ?? 0) >= 0)
             ->groupBy('currency')
             ->map(function ($group) {
                 return (float) $group->sum(function ($order) {
