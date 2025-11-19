@@ -7,6 +7,7 @@ use App\Models\Order_charge_model;
 use App\Models\Order_model;
 use App\Models\Process_model;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Livewire\Component;
 
@@ -104,6 +105,8 @@ class BMInvoice extends Component
 
         $chargeMap = $this->buildChargeMap($orders);
 
+        $systemIssuedRefundOrders = $this->loadSystemIssuedRefundOrders($orders);
+
         $additionalRefundOrders = collect();
 
         if ($refundTransactions->isNotEmpty()) {
@@ -118,8 +121,10 @@ class BMInvoice extends Component
             }
         }
 
+        $allRefundOrders = $additionalRefundOrders->merge($systemIssuedRefundOrders)->unique('id');
+
         $descriptionSummary = $this->buildDescriptionReport($transactions, $chargeMap, $orders);
-        $refundReport = $this->buildRefundReport($refundTransactions, $orders, $additionalRefundOrders);
+        $refundReport = $this->buildRefundReport($refundTransactions, $orders, $allRefundOrders);
 
         return [
             'duplicateTransactions' => $duplicateTransactions,
@@ -170,8 +175,49 @@ class BMInvoice extends Component
             return collect();
         }
 
-        return Order_model::whereIn('id', $orderIds)
-            ->where('price', '>=', 0)
+        return Order_model::whereIn('id', $orderIds)->where('order_type_id', 3)
+            ->get(['id', 'price', 'currency', 'reference_id']);
+    }
+
+    private function loadRefundOrders(Collection $transactions): Collection
+    {
+        $orderIds = $transactions->where('description', 'refunds')->pluck('order_id')->filter()->unique();
+
+        if ($orderIds->isEmpty()) {
+            return collect();
+        }
+
+        return Order_model::whereIn('id', $orderIds)->where('order_type_id', 4)
+            ->get(['id', 'price', 'currency', 'reference_id']);
+    }
+
+    private function loadSystemIssuedRefundOrders(Collection $orders): Collection
+    {
+        $salesOrderIds = $orders->pluck('id')->filter()->unique();
+
+        if ($salesOrderIds->isEmpty()) {
+            return collect();
+        }
+
+        $salesOrderItemIds = DB::table('order_items')
+            ->whereIn('order_id', $salesOrderIds)
+            ->pluck('id');
+
+        if ($salesOrderItemIds->isEmpty()) {
+            return collect();
+        }
+
+        $refundOrderIds = DB::table('order_items')
+            ->whereIn('linked_id', $salesOrderItemIds)
+            ->distinct()
+            ->pluck('order_id');
+
+        if ($refundOrderIds->isEmpty()) {
+            return collect();
+        }
+
+        return Order_model::whereIn('id', $refundOrderIds)
+            ->where('order_type_id', 4)
             ->get(['id', 'price', 'currency', 'reference_id']);
     }
 
