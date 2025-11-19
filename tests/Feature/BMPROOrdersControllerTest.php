@@ -77,7 +77,7 @@ class BMPROOrdersControllerTest extends TestCase
         $response->assertOk();
 
         Http::assertSent(function (Request $request) {
-            return str_contains($request->url(), 'fulfillment_status=pending');
+            return str_contains($request->url(), 'fulfillment_status=fulfilled');
         });
     }
 }
