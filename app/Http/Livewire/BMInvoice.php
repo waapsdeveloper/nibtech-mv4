@@ -130,7 +130,7 @@ class BMInvoice extends Component
         $descriptionSummary = $this->buildDescriptionReport($transactions, $chargeMap, $orders);
         $refundReport = $this->buildRefundReport($refundTransactions, $refundOrders, $allRefundOrders);
         $creditRequestReport = $this->buildOrderWiseReport($transactions, $orders, 'credit_request');
-        $regularizationChargebackReport = $this->buildOrderWiseReport($transactions, $orders, 'regularization_chargeback');
+        $regularizationChargebackReport = $this->buildDetailedOrderWiseReport($transactions, 'regularization_chargeback');
 
         return [
             'duplicateTransactions' => $duplicateTransactions,
@@ -732,6 +732,57 @@ class BMInvoice extends Component
                 'transaction_total' => (float) $details->sum('transaction_total'),
                 'charge_total' => (float) $details->sum('charge_total'),
                 'difference_total' => (float) $details->sum('difference'),
+                'count' => $details->count(),
+            ],
+            'details' => $details,
+        ]);
+    }
+
+    private function buildDetailedOrderWiseReport(Collection $transactions, string $descriptionFilter): Collection
+    {
+        $normalizedFilter = $this->normalizeDescription($descriptionFilter);
+
+        // Handle both singular and plural variations
+        $filterVariations = [$normalizedFilter, $normalizedFilter . 's'];
+
+        $filteredTransactions = $transactions->filter(function ($transaction) use ($filterVariations) {
+            $normalized = $this->normalizeDescription($transaction->description);
+            return in_array($normalized, $filterVariations, true);
+        });
+
+        if ($filteredTransactions->isEmpty()) {
+            return collect([
+                'summary' => [
+                    'transaction_total' => 0,
+                    'count' => 0,
+                ],
+                'details' => collect(),
+            ]);
+        }
+
+        $transactionsWithOrders = $filteredTransactions
+            ->filter(fn ($transaction) => !empty($transaction->order_id))
+            ->load('order:id,reference_id,price,currency');
+
+        $details = $transactionsWithOrders->map(function ($transaction) {
+            $order = $transaction->order;
+            $transactionAmount = (float) ($transaction->amount ?? 0);
+            $currency = $this->formatCurrencyId($transaction->currency);
+
+            return [
+                'transaction_id' => $transaction->id,
+                'order_id' => $transaction->order_id,
+                'order_reference' => $order ? $order->reference_id : '—',
+                'description' => $transaction->description,
+                'currency' => $currency,
+                'transaction_amount' => $transactionAmount,
+                'date' => $transaction->date ?? ($transaction->created_at ? $transaction->created_at->toDateString() : '—'),
+            ];
+        })->values();
+
+        return collect([
+            'summary' => [
+                'transaction_total' => (float) $details->sum('transaction_amount'),
                 'count' => $details->count(),
             ],
             'details' => $details,
