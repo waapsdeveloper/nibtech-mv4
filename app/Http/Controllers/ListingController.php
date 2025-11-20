@@ -618,7 +618,7 @@ class ListingController extends Controller
                 // Log::error($error);
                 return response()->json(['error'=>$error]);
             }
-            Log::info("Responses for variation ID $id: " . json_encode($responses));
+            // Log::info("Responses for variation ID $id: " . json_encode($responses));
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
@@ -629,6 +629,7 @@ class ListingController extends Controller
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
+                $currency = Currency_model::where('code',$list->currency)->first();
                 $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
                 if($listings->count() > 1){
                     $listings->each(function($listing, $key) {
@@ -648,6 +649,7 @@ class ListingController extends Controller
                 $listing->buybox = $list->is_winning;
                 $listing->buybox_price = $list->price_to_win->amount;
                 $listing->buybox_winner_price = $list->winner_price->amount;
+                $listing->currency_id = $currency->id;
                 $listing->save();
             }
             if($no_check == 1){
