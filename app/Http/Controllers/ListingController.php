@@ -630,6 +630,7 @@ class ListingController extends Controller
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $currency = Currency_model::where('code',$list->currency)->first();
+                Log::info("Currency lookup for code {$list->currency}: " . ($currency ? 'Found' : 'Not Found'));
                 $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
                 if($listings->count() > 1){
                     $listings->each(function($listing, $key) {
