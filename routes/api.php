@@ -50,6 +50,8 @@ Route::group(['middleware' => ['internal.only']], function () {
     // Route::get('/internal/inventory_get_average_cost', [InternalApiController::class, 'inventoryGetAverageCost']);
 
     Route::prefix('refurbed')->group(function () {
+        Route::get('/listings/test', [RefurbedListingsController::class, 'test'])
+            ->name('refurbed.listings.test');
         Route::get('/listings/active', [RefurbedListingsController::class, 'active'])
             ->name('refurbed.listings.active');
     });
