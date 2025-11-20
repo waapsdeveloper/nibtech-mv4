@@ -618,7 +618,7 @@ class ListingController extends Controller
                 // Log::error($error);
                 return response()->json(['error'=>$error]);
             }
-            // Log::info("Responses for variation ID $id: " . json_encode($responses));
+            Log::info("Responses for variation ID $id: " . json_encode($responses));
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
