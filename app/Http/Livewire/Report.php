@@ -198,30 +198,23 @@ class Report extends Component
 
         // dd($aggregates, $sale_orders, $sale_items, $variation_ids);
         $aggregated_cost = [];
-
-        // Get all stock IDs at once
-        $all_stock_ids = [];
         foreach ($aggregates as $agg) {
-            if (!empty($agg->stock_ids)) {
-                $all_stock_ids[$agg->category_id] = explode(',', $agg->stock_ids);
-            } else {
+
+            if (empty($agg->stock_ids)) {
                 $aggregated_cost[$agg->category_id] = 0;
+                continue;
             }
-        }
 
-        // Get all costs in one query if we have stock IDs
-        if (!empty($all_stock_ids)) {
-            $flat_stock_ids = array_merge(...array_values($all_stock_ids));
-            $stock_costs = Order_item_model::whereIn('stock_id', $flat_stock_ids)
-                ->whereHas('order', function ($q) {
+            $stock_ids = explode(',', $agg->stock_ids);
+            $total_cost = 0;
+
+            foreach (array_chunk($stock_ids, 1000) as $chunk) {
+                $total_cost += Order_item_model::whereIn('stock_id', $chunk)->whereHas('order', function ($q) {
                     $q->where('order_type_id', 1);
-                })
-                ->pluck('price', 'stock_id');
-
-            // Calculate cost per category
-            foreach ($all_stock_ids as $category_id => $stock_ids) {
-                $aggregated_cost[$category_id] = $stock_costs->only($stock_ids)->sum();
+                })->sum('price');
             }
+
+            $aggregated_cost[$agg->category_id] = $total_cost;
         }
 
         $data['aggregated_sales'] = $aggregates;
@@ -264,70 +257,43 @@ class Report extends Component
             ->get();
 
         $aggregated_return_cost = [];
-
-        // Get all return stock IDs at once
-        $all_return_stock_ids = [];
         foreach ($aggregate_returns as $agg) {
-            if (!empty($agg->stock_ids)) {
-                $all_return_stock_ids[$agg->category_id] = explode(',', $agg->stock_ids);
-            } else {
+
+            if (empty($agg->stock_ids)) {
                 $aggregated_return_cost[$agg->category_id] = 0;
+                continue;
             }
-        }
-
-        // Get all return costs in one query
-        if (!empty($all_return_stock_ids)) {
-            $flat_return_stock_ids = array_merge(...array_values($all_return_stock_ids));
-            $return_stock_costs = Order_item_model::whereIn('stock_id', $flat_return_stock_ids)
-                ->whereHas('order', function ($q) {
-                    $q->where('order_type_id', 1);
-                })
-                ->pluck('price', 'stock_id');
-
-            // Calculate return cost per category
-            foreach ($all_return_stock_ids as $category_id => $stock_ids) {
-                $aggregated_return_cost[$category_id] = $return_stock_costs->only($stock_ids)->sum();
-            }
+            $aggregated_return_cost[$agg->category_id] = Order_item_model::whereIn('stock_id',explode(',',$agg->stock_ids))->whereHas('order', function ($q) {
+                $q->where('order_type_id',1);
+            })->sum('price');
         }
 
         $data['aggregated_returns'] = $aggregate_returns;
         $data['aggregated_return_cost'] = $aggregated_return_cost;
 
-        $po = Order_model::where('order_type_id', 1)
-            ->when(request('vendor') != '', function ($q) {
-                return $q->where('customer_id', request('vendor'));
-            })
-            ->orderByDesc('id')
-            ->limit(50)
-            ->pluck('id')
-            ->toArray();
+        $po = Order_model::where('order_type_id', 1)->when(request('vendor') != '', function ($q) {
+            return $q->where('customer_id', request('vendor'));
+        })
+        ->orderByDesc('id')->limit(50)
+        ->pluck( 'id')->toArray();
 
-        $data['batch_grade_reports'] = Stock_model::select(
-                'variation.grade as grade',
-                'orders.id as order_id',
-                'orders.reference_id as reference_id',
-                'orders.reference as reference',
-                'orders.customer_id',
-                'customer.first_name as vendor',
-                DB::raw('COUNT(*) as quantity'),
-                DB::raw('AVG(order_items.price) as average_cost')
-            )
-            ->join('variation', 'stock.variation_id', '=', 'variation.id')
-            ->join('orders', 'stock.order_id', '=', 'orders.id')
-            ->join('customer', 'orders.customer_id', '=', 'customer.id')
-            ->join('order_items', function ($join) {
-                $join->on('stock.id', '=', 'order_items.stock_id')
-                    ->whereNull('order_items.deleted_at')
-                    ->whereRaw('order_items.order_id = stock.order_id')
-                    ->limit(1);
-            })
-            ->whereIn('stock.order_id', $po)
-            ->when($query == 1, function ($q) use ($variation_ids) {
-                return $q->whereIn('variation.id', $variation_ids);
-            })
-            ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'orders.customer_id', 'customer.first_name')
-            ->orderByDesc('order_id')
-            ->get();
+        $data['batch_grade_reports'] = Stock_model::select('variation.grade as grade', 'orders.id as order_id', 'orders.reference_id as reference_id', 'orders.reference as reference', 'orders.customer_id', 'customer.first_name as vendor', DB::raw('COUNT(*) as quantity'), DB::raw('AVG(order_items.price) as average_cost'))
+        ->join('variation', 'stock.variation_id', '=', 'variation.id')
+        ->join('orders', 'stock.order_id', '=', 'orders.id')
+        ->join('customer', 'orders.customer_id', '=', 'customer.id')
+        ->join('order_items', function ($join) {
+            $join->on('stock.id', '=', 'order_items.stock_id')
+                ->where('order_items.deleted_at', null)
+                ->whereRaw('order_items.order_id = stock.order_id')
+                ->limit(1);
+        })
+        ->whereIn('stock.order_id', $po)
+        ->when($query == 1, function ($q) use ($variation_ids) {
+            return $q->whereIn('variation.id', $variation_ids);
+        })
+        ->groupBy('variation.grade', 'orders.id', 'orders.reference_id', 'orders.reference', 'orders.customer_id', 'customer.first_name')
+        ->orderByDesc('order_id')
+        ->get();
         // ->paginate($per_page)
         // ->onEachSide(5)
         // ->appends(request()->except('page'));
