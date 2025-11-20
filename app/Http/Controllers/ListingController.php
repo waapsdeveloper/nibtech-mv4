@@ -739,6 +739,9 @@ class ListingController extends Controller
         $listing->save();
         // print_r($response);
         // die;
+        if($listing->country_id->code == 'GB'){
+            Log::info("Updated listing price for listing ID $id: " . json_encode($response));
+        }
         if(request('min_price')){
             return $response;
         }elseif(request('price')){
