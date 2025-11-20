@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Marketplace_model;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\Client\Response;
@@ -34,10 +35,12 @@ class RefurbedAPIController extends Controller
     {
         $config = config('services.refurbed', []);
 
-        $this->apiKey = (string) ($config['api_key'] ?? '');
+        // Try to get API key from marketplace table first, fallback to config
+        $marketplaceToken = Marketplace_model::where('name', 'Refurbed')->first()?->api_key;
+        $this->apiKey = (string) ($marketplaceToken ?? $config['api_key'] ?? '');
 
         if ($this->apiKey === '') {
-            throw new RuntimeException('Refurbed API key is missing. Set REFURBED_API_KEY in your environment.');
+            throw new RuntimeException('Refurbed API key is missing. Set api_key in marketplace table for "Refurbed" or REFURBED_API_KEY in your environment.');
         }
 
         $this->baseUrl = rtrim($config['base_url'] ?? 'https://api.refurbed.com', '/');

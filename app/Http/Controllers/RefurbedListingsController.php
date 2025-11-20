@@ -14,6 +14,39 @@ class RefurbedListingsController extends Controller
         $this->refurbed = $refurbed;
     }
 
+    public function test(Request $request): JsonResponse
+    {
+        $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
+
+        // Get all listings without filtering by state for testing
+        $filter = [];
+
+        // Allow optional state filtering if provided
+        if ($request->has('state')) {
+            $states = $this->normalizeList($request->input('state'));
+            if (!empty($states)) {
+                $filter['state'] = ['any_of' => $states];
+            }
+        }
+
+        $pagination = $this->buildPagination($perPage, $request->input('page_token'));
+        $sort = $this->buildSort(
+            $request->input('sort_by'),
+            $request->input('sort_direction', 'ASC')
+        );
+
+        $payload = $this->refurbed->listOffers($filter, $pagination, $sort);
+
+        return response()->json([
+            'request' => [
+                'filter' => $filter,
+                'pagination' => $pagination,
+                'sort' => $sort,
+            ],
+            'response' => $payload,
+        ]);
+    }
+
     public function active(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
