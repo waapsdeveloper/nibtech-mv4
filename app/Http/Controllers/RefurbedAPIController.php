@@ -44,7 +44,7 @@ class RefurbedAPIController extends Controller
         }
 
         $this->baseUrl = rtrim($config['base_url'] ?? 'https://api.refurbed.com', '/');
-        $this->authScheme = trim($config['auth_scheme'] ?? 'Bearer');
+        $this->authScheme = trim($config['auth_scheme'] ?? 'Plain');
         $this->userAgent = $config['user_agent'] ?? config('app.name', 'nibritaintech') . '/RefurbedConnector';
         $this->timeout = (int) ($config['timeout'] ?? 30);
         $this->maxRetries = (int) ($config['max_retries'] ?? 3);
