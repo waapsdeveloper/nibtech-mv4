@@ -1296,8 +1296,8 @@ class Report extends Component
             $curr_b2c_total = $b2c_totals[$currency_id] ?? 0;
             $curr_b2c_return_total = $b2c_return_totals[$currency_id] ?? 0;
 
-            // $curr_b2c_total_exchanged = $b2c_totals_exchanged[$currency_id] ?? 0;
-            // $curr_b2c_return_total_exchanged = $b2c_return_totals_exchanged[$currency_id] ?? 0;
+            $curr_b2c_total_exchanged = $b2c_totals_exchanged[$currency_id] ?? 0;
+            $curr_b2c_return_total_exchanged = $b2c_return_totals_exchanged[$currency_id] ?? 0;
 
             if ($currency_id == 4){
                 $total['orders_sum'][$currency_id] = amount_formatter($curr_b2c_price + $curr_b2b_price) . ' - ' . amount_formatter($curr_b2c_return_price + $curr_b2b_return_price);
@@ -1307,8 +1307,8 @@ class Report extends Component
                 amount_formatter($curr_b2c_return_charges + $curr_b2b_return_charges);
                 $net['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges + $curr_b2b_charges - $curr_b2c_return_charges - $curr_b2b_return_charges);
 
-                $total['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total) . ' - ' . amount_formatter($curr_b2c_return_total + $b2b_return_totals);
-                $net['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged + $b2b_total) . ' - ' . amount_formatter($curr_b2c_return_total_exchanged + $b2b_return_totals);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged + $b2b_total - $curr_b2c_return_total_exchanged - $b2b_return_totals);
 
                 $grand += $curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals;
 
@@ -1325,8 +1325,8 @@ class Report extends Component
 
                 // $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($return_total);
                 // $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $return_total);
-                $total['total'][$currency_id] = amount_formatter($curr_b2c_total) . ' - ' . amount_formatter($curr_b2c_return_total);
-                $net['total'][$currency_id] = amount_formatter($curr_b2c_total - $curr_b2c_return_total);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged) . ' - ' . amount_formatter($curr_b2c_return_total_exchanged);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged - $curr_b2c_return_total_exchanged);
 
                 $grand += ($curr_b2c_total - $curr_b2c_return_total) / $rates[$currency_id];
             }
