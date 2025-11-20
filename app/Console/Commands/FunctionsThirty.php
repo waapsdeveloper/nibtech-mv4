@@ -77,7 +77,7 @@ class FunctionsThirty extends Command
                 }
                     $variation->save();
                 $currency = Currency_model::where('code',$list->currency)->first();
-                echo $list->currency;
+                // echo $list->currency;
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
