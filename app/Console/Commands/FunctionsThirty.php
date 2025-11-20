@@ -76,7 +76,7 @@ class FunctionsThirty extends Command
                     echo $list->publication_state." ";
                 }
                     $variation->save();
-                $currency = Currency_model::where('code',$list->currency)->first();
+                $currency = Currency_model::where('code',$list->price->currency)->first();
                 // echo $list->currency;
                 if($variation == null){
                     echo $list->sku." ";

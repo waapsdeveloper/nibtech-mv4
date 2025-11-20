@@ -629,8 +629,6 @@ class ListingController extends Controller
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $currency = Currency_model::where('code',$list->currency)->first();
-                Log::info("Currency lookup for code {$list->currency}: " . ($currency ? 'Found' : 'Not Found'));
                 $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
                 if($listings->count() > 1){
                     $listings->each(function($listing, $key) {
@@ -643,9 +641,11 @@ class ListingController extends Controller
                 $listing->reference_uuid = $list->product_id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
+                    $currency = Currency_model::where('code',$list->price->currency)->first();
                 }
                 if($list->min_price != null){
                     $listing->min_price = $list->min_price->amount;
+                    $currency = Currency_model::where('code',$list->min_price->currency)->first();
                 }
                 $listing->buybox = $list->is_winning;
                 $listing->buybox_price = $list->price_to_win->amount;
