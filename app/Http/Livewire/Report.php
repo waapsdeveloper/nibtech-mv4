@@ -1039,7 +1039,7 @@ class Report extends Component
         $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
         $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
         $sale_data['b2c_total'] = $b2c_total;
-        $sale_data['b2c_total_exchanged'] = $b2c_totals_exchanged;
+        $sale_data['b2c_total_exchanged'] = $b2c_total_exchanged;
 
 
 
