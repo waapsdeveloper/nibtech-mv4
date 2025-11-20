@@ -1027,7 +1027,7 @@ class Report extends Component
             return amount_formatter($price);
         });
         $b2c_totals_exchanged = $b2c_total_exchanged;
-        $b2c_totals_exchanged = collect($b2c_total_exchanged)->map(function ($price) {
+        $b2c_total_exchanged = collect($b2c_total_exchanged)->map(function ($price) {
             return amount_formatter($price);
         });
 
@@ -1039,7 +1039,7 @@ class Report extends Component
         $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
         $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
         $sale_data['b2c_total'] = $b2c_total;
-        $sale_data['b2c_total_exchanged'] = $b2c_totals_exchanged;
+        $sale_data['b2c_total_exchanged'] = $b2c_total_exchanged;
 
 
 
