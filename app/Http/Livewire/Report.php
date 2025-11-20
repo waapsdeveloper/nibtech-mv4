@@ -1162,6 +1162,7 @@ class Report extends Component
         $b2c_return_totals_exchanged = $b2c_return_total_exchanged;
         $b2c_return_total_exchanged = collect($b2c_return_total_exchanged)->map(function ($price) {
             return amount_formatter(-$price);
+        });
 
         $return_data['b2c_returns'] = $b2c_returns->pluck('order_id')->unique()->count();
         $return_data['b2c_return_items'] = $b2c_returns->count();
