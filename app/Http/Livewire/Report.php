@@ -915,33 +915,17 @@ class Report extends Component
 
         $sale_data = [];
 
-        // Cache purchase order IDs and currencies at start
         $all_po = Order_model::where('order_type_id',1)
         ->when(request('vendor') != '', function ($q) {
             return $q->where('customer_id', request('vendor'));
         })
         ->pluck('id')->toArray();
 
-        $currencies = Currency_model::pluck('sign', 'id')->toArray();
-        $currency_codes = Currency_model::pluck('code', 'id')->toArray();
-        $exchange_rates = ExchangeRate::whereIn('target_currency', array_values($currency_codes))
-            ->pluck('rate', 'target_currency')
-            ->toArray();
-
         // $b2c_orders = Order_model::where('order_type_id',3)
         //     ->whereBetween('processed_at', [$start_date, $end_date])
         //     ->whereIn('status', [3,6])
         //     ->get();
         // $b2c_order_ids = $b2c_orders->pluck('id')->toArray();
-        // Update null currencies in batch first
-        DB::table('order_items')
-            ->join('orders', 'order_items.order_id', '=', 'orders.id')
-            ->whereNull('order_items.currency')
-            ->whereIn('orders.status', [3, 6])
-            ->where('orders.order_type_id', 3)
-            ->whereBetween('orders.processed_at', [$start_date, $end_date])
-            ->update(['order_items.currency' => DB::raw('orders.currency')]);
-
         $b2c_order_items = Order_item_model::when($query == 1, function ($q) use ($variation_ids) {
                 return $q->whereIn('variation_id', $variation_ids);
             })
@@ -955,8 +939,14 @@ class Report extends Component
                     return $qu->where('customer_id', request('vendor'));
                 });
             })
-            ->select('id', 'order_id', 'stock_id', 'price', 'currency')
             ->get();
+
+        $b2c_order_items->each(function ($item) {
+            if (is_null($item->currency)) {
+            $item->currency = $item->order->currency;
+            $item->save();
+            }
+        });
 
         $b2c_prices_by_currency = $b2c_order_items->groupBy('currency')
             ->map->sum('price');
@@ -984,41 +974,42 @@ class Report extends Component
             }
         );
         // Lets create B2C stock cost by getting all stock ids from b2c order items by currency
-        $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->filter()->unique()->toArray();
-
-        // Get stock costs in single query
-        $b2c_stock_costs_by_id = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
-            ->whereIn('order_id', $all_po)
-            ->orderBy('id')
-            ->pluck('price', 'stock_id');
-
-        $b2c_stock_cost = $b2c_stock_costs_by_id->sum();
-
-        // Group by currency for exchanged calculations
         $b2c_items_by_currency = $b2c_order_items->groupBy('currency')
             ->map->pluck('stock_id');
 
         $b2c_total_exchanged = $b2c_total;
         foreach ($b2c_items_by_currency as $currency => $stock_ids) {
-            $currency_stock_ids = $stock_ids->filter()->unique()->toArray();
+            $b2c_curr_stock_cost = Order_item_model::whereIn('stock_id', $stock_ids)
+                ->whereIn('order_id', $all_po)
+                ->orderBy('id')
+                ->pluck('price', 'stock_id')
+                ->sum();
 
-            $b2c_curr_stock_cost = $b2c_stock_costs_by_id->only($currency_stock_ids)->sum();
-
-            $b2c_curr_stock_repair_cost = Process_stock_model::whereIn('stock_id', $currency_stock_ids)
+            $b2c_curr_stock_repair_cost = Process_stock_model::whereIn('stock_id', $stock_ids)
                 ->whereHas('process', function ($q) {
                     $q->where('process_type_id', 9);
                 })
                 ->sum('price');
 
             if (isset($b2c_total_exchanged[$currency])) {
-                if($currency != 4 && isset($currency_codes[$currency])){
-                    $rate = $exchange_rates[$currency_codes[$currency]] ?? 1;
-                    $b2c_curr_stock_cost *= $rate;
-                    $b2c_curr_stock_repair_cost *= $rate;
+                if($currency != 4){
+                    $currency_code = Currency_model::find($currency)->code;
+                    $exchange_rate = ExchangeRate::where('target_currency', $currency_code)->first();
+                    if ($exchange_rate) {
+                        $b2c_curr_stock_cost = $b2c_curr_stock_cost * $exchange_rate->rate;
+                        $b2c_curr_stock_repair_cost = $b2c_curr_stock_repair_cost * $exchange_rate->rate;
+                    }
                 }
-                $b2c_total_exchanged[$currency] -= $b2c_curr_stock_cost + $b2c_curr_stock_repair_cost;
+                $b2c_total_exchanged[$currency] = $b2c_total_exchanged[$currency] - $b2c_curr_stock_cost - $b2c_curr_stock_repair_cost;
             }
         }
+
+        $b2c_stock_ids = $b2c_order_items->pluck('stock_id')->toArray();
+        $b2c_stock_cost = Order_item_model::whereIn('stock_id', $b2c_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->orderBy('id')
+            ->pluck('price', 'stock_id')
+            ->sum();
 
 
 
@@ -1048,35 +1039,41 @@ class Report extends Component
         $sale_data['b2c_stock_repair_cost'] = amount_formatter($b2c_stock_repair_cost);
         $sale_data['b2c_stock_cost'] = amount_formatter($b2c_stock_cost);
         $sale_data['b2c_total'] = $b2c_total;
-        $sale_data['b2c_total_exchanged'] = $b2c_total_exchanged;
+        $sale_data['b2c_total_exchanged'] = $b2c_totals_exchanged;
 
 
-
-        // Batch update null currencies for returns
-        DB::statement("
-            UPDATE order_items oi1
-            JOIN order_items oi2 ON oi1.linked_id = oi2.id
-            JOIN orders o ON oi2.order_id = o.id
-            SET oi1.currency = o.currency
-            WHERE oi1.currency IS NULL
-            AND oi1.order_id IN (
-                SELECT id FROM orders WHERE order_type_id = 4
-                AND created_at BETWEEN ? AND ?
-            )
-        ", [$start_date, $end_date]);
 
         $b2c_returns = Order_item_model::whereIn('variation_id', $variation_ids)
             ->whereHas('order', function ($q) {
                 $q->where('order_type_id',4);
             })
             ->whereBetween('created_at', [$start_date, $end_date])
+            // ->whereIn('status', [3,6])
             ->when(request('vendor') != '', function ($q) {
                 return $q->whereHas('stock.order', function ($qu) {
                     return $qu->where('customer_id', request('vendor'));
                 });
             })
-            ->select('id', 'order_id', 'stock_id', 'price', 'currency', 'charges')
             ->get();
+
+        if ($b2c_returns->where('currency', null)->count() > 0) {
+            $b2c_returns->where('currency', null)->each(function ($item) {
+                $item->currency = $item->linked->order->currency;
+                $item->save();
+            });
+            $b2c_returns = Order_item_model::whereIn('variation_id', $variation_ids)
+                ->whereHas('order', function ($q) {
+                    $q->where('order_type_id',4);
+                })
+                ->whereBetween('created_at', [$start_date, $end_date])
+                // ->whereIn('status', [3,6])
+                ->when(request('vendor') != '', function ($q) {
+                    return $q->whereHas('stock.order', function ($qu) {
+                        return $qu->where('customer_id', request('vendor'));
+                    });
+                })
+                ->get();
+        }
 
 
         $b2c_return_prices_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) {
@@ -1104,19 +1101,13 @@ class Report extends Component
         // });
 
 
-        $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->filter()->unique()->toArray();
-
-        // Get all return stock costs in one query
-        $b2c_return_stock_costs = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
-            ->whereIn('order_id', $all_po)
-            ->orderBy('id')
-            ->pluck('price', 'stock_id');
-
-        $b2c_return_stock_cost = $b2c_return_stock_costs->sum();
-
-        $b2c_return_stock_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) use ($b2c_return_stock_costs) {
-            $curr_stock_ids = $items->pluck('stock_id')->filter()->unique()->toArray();
-            $curr_return_stock_cost = $b2c_return_stock_costs->only($curr_stock_ids)->sum();
+        $b2c_return_stock_by_currency = $b2c_returns->groupBy('currency')->map(function ($items) use ($all_po) {
+            $curr_stock_ids = $items->pluck('stock_id')->toArray();
+            $curr_return_stock_cost = Order_item_model::whereIn('stock_id', $curr_stock_ids)
+                ->whereIn('order_id', $all_po)
+                ->orderBy('id')
+                ->pluck('price', 'stock_id')
+                ->sum();
 
             $curr_return_stock_repair_cost = Process_stock_model::whereIn('stock_id', $curr_stock_ids)
                 ->whereHas('process', function ($q) {
@@ -1126,20 +1117,30 @@ class Report extends Component
 
             return $curr_return_stock_cost + $curr_return_stock_repair_cost;
         });
-
         $b2c_return_total_exchanged = $b2c_return_total;
         foreach ($b2c_return_stock_by_currency->toArray() as $key => $value) {
             if (!isset($b2c_return_total_exchanged[$key])) {
                 $b2c_return_total_exchanged[$key] = 0;
             }
 
-            if($key != 4 && isset($currency_codes[$key])){
-                $rate = $exchange_rates[$currency_codes[$key]] ?? 1;
-                $value *= $rate;
+            $currency_code = Currency_model::find($key)->code;
+            if($key != 4){
+                $exchange_rate = ExchangeRate::where('target_currency', $currency_code)->first();
+                if ($exchange_rate) {
+                    $value = $value * $exchange_rate->rate;
+                }
             }
 
             $b2c_return_total_exchanged[$key] -= $value;
         }
+
+
+        $b2c_return_stock_ids = $b2c_returns->pluck('stock_id')->toArray();
+        $b2c_return_stock_cost = Order_item_model::whereIn('stock_id', $b2c_return_stock_ids)
+            ->whereIn('order_id', $all_po)
+            ->orderBy('id')
+            ->pluck('price', 'stock_id')
+            ->sum();
 
             if (!isset($b2c_return_total[4])) {
                 $b2c_return_total[4] = 0;
@@ -1184,25 +1185,10 @@ class Report extends Component
                     return $qu->where('customer_id', request('vendor'));
                 });
             })
-            ->select('id', 'order_id', 'stock_id', 'price')
             ->get();
-        $b2b_prices_by_currency = $b2b_order_items->sum('price');
-            // ->select('currency', DB::raw('SUM(price) as total_price'))
-            // ->groupBy('currency')
-            // ->get()
-            // ->pluck('total_price', 'currency')
-            // ->map(function ($price) {
-            //     return amount_formatter($price);
-            // });
+        $b2b_prices_by_currency = Order_item_model::whereIn('id', $b2b_order_items->pluck('id')->toArray())->sum('price');
 
         $b2b_charges_by_currency = Order_model::whereIn('id', $b2b_order_items->pluck('order_id')->toArray())->sum('charges');
-            // ->select('currency', DB::raw('SUM(charges) as total_charges'))
-            // ->groupBy('currency')
-            // ->get()
-            // ->pluck('total_charges', 'currency')
-            // ->map(function ($price) {
-            //     return amount_formatter($price);
-            // });
 
         $b2b_stock_ids = $b2b_order_items->pluck('stock_id')->toArray();
 
@@ -1242,27 +1228,11 @@ class Report extends Component
                     return $qu->where('customer_id', request('vendor'));
                 });
             })
-            // ->whereIn('status', [3,6])
             ->get();
         $b2b_return_prices_by_currency = Order_item_model::whereIn('id', $b2b_return_order_items->pluck('id')->toArray())
             ->sum('price');
 
-            // ->select('currency', DB::raw('SUM(price) as total_price'))
-            // ->groupBy('currency')
-            // ->get()
-            // ->pluck('total_price', 'currency')
-            // ->map(function ($price) {
-            //     return amount_formatter($price);
-            // });
-
         $b2b_return_charges_by_currency = Order_model::whereIn('id', $b2b_return_order_items->pluck('order_id')->toArray())->sum('charges');
-            // ->select('currency', DB::raw('SUM(charges) as total_charges'))
-            // ->groupBy('currency')
-            // ->get()
-            // ->pluck('total_charges', 'currency')
-            // ->map(function ($price) {
-            //     return amount_formatter($price);
-            // });
 
         $b2b_return_stock_ids = $b2b_return_order_items->pluck('stock_id')->toArray();
 
@@ -1290,13 +1260,14 @@ class Report extends Component
 
 
         $data['currency_ids'] = $b2c_prices_by_currency->keys()->merge($b2c_charges_by_currency->keys())->merge($b2c_return_prices_by_currency->keys())->unique();
+        $currency_codes = Currency_model::whereIn('id', $data['currency_ids'])->pluck('code','id')->toArray();
+        $exchange_rates = ExchangeRate::whereIn('target_currency', array_values($currency_codes))
+            ->pluck('rate','target_currency')
+            ->toArray();
 
-        // Build rates array from cached exchange rates
-        $rates = [];
-        foreach ($data['currency_ids'] as $cid) {
-            if (isset($currency_codes[$cid])) {
-                $rates[$cid] = $exchange_rates[$currency_codes[$cid]] ?? 1;
-            }
+        // Ensure every currency_id from $data['currency_ids'] has an entry (default 0 when missing)
+        foreach ($currency_codes as $cid => $code) {
+            $rates[$cid] = $exchange_rates[$code] ?? 0;
         }
 
 
@@ -1336,8 +1307,8 @@ class Report extends Component
                 amount_formatter($curr_b2c_return_charges + $curr_b2b_return_charges);
                 $net['charges_sum'][$currency_id] = amount_formatter($curr_b2c_charges + $curr_b2b_charges - $curr_b2c_return_charges - $curr_b2b_return_charges);
 
-                $total['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged + $b2b_total) . ' - ' . amount_formatter($curr_b2c_return_total_exchanged + $b2b_return_totals);
-                $net['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged + $b2b_total - $curr_b2c_return_total_exchanged - $b2b_return_totals);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total) . ' - ' . amount_formatter($curr_b2c_return_total + $b2b_return_totals);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals);
 
                 $grand += $curr_b2c_total + $b2b_total - $curr_b2c_return_total - $b2b_return_totals;
 
@@ -1354,8 +1325,8 @@ class Report extends Component
 
                 // $total['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id]) . ' - ' . amount_formatter($return_total);
                 // $net['total'][$currency_id] = amount_formatter($b2c_totals[$currency_id] - $return_total);
-                $total['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged) . ' - ' . amount_formatter($curr_b2c_return_total_exchanged);
-                $net['total'][$currency_id] = amount_formatter($curr_b2c_total_exchanged - $curr_b2c_return_total_exchanged);
+                $total['total'][$currency_id] = amount_formatter($curr_b2c_total) . ' - ' . amount_formatter($curr_b2c_return_total);
+                $net['total'][$currency_id] = amount_formatter($curr_b2c_total - $curr_b2c_return_total);
 
                 $grand += ($curr_b2c_total - $curr_b2c_return_total) / $rates[$currency_id];
             }
