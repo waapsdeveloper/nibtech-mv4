@@ -770,8 +770,8 @@
                                     });
                                     Object.values(data.currency_ids).forEach((key) => {
                                         table += `
-                                            <td title="Price - Charges">
-                                                ${b2cReturn.b2c_return_total[key] ? `${currencies[key]}${b2cReturn.b2c_return_total[key]}` : ''}
+                                            <td title="Price - Charges - Cost - Repair Cost">
+                                                ${b2cReturn.b2c_return_totals_exchanged[key] ? `${currencies[key]}${b2cReturn.b2c_return_totals_exchanged[key]}` : ''}
                                             </td>
                                         `;
                                     });
