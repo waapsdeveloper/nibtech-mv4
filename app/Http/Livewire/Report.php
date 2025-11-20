@@ -1171,7 +1171,7 @@ class Report extends Component
         $return_data['b2c_return_stock_repair_cost'] = amount_formatter($b2c_return_stock_repair_cost);
         $return_data['b2c_return_stock_cost'] = amount_formatter($b2c_return_stock_cost);
         $return_data['b2c_return_total'] = $b2c_return_total;
-        $return_data['b2c_return_totals_exchanged'] = $b2c_return_total_exchanged;
+        $return_data['b2c_return_total_exchanged'] = $b2c_return_total_exchanged;
 
         $b2b_order_items = Order_item_model::whereIn('variation_id', $variation_ids)
             ->whereHas('order', function ($q) use ($start_date, $end_date) {
