@@ -6,7 +6,9 @@ use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Livewire\Order;
 use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
+use App\Models\Charge_model;
 use App\Models\Color_model;
+use App\Models\Order_charge_model;
 use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
@@ -164,6 +166,31 @@ class Functions extends Command
                     }
 
                     if (!$chargesByName->has($description)) {
+                        if($description == 'refunds' && -$transaction->amount != $order->price){
+                            // $message .= $transaction->amount."  ".$this->price;
+                            $amount = $transaction->amount;
+                            if($amount < 0){
+                                $amount = $amount * -1;
+                            }
+                            $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->first();
+                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
+                            $order_charge->transaction_id = $transaction->id;
+                            $order_charge->amount = $amount;
+                            $order_charge->save();
+                        }elseif($description == 'refunds' && -$transaction->amount == $order->price){
+                            $transaction->reference_id = $latestRef+1;
+                            $transaction->status = 1;
+                            $transaction->save();
+                        }elseif($description == 'avoir_sales_fees'){
+                            $amount = $transaction->amount;
+                            $amount = $amount * -1;
+
+                            $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'avoir_sales_fees'])->first();
+                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
+                            $order_charge->transaction_id = $transaction->id;
+                            $order_charge->amount = $amount;
+                            $order_charge->save();
+                        }
                         continue;
                     }
 
