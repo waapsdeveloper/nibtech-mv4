@@ -9,6 +9,7 @@ use App\Models\Variation_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FunctionsThirty extends Command
 {
@@ -61,6 +62,9 @@ class FunctionsThirty extends Command
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
                     $variation->sku = trim($list->sku);
                     $variation->grade = (int)$list->state + 1;
+                    if((int)$list->state == 9){
+                        $variation->grade = 1;
+                    }
                     $variation->status = 1;
                     // ... other fields
                     echo $list->listing_id." ";
@@ -109,6 +113,8 @@ class FunctionsThirty extends Command
 
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
+
+        Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
