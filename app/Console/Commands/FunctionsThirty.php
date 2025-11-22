@@ -97,6 +97,7 @@ class FunctionsThirty extends Command
                     if($listing->name == null){
                         $listing->name = $list->title;
                     }
+                    $listing->reference_uuid = $list->id;
                     // ... other fields
                     $listing->save();
                     if($variation->reference_uuid == null){
