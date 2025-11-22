@@ -686,7 +686,7 @@
                             let rates = exchange_rates_2[currencies_2[listing.currency_id]];
                             p_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
                             pm_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
-                            pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price*rates)).toFixed(2);
+                            pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price)*parseFloat(rates)).toFixed(2);
                         }
                         if(listing.target_price > 0 && listing.target_percentage > 0){
                             cost = $('#average_cost_'+variationId).text().replace('€', '');
@@ -966,8 +966,8 @@
                             if (listing.currency_id != 4) {
 
                                 let rates = exchange_rates_2[currencies_2[listing.currency_id]];
-                                p_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
-                                pm_append = 'France: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
+                                p_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
+                                pm_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
                                 pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price)*parseFloat(rates)).toFixed(2);
 
                             }else{
