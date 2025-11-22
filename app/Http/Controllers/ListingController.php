@@ -311,7 +311,7 @@ class ListingController extends Controller
         return [
             $variation->id,
             $variation->reference_id,
-            $variation->reference_uuid,
+            $listing->reference_uuid,
             $variation->sku,
             optional($variation->product)->model,
             optional($variation->product->brand_id)->name,
