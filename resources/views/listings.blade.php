@@ -1214,8 +1214,6 @@
                                                         <th title="Min Price" width="120"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="120"><small><b>Price</b></small></th>
                                                         <th><small><b>Date</b></small></th>
-                                                        <th width="120"><small><b>Target</b></small></th>
-                                                        <th width="80"><small><b>%</b></small></th>
                                                     </tr>
                                                 </thead>
                                                 <tbody id="listings_${variation.id}">
@@ -1227,6 +1225,8 @@
                                 </div>
                             </div>
                         `);
+                                                        // <th width="120"><small><b>Target</b></small></th>
+                                                        // <th width="80"><small><b>%</b></small></th>
                                                         // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
 
                         $("#change_qty_"+variation.id).submit(function(e) {
