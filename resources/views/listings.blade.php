@@ -573,7 +573,7 @@
             if (prices.length > 0) {
                 let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
                 $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
-                $('#best_price_'+variationId).text(`€${((parseFloat(average)+20)/0.88).toFixed(2)}`);
+                $('#best_price_'+variationId).text(`${((parseFloat(average)+20)/0.88).toFixed(2)}`);
             } else {
                 $(`#average_cost_${variationId}`).text('€0.00');
                 // $('#best_price_'+variationId).text('€0.00');
@@ -1211,7 +1211,7 @@
                                                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                                                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                                                         <th width="80"><small><b>BuyBox</b></small></th>
-                                                        <th title="Min Price" width="120"><small><b>Min </b>(<b id="best_price_${variation.id}"></b>)</small></th>
+                                                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variation.id}"></b>)</small></th>
                                                         <th width="120"><small><b>Price</b></small></th>
                                                         <th><small><b>Date</b></small></th>
                                                     </tr>
