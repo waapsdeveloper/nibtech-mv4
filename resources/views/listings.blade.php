@@ -968,7 +968,7 @@
                                 let rates = exchange_rates_2[currencies_2[listing.currency_id]];
                                 p_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_price)*parseFloat(rates)).toFixed(2);
                                 pm_append = 'Fr: '+currency_sign_2[listing.currency_id]+(parseFloat(m_min_price)*parseFloat(rates)).toFixed(2);
-                                pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(best_price*parseFloat(rates)).toFixed(2);
+                                pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price*rates)).toFixed(2);
 
                             }else{
                                 eur_listings[variation.id] = eur_listings[variation.id] || [];
