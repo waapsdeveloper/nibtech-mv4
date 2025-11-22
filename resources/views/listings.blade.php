@@ -81,7 +81,7 @@
             @if (request('special') != 'verify_listing')
             <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse" id="open_all_variations">Toggle&nbsp;All</button>
             {{-- <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target=".multi_collapse_handler" id="open_all_handlers">Toggle&nbsp;Handlers</button> --}}
-            <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#bulkModal">Bulk&nbsp;Update</button>
+            {{-- <button class="btn btn-link" type="button" data-bs-toggle="modal" data-bs-target="#bulkModal">Bulk&nbsp;Update</button> --}}
             <button class="btn btn-success btn-sm ms-2" type="button" id="exportListingsBtn">Export&nbsp;CSV</button>
             {{-- <input class="form-check-input" type="radio" id="open_all" name="open_all" value="1" onchange="this.form.submit()" form="search"> --}}
             @endif
@@ -761,20 +761,21 @@
                                     ${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}
                                     ${buybox_button}
                                 </td>
-                                <td>
-                                    <div class="form-floating">
-                                        <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
-                                        <label for="">Target</label>
-                                    </div>
-                                    ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
-                                </td>
-                                <td>
-                                    <div class="form-floating">
-                                        <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
-                                        <label for="">%</label>
-                                    </div>
-                                </td>
                             </tr>`;
+
+                                // <td>
+                                //     <div class="form-floating">
+                                //         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
+                                //         <label for="">Target</label>
+                                //     </div>
+                                //     ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
+                                // </td>
+                                // <td>
+                                //     <div class="form-floating">
+                                //         <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
+                                //         <label for="">%</label>
+                                //     </div>
+                                // </td>
                         $(document).ready(function() {
                             $("#change_min_price_" + listing.id).on('submit', function(e) {
                                 submitForm2(e, listing.id);
@@ -1051,20 +1052,21 @@
                                         ${p_append}
                                     </td>
                                     <td>${new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true })}}</td>
-                                    <td>
-                                        <div class="form-floating">
-                                            <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
-                                            <label for="">Target</label>
-                                        </div>
-                                    ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
-                                    </td>
-                                    <td>
-                                        <div class="form-floating">
-                                            <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
-                                            <label for="">%</label>
-                                        </div>
-                                    </td>
                                 </tr>`;
+
+                                    // <td>
+                                    //     <div class="form-floating">
+                                    //         <input type="number" class="form-control" id="target_${listing.id}" name="target" step="0.01" value="${listing.target_price}" form="change_target_${listing.id}">
+                                    //         <label for="">Target</label>
+                                    //     </div>
+                                    // ${possible == 1 ? '<span class="text-success">Possible</span>' : ''}
+                                    // </td>
+                                    // <td>
+                                    //     <div class="form-floating">
+                                    //         <input type="number" class="form-control" id="percent_${listing.id}" name="percent" step="0.01" value="${listing.target_percentage}" form="change_target_${listing.id}">
+                                    //         <label for="">%</label>
+                                    //     </div>
+                                    // </td>
                             $(document).ready(function() {
                                 $("#change_min_price_" + listing.id).on('submit', function(e) {
                                     submitForm2(e, listing.id);
