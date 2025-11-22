@@ -569,15 +569,50 @@
                 submitForm5(event, listing.id);
             });
         }
+        function getRateValue(rate) {
+            const parsed = parseFloat(rate);
+            return Number.isFinite(parsed) ? parsed : 0;
+        }
+        function getBestPriceValue(variationId) {
+            const stored = parseFloat($('#best_price_' + variationId).data('value'));
+            if (Number.isFinite(stored) && stored > 0) {
+                return stored;
+            }
+            const textValue = parseFloat(String($('#best_price_' + variationId).text()).replace(/[^\d.]/g, ''));
+            return Number.isFinite(textValue) ? textValue : 0;
+        }
+        function refreshBreakEvenTitles(variationId, overrideBestPrice) {
+            let bestPriceValue = typeof overrideBestPrice === 'number' && overrideBestPrice > 0
+                ? overrideBestPrice
+                : getBestPriceValue(variationId);
+
+            if (!bestPriceValue) {
+                return;
+            }
+
+            $(`[data-break-even-variation="${variationId}"]`).each(function() {
+                const rateValue = getRateValue($(this).data('rate'));
+                if (!rateValue) {
+                    return;
+                }
+                const currencySign = $(this).data('currencySign') || '';
+                $(this).attr('title', `Break Even: ${currencySign}${(bestPriceValue * rateValue).toFixed(2)}`);
+            });
+        }
         function updateAverageCost(variationId, prices) {
+            let bestPrice = 0;
+
             if (prices.length > 0) {
                 let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
                 $(`#average_cost_${variationId}`).text(`€${average.toFixed(2)}`);
-                $('#best_price_'+variationId).text(`${((parseFloat(average)+20)/0.88).toFixed(2)}`);
+                bestPrice = (parseFloat(average) + 20) / 0.88;
+                $('#best_price_' + variationId).text(bestPrice.toFixed(2)).data('value', bestPrice);
             } else {
                 $(`#average_cost_${variationId}`).text('€0.00');
-                // $('#best_price_'+variationId).text('€0.00');
+                $('#best_price_' + variationId).text('0.00').data('value', 0);
             }
+
+            refreshBreakEvenTitles(variationId, bestPrice);
         }
         function fetchUpdatedQuantity(variationId, bm) {
             let params = {
@@ -631,30 +666,38 @@
                                     <a href="{{ url('imei?imei=') }}${item.imei ?? item.serial_number}" target="_blank">
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
-                                </td>
-                                <td id="cost_${item.id}" title="${reference_id}">€${price} (${vendor})</td>
-
-                            </tr>`;
-
-
-                    });
-                    updateAverageCost(variationId, stockPrices);
-                    stocksTable = datass;
-                    $('#stocks_'+variationId).html(datass);
-                    // $('#available_stock_'+variationId).html(count + ' Available');
+                    data.listings.forEach(function(listing) {
+                        let best_price = getBestPriceValue(variationId);
+                        let exchange_rates_2 = exchange_rates;
+                        let currencies_2 = currencies;
+                        let currency_sign_2 = currency_sign;
+                        let p_append = '';
+                        let pm_append = '';
+                        let pm_append_title = '';
+                        let rateValue = 0;
+                        let currencySign = currency_sign_2[listing.currency_id] || '';
+                        let possible = 0;
+                        let classs = '';
+                        let cost = 0;
                 },
                 error: function(xhr) {
-                    console.error(xhr.responseText);
-                }
-            });
-        }
+                        if (listing.currency_id != 4) {
 
-        function getListings(variationId, eurToGbp, m_min_price, m_price, check = 0){
+                            const rates = exchange_rates_2[currencies_2[listing.currency_id]];
+                            rateValue = getRateValue(rates);
+                            const priceValue = Number.isFinite(+m_price) ? +m_price : 0;
+                            const minPriceValue = Number.isFinite(+m_min_price) ? +m_min_price : 0;
+                            const bestPriceValue = getBestPriceValue(variationId);
 
-            let listingsTable = '';
-            let countries = {!! json_encode($countries) !!};
-            let exchange_rates = {!! json_encode($exchange_rates) !!};
-            let currencies = {!! json_encode($currencies) !!};
+                            if (rateValue) {
+                                p_append = 'Fr: ' + currencySign + (priceValue * rateValue).toFixed(2);
+                                pm_append = 'Fr: ' + currencySign + (minPriceValue * rateValue).toFixed(2);
+                            }
+
+                            pm_append_title = bestPriceValue && rateValue
+                                ? `Break Even: ${currencySign}${(bestPriceValue * rateValue).toFixed(2)}`
+                                : '';
+                        }
             let currency_sign = {!! json_encode($currency_sign) !!};
             let params = {
                 csrf: "{{ csrf_token() }}"
@@ -707,9 +750,9 @@
                         if (listing.buybox !== 1 && listing.buybox_price > 0) {
                             buybox_button = `<button class="${(best_price > 0 && $best_price < listing.buybox_price) ? 'btn btn-success' : 'btn btn-warning'}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})">
                                         Get Buybox
-                                    </button>`;
-                        }
-
+                                    <span id="pm_append_${listing.id}" title="${pm_append_title}" data-break-even-variation="${variationId}" data-rate="${rateValue}" data-currency-sign="${currencySign}">
+                                    ${pm_append}
+                                    </span>
                         listingsTable += `
                             <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                 <td title="${listing.id} ${countries[listing.country].title}">
@@ -753,8 +796,9 @@
                                     <span id="pm_append_${listing.id}" title="${pm_append_title}">
                                     ${pm_append}
                                     </span>
-                                </td>
-                                <td>
+                    $('#listings_'+variationId).html(listingsTable);
+                    refreshBreakEvenTitles(variationId);
+                    // console.log(data);
                                     <div class="form-floating">
                                         <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price}" form="change_price_${listing.id}">
                                         <label for="">Price</label>
@@ -910,16 +954,17 @@
 
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
-                // console.log(variations);
-                $('#page_info').text(`From ${variations.from} To ${variations.to} Out Of ${variations.total}`);
-                // Check if there's data
-                if (variations.data.length > 0) {
-                    variations.data.forEach(function(variation) {
-
-                        // load("{{ url('listing/get_competitors')}}/${variation.id}");
-                        // let withBuybox = '';
-                        let withoutBuybox = '';
-                        let stocksTable = '';
+                            let exchange_rates_2 = exchange_rates;
+                            let currencies_2 = currencies;
+                            let currency_sign_2 = currency_sign;
+                            let p_append = '';
+                            let pm_append = '';
+                            let pm_append_title = '';
+                            let rateValue = 0;
+                            let currencySign = currency_sign_2[listing.currency_id] || '';
+                            let possible = 0;
+                            let classs = '';
+                            let cost = 0;
                         let listingsTable = '';
                         let stockPrices = [];
                         let listedStock = fetchUpdatedQuantity(variation.id);
@@ -1190,9 +1235,11 @@
                                     <div class="pt-4">
                                         <h6 class="badge bg-light text-dark">
                                             ${state}
-                                        </h6>
-                                    </div>
-                                </div>
+                                                        // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
+
+                        refreshBreakEvenTitles(variation.id);
+
+                        $("#change_qty_"+variation.id).submit(function(e) {
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
