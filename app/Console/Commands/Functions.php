@@ -181,6 +181,17 @@ class Functions extends Command
                             $transaction->reference_id = $latestRef+1;
                             $transaction->status = 1;
                             $transaction->save();
+                        }elseif($description == 'credit_requests'){
+                            // $message .= $transaction->amount."  ".$this->price;
+                            $amount = $transaction->amount;
+                            if($amount < 0){
+                                $amount = $amount * -1;
+                            }
+                            $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'credit_requests'])->first();
+                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
+                            $order_charge->transaction_id = $transaction->id;
+                            $order_charge->amount = $amount;
+                            $order_charge->save();
                         }elseif($description == 'avoir_sales_fees'){
                             $amount = $transaction->amount;
                             $amount = $amount * -1;
