@@ -311,7 +311,7 @@ class ListingController extends Controller
         return [
             $variation->id,
             $variation->reference_id,
-            $variation->reference_uuid,
+            $listing->reference_uuid,
             $variation->sku,
             optional($variation->product)->model,
             optional($variation->product->brand_id)->name,
@@ -638,7 +638,7 @@ class ListingController extends Controller
                     });
                 }
                 $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
-                $listing->reference_uuid = $list->product_id;
+                $listing->reference_uuid = $list->id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
                     $currency = Currency_model::where('code',$list->price->currency)->first();

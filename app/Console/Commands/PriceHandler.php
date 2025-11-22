@@ -102,7 +102,7 @@ class PriceHandler extends Command
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
-                $listing->reference_uuid = $list->product_id;
+                $listing->reference_uuid = $list->id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
                 }
