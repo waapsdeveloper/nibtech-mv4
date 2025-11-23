@@ -102,6 +102,14 @@ class PriceHandler extends Command
                 }
                 $country = Country_model::where('code',$list->market)->first();
                 $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
+                if($country == null){
+                    $error .= "No country found for market: " . $list->market . " for variation: " . $variation->sku . "\n";
+                    continue;
+                }
+                if($list->id == null){
+                    $error .= "No listing ID found for market: " . $list->market . " for variation: " . $variation->sku . "\n";
+                    continue;
+                }
                 $listing->reference_uuid = $list->id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
