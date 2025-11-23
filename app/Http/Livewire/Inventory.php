@@ -830,10 +830,34 @@ class Inventory extends Component
             if (ctype_digit($imei)) {
                 $i = $imei;
                 $stock = Stock_model::where(['imei' => $i])->first();
+                if($stock == null && strlen($i) >= 5){
+                    $stock = Stock_model::where('imei', 'LIKE', '%'.$i)->with(['variation'])->get();
+                    if($stock->count() == 1){
+                        $stock = $stock->first();
+                    }elseif($stock->count() > 1){
+                        $imeis = $stock->pluck('imei')->toArray();
+                        $error = "Did you mean: ".implode(", ", $imeis);
+                        $stock = null;
+                    }else{
+                        $stock = null;
+                    }
+                }
             } else {
                 $s = $imei;
                 $t = mb_substr($imei,1);
                 $stock = Stock_model::whereIn('serial_number', [$s, $t])->first();
+                if($stock == null && strlen($s) >= 5){
+                    $stock = Stock_model::where('serial_number', 'LIKE', '%'.$s)->with(['variation'])->get();
+                    if($stock->count() == 1){
+                        $stock = $stock->first();
+                    }elseif($stock->count() > 1){
+                        $imeis = $stock->pluck('imei')->toArray();
+                        $error = "Did you mean: ".implode(", ", $imeis);
+                        $stock = null;
+                    }else{
+                        $stock = null;
+                    }
+                }
             }
             // if (ctype_digit(request('imei'))) {
             //     $i = request('imei');
