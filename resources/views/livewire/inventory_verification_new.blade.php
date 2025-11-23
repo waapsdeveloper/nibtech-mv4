@@ -28,7 +28,7 @@
                 <select name="color" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
-                        <option value="{{ $id }}"@if(isset(session('color')) && $id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                        <option value="{{ $id }}"@if(session('color') !== null && $id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
                     @endforeach
                 </select>
                 <select name="grade" class="form-control form-select">
