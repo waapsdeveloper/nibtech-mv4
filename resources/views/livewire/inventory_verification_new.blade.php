@@ -28,7 +28,7 @@
                 <select name="color" class="form-control form-select" style="width: 150px;">
                     <option value="">Color</option>
                     @foreach ($colors as $id => $name)
-                        <option value="{{ $id }}"@if($id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
+                        <option value="{{ $id }}"@if(session('color') !== null && $id == session('color')) {{'selected'}}@endif>{{ $name }}</option>
                     @endforeach
                 </select>
                 <select name="grade" class="form-control form-select">
@@ -124,23 +124,28 @@ session()->forget('error');
                             $i = $last_ten->firstItem() - 1;
                         @endphp
                         @foreach ($last_ten as $item)
+                            @php
+                                $stock = $item->stock;
+                            @endphp
                             <tr>
-                                @if ($item->stock == null)
+                                @if ($stock == null)
                                     {{$item->stock_id}}
                                     @continue
                                 @endif
                                 <td>{{ $i + 1 }}</td>
                                 <td>{{ data_get($item, 'stock.variation.product.model') ?? "Variation Model Not added"}}
                                     @if(data_get($item,'stock.variation'))
-                                    {{$storages[$item->stock->variation->storage] ?? null}} {{$colors[$item->stock->variation->color] ?? null}} {{$grades[$item->stock->variation->grade] ?? "Variation Grade Not added Reference: ".$item->stock->variation->reference_id }}
+                                    {{$storages[$stock->variation->storage] ?? null}} {{$colors[$stock->variation->color] ?? null}} {{$grades[$stock->variation->grade] ?? "Variation Grade Not added Reference: ".$stock->variation->reference_id }}
                                     @else
                                     <span class="text-danger">Variation Not Defined</span>
                                 @endif
                                 </td>
-                                <td>{{ $item->stock->imei.$item->stock->serial_number }}</td>
+                                <td @if ($stock->status == 2)
+                                    class="text-danger"
+                                @endif>{{ $stock->imei.$stock->serial_number }}</td>
                                 <td>{{ $item->description }}</td>
-                                <td>{{ $item->stock->latest_operation->description ?? null }}</td>
-                                <td>{{ $item->stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
+                                <td>{{ $stock->latest_operation->description ?? null }}</td>
+                                <td>{{ $stock->order->customer->first_name ?? "Purchase Entry Error" }}</td>
                                 <td style="width:220px">{{ $item->created_at }}</td>
                             </tr>
                             @php

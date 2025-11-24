@@ -57,13 +57,11 @@ class Order_model extends Model
                 foreach($order_charges as $order_charge){
                     $charge_name = trim($order_charge->charge->name);
 
-                    // $message .= "Transaction description: ".$description. " and charge name: ".$charge_name . "\n\n <br>";
                     if($description == 'sales'){
                         $transaction->reference_id = $latest_transaction_ref+1;
                         $transaction->status = 1;
                         $transaction->save();
                         $add = true;
-                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($charge_name == $description){
                         $amount = $transaction->amount;
                         if($amount < 0){
@@ -78,13 +76,10 @@ class Order_model extends Model
                         $change = true;
                         $message .= "Transaction charge merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                         $add = true;
-                    }else{
-                        // $message .= "Transaction charge not merged for order ".$this->reference_id." and transaction ".$description. " with charge ".$charge_name;
                     }
                 }
                 if($add == false){
                     if($description == 'refunds' && -$transaction->amount != $this->price){
-                        // $message .= $transaction->amount."  ".$this->price;
                         $amount = $transaction->amount;
                         if($amount < 0){
                             $amount = $amount * -1;
@@ -105,7 +100,6 @@ class Order_model extends Model
                         $transaction->status = 1;
                         $transaction->save();
                         $add = true;
-                        // $message .= "Transaction sales merged for order ".$this->reference_id." and transaction ".$transaction->reference_id;
                     }elseif($description == 'avoir_sales_fees'){
                         $amount = $transaction->amount;
                         $amount = $amount * -1;
@@ -131,10 +125,6 @@ class Order_model extends Model
                 $this->save();
             }
             $message .= "<br>";
-            // if($add == false){
-            //     $this->charges = null;
-            //     $this->save();
-            // }
         }
         if($this->charges != $charges_sum){
             $this->charges = $charges_sum;
@@ -200,6 +190,10 @@ class Order_model extends Model
     public function order_issues()
     {
         return $this->hasMany(Order_issue_model::class, 'order_id', 'id');
+    }
+    public function marketplace()
+    {
+        return $this->hasOne(Marketplace_model::class, 'id', 'marketplace_id');
     }
     public function process()
     {

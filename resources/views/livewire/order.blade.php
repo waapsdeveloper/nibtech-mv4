@@ -655,7 +655,7 @@
                                         @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                        @if (request('invoice') && isset($stock) && $item->status == 2 && !session()->has('refresh'))
+                                        @if ((request('invoice') || request('packing')) && isset($stock) && $item->status == 2 && !session()->has('refresh'))
                                             @php
                                                 session()->put('refresh', true);
                                             @endphp
@@ -1447,32 +1447,79 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
-                var skuInput = document.getElementById('sku_input');
-                if (skuInput && skuInput.value === ''){
-                    skuInput.focus();
-                }else{
-                    var elem = document.getElementById(id);
-                    if (elem) {
-                        elem.focus();
-                        elem.click();
+                // Check if tracking verification overlay is active
+                var trackingOverlay = document.getElementById('tracking-verify-overlay');
+                var trackingInput = document.getElementById('tracking-verify-input');
+
+                if (trackingOverlay && trackingOverlay.classList.contains('show') && trackingInput) {
+                    // If tracking overlay is active, focus on tracking input instead
+                    setTimeout(function() {
+                        trackingInput.focus();
+                        try {
+                            trackingInput.select();
+                        } catch (e) {
+                            // Ignore selection errors
+                        }
+                    }, 200);
+                    return;
+                }
+
+                // Find the first empty IMEI input and focus on it
+                var allImeiInputs = document.querySelectorAll('input[id^="imei"]');
+                var firstEmptyInput = null;
+
+                for (var i = 0; i < allImeiInputs.length; i++) {
+                    if (allImeiInputs[i].value === '') {
+                        firstEmptyInput = allImeiInputs[i];
+                        break;
+                    }
+                }
+
+                if (firstEmptyInput) {
+                    firstEmptyInput.focus();
+                    firstEmptyInput.click();
+                    setTimeout(function(){
+                        if (firstEmptyInput) firstEmptyInput.focus();
+                    }, 500);
+                }
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Check again for tracking overlay in DOMContentLoaded
+                    var trackingOverlay = document.getElementById('tracking-verify-overlay');
+                    var trackingInput = document.getElementById('tracking-verify-input');
+
+                    if (trackingOverlay && trackingOverlay.classList.contains('show') && trackingInput) {
+                        setTimeout(function() {
+                            trackingInput.focus();
+                            try {
+                                trackingInput.select();
+                            } catch (e) {
+                                // Ignore selection errors
+                            }
+                        }, 200);
+                        return;
+                    }
+
+                    // Find the first empty IMEI input and focus on it
+                    var allImeiInputs = document.querySelectorAll('input[id^="imei"]');
+                    var firstEmptyInput = null;
+
+                    for (var i = 0; i < allImeiInputs.length; i++) {
+                        if (allImeiInputs[i].value === '') {
+                            firstEmptyInput = allImeiInputs[i];
+                            break;
+                        }
+                    }
+
+                    if (firstEmptyInput) {
+                        firstEmptyInput.focus();
+                        firstEmptyInput.select();
+                        firstEmptyInput.click();
                         setTimeout(function(){
-                            if (elem) elem.focus();
-                            $('#imei').focus();
+                            if (firstEmptyInput) firstEmptyInput.focus();
                         }, 500);
                     }
-                    document.addEventListener('DOMContentLoaded', function() {
-                        var input = document.getElementById(id);
-                        if (input) {
-                            input.focus();
-                            input.select();
-                            input.click();
-                            setTimeout(function(){
-                                if (input) input.focus();
-                                $('#imei').focus();
-                            }, 500);
-                        }
-                    });
-                }
+                });
             };
 
             if (id == 'imei0') {
@@ -1523,9 +1570,9 @@
             modal.find('.modal-body #item_id').val(item)
             })
 
-                $('.select2').select2({
-                    placeholder: "Exclude Topups",
-                });
+        $('.select2').select2({
+            placeholder: "Exclude Topups",
+        });
 
         // function get_customer_previous_orders(customer_id, order_id){
         //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);

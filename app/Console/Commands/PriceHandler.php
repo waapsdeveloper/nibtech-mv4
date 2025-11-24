@@ -51,8 +51,8 @@ class PriceHandler extends Command
 
         $error = '';
         $bm = new BackMarketAPIController();
-        $listingController = new ListingController();
         $listings = Listing_model::whereIn('handler_status', [1,3])
+        ->where('marketplace_id', 1)
         ->where('buybox',  '!=', 1)
         ->where('min_price_limit', '>', 0)
         ->whereColumn('min_price_limit', '<=', 'buybox_price')
@@ -60,17 +60,14 @@ class PriceHandler extends Command
         ->get();
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
+        $references = $listings->pluck('reference_uuid')->unique()->toArray();
+        foreach ($references as $reference) {
 
-            // echo "Hello";
-
-        // print_r($listings);
-        foreach ($variations as $variation) {
-
-            $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            $responses = $bm->getListingCompetitors($reference);
             sleep(1);
             // $responses = $listingController->getCompetitors($variation->id, 1);
             if ($responses == null) {
-                $error .= "No response for variation: " . $variation->sku . "\n";
+                $error .= "No response for variation: " . $reference . "\n";
                 continue;
             }
             if (is_object($responses) && $responses->type == 'unknown-competitor') {
@@ -79,7 +76,7 @@ class PriceHandler extends Command
             if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
                 continue;
             }
-            echo "SKU: " . $variation->sku . "\n";
+            echo "SKU: " . $reference . "\n";
             echo "Response: \n";
             foreach($responses as $list){
                 // print_r($list);
@@ -96,13 +93,21 @@ class PriceHandler extends Command
                             continue;
                         }
                         $error .= json_encode($list) . "\n";
-                        $error .= "Error in response for variation: {$variation->sku}\n";
+                        $error .= "Error in response for variation: {$reference}\n";
                         continue;
                     }
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
-                $listing->reference_uuid = $list->product_id;
+                $listing = Listing_model::firstOrNew(['reference_uuid' => $reference, 'country' => $country->id, 'marketplace_id' => 1]);
+                if($country == null){
+                    $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
+                    continue;
+                }
+                if(!isset($list->id)){
+                    $error .= "No listing ID found for market: " . $list->market . " for variation: " . $reference . "\n";
+                    continue;
+                }
+                $listing->reference_uuid = $list->id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
                 }
@@ -136,14 +141,92 @@ class PriceHandler extends Command
                     $listing->handler_status = 2;
                 }
                 $listing->save();
-                if ($error != '') {
-                    // return 1; // Return 1 to indicate an error occurred
-                }
-
-                // return 0; // Return 0 to indicate success
 
             }
         }
+        // foreach ($variations as $variation) {
+
+        //     $responses = $bm->getListingCompetitors($variation->reference_uuid);
+        //     sleep(1);
+        //     // $responses = $listingController->getCompetitors($variation->id, 1);
+        //     if ($responses == null) {
+        //         $error .= "No response for variation: " . $variation->sku . "\n";
+        //         continue;
+        //     }
+        //     if (is_object($responses) && $responses->type == 'unknown-competitor') {
+        //         continue;
+        //     }
+        //     if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
+        //         continue;
+        //     }
+        //     echo "SKU: " . $variation->sku . "\n";
+        //     echo "Response: \n";
+        //     foreach($responses as $list){
+        //         // print_r($list);
+        //         if(is_string($list) || is_int($list)){
+        //             print_r($responses);
+        //             echo "\n\n";
+        //             $error .= $list;
+        //             continue;
+        //         }
+        //         if(is_array($list)){
+        //             if (is_array($list) || is_object($list)) {
+        //                 $code = is_array($list) ? ($list['code'] ?? null) : ($list->code ?? null);
+        //                 if ($code === 'unknown-competitor') {
+        //                     continue;
+        //                 }
+        //                 $error .= json_encode($list) . "\n";
+        //                 $error .= "Error in response for variation: {$variation->sku}\n";
+        //                 continue;
+        //             }
+        //         }
+        //         $country = Country_model::where('code',$list->market)->first();
+        //         $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id, 'marketplace_id' => 1]);
+        //         if($country == null){
+        //             $error .= "No country found for market: " . $list->market . " for variation: " . $variation->sku . "\n";
+        //             continue;
+        //         }
+        //         if($list->id == null){
+        //             $error .= "No listing ID found for market: " . $list->market . " for variation: " . $variation->sku . "\n";
+        //             continue;
+        //         }
+        //         $listing->reference_uuid = $list->id;
+        //         if($list->price != null){
+        //             $listing->price = $list->price->amount;
+        //         }
+        //         if($list->min_price != null){
+        //             $listing->min_price = $list->min_price->amount;
+        //         }
+        //         $listing->buybox = $list->is_winning;
+        //         $listing->buybox_price = $list->price_to_win->amount;
+        //         $listing->buybox_winner_price = $list->winner_price->amount;
+        //         $listing->save();
+
+        //         // print_r($listing);
+        //         if($listing->handler_status == 1 && $listing->buybox !== 1 && $listing->buybox_price >= $listing->min_price_limit && ($listing->buybox_price <= $listing->price_limit || $listing->price_limit == 0)){
+        //             $new_min_price = $listing->buybox_price - 2;
+        //             if($new_min_price < $listing->min_price_limit){
+        //                 $new_min_price = $listing->min_price_limit;
+        //             }
+
+        //             if($new_min_price > $listing->price || $new_min_price < $listing->price*0.92){
+        //                 $new_price = $new_min_price / 0.92;
+        //             }else{
+        //                 $new_price = $listing->price;
+        //             }
+        //             $new_min_price = round($new_min_price, 2);
+        //             $new_price = round($new_price, 2);
+        //             $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>$new_min_price, 'price'=>$new_price]), $listing->country_id->market_code);
+        //             // print_r($response);
+        //             $listing->price = $new_price;
+        //             $listing->min_price = $new_min_price;
+        //         }elseif($listing->handler_status == 1 && $listing->bybox !== 1 && ($listing->buybox_price < $listing->min_price_limit || $listing->buybox_price > $listing->price_limit)){
+        //             $listing->handler_status = 2;
+        //         }
+        //         $listing->save();
+
+        //     }
+        // }
         if($error != ''){
             Log::info($error);
         }

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\MarketplaceTokenResolver;
 use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Arr;
@@ -19,16 +20,18 @@ class BMPROAPIController extends Controller
         self::ENV_DEV => 'https://api.pro.backmarket.com/sellers-dev/2024-03',
     ];
 
-    private string $accessToken;
+    private string $fallbackAccessToken;
     private string $userAgent;
+    private MarketplaceTokenResolver $tokenResolver;
 
-    public function __construct()
+    public function __construct(MarketplaceTokenResolver $tokenResolver)
     {
-        $this->accessToken = trim((string) env('BMPRO_API_TOKEN', ''));
+        $this->tokenResolver = $tokenResolver;
+        $this->fallbackAccessToken = trim((string) env('BMPRO_API_TOKEN', ''));
         $this->userAgent = trim((string) env('BMPRO_API_USER_AGENT', 'BMPRO API Client/1.0'));
     }
 
-    public function getOrder(int|string $orderId, string $environment = self::ENV_PROD): array
+    public function getOrder(int|string $orderId, string $environment = self::ENV_PROD, array $options = []): array
     {
         $orderId = trim((string) $orderId);
 
@@ -40,15 +43,15 @@ class BMPROAPIController extends Controller
             ];
         }
 
-        return $this->requestGet('orders/' . $orderId, [], $environment);
+        return $this->requestGet('orders/' . $orderId, [], $environment, $options);
     }
 
-    public function getOrders(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false): array
+    public function getOrders(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false, array $options = []): array
     {
         $query = Arr::only($filters, ['fulfillment_status', 'financial_status', 'page-size', 'page']);
 
         if (! $autoPaginate) {
-            return $this->requestGet('orders', $query, $environment);
+            return $this->requestGet('orders', $query, $environment, $options);
         }
 
         $page = isset($query['page']) ? max(1, (int) $query['page']) : 1;
@@ -57,7 +60,7 @@ class BMPROAPIController extends Controller
 
         do {
             $query['page'] = $page;
-            $response = $this->requestGet('orders', $query, $environment);
+            $response = $this->requestGet('orders', $query, $environment, $options);
             $lastResponse = $response;
 
             if (! ($response['success'] ?? false)) {
@@ -96,12 +99,12 @@ class BMPROAPIController extends Controller
         ];
     }
 
-    public function getListings(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false): array
+    public function getListings(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false, array $options = []): array
     {
         $query = Arr::only($filters, ['publication_state', 'page-size', 'page']);
 
         if (! $autoPaginate) {
-            return $this->requestGet('listings', $query, $environment);
+            return $this->requestGet('listings', $query, $environment, $options);
         }
 
         $page = isset($query['page']) ? max(1, (int) $query['page']) : 1;
@@ -110,7 +113,7 @@ class BMPROAPIController extends Controller
 
         do {
             $query['page'] = $page;
-            $response = $this->requestGet('listings', $query, $environment);
+            $response = $this->requestGet('listings', $query, $environment, $options);
             $lastResponse = $response;
 
             if (! ($response['success'] ?? false)) {
@@ -149,7 +152,7 @@ class BMPROAPIController extends Controller
         ];
     }
 
-    public function getListing(int|string $listingId, string $environment = self::ENV_PROD): array
+    public function getListing(int|string $listingId, string $environment = self::ENV_PROD, array $options = []): array
     {
         $listingId = trim((string) $listingId);
 
@@ -161,15 +164,15 @@ class BMPROAPIController extends Controller
             ];
         }
 
-        return $this->requestGet('listings/' . $listingId, [], $environment);
+        return $this->requestGet('listings/' . $listingId, [], $environment, $options);
     }
 
-    public function createListing(array $payload, string $environment = self::ENV_PROD, array $query = []): array
+    public function createListing(array $payload, string $environment = self::ENV_PROD, array $query = [], array $options = []): array
     {
-        return $this->requestPost('listings', $query, $environment, $payload);
+        return $this->requestPost('listings', $query, $environment, $payload, $options);
     }
 
-    public function updateListing(int|string $listingId, array $payload, string $environment = self::ENV_PROD, array $query = []): array
+    public function updateListing(int|string $listingId, array $payload, string $environment = self::ENV_PROD, array $query = [], array $options = []): array
     {
         $listingId = trim((string) $listingId);
 
@@ -181,40 +184,42 @@ class BMPROAPIController extends Controller
             ];
         }
 
-        return $this->requestPatch('listings/' . $listingId, $query, $environment, $payload);
+        return $this->requestPatch('listings/' . $listingId, $query, $environment, $payload, $options);
     }
 
-    public function getStatus(string $environment = self::ENV_PROD): array
+    public function getStatus(string $environment = self::ENV_PROD, array $options = []): array
     {
-        return $this->requestGet('status', [], $environment);
+        return $this->requestGet('status', [], $environment, $options);
     }
 
-    private function requestGet(string $endpoint, array $query, string $environment): array
+    private function requestGet(string $endpoint, array $query, string $environment, array $options = []): array
     {
-        return $this->handleRequest('GET', $endpoint, $query, null, $environment);
+        return $this->handleRequest('GET', $endpoint, $query, null, $environment, $options);
     }
 
-    private function requestPost(string $endpoint, array $query, string $environment, array|string|null $payload = null): array
+    private function requestPost(string $endpoint, array $query, string $environment, array|string|null $payload = null, array $options = []): array
     {
-        return $this->handleRequest('POST', $endpoint, $query, $payload, $environment);
+        return $this->handleRequest('POST', $endpoint, $query, $payload, $environment, $options);
     }
 
-    private function requestPatch(string $endpoint, array $query, string $environment, array|string|null $payload = null): array
+    private function requestPatch(string $endpoint, array $query, string $environment, array|string|null $payload = null, array $options = []): array
     {
-        return $this->handleRequest('PATCH', $endpoint, $query, $payload, $environment);
+        return $this->handleRequest('PATCH', $endpoint, $query, $payload, $environment, $options);
     }
 
-    private function handleRequest(string $method, string $endpoint, array $query, array|string|null $payload, string $environment): array
+    private function handleRequest(string $method, string $endpoint, array $query, array|string|null $payload, string $environment, array $options = []): array
     {
+        $token = $this->resolveAccessToken($options);
+
+        $url = $this->resolveEndpoint($endpoint, $environment);
+
         try {
-            $response = $this->sendRequest($method, $endpoint, $query, $payload, $environment);
+            $response = $this->sendRequest($method, $url, $query, $payload, $token);
         } catch (Exception $exception) {
+            $requestContext = $this->buildRequestContext($method, $url, $query, $payload, $options);
+
             Log::warning('BMPRO API request failed.', [
-                'method' => strtoupper($method),
-                'endpoint' => $endpoint,
-                'query' => $query,
-                'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
-                'environment' => $environment,
+                'request' => $requestContext,
                 'message' => $exception->getMessage(),
             ]);
 
@@ -222,6 +227,7 @@ class BMPROAPIController extends Controller
                 'success' => false,
                 'status' => 0,
                 'error' => $exception->getMessage(),
+                'request' => $requestContext,
             ];
         }
 
@@ -237,12 +243,10 @@ class BMPROAPIController extends Controller
         $payload = $response->json();
         $errorBody = $payload ?? $response->body();
 
+        $requestContext = $this->buildRequestContext($method, $url, $query, $payload, $options);
+
         Log::warning('BMPRO API returned error response.', [
-            'method' => strtoupper($method),
-            'endpoint' => $endpoint,
-            'query' => $query,
-            'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
-            'environment' => $environment,
+            'request' => $requestContext,
             'status' => $response->status(),
             'body' => $errorBody,
         ]);
@@ -251,16 +255,13 @@ class BMPROAPIController extends Controller
             'success' => false,
             'status' => $response->status(),
             'error' => $errorBody,
+            'request' => $requestContext,
         ];
     }
 
-    private function sendRequest(string $method, string $endpoint, array $query, array|string|null $payload, string $environment): Response
+    private function sendRequest(string $method, string $url, array $query, array|string|null $payload, string $token): Response
     {
-        $this->guardToken();
-
-        $url = $this->resolveEndpoint($endpoint, $environment);
-
-        $request = Http::withHeaders($this->buildHeaders())
+        $request = Http::withHeaders($this->buildHeaders($token))
             ->timeout((int) env('BMPRO_API_TIMEOUT', 30))
             ->retry((int) env('BMPRO_API_RETRIES', 2), 200);
 
@@ -289,20 +290,57 @@ class BMPROAPIController extends Controller
         return rtrim($baseUrl, '/') . '/' . $endpoint;
     }
 
-    private function buildHeaders(): array
+    private function buildHeaders(string $token): array
     {
         return [
             'Accept' => 'application/json',
-            'Authorization' => 'Bearer ' . $this->accessToken,
+            'Authorization' => $this->formatAuthorizationHeader($token),
             'User-Agent' => $this->userAgent,
         ];
     }
 
-    private function guardToken(): void
+    private function formatAuthorizationHeader(string $token): string
     {
-        if ($this->accessToken === '') {
+        $token = trim($token);
+
+        if ($token === '') {
             throw new RuntimeException('BMPRO API token is not configured.');
         }
+
+        if (stripos($token, 'bearer ') === 0 || stripos($token, 'basic ') === 0) {
+            return $token;
+        }
+
+        return 'Bearer ' . $token;
+    }
+
+    private function resolveAccessToken(array $options = []): string
+    {
+        $marketplaceId = isset($options['marketplace_id']) ? (int) $options['marketplace_id'] : null;
+        $currency = $options['currency'] ?? null;
+
+        $token = $this->tokenResolver->resolve($marketplaceId, $currency);
+
+        if ($token !== null && $token !== '') {
+            return $token;
+        }
+
+        if ($this->fallbackAccessToken === '') {
+            throw new RuntimeException('BMPRO API token is not configured.');
+        }
+
+        return $this->fallbackAccessToken;
+    }
+
+    private function buildRequestContext(string $method, string $url, array $query, array|string|null $payload, array $options = []): array
+    {
+        return [
+            'method' => strtoupper($method),
+            'url' => $url,
+            'query' => $query,
+            'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
+            'options' => $options,
+        ];
     }
 
     private function extractItems($data): array

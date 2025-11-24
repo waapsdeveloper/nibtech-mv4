@@ -17,6 +17,7 @@ class Listing_model extends Model
     protected $fillable = [
         // other fields...
         'country',
+        'marketplace_id',
         'variation_id',
         'reference_uuid',
         'name',
@@ -50,6 +51,10 @@ class Listing_model extends Model
     public function admin()
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
+    }
+    public function marketplace()
+    {
+        return $this->hasOne(Marketplace_model::class, 'id', 'marketplace_id');
     }
 
 }

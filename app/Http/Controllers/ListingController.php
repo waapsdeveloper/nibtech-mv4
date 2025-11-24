@@ -62,164 +62,302 @@ class ListingController extends Controller
 
         return view('listings')->with($data);
     }
-    public function get_variations(){
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 10;
-        }
+    public function get_variations(Request $request)
+    {
+        $perPage = $request->input('per_page', 10);
 
-        if(request('product_name') != null){
-            $product_name = trim(request('product_name'));
+        return $this->buildVariationQuery($request)
+            ->paginate($perPage)
+            ->appends($request->except('page'));
+    }
 
-            $arr = explode(" ", $product_name);
-            $last = end($arr);
+    public function exportFilteredListings(Request $request)
+    {
+        $fileName = 'filtered-listings-' . now()->format('Ymd_His') . '.csv';
+        $query = $this->buildVariationQuery($request);
 
+        $headers = [
+            'Content-Type' => 'text/csv',
+            'Content-Disposition' => "attachment; filename=\"{$fileName}\"",
+        ];
 
-            $storage_search = Storage_model::where('name', 'like', $last.'%')->pluck('id');
+        return response()->stream(function () use ($query) {
+            $handle = fopen('php://output', 'w');
+            fputcsv($handle, $this->listingExportHeaders());
 
-            if($storage_search->count() > 0){
-                // dd($storage_search);
-                array_pop($arr);
-                $product_name = implode(" ", $arr);
-            }else{
-                $storage_search = [];
-            }
-            $product_search = Products_model::where('model', 'like', '%'.$product_name.'%')->pluck('id');
+            $query->chunk(250, function ($variations) use ($handle) {
+                $variations->each(function ($variation) use ($handle) {
+                    $this->writeVariationCsvRows($handle, $variation);
+                });
+            });
 
+            fclose($handle);
+        }, 200, $headers);
+    }
 
-        }else{
-            $product_search = [];
-            $storage_search = [];
-        }
-        // dd($product_search, $storage_search);
+    private function buildVariationQuery(Request $request)
+    {
+    list($productSearch, $storageSearch) = $this->resolveProductAndStorageSearch($request->input('product_name'));
 
-        return Variation_model::with('listings', 'listings.country_id', 'listings.currency', 'product', 'available_stocks', 'pending_orders')
-        ->when(request('reference_id') != '', function ($q) {
-            return $q->where('reference_id', request('reference_id'));
+        $query = Variation_model::with([
+            'listings',
+            'listings.country_id',
+            'listings.currency',
+            'product',
+            'available_stocks',
+            'pending_orders',
+            'storage_id',
+            'color_id',
+            'grade_id',
+        ]);
+
+        $query->when($request->filled('reference_id'), function ($q) use ($request) {
+            return $q->where('reference_id', $request->input('reference_id'));
         })
-        ->when(request('variation_id') != '', function ($q) {
-            return $q->where('id', request('variation_id'));
+        ->when($request->filled('variation_id'), function ($q) use ($request) {
+            return $q->where('id', $request->input('variation_id'));
         })
-        ->when(request('category') != '', function ($q) {
-            return $q->whereHas('product', function ($q) {
-                $q->where('category', request('category'));
+        ->when($request->filled('category'), function ($q) use ($request) {
+            return $q->whereHas('product', function ($productQuery) use ($request) {
+                $productQuery->where('category', $request->input('category'));
             });
         })
-        ->when(request('brand') != '', function ($q) {
-            return $q->whereHas('product', function ($q) {
-                $q->where('brand', request('brand'));
+        ->when($request->filled('brand'), function ($q) use ($request) {
+            return $q->whereHas('product', function ($productQuery) use ($request) {
+                $productQuery->where('brand', $request->input('brand'));
             });
         })
-        ->when(request('product') != '', function ($q) {
-            return $q->where('product_id', request('product'));
+        ->when($request->filled('product'), function ($q) use ($request) {
+            return $q->where('product_id', $request->input('product'));
         })
-        ->when(count($product_search) > 0, function ($q) use ($product_search) {
-            return $q->whereIn('product_id', $product_search);
+        ->when($productSearch->count() > 0, function ($q) use ($productSearch) {
+            return $q->whereIn('product_id', $productSearch);
         })
-        ->when(count($storage_search) > 0, function ($q) use ($storage_search) {
-            return $q->whereIn('storage', $storage_search);
+        ->when($storageSearch->count() > 0, function ($q) use ($storageSearch) {
+            return $q->whereIn('storage', $storageSearch);
         })
-        ->when(request('sku') != '', function ($q) {
-            return $q->where('sku', request('sku'));
+        ->when($request->filled('sku'), function ($q) use ($request) {
+            return $q->where('sku', $request->input('sku'));
         })
-        ->when(request('color') != '', function ($q) {
-            return $q->where('color', request('color'));
+        ->when($request->filled('color'), function ($q) use ($request) {
+            return $q->where('color', $request->input('color'));
         })
-        ->when(request('storage') != '', function ($q) {
-            return $q->where('storage', request('storage'));
+        ->when($request->filled('storage'), function ($q) use ($request) {
+            return $q->where('storage', $request->input('storage'));
         })
-        ->when(request('grade') != [], function ($q) {
-            return $q->whereIn('grade', request('grade'));
+        ->when($request->filled('grade'), function ($q) use ($request) {
+            return $q->whereIn('grade', (array) $request->input('grade'));
         })
-        ->when(request('topup') != '', function ($q) {
-            return $q->whereHas('listed_stock_verifications', function ($q) {
-                $q->where('process_id', request('topup'));
+        ->when($request->filled('topup'), function ($q) use ($request) {
+            return $q->whereHas('listed_stock_verifications', function ($verificationQuery) use ($request) {
+                $verificationQuery->where('process_id', $request->input('topup'));
             });
         })
-        ->when(request('listed_stock') != '', function ($q) {
-            if (request('listed_stock') == 1) {
+        ->when($request->filled('listed_stock'), function ($q) use ($request) {
+            if ((int) $request->input('listed_stock') === 1) {
                 return $q->where('listed_stock', '>', 0);
-            } elseif (request('listed_stock') == 2) {
+            }
+
+            if ((int) $request->input('listed_stock') === 2) {
                 return $q->where('listed_stock', '<=', 0);
             }
         })
-        ->when(request('available_stock') != '', function ($q) {
-            if (request('available_stock') == 1) {
-                // Only include variations where available_stocks count minus pending_orders count is greater than zero
-                return $q->whereHas('available_stocks', function ($query) {
-                        // No additional constraints on available_stocks itself
-                    })
+        ->when($request->filled('available_stock'), function ($q) use ($request) {
+            if ((int) $request->input('available_stock') === 1) {
+                return $q->whereHas('available_stocks')
                     ->withCount(['available_stocks', 'pending_orders'])
                     ->havingRaw('(available_stocks_count - pending_orders_count) > 0');
-            } elseif (request('available_stock') == 2) {
-                return $q->whereDoesntHave('available_stocks');
-                // ->orWhereHas('available_stocks', function ($query) {
-                //         $query->withCount(['available_stocks', 'pending_orders'])
-                //         ->havingRaw('(available_stocks_count - pending_orders_count) <= 0');
-                //     });
             }
-        })
-        ->when(request('state') == '', function ($q) {
-            return $q->whereIn('state', [2, 3]);
-        })
-        ->when(request('state') != '' && request('state') != 10, function ($q) {
-            return $q->where('state', request('state'));
 
-        })
-        ->when(request('sale_40') != '', function ($q) {
+            if ((int) $request->input('available_stock') === 2) {
+                return $q->whereDoesntHave('available_stocks');
+            }
+        });
+
+        $state = $request->input('state');
+        if ($state === null || $state === '') {
+            $query->whereIn('state', [2, 3]);
+        } elseif ((int) $state !== 10) {
+            $query->where('state', $state);
+        }
+
+        $query->when($request->filled('sale_40'), function ($q) {
             return $q->withCount('today_orders as today_orders_count')
-            ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
+                ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
         })
-        ->when(request('handler_status') == 2, function ($q) {
-            return $q->whereHas('listings', function ($q) {
-                $q->where('handler_status', request('handler_status'))->whereIn('country', [73, 199]);
+        ->when((int) $request->input('handler_status') === 2, function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'))
+                    ->whereIn('country', [73, 199]);
             });
         })
-        ->when(request('handler_status') == 1 || request('handler_status') == 3, function ($q) {
-            return $q->whereHas('listings', function ($q) {
-                $q->where('handler_status', request('handler_status'));
+        ->when(in_array((int) $request->input('handler_status'), [1, 3], true), function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'));
             });
         })
-        ->when(request('process_id') != '' && request('special') == 'show_only', function ($q) {
-            return $q->whereHas('process_stocks', function ($q) {
-                $q->where('process_id', request('process_id'));
+        ->when($request->filled('process_id') && $request->input('special') === 'show_only', function ($q) use ($request) {
+            return $q->whereHas('process_stocks', function ($processStockQuery) use ($request) {
+                $processStockQuery->where('process_id', $request->input('process_id'));
             });
         })
-        ->where('sku', '!=', null)
-        ->when(request('sort') == 4, function ($q) {
-            return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
-                ->orderBy('products.model', 'asc') // Order by product model in ascending order
-                ->orderBy('variation.storage', 'asc') // Secondary order by storage
-                ->orderBy('variation.color', 'asc') // Secondary order by color
-                ->orderBy('variation.grade', 'asc') // Secondary order by grade
-                // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
-                ->select('variation.*'); // Select only the variation columns
+        ->whereNotNull('sku')
+        ->when($request->input('sort') == 4, function ($q) {
+            return $q->join('products', 'variation.product_id', '=', 'products.id')
+                ->orderBy('products.model', 'asc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*');
         })
-        ->when(request('sort') == 3, function ($q) {
-            return $q->join('products', 'variation.product_id', '=', 'products.id') // Join the products table
-                ->orderBy('products.model', 'desc') // Order by product model in descending order
-                ->orderBy('variation.storage', 'asc') // Secondary order by storage
-                ->orderBy('variation.color', 'asc') // Secondary order by color
-                ->orderBy('variation.grade', 'asc') // Secondary order by grade
-                // ->orderBy('listed_stock', 'desc') // Secondary order by listed stock
-                ->select('variation.*'); // Select only the variation columns
+        ->when($request->input('sort') == 3, function ($q) {
+            return $q->join('products', 'variation.product_id', '=', 'products.id')
+                ->orderBy('products.model', 'desc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*');
         })
-        ->when(request('sort') == 2, function ($q) {
-            return $q->orderBy('listed_stock', 'asc') // Order by listed stock in ascending order
-                ->orderBy('variation.storage', 'asc') // Secondary order by storage
-                ->orderBy('variation.color', 'asc') // Secondary order by color
-                ->orderBy('variation.grade', 'asc'); // Secondary order by grade
+        ->when($request->input('sort') == 2, function ($q) {
+            return $q->orderBy('listed_stock', 'asc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc');
         })
-        ->when(request('sort') == 1 || request('sort') == null, function ($q) {
-            return $q->orderBy('listed_stock', 'desc') // Order by listed stock in descending order
-                ->orderBy('variation.storage', 'asc') // Secondary order by storage
-                ->orderBy('variation.color', 'asc') // Secondary order by color
-                ->orderBy('variation.grade', 'asc'); // Secondary order by grade
-        })
-        ->paginate($per_page)
-        ->appends(request()->except('page'));
+        ->when($request->input('sort') == 1 || $request->input('sort') === null, function ($q) {
+            return $q->orderBy('listed_stock', 'desc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc');
+        });
 
+        return $query;
+    }
+
+    private function resolveProductAndStorageSearch(?string $productName): array
+    {
+        if (empty($productName)) {
+            return [collect(), collect()];
+        }
+
+        $searchTerm = trim($productName);
+        $parts = explode(' ', $searchTerm);
+        $lastSegment = end($parts);
+
+        $storageSearch = Storage_model::where('name', 'like', $lastSegment . '%')->pluck('id');
+
+        if ($storageSearch->count() > 0) {
+            array_pop($parts);
+            $searchTerm = trim(implode(' ', $parts));
+        } else {
+            $storageSearch = collect();
+        }
+
+        $productSearch = Products_model::where('model', 'like', '%' . $searchTerm . '%')->pluck('id');
+
+        return [$productSearch, $storageSearch];
+    }
+
+    private function listingExportHeaders(): array
+    {
+        return [
+            'Variation ID',
+            'Variation Reference',
+            'Variation UUID',
+            'SKU',
+            'Product Model',
+            'Brand',
+            'Category',
+            'Storage',
+            'Grade',
+            'Color',
+            'State',
+            'Listed Stock',
+            'Available Stocks',
+            'Pending Orders',
+            'Listing ID',
+            'Listing Country',
+            'Handler Status',
+            'Currency',
+            'Min Price',
+            'Price',
+            'Buybox',
+            'Buybox Price',
+            'Target Price',
+            'Target Percentage',
+            'Min Price Limit',
+            'Price Limit',
+            'Last Updated',
+        ];
+    }
+
+    private function writeVariationCsvRows($handle, $variation): void
+    {
+        if ($variation->listings->isEmpty()) {
+            fputcsv($handle, $this->mapVariationListingRow($variation, null));
+            return;
+        }
+
+        foreach ($variation->listings as $listing) {
+            fputcsv($handle, $this->mapVariationListingRow($variation, $listing));
+        }
+    }
+
+    private function mapVariationListingRow($variation, $listing): array
+    {
+        $availableCount = $variation->available_stocks ? $variation->available_stocks->count() : 0;
+        $pendingCount = $variation->pending_orders ? $variation->pending_orders->count() : 0;
+
+        return [
+            $variation->id,
+            $variation->reference_id,
+            $listing->reference_uuid,
+            $variation->sku,
+            optional($variation->product)->model,
+            optional($variation->product->brand_id)->name,
+            optional($variation->product->category_id)->name,
+            optional($variation->storage_id)->name,
+            optional($variation->grade_id)->name,
+            optional($variation->color_id)->name,
+            $this->formatVariationState($variation->state),
+            $variation->listed_stock,
+            $availableCount,
+            $pendingCount,
+            optional($listing)->id,
+            $listing ? (optional($listing->country_id)->title ?? $listing->country) : null,
+            $listing ? $this->formatHandlerStatus($listing->handler_status) : null,
+            $listing ? (optional($listing->currency)->code ?? optional($listing->currency)->symbol ?? null) : null,
+            optional($listing)->min_price,
+            optional($listing)->price,
+            $listing ? ($listing->buybox ? 'Yes' : 'No') : null,
+            optional($listing)->buybox_price,
+            optional($listing)->target_price,
+            optional($listing)->target_percentage,
+            optional($listing)->min_price_limit,
+            optional($listing)->price_limit,
+            optional(optional($listing)->updated_at)->format('Y-m-d H:i:s'),
+        ];
+    }
+
+    private function formatVariationState(?int $state): string
+    {
+        return [
+            0 => 'Missing price/comment',
+            1 => 'Pending validation',
+            2 => 'Online',
+            3 => 'Offline',
+            4 => 'Deactivated',
+        ][$state] ?? 'Unknown';
+    }
+
+    private function formatHandlerStatus(?int $status): string
+    {
+        return [
+            0 => 'Unassigned',
+            1 => 'Active',
+            2 => 'Inactive',
+            3 => 'Re-Activated',
+        ][$status] ?? '';
     }
 
     public function get_target_variations(){
@@ -480,6 +618,7 @@ class ListingController extends Controller
                 // Log::error($error);
                 return response()->json(['error'=>$error]);
             }
+            // Log::info("Responses for variation ID $id: " . json_encode($responses));
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
@@ -498,17 +637,23 @@ class ListingController extends Controller
                         }
                     });
                 }
-                $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
-                $listing->reference_uuid = $list->product_id;
+                $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id, 'marketplace_id' => 1]);
+                if(isset($list->id)){
+                    $listing->reference_uuid = $list->id;
+                }
+
                 if($list->price != null){
                     $listing->price = $list->price->amount;
+                    $currency = Currency_model::where('code',$list->price->currency)->first();
                 }
                 if($list->min_price != null){
                     $listing->min_price = $list->min_price->amount;
+                    $currency = Currency_model::where('code',$list->min_price->currency)->first();
                 }
                 $listing->buybox = $list->is_winning;
                 $listing->buybox_price = $list->price_to_win->amount;
                 $listing->buybox_winner_price = $list->winner_price->amount;
+                $listing->currency_id = $currency->id;
                 $listing->save();
             }
             if($no_check == 1){
@@ -592,15 +737,18 @@ class ListingController extends Controller
         $bm = new BackMarketAPIController();
         if(request('min_price')){
             $listing->min_price = request('min_price');
-            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>request('min_price')]), $listing->country_id->market_code);
+            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['min_price'=>request('min_price'),'currency'=>$listing->currency->code]), $listing->country_id->market_code);
         }elseif(request('price')){
             $listing->price = request('price');
-            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price')]), $listing->country_id->market_code);
+            $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price'),'currency'=>$listing->currency->code]), $listing->country_id->market_code);
         }
 
         $listing->save();
         // print_r($response);
         // die;
+        // if($listing->country_id->code == 'SE'){
+        //     Log::info("Updated listing price for listing ID $id: " . json_encode($response));
+        // }
         if(request('min_price')){
             return $response;
         }elseif(request('price')){

@@ -72,34 +72,6 @@ class InventoryVerification extends Component
         // dd($data['orders']);
         return view('livewire.verification')->with($data);
     }
-    public function repair_ship($repair_id){
-        $repair = Process_model::find($repair_id);
-        $currency = Currency_model::where('code',request('currency'))->first();
-
-        if($currency != null && $currency->id != 4){
-            $repair->currency = $currency->id;
-            $repair->exchange_rate = request('rate');
-        }
-        $repair->tracking_number = request('tracking_number');
-        $repair->description = request('description');
-
-        if(request('customer_id') != $repair->customer_id && request('customer_id') != null){
-            $repair->customer_id = request('customer_id');
-        }
-
-        if(request('approve') == 1){
-            $repair->status = 2;
-        }
-
-        $repair->save();
-
-        if(request('approve') == 1){
-            return redirect()->back();
-        }else{
-            return "Updated";
-        }
-        // return redirect()->back();
-    }
     public function verification_detail($process_id){
 
         ini_set('memory_limit', '2048M');

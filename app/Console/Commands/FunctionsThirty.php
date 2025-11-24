@@ -9,6 +9,7 @@ use App\Models\Variation_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class FunctionsThirty extends Command
 {
@@ -37,6 +38,7 @@ class FunctionsThirty extends Command
 
         ini_set('max_execution_time', 1200);
         $this->get_listings();
+        echo 'sad';
         $this->get_listingsBi();
 
         return 0;
@@ -60,6 +62,9 @@ class FunctionsThirty extends Command
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
                     $variation->sku = trim($list->sku);
                     $variation->grade = (int)$list->state + 1;
+                    if((int)$list->state == 9){
+                        $variation->grade = 1;
+                    }
                     $variation->status = 1;
                     // ... other fields
                     echo $list->listing_id." ";
@@ -75,13 +80,15 @@ class FunctionsThirty extends Command
                     $variation->state = $list->publication_state;
                     echo $list->publication_state." ";
                 }
-                    $variation->save();
-                $currency = Currency_model::where('code',$list->currency)->first();
+                $variation->save();
+
+                $curr = $list->price->currency ?? $list->currency;
+                $currency = Currency_model::where('code',$curr)->first();
                 // echo $list->currency;
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
+                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $listing->max_price = $list->max_price;
                     $listing->min_price = $list->min_price;
                     $variation->listed_stock = $list->quantity;
@@ -90,6 +97,7 @@ class FunctionsThirty extends Command
                     if($listing->name == null){
                         $listing->name = $list->title;
                     }
+                    $listing->reference_uuid = $list->id;
                     // ... other fields
                     $listing->save();
                     if($variation->reference_uuid == null){
@@ -107,6 +115,8 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
 
+        Log::info("Result from getAllListingsBi: " . json_encode($listings));
+
         foreach($listings as $country => $lists){
             foreach($lists as $list){
                 $variation = Variation_model::where('sku',$list->sku)->first();
@@ -114,7 +124,7 @@ class FunctionsThirty extends Command
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
+                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
