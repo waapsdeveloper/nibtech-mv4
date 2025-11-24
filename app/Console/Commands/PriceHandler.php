@@ -103,11 +103,11 @@ class PriceHandler extends Command
                     $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
                     continue;
                 }
-                if(!isset($list->id)){
-                    $error .= "No listing ID found for market: " . $list->market . " for variation: " . $reference . "\n";
-                    continue;
-                }
-                $listing->reference_uuid = $list->id;
+                // if(!isset($list->id)){
+                //     $error .= "No listing ID found for market: " . $list->market . " for variation: " . json_encode($list) . "\n";
+                //     continue;
+                // }
+                // $listing->reference_uuid = $list->id;
                 if($list->price != null){
                     $listing->price = $list->price->amount;
                 }

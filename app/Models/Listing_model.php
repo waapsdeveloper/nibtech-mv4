@@ -26,11 +26,15 @@ class Listing_model extends Model
         'price',
         'buybox',
         'buybox_price',
+        'buybox_winner_price',
         'min_price_limit',
         'price_limit',
         'handler_status',
         'currency_id',
-        'admin_id'
+        'target_price',
+        'target_percentage',
+        'admin_id',
+        'status'
     ];
 
 

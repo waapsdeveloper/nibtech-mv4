@@ -608,10 +608,11 @@ class ListingController extends Controller
     public function getCompetitors($id, $no_check = 0){
         $error = "";
         $variation = Variation_model::find($id);
+        $reference = $variation->listings->where('marketplace_id', 1)->whereNotNull('reference_uuid')->first()->reference_uuid;
         // if($no_check = 0){
 
             $bm = new BackMarketAPIController();
-            $responses = $bm->getListingCompetitors($variation->reference_uuid);
+            $responses = $bm->getListingCompetitors($reference);
             if(is_string($responses) || is_int($responses) || is_null($responses)){
                 $error = $responses;
                 $error .= " - ".$variation->reference_uuid;
@@ -629,7 +630,7 @@ class ListingController extends Controller
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
+                $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->where('marketplace_id', 1)->get();
                 if($listings->count() > 1){
                     $listings->each(function($listing, $key) {
                         if ($key > 0) {

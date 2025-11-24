@@ -62,6 +62,46 @@ class RefurbedAPIController extends Controller
         ]));
     }
 
+    /**
+     * Get all orders with automatic pagination
+     */
+    public function getAllOrders(array $filter = [], array $sort = [], int $pageSize = 100): array
+    {
+        $allOrders = [];
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
+
+        while ($hasMore) {
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
+
+            $response = $this->listOrders($filter, $pagination, $sort);
+
+            if (!empty($response['orders'])) {
+                $allOrders = array_merge($allOrders, $response['orders']);
+
+                $lastOrder = end($response['orders']);
+                $pageToken = $lastOrder['id'] ?? null;
+            }
+
+            $hasMore = $response['has_more'] ?? false;
+            $pageCount++;
+
+            if ($pageCount > 100) {
+                Log::warning("Refurbed: Reached page limit for orders", ['pages' => $pageCount]);
+                break;
+            }
+        }
+
+        return [
+            'orders' => $allOrders,
+            'total' => count($allOrders)
+        ];
+    }
+
     public function getOrder(string $orderId): array
     {
         return $this->post('refb.merchant.v1.OrderService/GetOrder', ['id' => $orderId]);
@@ -75,6 +115,46 @@ class RefurbedAPIController extends Controller
             'pagination' => $pagination,
             'sort' => $sort,
         ]));
+    }
+
+    /**
+     * Get all order items with automatic pagination
+     */
+    public function getAllOrderItems(string $orderId, array $filter = [], array $sort = [], int $pageSize = 100): array
+    {
+        $allItems = [];
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
+
+        while ($hasMore) {
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
+
+            $response = $this->listOrderItems($orderId, $filter, $pagination, $sort);
+
+            if (!empty($response['order_items'])) {
+                $allItems = array_merge($allItems, $response['order_items']);
+
+                $lastItem = end($response['order_items']);
+                $pageToken = $lastItem['id'] ?? null;
+            }
+
+            $hasMore = $response['has_more'] ?? false;
+            $pageCount++;
+
+            if ($pageCount > 100) {
+                Log::warning("Refurbed: Reached page limit for order items", ['pages' => $pageCount]);
+                break;
+            }
+        }
+
+        return [
+            'order_items' => $allItems,
+            'total' => count($allItems)
+        ];
     }
 
     public function updateOrderItemState(string $orderItemId, string $state, array $attributes = []): array
@@ -92,6 +172,67 @@ class RefurbedAPIController extends Controller
             'pagination' => $pagination,
             'sort' => $sort,
         ]));
+    }
+
+    /**
+     * Get all offers with automatic pagination
+     */
+    public function getAllOffers(array $filter = [], array $sort = [], int $pageSize = 100): array
+    {
+        $allOffers = [];
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
+
+        while ($hasMore) {
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
+
+            // Log::info("Refurbed: Fetching page", [
+            //     'page' => $pageCount + 1,
+            //     'page_token' => $pageToken ? substr($pageToken, 0, 30) : 'initial',
+            //     'current_total' => count($allOffers)
+            // ]);
+
+            $response = $this->listOffers($filter, $pagination, $sort);
+
+            // Log::info("Refurbed: Page response", [
+            //     'offers_count' => count($response['offers'] ?? []),
+            //     'has_more' => $response['has_more'] ?? false,
+            //     'response_keys' => array_keys($response)
+            // ]);
+
+            if (!empty($response['offers'])) {
+                $allOffers = array_merge($allOffers, $response['offers']);
+
+                // Use the last offer's ID as the page token for the next request
+                $lastOffer = end($response['offers']);
+                $pageToken = $lastOffer['id'] ?? null;
+            }
+
+            // Check has_more flag to determine if there are more pages
+            $hasMore = $response['has_more'] ?? false;
+
+            $pageCount++;
+
+            // Safety limit to prevent infinite loops
+            if ($pageCount > 100) {
+                Log::warning("Refurbed: Reached page limit", ['pages' => $pageCount]);
+                break;
+            }
+        }
+
+        // Log::info("Refurbed: Pagination complete", [
+        //     'total_pages' => $pageCount,
+        //     'total_offers' => count($allOffers)
+        // ]);
+
+        return [
+            'offers' => $allOffers,
+            'total' => count($allOffers)
+        ];
     }
 
     public function updateOffer(array $identifier, array $updates): array
@@ -127,6 +268,46 @@ class RefurbedAPIController extends Controller
             'pagination' => $pagination,
             'sort' => $sort,
         ]));
+    }
+
+    /**
+     * Get all shipping profiles with automatic pagination
+     */
+    public function getAllShippingProfiles(array $filter = [], array $sort = [], int $pageSize = 100): array
+    {
+        $allProfiles = [];
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
+
+        while ($hasMore) {
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
+
+            $response = $this->listShippingProfiles($filter, $pagination, $sort);
+
+            if (!empty($response['shipping_profiles'])) {
+                $allProfiles = array_merge($allProfiles, $response['shipping_profiles']);
+
+                $lastProfile = end($response['shipping_profiles']);
+                $pageToken = $lastProfile['id'] ?? null;
+            }
+
+            $hasMore = $response['has_more'] ?? false;
+            $pageCount++;
+
+            if ($pageCount > 100) {
+                Log::warning("Refurbed: Reached page limit for shipping profiles", ['pages' => $pageCount]);
+                break;
+            }
+        }
+
+        return [
+            'shipping_profiles' => $allProfiles,
+            'total' => count($allProfiles)
+        ];
     }
 
     protected function post(string $path, array $body = []): array

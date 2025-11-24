@@ -5,6 +5,7 @@ use App\Http\Controllers\BMPROListingsController;
 use App\Http\Controllers\BMPROOrdersController;
 use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\RefurbedListingsController;
+use App\Http\Controllers\RefurbedWebhookController;
 use App\Http\Controllers\TestingController;
 use App\Models\Admin_model;
 use Illuminate\Http\Request;
@@ -34,6 +35,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/test', function (Request $request) {
     return response()->json('Hello');
 });
+
+// Refurbed webhook endpoint (public, no auth required for external webhooks)
+Route::post('/refurbed/webhook', [RefurbedWebhookController::class, 'handleWebhook'])
+    ->name('refurbed.webhook');
+
 Route::group(['middleware' => ['auth:sanctum']], function () {
     // return response()->json('Hello');
     Route::resource('/request', ApiRequestController::class);
@@ -54,6 +60,12 @@ Route::group(['middleware' => ['internal.only']], function () {
             ->name('refurbed.listings.test');
         Route::get('/listings/active', [RefurbedListingsController::class, 'active'])
             ->name('refurbed.listings.active');
+        Route::get('/listings/zero-stock', [RefurbedListingsController::class, 'zeroStock'])
+            ->name('refurbed.listings.zero_stock');
+        Route::get('/listings/sync', [RefurbedListingsController::class, 'syncListings'])
+            ->name('refurbed.listings.sync');
+        Route::get('/listings/update-stock', [RefurbedListingsController::class, 'updateStockFromSystem'])
+            ->name('refurbed.listings.update_stock');
     });
 
     Route::get('/bmpro/listings/test', [BMPROListingsController::class, 'index'])

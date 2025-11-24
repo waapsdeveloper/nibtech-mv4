@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\FunctionsThirty;
+use App\Models\Listing_model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RefurbedListingsController extends Controller
 {
@@ -50,13 +53,14 @@ class RefurbedListingsController extends Controller
     public function active(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
-        $states = $this->normalizeList($request->input('state'), ['ACTIVE']);
+        // Note: Refurbed uses different state enum values (OFFER_STATE_ACTIVE, etc.)
+        // For now, fetch all offers without state filter
+        $states = $this->normalizeList($request->input('state'), []);
 
-        $filter = [
-            'state' => [
-                'any_of' => $states,
-            ],
-        ];
+        $filter = [];
+        if (!empty($states)) {
+            $filter['state'] = ['any_of' => $states];
+        }
 
         $pagination = $this->buildPagination($perPage, $request->input('page_token'));
         $sort = $this->buildSort(
@@ -115,5 +119,239 @@ class RefurbedListingsController extends Controller
             'order_by' => $field,
             'direction' => $direction,
         ];
+    }
+
+    /**
+     * Test endpoint to zero out all Refurbed listed stock
+     */
+    public function zeroStock(): JsonResponse
+    {
+        try {
+            set_time_limit(300); // 5 minutes
+
+            $updated = 0;
+            $failed = 0;
+            $errors = [];
+
+            // Get ALL offers from Refurbed API (with automatic pagination)
+            $response = $this->refurbed->getAllOffers();
+            $offers = $response['offers'] ?? [];
+
+            if (empty($offers)) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No Refurbed offers found',
+                    'updated' => 0,
+                ]);
+            }
+
+            foreach ($offers as $offer) {
+                try {
+                    $sku = $offer['sku'] ?? null;
+                    $offerId = $offer['id'] ?? null;
+
+                    if (!$sku) {
+                        continue;
+                    }
+
+                    // Update offer quantity to 0 via Refurbed API
+                    // Try using both SKU and ID for better matching
+                    $identifier = array_filter([
+                        'sku' => $sku,
+                        'id' => $offerId,
+                    ]);
+
+                    $updates = ['quantity' => 0];
+
+                    Log::info("Refurbed: Updating offer to zero stock", [
+                        'identifier' => $identifier,
+                        'updates' => $updates
+                    ]);
+
+                    $response = $this->refurbed->updateOffer($identifier, $updates);
+
+                    Log::info("Refurbed: Update response", [
+                        'sku' => $sku,
+                        'response' => $response
+                    ]);
+
+                    $updated++;
+
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'sku' => $offer['sku'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    Log::error("Refurbed: Update failed", [
+                        'sku' => $sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            // Log consolidated errors if any
+            if (!empty($errors)) {
+                Log::error('Refurbed: Zero stock operation had failures', [
+                    'total_failed' => $failed,
+                    'errors' => $errors,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Stock zeroed for {$updated} listings",
+                'updated' => $updated,
+                'failed' => $failed,
+                'total' => count($offers),
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Refurbed: Zero stock operation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to zero stock: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Manually trigger Refurbed listing sync
+     */
+    public function syncListings(): JsonResponse
+    {
+        try {
+            set_time_limit(300); // 5 minutes
+
+            $command = new FunctionsThirty();
+
+            // Capture output
+            ob_start();
+            $command->get_refurbed_listings();
+            $output = ob_get_clean();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Refurbed listing sync completed',
+                'output' => $output,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Refurbed: Manual sync failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sync failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Update all Refurbed stock quantities based on system variation->listed_stock
+     */
+    public function updateStockFromSystem(): JsonResponse
+    {
+        try {
+            set_time_limit(300); // 5 minutes
+
+            $updated = 0;
+            $failed = 0;
+            $skipped = 0;
+            $errors = [];
+
+            // Get ALL offers from Refurbed API (with automatic pagination)
+            $response = $this->refurbed->getAllOffers();
+            $offers = $response['offers'] ?? [];
+
+            if (empty($offers)) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No Refurbed offers found',
+                    'updated' => 0,
+                ]);
+            }
+
+            foreach ($offers as $offer) {
+                try {
+                    $sku = $offer['sku'] ?? null;
+
+                    if (!$sku) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Find variation in local system by SKU
+                    $variation = \App\Models\Variation_model::where('sku', $sku)->first();
+
+                    if (!$variation) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $systemStock = (int) ($variation->listed_stock ?? 0);
+
+                    // Update offer quantity to match system stock via Refurbed API
+                    $identifier = ['sku' => $sku];
+                    $updates = ['quantity' => $systemStock];
+
+                    $this->refurbed->updateOffer($identifier, $updates);
+
+                    $updated++;
+
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'sku' => $offer['sku'] ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+                }
+            }
+
+            // Log consolidated results
+            Log::info('Refurbed: Stock update from system completed', [
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => count($offers),
+            ]);
+
+            // Log errors separately if any
+            if (!empty($errors)) {
+                Log::error('Refurbed: Stock update had failures', [
+                    'total_failed' => $failed,
+                    'errors' => $errors,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Stock updated for {$updated} listings from system variation->listed_stock",
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => count($offers),
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Refurbed: Update stock from system failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update stock: ' . $e->getMessage(),
+            ], 500);
+        }
     }
 }
