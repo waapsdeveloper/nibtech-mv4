@@ -153,8 +153,9 @@ class FunctionsThirty extends Command
             $totalProcessed = 0;
 
             do {
-                // Fetch active offers from Refurbed
-                $filter = ['state' => ['any_of' => ['ACTIVE']]];
+                // Fetch all offers from Refurbed (state filter removed - use empty filter or correct enum values)
+                // Refurbed uses different state enum values than 'ACTIVE'
+                $filter = []; // Fetch all offers regardless of state
                 $pagination = array_filter([
                     'page_size' => $pageSize,
                     'page_token' => $pageToken,
@@ -229,10 +230,15 @@ class FunctionsThirty extends Command
                         }
 
                         // Set state based on offer state
+                        // Refurbed uses enum values like OFFER_STATE_ACTIVE, OFFER_STATE_INACTIVE, etc.
                         $stateMap = [
+                            'OFFER_STATE_ACTIVE' => 1,
                             'ACTIVE' => 1,
+                            'OFFER_STATE_INACTIVE' => 2,
                             'INACTIVE' => 2,
+                            'OFFER_STATE_PAUSED' => 2,
                             'PAUSED' => 2,
+                            'OFFER_STATE_OUT_OF_STOCK' => 3,
                             'OUT_OF_STOCK' => 3,
                         ];
                         $variation->state = $stateMap[$state] ?? 1;
