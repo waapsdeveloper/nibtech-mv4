@@ -174,7 +174,7 @@ class RefurbedListingsController extends Controller
                     $response = $this->refurbed->updateOffer($identifier, $updates);
 
                     $updated++;
-                    
+
                     // Add delay after each request to prevent rate limiting
                     usleep(1000000); // 1 second delay after each update
 
@@ -184,7 +184,7 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
-                    
+
                     // Add longer delay after error (likely rate limit)
                     usleep(2000000); // 2 second delay after error
                 }
@@ -310,7 +310,7 @@ class RefurbedListingsController extends Controller
                     $this->refurbed->updateOffer($identifier, $updates);
 
                     $updated++;
-                    
+
                     // Add delay after each request to prevent rate limiting
                     usleep(1000000); // 1 second delay after each update
 
@@ -320,7 +320,7 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
-                    
+
                     // Add longer delay after error (likely rate limit)
                     usleep(2000000); // 2 second delay after error
                 }
