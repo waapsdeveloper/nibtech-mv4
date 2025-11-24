@@ -62,6 +62,8 @@ Route::group(['middleware' => ['internal.only']], function () {
             ->name('refurbed.listings.active');
         Route::get('/listings/zero-stock', [RefurbedListingsController::class, 'zeroStock'])
             ->name('refurbed.listings.zero_stock');
+        Route::get('/listings/sync', [RefurbedListingsController::class, 'syncListings'])
+            ->name('refurbed.listings.sync');
     });
 
     Route::get('/bmpro/listings/test', [BMPROListingsController::class, 'index'])
