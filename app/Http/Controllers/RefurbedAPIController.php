@@ -190,19 +190,7 @@ class RefurbedAPIController extends Controller
                 'page_token' => $pageToken,
             ]);
 
-            // Log::info("Refurbed: Fetching page", [
-            //     'page' => $pageCount + 1,
-            //     'page_token' => $pageToken ? substr($pageToken, 0, 30) : 'initial',
-            //     'current_total' => count($allOffers)
-            // ]);
-
             $response = $this->listOffers($filter, $pagination, $sort);
-
-            // Log::info("Refurbed: Page response", [
-            //     'offers_count' => count($response['offers'] ?? []),
-            //     'has_more' => $response['has_more'] ?? false,
-            //     'response_keys' => array_keys($response)
-            // ]);
 
             if (!empty($response['offers'])) {
                 $allOffers = array_merge($allOffers, $response['offers']);
@@ -224,10 +212,10 @@ class RefurbedAPIController extends Controller
             }
         }
 
-        // Log::info("Refurbed: Pagination complete", [
-        //     'total_pages' => $pageCount,
-        //     'total_offers' => count($allOffers)
-        // ]);
+        Log::info("Refurbed: Fetched all offers", [
+            'total_pages' => $pageCount,
+            'total_offers' => count($allOffers)
+        ]);
 
         return [
             'offers' => $allOffers,
