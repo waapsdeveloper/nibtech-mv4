@@ -50,13 +50,14 @@ class RefurbedListingsController extends Controller
     public function active(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
-        $states = $this->normalizeList($request->input('state'), ['ACTIVE']);
+        // Note: Refurbed uses different state enum values (OFFER_STATE_ACTIVE, etc.)
+        // For now, fetch all offers without state filter
+        $states = $this->normalizeList($request->input('state'), []);
 
-        $filter = [
-            'state' => [
-                'any_of' => $states,
-            ],
-        ];
+        $filter = [];
+        if (!empty($states)) {
+            $filter['state'] = ['any_of' => $states];
+        }
 
         $pagination = $this->buildPagination($perPage, $request->input('page_token'));
         $sort = $this->buildSort(
