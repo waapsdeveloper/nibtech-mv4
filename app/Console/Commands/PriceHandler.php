@@ -98,7 +98,7 @@ class PriceHandler extends Command
                     }
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $listing = Listing_model::firstOrNew(['reference_uuid' => $list->id, 'country' => $country->id, 'marketplace_id' => 1]);
+                $listing = Listing_model::firstOrNew(['reference_uuid' => $reference, 'country' => $country->id, 'marketplace_id' => 1]);
                 if($country == null){
                     $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
                     continue;
