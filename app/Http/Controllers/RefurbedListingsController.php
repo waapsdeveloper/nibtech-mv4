@@ -202,4 +202,38 @@ class RefurbedListingsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Manually trigger Refurbed listing sync
+     */
+    public function syncListings(): JsonResponse
+    {
+        try {
+            set_time_limit(300); // 5 minutes
+
+            $command = new \App\Console\Commands\FunctionsThirty();
+
+            // Capture output
+            ob_start();
+            $command->get_refurbed_listings();
+            $output = ob_get_clean();
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Refurbed listing sync completed',
+                'output' => $output,
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Refurbed: Manual sync failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Sync failed: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
