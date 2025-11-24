@@ -104,7 +104,7 @@ class PriceHandler extends Command
                     continue;
                 }
                 if(!isset($list->id)){
-                    $error .= "No listing ID found for market: " . $list->market . " for variation: " . $reference . "\n";
+                    $error .= "No listing ID found for market: " . $list->market . " for variation: " . $list . "\n";
                     continue;
                 }
                 $listing->reference_uuid = $list->id;
