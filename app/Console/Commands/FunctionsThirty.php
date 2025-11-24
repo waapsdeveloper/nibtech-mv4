@@ -271,22 +271,52 @@ class FunctionsThirty extends Command
                             'marketplace_id' => $marketplaceId
                         ]);
 
+                        // Core price fields
                         $listing->price = $priceAmount;
                         $listing->currency_id = $currency->id;
                         $listing->reference_uuid = $offerId;
 
+                        // Name/Title
                         if ($listing->name == null && $title) {
                             $listing->name = $title;
                         }
 
-                        // Refurbed might not have min/max price in the same way
-                        // These fields might come from different API endpoints
+                        // Min/Max price from offer (if available)
                         if (isset($offer['min_price'])) {
                             $listing->min_price = $offer['min_price'];
                         }
                         if (isset($offer['max_price'])) {
                             $listing->max_price = $offer['max_price'];
                         }
+
+                        // Price limits (can be set based on business logic)
+                        if (isset($offer['price_limit']) || isset($offer['maximum_price'])) {
+                            $listing->price_limit = $offer['price_limit'] ?? $offer['maximum_price'] ?? null;
+                        }
+                        if (isset($offer['min_price_limit']) || isset($offer['minimum_price'])) {
+                            $listing->min_price_limit = $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null;
+                        }
+
+                        // Buybox fields (Refurbed might not have these, set to null or default)
+                        // These are primarily for BackMarket competitive pricing
+                        // $listing->buybox = null; // Not applicable for Refurbed
+                        // $listing->buybox_price = null;
+                        // $listing->buybox_winner_price = null;
+
+                        // Target pricing (for automated pricing strategies)
+                        // Can be set later via admin panel or pricing rules
+                        // $listing->target_price = null;
+                        // $listing->target_percentage = null;
+
+                        // Handler and status
+                        // handler_status: null or specific value based on sync status
+                        // status: 1 = active, 0 = inactive
+                        if (!$listing->exists) {
+                            $listing->status = 1; // Active by default for new listings
+                        }
+
+                        // Admin ID - can be set if you want to track who manages this listing
+                        // $listing->admin_id = null; // Set if needed
 
                         $listing->save();
                         $totalProcessed++;
