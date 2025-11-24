@@ -137,6 +137,12 @@ class RefurbedListingsController extends Controller
             $filter = [
                 'quantity' => ['greater_than' => 0]
             ];
+
+            // Check if specific SKU is requested
+            if (request()->has('sku')) {
+                $filter['sku'] = ['equals' => request('sku')];
+            }
+
             $sort = [
                 'order_by' => 'quantity',
                 'direction' => 'DESC'
@@ -160,11 +166,6 @@ class RefurbedListingsController extends Controller
                         continue;
                     }
 
-                    // Add delay to prevent rate limiting (every 10 requests)
-                    if ($index > 0 && $index % 10 === 0) {
-                        usleep(500000); // 500ms delay every 10 updates
-                    }
-
                     // Update offer quantity to 0 via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
@@ -173,6 +174,9 @@ class RefurbedListingsController extends Controller
                     $response = $this->refurbed->updateOffer($identifier, $updates);
 
                     $updated++;
+                    
+                    // Add delay after each request to prevent rate limiting
+                    usleep(1000000); // 1 second delay after each update
 
                 } catch (\Exception $e) {
                     $failed++;
@@ -180,6 +184,9 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
+                    
+                    // Add longer delay after error (likely rate limit)
+                    usleep(2000000); // 2 second delay after error
                 }
             }
 
@@ -295,11 +302,6 @@ class RefurbedListingsController extends Controller
 
                     $systemStock = (int) ($variation->listed_stock ?? 0);
 
-                    // Add delay to prevent rate limiting (every 10 requests)
-                    if ($updated > 0 && $updated % 10 === 0) {
-                        usleep(500000); // 500ms delay every 10 updates
-                    }
-
                     // Update offer quantity to match system stock via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
@@ -308,6 +310,9 @@ class RefurbedListingsController extends Controller
                     $this->refurbed->updateOffer($identifier, $updates);
 
                     $updated++;
+                    
+                    // Add delay after each request to prevent rate limiting
+                    usleep(1000000); // 1 second delay after each update
 
                 } catch (\Exception $e) {
                     $failed++;
@@ -315,6 +320,9 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
+                    
+                    // Add longer delay after error (likely rate limit)
+                    usleep(2000000); // 2 second delay after error
                 }
             }
 
