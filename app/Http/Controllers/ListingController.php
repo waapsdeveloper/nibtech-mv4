@@ -639,8 +639,8 @@ class ListingController extends Controller
                     });
                 }
                 $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id, 'marketplace_id' => 1]);
-                if(isset($list->id)){
-                    $listing->reference_uuid = $list->id;
+                if(isset($list->listing_id)){
+                    $listing->reference_uuid_2 = $list->listing_id;
                 }
 
                 if($list->price != null){

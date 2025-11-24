@@ -709,7 +709,7 @@
                         listingsTable += `
                             <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
                                 <td title="${listing.id} ${countries[listing.country].title}">
-                                    <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid}" target="_blank">
+                                    <a href="https://www.backmarket.${countries[listing.country].market_url}/${countries[listing.country].market_code}/p/gb/${listing.reference_uuid_2}" target="_blank">
                                     <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
                                     ${countries[listing.country].code}
                                     </a>
