@@ -655,7 +655,7 @@
                                         @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                        @if (request('invoice') && isset($stock) && $item->status == 2 && !session()->has('refresh'))
+                                        @if ((request('invoice') || request('packing')) && isset($stock) && $item->status == 2 && !session()->has('refresh'))
                                             @php
                                                 session()->put('refresh', true);
                                             @endphp
