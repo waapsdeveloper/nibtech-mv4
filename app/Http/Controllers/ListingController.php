@@ -630,7 +630,7 @@ class ListingController extends Controller
                     continue;
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->get();
+                $listings = Listing_model::where('variation_id',$id)->where('country',$country->id)->where('marketplace_id', 1)->get();
                 if($listings->count() > 1){
                     $listings->each(function($listing, $key) {
                         if ($key > 0) {
