@@ -127,32 +127,31 @@ class RefurbedListingsController extends Controller
     public function zeroStock(): JsonResponse
     {
         try {
+            set_time_limit(300); // 5 minutes
+
             $updated = 0;
             $failed = 0;
             $errors = [];
 
-            // Get all Refurbed listings (marketplace_id = 4)
-            $listings = Listing_model::where('marketplace_id', 4)
-                ->with('variation')
-                ->get();
+            // Get ALL offers from Refurbed API (with automatic pagination)
+            $response = $this->refurbed->getAllOffers();
+            $offers = $response['offers'] ?? [];
 
-            if ($listings->isEmpty()) {
+            if (empty($offers)) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'No Refurbed listings found',
+                    'message' => 'No Refurbed offers found',
                     'updated' => 0,
                 ]);
             }
 
-            foreach ($listings as $listing) {
+            foreach ($offers as $offer) {
                 try {
-                    $variation = $listing->variation;
+                    $sku = $offer['sku'] ?? null;
 
-                    if (!$variation) {
+                    if (!$sku) {
                         continue;
                     }
-
-                    $sku = $variation->sku;
 
                     // Update offer quantity to 0 via Refurbed API
                     $identifier = ['sku' => $sku];
@@ -160,16 +159,12 @@ class RefurbedListingsController extends Controller
 
                     $this->refurbed->updateOffer($identifier, $updates);
 
-                    // Update local database
-                    $variation->listed_stock = 0;
-                    $variation->save();
-
                     $updated++;
 
                 } catch (\Exception $e) {
                     $failed++;
                     $errors[] = [
-                        'sku' => $variation->sku ?? 'unknown',
+                        'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
                 }
@@ -188,7 +183,7 @@ class RefurbedListingsController extends Controller
                 'message' => "Stock zeroed for {$updated} listings",
                 'updated' => $updated,
                 'failed' => $failed,
-                'total' => $listings->count(),
+                'total' => count($offers),
                 'errors' => $errors,
             ]);
 
@@ -252,29 +247,35 @@ class RefurbedListingsController extends Controller
             $skipped = 0;
             $errors = [];
 
-            // Get all Refurbed listings (marketplace_id = 4) with their variations
-            $listings = Listing_model::where('marketplace_id', 4)
-                ->with('variation')
-                ->get();
+            // Get ALL offers from Refurbed API (with automatic pagination)
+            $response = $this->refurbed->getAllOffers();
+            $offers = $response['offers'] ?? [];
 
-            if ($listings->isEmpty()) {
+            if (empty($offers)) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'No Refurbed listings found',
+                    'message' => 'No Refurbed offers found',
                     'updated' => 0,
                 ]);
             }
 
-            foreach ($listings as $listing) {
+            foreach ($offers as $offer) {
                 try {
-                    $variation = $listing->variation;
+                    $sku = $offer['sku'] ?? null;
+
+                    if (!$sku) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    // Find variation in local system by SKU
+                    $variation = \App\Models\Variation_model::where('sku', $sku)->first();
 
                     if (!$variation) {
                         $skipped++;
                         continue;
                     }
 
-                    $sku = $variation->sku;
                     $systemStock = (int) ($variation->listed_stock ?? 0);
 
                     // Update offer quantity to match system stock via Refurbed API
@@ -288,7 +289,7 @@ class RefurbedListingsController extends Controller
                 } catch (\Exception $e) {
                     $failed++;
                     $errors[] = [
-                        'sku' => $variation->sku ?? 'unknown',
+                        'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
                 }
@@ -299,7 +300,7 @@ class RefurbedListingsController extends Controller
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
-                'total' => $listings->count(),
+                'total' => count($offers),
             ]);
 
             // Log errors separately if any
@@ -316,7 +317,7 @@ class RefurbedListingsController extends Controller
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
-                'total' => $listings->count(),
+                'total' => count($offers),
                 'errors' => $errors,
             ]);
 
