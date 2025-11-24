@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
+use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
@@ -40,6 +41,7 @@ class FunctionsThirty extends Command
         $this->get_listings();
         echo 'sad';
         $this->get_listingsBi();
+        $this->get_refurbed_listings();
 
         return 0;
     }
@@ -137,5 +139,177 @@ class FunctionsThirty extends Command
             }
         }
         // $list = $bm->getOneListing($itemObj->listing_id);
+    }
+
+    public function get_refurbed_listings(){
+        $refurbed = new RefurbedAPIController();
+        
+        // marketplace_id = 4 for Refurbed (1=BackMarket, 2=BMPRO EUR, 3=BMPRO GBP)
+        $marketplaceId = 4;
+        
+        try {
+            $pageToken = null;
+            $pageSize = 100; // Similar to BackMarket optimization
+            $totalProcessed = 0;
+            
+            do {
+                // Fetch active offers from Refurbed
+                $filter = ['state' => ['any_of' => ['ACTIVE']]];
+                $pagination = array_filter([
+                    'page_size' => $pageSize,
+                    'page_token' => $pageToken,
+                ]);
+                
+                $response = $refurbed->listOffers($filter, $pagination);
+                
+                if (empty($response['offers'])) {
+                    Log::info("Refurbed: No offers found on this page");
+                    break;
+                }
+                
+                $offers = $response['offers'];
+                Log::info("Refurbed: Processing " . count($offers) . " offers");
+                
+                foreach ($offers as $offer) {
+                    try {
+                        // Extract offer details (adjust field names based on actual API response)
+                        $offerId = $offer['id'] ?? $offer['offer_id'] ?? null;
+                        $sku = $offer['sku'] ?? $offer['merchant_sku'] ?? null;
+                        $productId = $offer['product_id'] ?? null;
+                        $state = $offer['state'] ?? 'ACTIVE';
+                        
+                        // Price information (Refurbed uses price object similar to BackMarket)
+                        $priceAmount = $offer['price']['amount'] ?? $offer['price'] ?? null;
+                        $priceCurrency = $offer['price']['currency'] ?? $offer['currency'] ?? 'EUR';
+                        
+                        // Stock information
+                        $quantity = $offer['quantity'] ?? $offer['stock'] ?? 0;
+                        
+                        // Product details
+                        $title = $offer['title'] ?? $offer['product_title'] ?? null;
+                        $condition = $offer['condition'] ?? $offer['grade'] ?? null;
+                        
+                        // Country/region (Refurbed might not have country-specific listings like BackMarket)
+                        // Defaulting to a general country code, adjust as needed
+                        $countryCode = $offer['country'] ?? $offer['region'] ?? 'DE'; // Germany as default for Refurbed
+                        
+                        if (empty($sku)) {
+                            Log::warning("Refurbed: Offer missing SKU", ['offer_id' => $offerId]);
+                            continue;
+                        }
+                        
+                        // Find or create variation based on SKU
+                        $variation = Variation_model::firstOrNew(['sku' => trim($sku)]);
+                        
+                        // Update variation if new
+                        if (!$variation->exists) {
+                            $variation->reference_id = $offerId;
+                            $variation->status = 1;
+                            echo $offerId." (new) ";
+                        }
+                        
+                        // Update variation fields
+                        if ($variation->name == null && $title) {
+                            $variation->name = $title;
+                        }
+                        if ($variation->reference_uuid == null && $productId) {
+                            $variation->reference_uuid = $productId;
+                        }
+                        
+                        // Map Refurbed condition to grade (adjust mapping as needed)
+                        if ($condition) {
+                            $gradeMap = [
+                                'NEW' => 1,
+                                'EXCELLENT' => 2,
+                                'VERY_GOOD' => 3,
+                                'GOOD' => 4,
+                                'FAIR' => 5,
+                            ];
+                            $variation->grade = $gradeMap[strtoupper($condition)] ?? 3;
+                        }
+                        
+                        // Set state based on offer state
+                        $stateMap = [
+                            'ACTIVE' => 1,
+                            'INACTIVE' => 2,
+                            'PAUSED' => 2,
+                            'OUT_OF_STOCK' => 3,
+                        ];
+                        $variation->state = $stateMap[$state] ?? 1;
+                        $variation->listed_stock = $quantity;
+                        
+                        $variation->save();
+                        
+                        // Get currency
+                        $currency = Currency_model::where('code', $priceCurrency)->first();
+                        if (!$currency) {
+                            Log::warning("Refurbed: Currency not found", ['currency' => $priceCurrency, 'sku' => $sku]);
+                            continue;
+                        }
+                        
+                        // Get country ID (might need to create a mapping table for Refurbed countries)
+                        $country = \App\Models\Country_model::where('code', $countryCode)->first();
+                        if (!$country) {
+                            Log::warning("Refurbed: Country not found", ['country' => $countryCode, 'sku' => $sku]);
+                            // Default to first country or skip
+                            $country = \App\Models\Country_model::first();
+                            if (!$country) {
+                                continue;
+                            }
+                        }
+                        
+                        // Create or update listing
+                        $listing = Listing_model::firstOrNew([
+                            'country' => $country->id,
+                            'variation_id' => $variation->id,
+                            'marketplace_id' => $marketplaceId
+                        ]);
+                        
+                        $listing->price = $priceAmount;
+                        $listing->currency_id = $currency->id;
+                        $listing->reference_uuid = $offerId;
+                        
+                        if ($listing->name == null && $title) {
+                            $listing->name = $title;
+                        }
+                        
+                        // Refurbed might not have min/max price in the same way
+                        // These fields might come from different API endpoints
+                        if (isset($offer['min_price'])) {
+                            $listing->min_price = $offer['min_price'];
+                        }
+                        if (isset($offer['max_price'])) {
+                            $listing->max_price = $offer['max_price'];
+                        }
+                        
+                        $listing->save();
+                        $totalProcessed++;
+                        
+                    } catch (\Exception $e) {
+                        Log::error("Refurbed: Error processing offer", [
+                            'offer_id' => $offerId ?? 'unknown',
+                            'error' => $e->getMessage()
+                        ]);
+                        continue;
+                    }
+                }
+                
+                // Get next page token for pagination
+                $pageToken = $response['next_page_token'] ?? null;
+                
+                echo "\nRefurbed: Processed page, total: {$totalProcessed} ";
+                
+            } while ($pageToken); // Continue while there are more pages
+            
+            Log::info("Refurbed: Completed listing sync", ['total_processed' => $totalProcessed]);
+            echo "\nRefurbed sync complete: {$totalProcessed} offers processed\n";
+            
+        } catch (\Exception $e) {
+            Log::error("Refurbed: Fatal error in get_refurbed_listings", [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            echo "\nRefurbed sync failed: " . $e->getMessage() . "\n";
+        }
     }
 }
