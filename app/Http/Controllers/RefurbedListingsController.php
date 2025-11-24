@@ -133,8 +133,15 @@ class RefurbedListingsController extends Controller
             $failed = 0;
             $errors = [];
 
-            // Get ALL offers from Refurbed API (with automatic pagination)
-            $response = $this->refurbed->getAllOffers();
+            // Get ALL offers from Refurbed API (with automatic pagination), sorted by stock descending, stock > 0
+            $filter = [
+                'quantity' => ['greater_than' => 0]
+            ];
+            $sort = [
+                'order_by' => 'quantity',
+                'direction' => 'DESC'
+            ];
+            $response = $this->refurbed->getAllOffers($filter, $sort);
             $offers = $response['offers'] ?? [];
 
             if (empty($offers)) {
@@ -248,8 +255,12 @@ class RefurbedListingsController extends Controller
             $skipped = 0;
             $errors = [];
 
-            // Get ALL offers from Refurbed API (with automatic pagination)
-            $response = $this->refurbed->getAllOffers();
+            // Get ALL offers from Refurbed API (with automatic pagination), sorted by stock descending
+            $sort = [
+                'order_by' => 'quantity',
+                'direction' => 'DESC'
+            ];
+            $response = $this->refurbed->getAllOffers([], $sort);
             $offers = $response['offers'] ?? [];
 
             if (empty($offers)) {
