@@ -148,16 +148,32 @@ class RefurbedListingsController extends Controller
             foreach ($offers as $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
+                    $offerId = $offer['id'] ?? null;
 
                     if (!$sku) {
                         continue;
                     }
 
                     // Update offer quantity to 0 via Refurbed API
-                    $identifier = ['sku' => $sku];
+                    // Try using both SKU and ID for better matching
+                    $identifier = array_filter([
+                        'sku' => $sku,
+                        'id' => $offerId,
+                    ]);
+
                     $updates = ['quantity' => 0];
 
-                    $this->refurbed->updateOffer($identifier, $updates);
+                    Log::info("Refurbed: Updating offer to zero stock", [
+                        'identifier' => $identifier,
+                        'updates' => $updates
+                    ]);
+
+                    $response = $this->refurbed->updateOffer($identifier, $updates);
+
+                    Log::info("Refurbed: Update response", [
+                        'sku' => $sku,
+                        'response' => $response
+                    ]);
 
                     $updated++;
 
@@ -167,6 +183,11 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
+
+                    Log::error("Refurbed: Update failed", [
+                        'sku' => $sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ]);
                 }
             }
 
