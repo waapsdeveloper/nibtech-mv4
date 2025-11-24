@@ -3132,18 +3132,18 @@ class Order extends Component
         $scriptStatements[] = '(async function() {';
         $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
 
+        $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
+        $scriptStatements[] = '    await delay(300);';
         if ($packingEnabled) {
             if ($label_url) {
                 $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
-                $scriptStatements[] = '    await delay(600);';
+                $scriptStatements[] = '    await delay(300);';
             }
             if ($delivery_print_url) {
                 $scriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
-                $scriptStatements[] = '    await delay(600);';
             }
         }
 
-        $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
 
         if ($packingEnabled && $trackingPromptValue) {
             $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
