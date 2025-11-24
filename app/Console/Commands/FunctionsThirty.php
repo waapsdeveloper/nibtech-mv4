@@ -148,33 +148,26 @@ class FunctionsThirty extends Command
         $marketplaceId = 4;
 
         try {
-            $pageToken = null;
-            $pageSize = 100; // Similar to BackMarket optimization
+            echo "Fetching all Refurbed offers...\n";
+
+            // Use the new getAllOffers method which handles pagination automatically
+            $response = $refurbed->getAllOffers([], [], 100);
+
+            $offers = $response['offers'] ?? [];
+            $totalOffers = $response['total'] ?? count($offers);
+
+            Log::info("Refurbed: Fetched all offers", ['total' => $totalOffers]);
+            echo "Total offers fetched: {$totalOffers}\n";
+
+            if (empty($offers)) {
+                Log::info("Refurbed: No offers found");
+                echo "No offers found\n";
+                return;
+            }
+
             $totalProcessed = 0;
 
-            do {
-                // Fetch all offers from Refurbed (state filter removed - use empty filter or correct enum values)
-                // Refurbed uses different state enum values than 'ACTIVE'
-                $filter = []; // Fetch all offers regardless of state
-                $pagination = array_filter([
-                    'page_size' => $pageSize,
-                    'page_token' => $pageToken,
-                ]);
-
-                $response = $refurbed->listOffers($filter, $pagination);
-
-                if (empty($response['offers'])) {
-                    Log::info("Refurbed: No offers found on this page");
-                    break;
-                }
-
-                $offers = $response['offers'];
-                Log::info("Refurbed: Processing " . count($offers) . " offers", [
-                    'page_token' => $pageToken ?? 'initial',
-                    'response_keys' => array_keys($response)
-                ]);
-
-                foreach ($offers as $offer) {
+            foreach ($offers as $offer) {
                     try {
                         // Extract offer details (adjust field names based on actual API response)
                         $offerId = $offer['id'] ?? $offer['offer_id'] ?? null;
@@ -333,26 +326,10 @@ class FunctionsThirty extends Command
                     }
                 }
 
-                // Get next page token for pagination
-                // Refurbed might use different field names for pagination
-                $pageToken = $response['next_page_token']
-                    ?? $response['nextPageToken']
-                    ?? $response['pagination']['next_page_token']
-                    ?? $response['pagination']['nextPageToken']
-                    ?? null;
-
-                echo "\nRefurbed: Processed page, total: {$totalProcessed}, next_token: " . ($pageToken ? 'yes' : 'no') . " ";
-
-                Log::info("Refurbed: Page completed", [
-                    'total_processed' => $totalProcessed,
-                    'has_next_page' => !empty($pageToken),
-                    'next_token' => $pageToken ? substr($pageToken, 0, 20) . '...' : null
-                ]);
-
-            } while ($pageToken); // Continue while there are more pages
+                echo "Processed: {$totalProcessed}/{$totalOffers}\n";
 
             Log::info("Refurbed: Completed listing sync", ['total_processed' => $totalProcessed]);
-            echo "\nRefurbed sync complete: {$totalProcessed} offers processed\n";
+            echo "Refurbed sync complete: {$totalProcessed} offers processed\n";
 
         } catch (\Exception $e) {
             Log::error("Refurbed: Fatal error in get_refurbed_listings", [
