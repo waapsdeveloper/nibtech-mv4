@@ -148,32 +148,17 @@ class RefurbedListingsController extends Controller
             foreach ($offers as $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
-                    $offerId = $offer['id'] ?? null;
 
                     if (!$sku) {
                         continue;
                     }
 
                     // Update offer quantity to 0 via Refurbed API
-                    // Try using both SKU and ID for better matching
-                    $identifier = array_filter([
-                        'sku' => $sku,
-                        'id' => $offerId,
-                    ]);
-
+                    // Use only SKU (oneof field - cannot use both sku and id)
+                    $identifier = ['sku' => $sku];
                     $updates = ['quantity' => 0];
 
-                    Log::info("Refurbed: Updating offer to zero stock", [
-                        'identifier' => $identifier,
-                        'updates' => $updates
-                    ]);
-
                     $response = $this->refurbed->updateOffer($identifier, $updates);
-
-                    Log::info("Refurbed: Update response", [
-                        'sku' => $sku,
-                        'response' => $response
-                    ]);
 
                     $updated++;
 
@@ -183,11 +168,6 @@ class RefurbedListingsController extends Controller
                         'sku' => $offer['sku'] ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
-
-                    Log::error("Refurbed: Update failed", [
-                        'sku' => $sku ?? 'unknown',
-                        'error' => $e->getMessage(),
-                    ]);
                 }
             }
 
@@ -300,6 +280,7 @@ class RefurbedListingsController extends Controller
                     $systemStock = (int) ($variation->listed_stock ?? 0);
 
                     // Update offer quantity to match system stock via Refurbed API
+                    // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
                     $updates = ['quantity' => $systemStock];
 
