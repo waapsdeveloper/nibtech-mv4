@@ -638,7 +638,10 @@ class ListingController extends Controller
                     });
                 }
                 $listing = Listing_model::firstOrNew(['variation_id'=>$id, 'country'=>$country->id]);
-                $listing->reference_uuid = $list->id;
+                if($list->id){
+                    $listing->reference_uuid = $list->id;
+                }
+
                 if($list->price != null){
                     $listing->price = $list->price->amount;
                     $currency = Currency_model::where('code',$list->price->currency)->first();
