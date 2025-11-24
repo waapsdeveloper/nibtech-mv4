@@ -158,6 +158,9 @@ class RefurbedListingsController extends Controller
                 ]);
             }
 
+            // Only apply aggressive rate limiting for bulk operations (more than 10 items)
+            $isBulkOperation = count($offers) > 10;
+
             foreach ($offers as $index => $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
@@ -175,8 +178,10 @@ class RefurbedListingsController extends Controller
 
                     $updated++;
 
-                    // Add delay after each request to prevent rate limiting
-                    usleep(1000000); // 1 second delay after each update
+                    // Add delay only for bulk operations to prevent rate limiting
+                    if ($isBulkOperation) {
+                        usleep(100000); // 1 second delay for bulk updates
+                    }
 
                 } catch (\Exception $e) {
                     $failed++;
@@ -186,7 +191,9 @@ class RefurbedListingsController extends Controller
                     ];
 
                     // Add longer delay after error (likely rate limit)
-                    usleep(2000000); // 2 second delay after error
+                    if ($isBulkOperation) {
+                        usleep(200000); // 2 second delay after error
+                    }
                 }
             }
 
@@ -283,6 +290,9 @@ class RefurbedListingsController extends Controller
                 ]);
             }
 
+            // Only apply aggressive rate limiting for bulk operations (more than 10 items)
+            $isBulkOperation = count($offers) > 10;
+
             foreach ($offers as $index => $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
@@ -311,8 +321,10 @@ class RefurbedListingsController extends Controller
 
                     $updated++;
 
-                    // Add delay after each request to prevent rate limiting
-                    usleep(1000000); // 1 second delay after each update
+                    // Add delay only for bulk operations to prevent rate limiting
+                    if ($isBulkOperation) {
+                        usleep(1000000); // 1 second delay for bulk updates
+                    }
 
                 } catch (\Exception $e) {
                     $failed++;
@@ -322,7 +334,9 @@ class RefurbedListingsController extends Controller
                     ];
 
                     // Add longer delay after error (likely rate limit)
-                    usleep(2000000); // 2 second delay after error
+                    if ($isBulkOperation) {
+                        usleep(2000000); // 2 second delay after error
+                    }
                 }
             }
 
