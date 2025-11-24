@@ -169,7 +169,10 @@ class FunctionsThirty extends Command
                 }
 
                 $offers = $response['offers'];
-                Log::info("Refurbed: Processing " . count($offers) . " offers");
+                Log::info("Refurbed: Processing " . count($offers) . " offers", [
+                    'page_token' => $pageToken ?? 'initial',
+                    'response_keys' => array_keys($response)
+                ]);
 
                 foreach ($offers as $offer) {
                     try {
@@ -331,9 +334,20 @@ class FunctionsThirty extends Command
                 }
 
                 // Get next page token for pagination
-                $pageToken = $response['next_page_token'] ?? null;
+                // Refurbed might use different field names for pagination
+                $pageToken = $response['next_page_token']
+                    ?? $response['nextPageToken']
+                    ?? $response['pagination']['next_page_token']
+                    ?? $response['pagination']['nextPageToken']
+                    ?? null;
 
-                echo "\nRefurbed: Processed page, total: {$totalProcessed} ";
+                echo "\nRefurbed: Processed page, total: {$totalProcessed}, next_token: " . ($pageToken ? 'yes' : 'no') . " ";
+
+                Log::info("Refurbed: Page completed", [
+                    'total_processed' => $totalProcessed,
+                    'has_next_page' => !empty($pageToken),
+                    'next_token' => $pageToken ? substr($pageToken, 0, 20) . '...' : null
+                ]);
 
             } while ($pageToken); // Continue while there are more pages
 
