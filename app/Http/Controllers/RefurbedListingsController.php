@@ -2,8 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Console\Commands\FunctionsThirty;
+use App\Models\Listing_model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class RefurbedListingsController extends Controller
 {
@@ -129,7 +132,7 @@ class RefurbedListingsController extends Controller
             $errors = [];
 
             // Get all Refurbed listings (marketplace_id = 4)
-            $listings = \App\Models\Listing_model::where('marketplace_id', 4)
+            $listings = Listing_model::where('marketplace_id', 4)
                 ->with('variation')
                 ->get();
 
@@ -163,23 +166,21 @@ class RefurbedListingsController extends Controller
 
                     $updated++;
 
-                    \Illuminate\Support\Facades\Log::info('Refurbed: Zeroed stock', [
-                        'sku' => $sku,
-                        'listing_id' => $listing->id,
-                    ]);
-
                 } catch (\Exception $e) {
                     $failed++;
                     $errors[] = [
                         'sku' => $variation->sku ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
-
-                    \Illuminate\Support\Facades\Log::error('Refurbed: Failed to zero stock', [
-                        'sku' => $variation->sku ?? 'unknown',
-                        'error' => $e->getMessage(),
-                    ]);
                 }
+            }
+
+            // Log consolidated errors if any
+            if (!empty($errors)) {
+                Log::error('Refurbed: Zero stock operation had failures', [
+                    'total_failed' => $failed,
+                    'errors' => $errors,
+                ]);
             }
 
             return response()->json([
@@ -192,7 +193,7 @@ class RefurbedListingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Refurbed: Zero stock operation failed', [
+            Log::error('Refurbed: Zero stock operation failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -212,7 +213,7 @@ class RefurbedListingsController extends Controller
         try {
             set_time_limit(300); // 5 minutes
 
-            $command = new \App\Console\Commands\FunctionsThirty();
+            $command = new FunctionsThirty();
 
             // Capture output
             ob_start();
@@ -226,7 +227,7 @@ class RefurbedListingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Refurbed: Manual sync failed', [
+            Log::error('Refurbed: Manual sync failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
@@ -252,7 +253,7 @@ class RefurbedListingsController extends Controller
             $errors = [];
 
             // Get all Refurbed listings (marketplace_id = 4) with their variations
-            $listings = \App\Models\Listing_model::where('marketplace_id', 4)
+            $listings = Listing_model::where('marketplace_id', 4)
                 ->with('variation')
                 ->get();
 
@@ -284,24 +285,29 @@ class RefurbedListingsController extends Controller
 
                     $updated++;
 
-                    \Illuminate\Support\Facades\Log::info('Refurbed: Updated stock from system', [
-                        'sku' => $sku,
-                        'quantity' => $systemStock,
-                        'listing_id' => $listing->id,
-                    ]);
-
                 } catch (\Exception $e) {
                     $failed++;
                     $errors[] = [
                         'sku' => $variation->sku ?? 'unknown',
                         'error' => $e->getMessage(),
                     ];
-
-                    \Illuminate\Support\Facades\Log::error('Refurbed: Failed to update stock from system', [
-                        'sku' => $variation->sku ?? 'unknown',
-                        'error' => $e->getMessage(),
-                    ]);
                 }
+            }
+
+            // Log consolidated results
+            Log::info('Refurbed: Stock update from system completed', [
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => $listings->count(),
+            ]);
+
+            // Log errors separately if any
+            if (!empty($errors)) {
+                Log::error('Refurbed: Stock update had failures', [
+                    'total_failed' => $failed,
+                    'errors' => $errors,
+                ]);
             }
 
             return response()->json([
@@ -315,7 +321,7 @@ class RefurbedListingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            \Illuminate\Support\Facades\Log::error('Refurbed: Update stock from system failed', [
+            Log::error('Refurbed: Update stock from system failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
