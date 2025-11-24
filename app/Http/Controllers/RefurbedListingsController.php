@@ -172,7 +172,7 @@ class RefurbedListingsController extends Controller
                     // Update offer quantity to 0 via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
-                    $updates = ['quantity' => 0];
+                    $updates = ['stock' => 0];
 
                     $response = $this->refurbed->updateOffer($identifier, $updates);
 
@@ -315,7 +315,7 @@ class RefurbedListingsController extends Controller
                     // Update offer quantity to match system stock via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
-                    $updates = ['quantity' => $systemStock];
+                    $updates = ['stock' => $systemStock];
 
                     $this->refurbed->updateOffer($identifier, $updates);
 
