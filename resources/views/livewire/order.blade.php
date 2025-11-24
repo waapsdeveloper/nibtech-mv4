@@ -1453,23 +1453,75 @@
                 }else{
                     var elem = document.getElementById(id);
                     if (elem) {
-                        elem.focus();
-                        elem.click();
-                        setTimeout(function(){
-                            if (elem) elem.focus();
-                            $('#imei').focus();
-                        }, 500);
+                        // Check if there are previous IMEI inputs (skipped orders)
+                        var currentImeiNumber = parseInt(id.replace('imei', ''));
+                        var allImeiInputs = document.querySelectorAll('input[id^="imei"]');
+                        var hasSkippedOrders = false;
+
+                        // Check if there are any IMEI inputs with lower numbers that are still empty
+                        for (var i = 0; i < allImeiInputs.length; i++) {
+                            var inputId = allImeiInputs[i].id;
+                            var inputNumber = parseInt(inputId.replace('imei', ''));
+                            if (inputNumber < currentImeiNumber && allImeiInputs[i].value === '') {
+                                hasSkippedOrders = true;
+                                break;
+                            }
+                        }
+
+                        // If no skipped orders, focus on current element
+                        if (!hasSkippedOrders) {
+                            elem.focus();
+                            elem.click();
+                            setTimeout(function(){
+                                if (elem) elem.focus();
+                                $('#imei').focus();
+                            }, 500);
+                        } else {
+                            // Find the first empty IMEI input and focus on it instead
+                            for (var i = 0; i < allImeiInputs.length; i++) {
+                                if (allImeiInputs[i].value === '') {
+                                    allImeiInputs[i].focus();
+                                    allImeiInputs[i].click();
+                                    break;
+                                }
+                            }
+                        }
                     }
                     document.addEventListener('DOMContentLoaded', function() {
                         var input = document.getElementById(id);
                         if (input) {
-                            input.focus();
-                            input.select();
-                            input.click();
-                            setTimeout(function(){
-                                if (input) input.focus();
-                                $('#imei').focus();
-                            }, 500);
+                            // Same logic for DOMContentLoaded
+                            var currentImeiNumber = parseInt(id.replace('imei', ''));
+                            var allImeiInputs = document.querySelectorAll('input[id^="imei"]');
+                            var hasSkippedOrders = false;
+
+                            for (var i = 0; i < allImeiInputs.length; i++) {
+                                var inputId = allImeiInputs[i].id;
+                                var inputNumber = parseInt(inputId.replace('imei', ''));
+                                if (inputNumber < currentImeiNumber && allImeiInputs[i].value === '') {
+                                    hasSkippedOrders = true;
+                                    break;
+                                }
+                            }
+
+                            if (!hasSkippedOrders) {
+                                input.focus();
+                                input.select();
+                                input.click();
+                                setTimeout(function(){
+                                    if (input) input.focus();
+                                    $('#imei').focus();
+                                }, 500);
+                            } else {
+                                for (var i = 0; i < allImeiInputs.length; i++) {
+                                    if (allImeiInputs[i].value === '') {
+                                        allImeiInputs[i].focus();
+                                        allImeiInputs[i].select();
+                                        allImeiInputs[i].click();
+                                        break;
+                                    }
+                                }
+                            }
                         }
                     });
                 }
