@@ -1447,6 +1447,23 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
+                // Check if tracking verification overlay is active
+                var trackingOverlay = document.getElementById('tracking-verify-overlay');
+                var trackingInput = document.getElementById('tracking-verify-input');
+
+                if (trackingOverlay && trackingOverlay.classList.contains('show') && trackingInput) {
+                    // If tracking overlay is active, focus on tracking input instead
+                    setTimeout(function() {
+                        trackingInput.focus();
+                        try {
+                            trackingInput.select();
+                        } catch (e) {
+                            // Ignore selection errors
+                        }
+                    }, 200);
+                    return;
+                }
+
                 // var skuInput = document.getElementById('sku_input');
                 // if (skuInput && skuInput.value === ''){
                 //     skuInput.focus();
@@ -1488,6 +1505,22 @@
                         }
                     }
                     document.addEventListener('DOMContentLoaded', function() {
+                        // Check again for tracking overlay in DOMContentLoaded
+                        var trackingOverlay = document.getElementById('tracking-verify-overlay');
+                        var trackingInput = document.getElementById('tracking-verify-input');
+
+                        if (trackingOverlay && trackingOverlay.classList.contains('show') && trackingInput) {
+                            setTimeout(function() {
+                                trackingInput.focus();
+                                try {
+                                    trackingInput.select();
+                                } catch (e) {
+                                    // Ignore selection errors
+                                }
+                            }, 200);
+                            return;
+                        }
+
                         var input = document.getElementById(id);
                         if (input) {
                             // Same logic for DOMContentLoaded
@@ -1575,9 +1608,9 @@
             modal.find('.modal-body #item_id').val(item)
             })
 
-                $('.select2').select2({
-                    placeholder: "Exclude Topups",
-                });
+        $('.select2').select2({
+            placeholder: "Exclude Topups",
+        });
 
         // function get_customer_previous_orders(customer_id, order_id){
         //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
