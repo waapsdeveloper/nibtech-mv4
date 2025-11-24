@@ -1,28 +1,18 @@
 <?php
 
 namespace App\Http\Livewire;
-    use App\Http\Controllers\BackMarketAPIController;
     use Livewire\Component;
     use App\Models\Variation_model;
     use App\Models\Products_model;
     use App\Models\Stock_model;
     use App\Models\Order_model;
     use App\Models\Order_item_model;
-    use App\Models\Order_status_model;
     use App\Models\Customer_model;
     use App\Models\Currency_model;
-    use App\Models\Country_model;
     use App\Models\Storage_model;
-    use Carbon\Carbon;
-    use App\Exports\OrdersExport;
-    use App\Exports\PickListExport;
-    use App\Exports\LabelsExport;
-    use App\Exports\DeliveryNotesExport;
-    use App\Exports\OrdersheetExport;
 use App\Exports\RepairsheetExport;
 use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
-    use App\Mail\InvoiceMail;
 use App\Models\Account_transaction_model;
 use App\Models\Api_request_model;
 use App\Models\Color_model;
@@ -34,8 +24,6 @@ use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Mail;
-
 
 class Repair extends Component
 {

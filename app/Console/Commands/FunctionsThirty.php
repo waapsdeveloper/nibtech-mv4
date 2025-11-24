@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\RefurbedAPIController;
+use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
@@ -38,9 +39,9 @@ class FunctionsThirty extends Command
     {
 
         ini_set('max_execution_time', 1200);
-        $this->get_listings();
+        // $this->get_listings();
         echo 'sad';
-        $this->get_listingsBi();
+        // $this->get_listingsBi();
         $this->get_refurbed_listings();
 
         return 0;
@@ -250,11 +251,11 @@ class FunctionsThirty extends Command
                         }
 
                         // Get country ID (might need to create a mapping table for Refurbed countries)
-                        $country = \App\Models\Country_model::where('code', $countryCode)->first();
+                        $country = Country_model::where('code', $countryCode)->first();
                         if (!$country) {
                             Log::warning("Refurbed: Country not found", ['country' => $countryCode, 'sku' => $sku]);
                             // Default to first country or skip
-                            $country = \App\Models\Country_model::first();
+                            $country = Country_model::first();
                             if (!$country) {
                                 continue;
                             }
@@ -293,20 +294,6 @@ class FunctionsThirty extends Command
                             $listing->min_price_limit = $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null;
                         }
 
-                        // Buybox fields (Refurbed might not have these, set to null or default)
-                        // These are primarily for BackMarket competitive pricing
-                        // $listing->buybox = null; // Not applicable for Refurbed
-                        // $listing->buybox_price = null;
-                        // $listing->buybox_winner_price = null;
-
-                        // Target pricing (for automated pricing strategies)
-                        // Can be set later via admin panel or pricing rules
-                        // $listing->target_price = null;
-                        // $listing->target_percentage = null;
-
-                        // Handler and status
-                        // handler_status: null or specific value based on sync status
-                        // status: 1 = active, 0 = inactive
                         if (!$listing->exists) {
                             $listing->status = 1; // Active by default for new listings
                         }

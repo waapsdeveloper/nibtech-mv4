@@ -3085,6 +3085,7 @@ class Order extends Component
 
         $invoice_url = url('export_invoice').'/'.$id;
         $packingEnabled = (string) request('packing') === '1';
+        $noInvoice = (string) request('no_invoice') === '1';
         $label_url = null;
         $delivery_print_url = null;
 
@@ -3101,6 +3102,34 @@ class Order extends Component
 
             if ($order->delivery_note_url) {
                 $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
+            }
+        }
+
+        // Send invoice via email if no_invoice is requested
+        if ($noInvoice && $order->customer && $order->customer->email) {
+            $order_items = Order_item_model::where('order_id', $id);
+            if($order_items->count() > 1){
+                $order_items = $order_items->whereHas('stock', function($q) {
+                    $q->where('status', 2)->orWhere('status',null);
+                })->get();
+            }else{
+                $order_items = $order_items->get();
+            }
+
+            $data = [
+                'order' => $order,
+                'customer' => $order->customer,
+                'orderItems' => $order_items,
+            ];
+
+            try {
+                Mail::to($order->customer->email)->queue(new InvoiceMail($data));
+            } catch (\Exception $e) {
+                try {
+                    Mail::mailer('smtp_secondary')->to($order->customer->email)->queue(new InvoiceMail($data));
+                } catch (\Exception $e2) {
+                    Log::error('Failed to send invoice email for order '.$id.': ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
+                }
             }
         }
         // $order = Order_model::find($order->id);
@@ -3132,18 +3161,26 @@ class Order extends Component
         $scriptStatements[] = '(async function() {';
         $scriptStatements[] = '    const delay = ms => new Promise(resolve => setTimeout(resolve, ms));';
 
-        if ($packingEnabled) {
-            if ($label_url) {
-                $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
-                $scriptStatements[] = '    await delay(600);';
+        // Only open invoice and delivery note if no_invoice is not set
+        if (!$noInvoice) {
+            $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
+            $scriptStatements[] = '    await delay(300);';
+            if ($packingEnabled) {
+                if ($label_url) {
+                    $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
+                    $scriptStatements[] = '    await delay(300);';
+                }
+                if ($delivery_print_url) {
+                    $scriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
+                }
             }
-            if ($delivery_print_url) {
-                $scriptStatements[] = '    window.open('.json_encode($delivery_print_url).', "_blank");';
-                $scriptStatements[] = '    await delay(600);';
+        } else {
+            // If no_invoice is set, only open label (not invoice or delivery note)
+            if ($packingEnabled && $label_url) {
+                $scriptStatements[] = '    window.open('.json_encode($label_url).', "_blank");';
             }
         }
 
-        $scriptStatements[] = '    window.open('.json_encode($invoice_url).', "_blank");';
 
         if ($packingEnabled && $trackingPromptValue) {
             $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
