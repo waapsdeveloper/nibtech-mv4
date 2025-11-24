@@ -102,8 +102,9 @@ class RefurbedAPIController extends Controller
         $allOffers = [];
         $pageToken = null;
         $pageCount = 0;
+        $hasMore = true;
 
-        do {
+        while ($hasMore) {
             $pagination = array_filter([
                 'page_size' => $pageSize,
                 'page_token' => $pageToken,
@@ -119,20 +120,20 @@ class RefurbedAPIController extends Controller
 
             Log::info("Refurbed: Page response", [
                 'offers_count' => count($response['offers'] ?? []),
-                'response_keys' => array_keys($response),
-                'has_next_token' => isset($response['next_page_token']) || isset($response['nextPageToken']) || isset($response['pagination']['next_page_token'])
+                'has_more' => $response['has_more'] ?? false,
+                'response_keys' => array_keys($response)
             ]);
 
             if (!empty($response['offers'])) {
                 $allOffers = array_merge($allOffers, $response['offers']);
+
+                // Use the last offer's ID as the page token for the next request
+                $lastOffer = end($response['offers']);
+                $pageToken = $lastOffer['id'] ?? null;
             }
 
-            // Check for next page token (try multiple possible field names)
-            $pageToken = $response['next_page_token']
-                ?? $response['nextPageToken']
-                ?? $response['pagination']['next_page_token']
-                ?? $response['pagination']['nextPageToken']
-                ?? null;
+            // Check has_more flag to determine if there are more pages
+            $hasMore = $response['has_more'] ?? false;
 
             $pageCount++;
 
@@ -141,8 +142,7 @@ class RefurbedAPIController extends Controller
                 Log::warning("Refurbed: Reached page limit", ['pages' => $pageCount]);
                 break;
             }
-
-        } while ($pageToken);
+        }
 
         Log::info("Refurbed: Pagination complete", [
             'total_pages' => $pageCount,
