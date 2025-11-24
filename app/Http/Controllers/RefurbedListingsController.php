@@ -237,4 +237,93 @@ class RefurbedListingsController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Update all Refurbed stock quantities based on system variation->listed_stock
+     */
+    public function updateStockFromSystem(): JsonResponse
+    {
+        try {
+            set_time_limit(300); // 5 minutes
+
+            $updated = 0;
+            $failed = 0;
+            $skipped = 0;
+            $errors = [];
+
+            // Get all Refurbed listings (marketplace_id = 4) with their variations
+            $listings = \App\Models\Listing_model::where('marketplace_id', 4)
+                ->with('variation')
+                ->get();
+
+            if ($listings->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No Refurbed listings found',
+                    'updated' => 0,
+                ]);
+            }
+
+            foreach ($listings as $listing) {
+                try {
+                    $variation = $listing->variation;
+
+                    if (!$variation) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $sku = $variation->sku;
+                    $systemStock = (int) ($variation->listed_stock ?? 0);
+
+                    // Update offer quantity to match system stock via Refurbed API
+                    $identifier = ['sku' => $sku];
+                    $updates = ['quantity' => $systemStock];
+
+                    $this->refurbed->updateOffer($identifier, $updates);
+
+                    $updated++;
+
+                    \Illuminate\Support\Facades\Log::info('Refurbed: Updated stock from system', [
+                        'sku' => $sku,
+                        'quantity' => $systemStock,
+                        'listing_id' => $listing->id,
+                    ]);
+
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'sku' => $variation->sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    \Illuminate\Support\Facades\Log::error('Refurbed: Failed to update stock from system', [
+                        'sku' => $variation->sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Stock updated for {$updated} listings from system variation->listed_stock",
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => $listings->count(),
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Refurbed: Update stock from system failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update stock: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
