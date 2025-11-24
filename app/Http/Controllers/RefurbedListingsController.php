@@ -135,17 +135,20 @@ class RefurbedListingsController extends Controller
 
             // Get ALL offers from Refurbed API (with automatic pagination), sorted by stock descending, stock > 0
             $filter = [
-                'quantity' => ['greater_than' => 0]
+                'stock' => ['gt' => 0],
             ];
 
-            // Check if specific SKU is requested
-            if (request()->has('sku')) {
-                $filter['sku'] = ['equals' => request('sku')];
+            // Check if specific SKU (or comma separated list) is requested
+            if ($skuFilter = request('sku')) {
+                $skus = array_values(array_filter(array_map('trim', explode(',', $skuFilter))));
+                if (!empty($skus)) {
+                    $filter['sku'] = ['any_of' => $skus];
+                }
             }
 
             $sort = [
-                'order_by' => 'quantity',
-                'direction' => 'DESC'
+                'order' => 'DESC',
+                'by' => 'STOCK',
             ];
             $response = $this->refurbed->getAllOffers($filter, $sort);
             $offers = $response['offers'] ?? [];
@@ -276,8 +279,8 @@ class RefurbedListingsController extends Controller
 
             // Get ALL offers from Refurbed API (with automatic pagination), sorted by stock descending
             $sort = [
-                'order_by' => 'quantity',
-                'direction' => 'DESC'
+                'order' => 'DESC',
+                'by' => 'STOCK',
             ];
             $response = $this->refurbed->getAllOffers([], $sort);
             $offers = $response['offers'] ?? [];
