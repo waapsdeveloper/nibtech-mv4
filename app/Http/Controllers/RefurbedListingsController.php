@@ -138,11 +138,13 @@ class RefurbedListingsController extends Controller
                 'stock' => ['gt' => 0],
             ];
 
-            // Check if specific SKU (or comma separated list) is requested
-            if ($skuFilter = request('sku')) {
-                $skus = array_values(array_filter(array_map('trim', explode(',', $skuFilter))));
-                if (!empty($skus)) {
-                    $filter['sku'] = ['any_of' => $skus];
+            $targetSkus = null;
+            $skuFilter = request('sku');
+            if ($skuFilter) {
+                $parsedSkus = array_values(array_filter(array_map('trim', explode(',', $skuFilter))));
+                if (! empty($parsedSkus)) {
+                    $targetSkus = array_fill_keys($parsedSkus, false);
+                    $filter['sku'] = ['any_of' => array_keys($targetSkus)];
                 }
             }
 
@@ -150,10 +152,100 @@ class RefurbedListingsController extends Controller
                 'order' => 'DESC',
                 'by' => 'STOCK',
             ];
-            $response = $this->refurbed->getAllOffers($filter, $sort);
-            $offers = $response['offers'] ?? [];
 
-            if (empty($offers)) {
+            $pageToken = null;
+            $pageCount = 0;
+            $maxPages = 250;
+            $hasMore = true;
+            $bulkModeActive = false;
+
+            while ($hasMore && $pageCount < $maxPages) {
+                $pagination = array_filter([
+                    'page_size' => 100,
+                    'page_token' => $pageToken,
+                ]);
+
+                $response = $this->refurbed->listOffers($filter, $pagination, $sort);
+                $offers = $response['offers'] ?? [];
+
+                if (empty($offers)) {
+                    break;
+                }
+
+                foreach ($offers as $offer) {
+                    $sku = $offer['sku'] ?? null;
+                    $currentStock = (int) ($offer['stock'] ?? 0);
+
+                    if (! $sku) {
+                        continue;
+                    }
+
+                    // Safety guard in case the API still returns items with zero stock
+                    if ($currentStock <= 0) {
+                        continue;
+                    }
+
+                    if ($targetSkus !== null) {
+                        if (! array_key_exists($sku, $targetSkus)) {
+                            continue;
+                        }
+
+                        if ($targetSkus[$sku] === true) {
+                            continue;
+                        }
+                    }
+
+                    try {
+                        $identifier = ['sku' => $sku];
+                        $updates = ['stock' => 0];
+
+                        $this->refurbed->updateOffer($identifier, $updates);
+
+                        $updated++;
+                        if (! $bulkModeActive && ($updated + $failed) > 10) {
+                            $bulkModeActive = true;
+                        }
+
+                        if ($targetSkus !== null) {
+                            $targetSkus[$sku] = true;
+
+                            // Stop as soon as we processed every requested SKU
+                            if (! in_array(false, $targetSkus, true)) {
+                                $hasMore = false;
+                                break;
+                            }
+                        }
+
+                        if ($bulkModeActive) {
+                            usleep(1000000); // 1 second delay for bulk updates
+                        }
+
+                    } catch (\Exception $e) {
+                        $failed++;
+                        $errors[] = [
+                            'sku' => $sku,
+                            'error' => $e->getMessage(),
+                        ];
+
+                        if (! $bulkModeActive && ($updated + $failed) > 10) {
+                            $bulkModeActive = true;
+                        }
+
+                        if ($bulkModeActive) {
+                            usleep(2000000); // 2 second delay after error
+                        }
+                    }
+                }
+
+                $lastOffer = end($offers);
+                $pageToken = $lastOffer['id'] ?? null;
+                    if ($hasMore) {
+                        $hasMore = $response['has_more'] ?? false;
+                    }
+                $pageCount++;
+            }
+
+            if ($updated === 0 && $failed === 0) {
                 return response()->json([
                     'status' => 'success',
                     'message' => 'No Refurbed offers found',
@@ -161,47 +253,9 @@ class RefurbedListingsController extends Controller
                 ]);
             }
 
-            // Only apply aggressive rate limiting for bulk operations (more than 10 items)
-            $isBulkOperation = count($offers) > 10;
+            $totalProcessed = $updated + $failed;
 
-            foreach ($offers as $index => $offer) {
-                try {
-                    $sku = $offer['sku'] ?? null;
-
-                    if (!$sku) {
-                        continue;
-                    }
-
-                    // Update offer quantity to 0 via Refurbed API
-                    // Use only SKU (oneof field - cannot use both sku and id)
-                    $identifier = ['sku' => $sku];
-                    $updates = ['stock' => 0];
-
-                    $response = $this->refurbed->updateOffer($identifier, $updates);
-
-                    $updated++;
-
-                    // Add delay only for bulk operations to prevent rate limiting
-                    if ($isBulkOperation) {
-                        usleep(100000); // 1 second delay for bulk updates
-                    }
-
-                } catch (\Exception $e) {
-                    $failed++;
-                    $errors[] = [
-                        'sku' => $offer['sku'] ?? 'unknown',
-                        'error' => $e->getMessage(),
-                    ];
-
-                    // Add longer delay after error (likely rate limit)
-                    if ($isBulkOperation) {
-                        usleep(200000); // 2 second delay after error
-                    }
-                }
-            }
-
-            // Log consolidated errors if any
-            if (!empty($errors)) {
+            if (! empty($errors)) {
                 Log::error('Refurbed: Zero stock operation had failures', [
                     'total_failed' => $failed,
                     'errors' => $errors,
@@ -213,7 +267,7 @@ class RefurbedListingsController extends Controller
                 'message' => "Stock zeroed for {$updated} listings",
                 'updated' => $updated,
                 'failed' => $failed,
-                'total' => count($offers),
+                'total' => $totalProcessed,
                 'errors' => $errors,
             ]);
 
