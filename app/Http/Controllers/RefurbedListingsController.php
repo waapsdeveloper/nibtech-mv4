@@ -152,12 +152,17 @@ class RefurbedListingsController extends Controller
                 ]);
             }
 
-            foreach ($offers as $offer) {
+            foreach ($offers as $index => $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
 
                     if (!$sku) {
                         continue;
+                    }
+
+                    // Add delay to prevent rate limiting (every 10 requests)
+                    if ($index > 0 && $index % 10 === 0) {
+                        usleep(500000); // 500ms delay every 10 updates
                     }
 
                     // Update offer quantity to 0 via Refurbed API
@@ -271,7 +276,7 @@ class RefurbedListingsController extends Controller
                 ]);
             }
 
-            foreach ($offers as $offer) {
+            foreach ($offers as $index => $offer) {
                 try {
                     $sku = $offer['sku'] ?? null;
 
@@ -289,6 +294,11 @@ class RefurbedListingsController extends Controller
                     }
 
                     $systemStock = (int) ($variation->listed_stock ?? 0);
+
+                    // Add delay to prevent rate limiting (every 10 requests)
+                    if ($updated > 0 && $updated % 10 === 0) {
+                        usleep(500000); // 500ms delay every 10 updates
+                    }
 
                     // Update offer quantity to match system stock via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)

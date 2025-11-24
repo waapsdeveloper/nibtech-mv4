@@ -190,6 +190,11 @@ class RefurbedAPIController extends Controller
                 'page_token' => $pageToken,
             ]);
 
+            // Add delay between requests to avoid rate limiting (except for first page)
+            if ($pageCount > 0) {
+                usleep(500000); // 500ms delay between pages
+            }
+
             $response = $this->listOffers($filter, $pagination, $sort);
 
             if (!empty($response['offers'])) {
