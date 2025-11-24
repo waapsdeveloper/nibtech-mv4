@@ -101,6 +101,7 @@ class RefurbedAPIController extends Controller
     {
         $allOffers = [];
         $pageToken = null;
+        $pageCount = 0;
 
         do {
             $pagination = array_filter([
@@ -108,7 +109,19 @@ class RefurbedAPIController extends Controller
                 'page_token' => $pageToken,
             ]);
 
+            Log::info("Refurbed: Fetching page", [
+                'page' => $pageCount + 1,
+                'page_token' => $pageToken ? substr($pageToken, 0, 30) : 'initial',
+                'current_total' => count($allOffers)
+            ]);
+
             $response = $this->listOffers($filter, $pagination, $sort);
+
+            Log::info("Refurbed: Page response", [
+                'offers_count' => count($response['offers'] ?? []),
+                'response_keys' => array_keys($response),
+                'has_next_token' => isset($response['next_page_token']) || isset($response['nextPageToken']) || isset($response['pagination']['next_page_token'])
+            ]);
 
             if (!empty($response['offers'])) {
                 $allOffers = array_merge($allOffers, $response['offers']);
@@ -121,7 +134,20 @@ class RefurbedAPIController extends Controller
                 ?? $response['pagination']['nextPageToken']
                 ?? null;
 
+            $pageCount++;
+
+            // Safety limit to prevent infinite loops
+            if ($pageCount > 100) {
+                Log::warning("Refurbed: Reached page limit", ['pages' => $pageCount]);
+                break;
+            }
+
         } while ($pageToken);
+
+        Log::info("Refurbed: Pagination complete", [
+            'total_pages' => $pageCount,
+            'total_offers' => count($allOffers)
+        ]);
 
         return [
             'offers' => $allOffers,
