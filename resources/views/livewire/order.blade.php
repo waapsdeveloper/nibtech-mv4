@@ -268,6 +268,10 @@
                         <input class="form-check-input" type="checkbox" id="packing" name="packing" value="1" @if (request('packing') == "1") {{'checked'}} @endif>
                         <label class="form-check-label" for="packing">Packing Mode</label>
                     </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="no_invoice" name="no_invoice" value="1" @if (request('no_invoice') == "1") {{'checked'}} @endif>
+                        <label class="form-check-label" for="no_invoice">Email Invoice</label>
+                    </div>
                 </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 @if (Request::get('care') == 1)
@@ -676,6 +680,7 @@
                 @csrf
                 <input type="hidden" name="sort" value="{{request('sort')}}">
                 <input type="hidden" name="packing" value="{{request('packing')}}">
+                <input type="hidden" name="no_invoice" value="{{request('no_invoice')}}">
                 <div class="input-group">
                     @if (!request('packing'))
                         <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
@@ -705,6 +710,7 @@
                 @csrf
                 <input type="hidden" name="sort" value="{{request('sort')}}">
                 <input type="hidden" name="packing" value="{{request('packing')}}">
+                <input type="hidden" name="no_invoice" value="{{request('no_invoice')}}">
 
                 @for ($in = 1; $in <= $item->quantity; $in ++)
 
@@ -734,6 +740,7 @@
                 @csrf
                 <input type="hidden" name="sort" value="{{request('sort')}}">
                 <input type="hidden" name="packing" value="{{request('packing')}}">
+                <input type="hidden" name="no_invoice" value="{{request('no_invoice')}}">
                 @foreach ($items as $itm)
 
                     @for ($in = 1; $in <= $itm->quantity; $in++)
