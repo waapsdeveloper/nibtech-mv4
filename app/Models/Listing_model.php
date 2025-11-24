@@ -17,6 +17,7 @@ class Listing_model extends Model
     protected $fillable = [
         // other fields...
         'country',
+        'marketplace_id',
         'variation_id',
         'reference_uuid',
         'name',

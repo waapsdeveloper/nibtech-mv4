@@ -53,6 +53,7 @@ class PriceHandler extends Command
         $bm = new BackMarketAPIController();
         $listingController = new ListingController();
         $listings = Listing_model::whereIn('handler_status', [1,3])
+        ->where('marketplace_id', 1)
         ->where('buybox',  '!=', 1)
         ->where('min_price_limit', '>', 0)
         ->whereColumn('min_price_limit', '<=', 'buybox_price')
@@ -101,7 +102,7 @@ class PriceHandler extends Command
                     }
                 }
                 $country = Country_model::where('code',$list->market)->first();
-                $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id]);
+                $listing = Listing_model::firstOrNew(['variation_id'=>$variation->id, 'country'=>$country->id, 'marketplace_id' => 1]);
                 if($country == null){
                     $error .= "No country found for market: " . $list->market . " for variation: " . $variation->sku . "\n";
                     continue;
