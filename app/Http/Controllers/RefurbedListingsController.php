@@ -116,4 +116,90 @@ class RefurbedListingsController extends Controller
             'direction' => $direction,
         ];
     }
+
+    /**
+     * Test endpoint to zero out all Refurbed listed stock
+     */
+    public function zeroStock(): JsonResponse
+    {
+        try {
+            $updated = 0;
+            $failed = 0;
+            $errors = [];
+
+            // Get all Refurbed listings (marketplace_id = 4)
+            $listings = \App\Models\Listing_model::where('marketplace_id', 4)
+                ->with('variation')
+                ->get();
+
+            if ($listings->isEmpty()) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No Refurbed listings found',
+                    'updated' => 0,
+                ]);
+            }
+
+            foreach ($listings as $listing) {
+                try {
+                    $variation = $listing->variation;
+
+                    if (!$variation) {
+                        continue;
+                    }
+
+                    $sku = $variation->sku;
+
+                    // Update offer quantity to 0 via Refurbed API
+                    $identifier = ['sku' => $sku];
+                    $updates = ['quantity' => 0];
+
+                    $this->refurbed->updateOffer($identifier, $updates);
+
+                    // Update local database
+                    $variation->listed_stock = 0;
+                    $variation->save();
+
+                    $updated++;
+
+                    \Illuminate\Support\Facades\Log::info('Refurbed: Zeroed stock', [
+                        'sku' => $sku,
+                        'listing_id' => $listing->id,
+                    ]);
+
+                } catch (\Exception $e) {
+                    $failed++;
+                    $errors[] = [
+                        'sku' => $variation->sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ];
+
+                    \Illuminate\Support\Facades\Log::error('Refurbed: Failed to zero stock', [
+                        'sku' => $variation->sku ?? 'unknown',
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Stock zeroed for {$updated} listings",
+                'updated' => $updated,
+                'failed' => $failed,
+                'total' => $listings->count(),
+                'errors' => $errors,
+            ]);
+
+        } catch (\Exception $e) {
+            \Illuminate\Support\Facades\Log::error('Refurbed: Zero stock operation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to zero stock: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
 }
