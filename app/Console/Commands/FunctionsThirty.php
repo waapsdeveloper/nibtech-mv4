@@ -88,7 +88,7 @@ class FunctionsThirty extends Command
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
+                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $listing->max_price = $list->max_price;
                     $listing->min_price = $list->min_price;
                     $variation->listed_stock = $list->quantity;
@@ -124,7 +124,7 @@ class FunctionsThirty extends Command
                 if($variation == null){
                     echo $list->sku." ";
                 }else{
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id]);
+                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
