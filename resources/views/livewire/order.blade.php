@@ -1447,10 +1447,10 @@
 
             var id = `imei{{$ti}}`;
             window.onload = function() {
-                var skuInput = document.getElementById('sku_input');
-                if (skuInput && skuInput.value === ''){
-                    skuInput.focus();
-                }else{
+                // var skuInput = document.getElementById('sku_input');
+                // if (skuInput && skuInput.value === ''){
+                //     skuInput.focus();
+                // }else{
                     var elem = document.getElementById(id);
                     if (elem) {
                         // Check if there are previous IMEI inputs (skipped orders)
@@ -1524,7 +1524,7 @@
                             }
                         }
                     });
-                }
+                // }
             };
 
             if (id == 'imei0') {
