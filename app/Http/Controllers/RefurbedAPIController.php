@@ -94,6 +94,41 @@ class RefurbedAPIController extends Controller
         ]));
     }
 
+    /**
+     * Get all offers with automatic pagination
+     */
+    public function getAllOffers(array $filter = [], array $sort = [], int $pageSize = 100): array
+    {
+        $allOffers = [];
+        $pageToken = null;
+
+        do {
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
+
+            $response = $this->listOffers($filter, $pagination, $sort);
+
+            if (!empty($response['offers'])) {
+                $allOffers = array_merge($allOffers, $response['offers']);
+            }
+
+            // Check for next page token (try multiple possible field names)
+            $pageToken = $response['next_page_token']
+                ?? $response['nextPageToken']
+                ?? $response['pagination']['next_page_token']
+                ?? $response['pagination']['nextPageToken']
+                ?? null;
+
+        } while ($pageToken);
+
+        return [
+            'offers' => $allOffers,
+            'total' => count($allOffers)
+        ];
+    }
+
     public function updateOffer(array $identifier, array $updates): array
     {
         if (empty($identifier)) {
