@@ -124,6 +124,43 @@ class RefurbedListingsController extends Controller
         ]);
     }
 
+    public function createOrderShippingLabel(Request $request, string $orderId): JsonResponse
+    {
+        $validated = $request->validate([
+            'merchant_address_id' => 'required|string',
+            'parcel_weight' => 'required|numeric|min:0.01',
+            'carrier' => 'nullable|string',
+        ]);
+
+        try {
+            $label = $this->refurbed->createShippingLabel(
+                $orderId,
+                $validated['merchant_address_id'],
+                (float) $validated['parcel_weight'],
+                $validated['carrier'] ?? null
+            );
+
+            return response()->json([
+                'status' => 'success',
+                'order_id' => $orderId,
+                'label' => $label,
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to create shipping label', [
+                'order_id' => $orderId,
+                'merchant_address_id' => $validated['merchant_address_id'],
+                'parcel_weight' => $validated['parcel_weight'],
+                'carrier' => $validated['carrier'] ?? null,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to create shipping label: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
     private function normalizeList(mixed $value, array $default = []): array
     {
         if (is_string($value)) {

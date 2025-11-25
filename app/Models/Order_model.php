@@ -18,6 +18,7 @@ class Order_model extends Model
     protected $fillable = [
         // other fields...
         'reference_id',
+        'marketplace_id',
         'status',
         'currency',
         'processed_by',
