@@ -166,7 +166,7 @@ class FunctionsThirty extends Command
                 echo "No offers found\n";
                 return;
             }
-
+            echo "Processing offers...\n";
             $totalProcessed = 0;
 
             foreach ($offers as $offer) {
