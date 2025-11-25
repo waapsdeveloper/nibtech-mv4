@@ -16,11 +16,6 @@ class RefurbedListingsController extends Controller
 {
     protected RefurbedAPIController $refurbed;
 
-    public function __construct(RefurbedAPIController $refurbed)
-    {
-        $this->refurbed = $refurbed;
-    }
-
     public function test(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
@@ -1045,17 +1040,27 @@ class RefurbedListingsController extends Controller
             return;
         }
 
+        $identifier = ['sku' => $sku];
+        $payload = [
+            'set_market_prices' => array_values($setMarketPrices),
+        ];
+
         try {
-            $this->refurbed->updateOffer([
-                'sku' => $sku,
-            ], [
-                'set_market_prices' => array_values($setMarketPrices),
-            ]);
+            $response = $this->refurbed->updateOffer($identifier, $payload);
+
+            if (config('app.debug')) {
+                Log::debug('Refurbed: Pushed market prices', [
+                    'sku' => $sku,
+                    'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
+                    'response' => $response,
+                ]);
+            }
         } catch (\Throwable $e) {
-            // Log::error('Refurbed: Failed to push market prices', [
-            //     'sku' => $sku,
-            //     'error' => $e->getMessage(),
-            // ]);
+            Log::error('Refurbed: Failed to push market prices', [
+                'sku' => $sku,
+                'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
+                'error' => $e->getMessage(),
+            ]);
         }
     }
 
