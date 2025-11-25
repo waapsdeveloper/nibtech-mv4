@@ -389,11 +389,59 @@ class RefurbedListingsController extends Controller
 
                     try {
                         $this->ensureRefurbedListingExists($variation, $marketplaceId);
-                        $updated++;
+
+                        $refurbedListings = Listing_model::where('variation_id', $variation->id)
+                            ->where('marketplace_id', $marketplaceId)
+                            ->get();
+
+                        if ($refurbedListings->isEmpty()) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        $marketPayloads = [];
+                        $referencePrice = null;
+                        $referenceMinPrice = null;
+
+                        foreach ($refurbedListings as $listing) {
+                            $referencePrice = $referencePrice ?? $listing->price;
+                            $referenceMinPrice = $referenceMinPrice ?? ($listing->min_price ?? $listing->price);
+
+                            $marketCode = $this->resolveCountryCodeById($listing->country);
+                            $currencyCode = $this->resolveCurrencyCodeById($listing->currency_id);
+
+                            if ($marketCode && $currencyCode) {
+                                $payload = $this->buildMarketPricePayload($marketCode, $currencyCode, $listing);
+                                if ($payload) {
+                                    $marketPayloads[$marketCode] = $payload;
+                                }
+                            }
+                        }
+
+                        $stockQuantity = $this->resolveStockQuantity($variation);
+
+                        if (empty($marketPayloads) && $stockQuantity === null) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        $apiResult = $this->pushRefurbedPriceUpdates(
+                            $variation->sku,
+                            array_values($marketPayloads),
+                            $referencePrice,
+                            $referenceMinPrice,
+                            $stockQuantity
+                        );
+
                         $snapshot = $this->snapshotRefurbedListings($variation, $marketplaceId);
                         if (! empty($snapshot)) {
+                            $snapshot['stock'] = $stockQuantity;
+                            $snapshot['markets'] = array_keys($marketPayloads);
+                            $snapshot['api_result'] = $apiResult;
                             $syncedListings[] = $snapshot;
                         }
+
+                        $updated++;
 
                         if ($isBulkOperation) {
                             usleep(100000); // 0.1 second delay for bulk updates
@@ -413,7 +461,7 @@ class RefurbedListingsController extends Controller
             });
 
             // Log consolidated results
-            Log::info('Refurbed: Price sync from system completed', [
+            Log::info('Refurbed: Stock/price sync from system completed', [
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
@@ -430,7 +478,7 @@ class RefurbedListingsController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => "Prices synced for {$updated} listings based on system data",
+                'message' => "Stock and prices synced for {$updated} listings based on system data",
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
@@ -440,14 +488,14 @@ class RefurbedListingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Refurbed: Price sync from system failed', [
+            Log::error('Refurbed: Stock/price sync from system failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to sync prices: ' . $e->getMessage(),
+                'message' => 'Failed to sync stock/prices: ' . $e->getMessage(),
             ], 500);
         }
     }
