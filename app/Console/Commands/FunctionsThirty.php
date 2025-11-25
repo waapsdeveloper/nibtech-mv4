@@ -167,7 +167,16 @@ class FunctionsThirty extends Command
                 return;
             }
             echo "Processing offers...\n";
-                $processedListings = 0;
+
+            $countryMap = Country_model::pluck('id', 'code')->toArray();
+            if (empty($countryMap)) {
+                Log::warning("Refurbed: No countries configured for listings");
+                echo "No countries configured for Refurbed listings\n";
+                return;
+            }
+
+            $offersByCountry = [];
+            $processedListings = 0;
 
             foreach ($offers as $offer) {
                     try {
@@ -254,6 +263,21 @@ class FunctionsThirty extends Command
                         $referencePrice = $offer['reference_price'] ?? null;
                         $referenceMinPrice = $offer['reference_min_price'] ?? null;
 
+                        $offerMeta = [
+                            'offer_id' => $offerId,
+                            'variation_id' => $variation->id,
+                            'title' => $title,
+                            'reference_price' => $referencePrice,
+                            'reference_min_price' => $referenceMinPrice,
+                            'price_amount' => $priceAmount,
+                            'min_price' => $offer['min_price'] ?? null,
+                            'max_price' => $offer['max_price'] ?? null,
+                            'price_limit' => $offer['price_limit'] ?? $offer['maximum_price'] ?? null,
+                            'min_price_limit' => $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null,
+                            'currency_id' => $currency->id,
+                            'sku' => $sku,
+                        ];
+
                         // Collect market-specific price entries so each country gets its own listing
                         $marketEntries = [];
 
@@ -302,56 +326,15 @@ class FunctionsThirty extends Command
                         }
 
                         foreach ($marketEntries as $marketCode => $marketPriceData) {
-                            $country = Country_model::where('code', $marketCode)->first();
-                            if (!$country) {
-                                Log::warning("Refurbed: Country not found", ['country' => $marketCode, 'sku' => $sku]);
-                                $country = Country_model::first();
-                                if (!$country) {
-                                    continue;
-                                }
+                            if (!isset($countryMap[$marketCode])) {
+                                Log::info("Refurbed: Skipping offer for unsupported country", ['country' => $marketCode, 'sku' => $sku]);
+                                continue;
                             }
 
-                            // Create or update listing per country
-                            $listing = Listing_model::firstOrNew([
-                                'country' => $country->id,
-                                'variation_id' => $variation->id,
-                                'marketplace_id' => $marketplaceId
-                            ]);
-
-                            $marketPriceAmount = $marketPriceData['price'] ?? $priceAmount;
-                            $marketMinPrice = $marketPriceData['min_price'] ?? null;
-
-                            // Core price fields
-                            $listing->price = $referencePrice ?? $marketPriceAmount;
-                            $listing->currency_id = $currency->id;
-                            $listing->reference_uuid = $offerId;
-
-                            // Name/Title
-                            if ($listing->name == null && $title) {
-                                $listing->name = $title;
-                            }
-
-                            // Min/Max price from offer (if available)
-                            if ($referenceMinPrice !== null || $marketMinPrice !== null) {
-                                $listing->min_price = $referenceMinPrice ?? $marketMinPrice;
-                            }
-                            if (isset($marketPriceData['max_price']) || isset($offer['max_price'])) {
-                                $listing->max_price = $marketPriceData['max_price'] ?? $offer['max_price'];
-                            }
-
-                            // Price limits (can be set based on business logic)
-                            if (isset($marketPriceData['price_limit']) || isset($offer['price_limit']) || isset($offer['maximum_price'])) {
-                                $listing->price_limit = $marketPriceData['price_limit'] ?? $offer['price_limit'] ?? $offer['maximum_price'] ?? null;
-                            }
-                            if (isset($marketPriceData['min_price_limit']) || isset($offer['min_price_limit']) || isset($offer['minimum_price'])) {
-                                $listing->min_price_limit = $marketPriceData['min_price_limit'] ?? $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null;
-                            }
-
-                            // Admin ID - can be set if you want to track who manages this listing
-                            // $listing->admin_id = null; // Set if needed
-                            echo $listing->id." ";
-                            $listing->save();
-                            $processedListings++;
+                            $offersByCountry[$marketCode][] = [
+                                'offer' => $offerMeta,
+                                'market_price' => $marketPriceData,
+                            ];
                         }
 
                     } catch (\Exception $e) {
@@ -363,10 +346,68 @@ class FunctionsThirty extends Command
                     }
                 }
 
-                echo "Processed listings: {$processedListings} across {$totalOffers} offers\n";
+            foreach ($countryMap as $countryCode => $countryId) {
+                if (empty($offersByCountry[$countryCode])) {
+                    continue;
+                }
 
-            Log::info("Refurbed: Completed listing sync", ['total_listings' => $processedListings, 'total_offers' => $totalOffers]);
-            echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers)\n";
+                $countryOffers = $offersByCountry[$countryCode];
+                echo "Country {$countryCode}: processing " . count($countryOffers) . " offers\n";
+
+                foreach ($countryOffers as $entry) {
+                    $offerMeta = $entry['offer'];
+                    $marketPriceData = $entry['market_price'];
+
+                    $listing = Listing_model::firstOrNew([
+                        'country' => $countryId,
+                        'variation_id' => $offerMeta['variation_id'],
+                        'marketplace_id' => $marketplaceId
+                    ]);
+
+                    $marketPriceAmount = $marketPriceData['price'] ?? $offerMeta['price_amount'];
+                    $marketMinPrice = $marketPriceData['min_price'] ?? $offerMeta['min_price'];
+
+                    $listing->price = $offerMeta['reference_price'] ?? $marketPriceAmount;
+                    $listing->currency_id = $offerMeta['currency_id'];
+                    $listing->reference_uuid = $offerMeta['offer_id'];
+
+                    if ($listing->name == null && $offerMeta['title']) {
+                        $listing->name = $offerMeta['title'];
+                    }
+
+                    $effectiveMinPrice = $offerMeta['reference_min_price'] ?? $marketMinPrice;
+                    if ($effectiveMinPrice !== null) {
+                        $listing->min_price = $effectiveMinPrice;
+                    }
+
+                    if (isset($marketPriceData['max_price']) || $offerMeta['max_price'] !== null) {
+                        $listing->max_price = $marketPriceData['max_price'] ?? $offerMeta['max_price'];
+                    }
+
+                    if (isset($marketPriceData['price_limit']) || $offerMeta['price_limit'] !== null) {
+                        $listing->price_limit = $marketPriceData['price_limit'] ?? $offerMeta['price_limit'];
+                    }
+                    if (isset($marketPriceData['min_price_limit']) || $offerMeta['min_price_limit'] !== null) {
+                        $listing->min_price_limit = $marketPriceData['min_price_limit'] ?? $offerMeta['min_price_limit'];
+                    }
+
+                    echo $listing->id . " ";
+                    $listing->save();
+                    $processedListings++;
+                }
+            }
+
+            $countriesProcessed = array_intersect(array_keys($offersByCountry), array_keys($countryMap));
+            $countryCount = count(array_unique($countriesProcessed));
+
+            echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
+
+            Log::info("Refurbed: Completed listing sync", [
+                'total_listings' => $processedListings,
+                'total_offers' => $totalOffers,
+                'countries_processed' => $countryCount,
+            ]);
+            echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
             Log::error("Refurbed: Fatal error in get_refurbed_listings", [
