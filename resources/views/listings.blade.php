@@ -418,7 +418,7 @@
 
             var form = $('#change_min_price_' + listingId);
             var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
-            
+
             // Add marketplace_id to form data if provided
             var formData = form.serialize();
             if (marketplaceId) {
@@ -435,7 +435,7 @@
                     // $('quantity_' + listingId).val(data)
 
                     checkMinPriceDiff(listingId);
-                    
+
                     // Call callback if provided
                     if (callback && typeof callback === 'function') {
                         callback();
@@ -456,7 +456,7 @@
 
             var form = $('#change_price_' + listingId);
             var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
-            
+
             // Add marketplace_id to form data if provided
             var formData = form.serialize();
             if (marketplaceId) {
@@ -473,7 +473,7 @@
                     // $('#send_' + listingId).addClass('d-none'); // hide the button after submission
                     // $('quantity_' + listingId).val(data)
                     checkMinPriceDiff(listingId);
-                    
+
                     // Call callback if provided
                     if (callback && typeof callback === 'function') {
                         callback();
@@ -502,7 +502,7 @@
                 listingsToUpdate = listings.filter(function(listing) {
                     return listing.marketplace_id == marketplaceId;
                 });
-                
+
                 // If no listings found, create one for this marketplace
                 if (listingsToUpdate.length === 0) {
                     createListingForMarketplace(variationId, marketplaceId, function(createdListing) {
@@ -520,13 +520,13 @@
         function applyPriceChanges(listingsToUpdate, min_price, price, marketplaceId, variationId) {
             var updateCount = 0;
             var totalUpdates = 0;
-            
+
             // Count total updates needed
             listingsToUpdate.forEach(function(listing) {
                 if (min_price > 0) totalUpdates++;
                 if (price > 0) totalUpdates++;
             });
-            
+
             if (totalUpdates === 0) {
                 // No updates needed, just refresh
                 let eurToGbp = {!! json_encode($eur_gbp) !!};
@@ -539,7 +539,7 @@
                 getListings(variationId, eurToGbp, m_min_price, m_price, 0);
                 return;
             }
-            
+
             listingsToUpdate.forEach(function(listing) {
                 if (min_price > 0){
                     $('#min_price_' + listing.id).val(min_price);
@@ -584,7 +584,7 @@
 
             var form = $('#change_limit_' + listingId);
             var actionUrl = "{{ url('listing/update_limit') }}/" + listingId;
-            
+
             // Add marketplace_id to form data if provided
             var formData = form.serialize();
             if (marketplaceId) {
@@ -602,7 +602,7 @@
                     // $('quantity_' + listingId).val(data)
 
                     checkMinPriceDiff(listingId);
-                    
+
                     // Call callback if provided
                     if (callback && typeof callback === 'function') {
                         callback();
@@ -682,7 +682,7 @@
                 listingsToUpdate = listings.filter(function(listing) {
                     return listing.marketplace_id == marketplaceId;
                 });
-                
+
                 // If no listings found, create one for this marketplace
                 if (listingsToUpdate.length === 0) {
                     createListingForMarketplace(variationId, marketplaceId, function(createdListing) {
@@ -700,7 +700,7 @@
         function applyHandlerChanges(listingsToUpdate, min_price, price, marketplaceId, variationId) {
             var updateCount = 0;
             var totalCount = listingsToUpdate.length;
-            
+
             listingsToUpdate.forEach(function(listing) {
                 if (min_price > 0){
                     $('#min_price_limit_' + listing.id).val(min_price);
@@ -737,7 +737,7 @@
                         // Add to eur_listings array
                         window.eur_listings[variationId] = window.eur_listings[variationId] || [];
                         window.eur_listings[variationId].push(response.listing);
-                        
+
                         // Create form elements for the new listing if they don't exist
                         var csrfToken = '{{ csrf_token() }}';
                         if (!$('#change_limit_' + response.listing.id).length) {
@@ -752,7 +752,7 @@
                             // Create form for price
                             $('body').append('<form class="form-inline" method="POST" id="change_price_' + response.listing.id + '" style="display:none;"><input type="hidden" name="_token" value="' + csrfToken + '"><input type="submit" hidden></form>');
                         }
-                        
+
                         callback(response.listing);
                     } else {
                         alert('Error creating listing: ' + (response.error || 'Unknown error'));
@@ -766,17 +766,17 @@
 
         function submitForm4ForMarketplace(event, variationId, listings, marketplaceId) {
             event.preventDefault();
-            
+
             // Filter listings by marketplace_id
             var filteredListings = listings.filter(function(listing) {
                 return listing.marketplace_id == marketplaceId;
             });
-            
+
             if (filteredListings.length === 0) {
                 alert('No listings found for this marketplace');
                 return;
             }
-            
+
             // Call submitForm4 with filtered listings
             submitForm4(event, variationId, filteredListings);
         }
@@ -800,22 +800,22 @@
                 return; // Dropdown doesn't exist yet
             }
             dropdownMenu.empty();
-            
+
             // Use global marketplaces if not provided
             if (!marketplaces || Object.keys(marketplaces).length === 0) {
                 marketplaces = window.marketplaces || {};
             }
-            
+
             // Show ALL marketplaces, not just those with listings
             if (!marketplaces || Object.keys(marketplaces).length === 0) {
                 dropdownMenu.append('<li><span class="dropdown-item-text">No marketplaces available</span></li>');
                 return;
             }
-            
+
             // Add "All Marketplaces" option (no marketplace_id filter)
             dropdownMenu.append('<li><a class="dropdown-item" href="#" onclick="event.preventDefault(); submitForm8(event, ' + variationId + ', window.eur_listings[' + variationId + '] || []);">All Marketplaces</a></li>');
             dropdownMenu.append('<li><hr class="dropdown-divider"></li>');
-            
+
             // Add ALL marketplace options (not filtered by listings)
             Object.keys(marketplaces).forEach(function(marketplaceId) {
                 var marketplace = marketplaces[marketplaceId];
@@ -834,22 +834,22 @@
                 return; // Dropdown doesn't exist yet
             }
             dropdownMenu.empty();
-            
+
             // Use global marketplaces if not provided
             if (!marketplaces || Object.keys(marketplaces).length === 0) {
                 marketplaces = window.marketplaces || {};
             }
-            
+
             // Show ALL marketplaces, not just those with listings
             if (!marketplaces || Object.keys(marketplaces).length === 0) {
                 dropdownMenu.append('<li><span class="dropdown-item-text">No marketplaces available</span></li>');
                 return;
             }
-            
+
             // Add "All Marketplaces" option (no marketplace_id filter)
             dropdownMenu.append('<li><a class="dropdown-item" href="#" onclick="event.preventDefault(); submitForm4(event, ' + variationId + ', window.eur_listings[' + variationId + '] || []);">All Marketplaces</a></li>');
             dropdownMenu.append('<li><hr class="dropdown-divider"></li>');
-            
+
             // Add ALL marketplace options (not filtered by listings)
             Object.keys(marketplaces).forEach(function(marketplaceId) {
                 var marketplace = marketplaces[marketplaceId];
@@ -959,7 +959,7 @@
                     listingsTable += data.error ? `<tr><td colspan="8">${data.error}</td></tr>` : '';
                     // Clear and repopulate eur_listings for this variation when listings are loaded via AJAX
                     window.eur_listings[variationId] = [];
-                    
+
                     data.listings.forEach(function(listing) {
                         let best_price = $('#best_price_'+variationId).text().replace('€', '') ?? 0;
                         let exchange_rates_2 = exchange_rates;
@@ -986,16 +986,16 @@
                             window.eur_listings[variationId] = window.eur_listings[variationId] || [];
                             window.eur_listings[variationId].push(listing);
                         }
-                        if(listing.target_price > 0 && listing.target_percentage > 0){
-                            cost = $('#average_cost_'+variationId).text().replace('€', '');
-                            target = ((parseFloat(cost)+20)/ ((100-parseFloat(listing.target_percentage))/100));
-                            if(target <= listing.target_price){
-                                possible = 1;
-                            }
-                            if(listing.target_price >= listing.min_price && listing.target_price <= listing.price && listing.target_price >= listing.buybox_price){
-                                classs = 'bg-lightgreen';
-                            }
-                        }
+                        // if(listing.target_price > 0 && listing.target_percentage > 0){
+                        //     cost = $('#average_cost_'+variationId).text().replace('€', '');
+                        //     target = ((parseFloat(cost)+20)/ ((100-parseFloat(listing.target_percentage))/100));
+                        //     if(target <= listing.target_price){
+                        //         possible = 1;
+                        //     }
+                        //     if(listing.target_price >= listing.min_price && listing.target_price <= listing.price && listing.target_price >= listing.buybox_price){
+                        //         classs = 'bg-lightgreen';
+                        //     }
+                        // }
 
                         let buybox_button = '';
                         if (listing.buybox !== 1 && listing.buybox_price > 0) {
@@ -1102,7 +1102,7 @@
                         });
                     });
                     $('#listings_'+variationId).html(listingsTable);
-                    
+
                     // Dropdowns will be populated on click - no need to repopulate here
                     // console.log(data);
                 },
@@ -1118,10 +1118,10 @@
         // Make eur_listings and marketplaces global so onclick handlers can access it
         window.eur_listings = [];
         window.marketplaces = {!! json_encode($marketplaces ?? []) !!};
-        
+
         // Debug: log marketplaces to console
         console.log('Marketplaces loaded:', window.marketplaces);
-        
+
         $(document).ready(function() {
             $('.select2').select2();
 
@@ -1582,7 +1582,7 @@
 
                             // Remove form submit handlers since we're using dropdowns now
                             // The dropdowns will handle submissions directly
-                            
+
                             // Dropdowns will be populated on click via onclick handlers
                             // No need to pre-populate since we show ALL marketplaces
                         });
