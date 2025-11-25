@@ -478,6 +478,7 @@
                             $imei_list = [];
                             $t = 0;
                             $ti = 0;
+                            $previousOrderDispatched = false;
                         @endphp
                         @foreach ($orders as $index => $order)
                             @php
@@ -491,6 +492,8 @@
                                 $items_count = count($items);
                                 $total_items += $items_count;
                                 $customer = $order->customer;
+                                $orderAboveDispatched = $previousOrderDispatched;
+                                $isCurrentOrderDispatched = ($order->status == 3);
                             @endphp
 
                             @foreach ($items as $itemIndex => $item)
@@ -685,7 +688,8 @@
                     @if (!request('packing'))
                         <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" maxlength="3" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                     @endif
-                    <input type="text" id="imei{{++$ti}}" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }">
+                    @php $imeiInputId = !$orderAboveDispatched ? 'imei'.(++$ti) : null; @endphp
+                    <input type="text" @if($imeiInputId) id="{{ $imeiInputId }}" @endif name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }">
 
                     <input type="hidden" name="sku[]" value="{{ $variation->sku ?? "Variation Issue" }}">
 
@@ -718,7 +722,8 @@
                         @if (!request('packing'))
                         <input type="text" id="tester{{++$t}}" name="tester[]" placeholder="Tester" list="tester_list" class="form-control form-control-sm" style="max-width: 55px" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                         @endif
-                        <input type="text" id="imei{{++$ti}}" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }" required>
+                        @php $imeiInputId = !$orderAboveDispatched ? 'imei'.(++$ti) : null; @endphp
+                        <input type="text" @if($imeiInputId) id="{{ $imeiInputId }}" @endif name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }" required>
                     </div>
                 <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
                 @endfor
@@ -749,7 +754,8 @@
                             <input type="text" id="tester{{++$t}}" name="tester[]" list="tester_list" placeholder="Tester" class="form-control form-control-sm" style="max-width: 55px" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'tester'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'tester', true); }">
                             @endif
 
-                            <input type="text" id="imei{{++$ti}}" name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }" required title="for SKU:{{ $itm->variation->sku }}">
+                            @php $imeiInputId = !$orderAboveDispatched ? 'imei'.(++$ti) : null; @endphp
+                            <input type="text" @if($imeiInputId) id="{{ $imeiInputId }}" @endif name="imei[]" placeholder="IMEI / Serial Number" class="form-control form-control-sm" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'imei'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'imei', true); }" required title="for SKU:{{ $itm->variation->sku }}">
                         </div>
                         <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
                     @endfor
@@ -1080,6 +1086,9 @@
                                 $i ++;
                             @endphp
                             @endif
+                            @php
+                                $previousOrderDispatched = $isCurrentOrderDispatched;
+                            @endphp
                         @endforeach
                             @php
                             if (session()->has('refresh')){
