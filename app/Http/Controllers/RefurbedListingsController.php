@@ -128,7 +128,7 @@ class RefurbedListingsController extends Controller
     /**
      * Test endpoint to zero out all Refurbed listed stock
      */
-    public function zeroStock(): JsonResponse
+    public function zeroStock()
     {
         try {
             set_time_limit(300); // 5 minutes
@@ -568,7 +568,7 @@ class RefurbedListingsController extends Controller
                         if ($isBulkOperation) {
                             usleep(100000); // 0.1 second delay for bulk updates
                         }
-                    } catch (	hrowable $e) {
+                    } catch (\Throwable $e) {
                         $failed++;
                         $errors[] = [
                             'sku' => $variation->sku ?? 'unknown',
