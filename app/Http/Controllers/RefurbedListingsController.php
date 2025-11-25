@@ -1146,32 +1146,35 @@ class RefurbedListingsController extends Controller
 
     private function buildMarketPricePayload(string $marketCode, string $currencyCode, Listing_model $listing): ?array
     {
-        if ($marketCode === '' || $currencyCode === '') {
+        $normalizedMarket = strtoupper(trim($marketCode));
+        $normalizedCurrency = strtoupper(trim($currencyCode));
+
+        if ($normalizedMarket === '' || $normalizedCurrency === '') {
             return null;
         }
 
         $payload = [
-            'market_code' => strtoupper($marketCode),
-            'currency_code' => strtoupper($currencyCode),
+            'market_code' => $normalizedMarket,
+            'currency_code' => $normalizedCurrency,
         ];
 
-        if (($price = $this->formatPriceString($listing->price)) !== null) {
-            $payload['price'] = $price;
+        if (($pricePayload = $this->buildMoneyPayload($listing->price, $normalizedCurrency)) !== null) {
+            $payload['price'] = $pricePayload;
         }
 
-        if (($minPrice = $this->formatPriceString($listing->min_price)) !== null) {
+        if (($minPrice = $this->roundPriceValue($listing->min_price)) !== null) {
             $payload['min_price'] = $minPrice;
         }
 
-        if (($maxPrice = $this->formatPriceString($listing->max_price)) !== null) {
+        if (($maxPrice = $this->roundPriceValue($listing->max_price)) !== null) {
             $payload['max_price'] = $maxPrice;
         }
 
-        if (($priceLimit = $this->formatPriceString($listing->price_limit)) !== null) {
+        if (($priceLimit = $this->roundPriceValue($listing->price_limit)) !== null) {
             $payload['price_limit'] = $priceLimit;
         }
 
-        if (($minPriceLimit = $this->formatPriceString($listing->min_price_limit)) !== null) {
+        if (($minPriceLimit = $this->roundPriceValue($listing->min_price_limit)) !== null) {
             $payload['min_price_limit'] = $minPriceLimit;
         }
 
@@ -1185,11 +1188,23 @@ class RefurbedListingsController extends Controller
         return $value === null ? null : round($value, 2);
     }
 
-    private function formatPriceString(?float $value): ?string
+    private function buildMoneyPayload(?float $value, string $currencyCode): ?array
     {
-        $rounded = $this->roundPriceValue($value);
+        if ($currencyCode === '') {
+            return null;
+        }
 
-        return $rounded === null ? null : number_format($rounded, 2, '.', '');
+        $amount = $this->roundPriceValue($value);
+
+        if ($amount === null) {
+            return null;
+        }
+
+        return [
+            'amount' => $amount,
+            'currency' => $currencyCode,
+            'currency_code' => $currencyCode,
+        ];
     }
 
     private function valueChanged(?float $original, ?float $current): bool
@@ -1225,6 +1240,7 @@ class RefurbedListingsController extends Controller
             Log::info('Refurbed: Pushed market prices', [
                 'sku' => $sku,
                 'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
+                'payload' => $payload['set_market_prices'],
                 'response' => $response,
             ]);
 
@@ -1236,6 +1252,7 @@ class RefurbedListingsController extends Controller
             Log::error('Refurbed: Failed to push market prices', [
                 'sku' => $sku,
                 'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
+                'payload' => $payload['set_market_prices'],
                 'error' => $e->getMessage(),
             ]);
 
