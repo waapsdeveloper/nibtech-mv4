@@ -1146,17 +1146,20 @@ class RefurbedListingsController extends Controller
 
     private function buildMarketPricePayload(string $marketCode, string $currencyCode, Listing_model $listing): ?array
     {
-        if ($marketCode === '' || $currencyCode === '') {
+        $normalizedMarket = strtolower(trim($marketCode));
+        $normalizedCurrency = strtoupper(trim($currencyCode));
+
+        if ($normalizedMarket === '' || $normalizedCurrency === '') {
             return null;
         }
 
         $payload = [
-            'market_code' => strtoupper($marketCode),
-            'currency_code' => strtoupper($currencyCode),
+            'market_code' => $normalizedMarket,
+            'currency_code' => $normalizedCurrency,
         ];
 
-        if (($price = $this->formatPriceString($listing->price)) !== null) {
-            $payload['price'] = $price;
+        if (($pricePayload = $this->buildMoneyPayload($listing->price, $normalizedCurrency)) !== null) {
+            $payload['price'] = $pricePayload;
         }
 
         if (($minPrice = $this->formatPriceString($listing->min_price)) !== null) {
@@ -1183,6 +1186,24 @@ class RefurbedListingsController extends Controller
     private function roundPriceValue(?float $value): ?float
     {
         return $value === null ? null : round($value, 2);
+    }
+
+    private function buildMoneyPayload(?float $value, string $currencyCode): ?array
+    {
+        if ($currencyCode === '') {
+            return null;
+        }
+
+        $amount = $this->formatPriceString($value);
+
+        if ($amount === null) {
+            return null;
+        }
+
+        return [
+            'amount' => $amount,
+            'currency_code' => $currencyCode,
+        ];
     }
 
     private function formatPriceString(?float $value): ?string
