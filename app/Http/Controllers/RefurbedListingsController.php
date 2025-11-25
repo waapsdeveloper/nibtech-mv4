@@ -457,73 +457,166 @@ class RefurbedListingsController extends Controller
 
     private function ensureRefurbedListingExists(Variation_model $variation, int $marketplaceId): void
     {
-        $listingExists = Listing_model::where('variation_id', $variation->id)
-            ->where('marketplace_id', $marketplaceId)
-            ->exists();
-
-        if ($listingExists) {
-            return;
-        }
-
         $referenceListing = $variation->listings()->first();
         $offerSnapshot = $this->fetchOfferSnapshot($variation->sku);
         $currencyId = $referenceListing->currency_id ?? null;
         $countryId = $referenceListing->country ?? null;
-        $price = null;
-        $minPrice = null;
-        $maxPrice = null;
-        // $referenceUuid = $variation->reference_uuid;
+        $referenceUuid = $variation->reference_uuid;
         $name = $variation->name;
-        $marketEntry = null;
+        $marketEntries = [];
+        $referencePrice = null;
+        $referenceMinPrice = null;
+        $offerMaxPrice = null;
+        $fallbackCode = null;
+        $fallbackPrice = null;
+        $fallbackCurrency = null;
+        $fallbackPriceLimit = null;
+        $fallbackMinPriceLimit = null;
 
         if ($offerSnapshot) {
             $currencyId = $this->resolveCurrencyIdFromOffer($offerSnapshot, $currencyId);
-            $referenceUuid = $offerSnapshot['id'];
+            $referenceUuid = $offerSnapshot['id'] ?? $referenceUuid;
             $name = $name ?? ($offerSnapshot['title'] ?? null);
-
             $marketEntries = $this->extractMarketEntries($offerSnapshot);
-            $marketEntry = reset($marketEntries) ?: null;
+            $referencePrice = $offerSnapshot['reference_price'] ?? null;
+            $referenceMinPrice = $offerSnapshot['reference_min_price'] ?? null;
+            $offerMaxPrice = $offerSnapshot['max_price'] ?? null;
+            $fallbackCode = $offerSnapshot['country'] ?? $offerSnapshot['region'] ?? null;
+            $fallbackPrice = $offerSnapshot['price']['amount'] ?? $offerSnapshot['price'] ?? null;
+            $fallbackCurrency = $offerSnapshot['price']['currency'] ?? $offerSnapshot['currency'] ?? null;
+            $fallbackPriceLimit = $offerSnapshot['price_limit'] ?? null;
+            $fallbackMinPriceLimit = $offerSnapshot['min_price_limit'] ?? null;
+        }
 
-            if ($marketEntry) {
-                $countryId = $this->resolveCountryId($marketEntry['market_code'] ?? null, $countryId);
-                if (empty($currencyId) && !empty($marketEntry['currency'])) {
-                    $currencyId = $this->resolveCurrencyIdByCode($marketEntry['currency']);
+        if (empty($marketEntries)) {
+            $marketEntries = [[
+                'market_code' => $fallbackCode,
+                'price' => $fallbackPrice,
+                'currency' => $fallbackCurrency,
+                'min_price' => null,
+                'max_price' => null,
+                'price_limit' => $fallbackPriceLimit,
+                'min_price_limit' => $fallbackMinPriceLimit,
+            ]];
+        }
+
+        $bmBenchmark = $this->getBackMarketBenchmarkPrices($variation);
+        $bmMaxPrice = $bmBenchmark['max_price'];
+        $bmMaxMinPrice = $bmBenchmark['max_min_price'];
+        $bmCountryIds = $bmBenchmark['country_ids'];
+        $bmCountryCodes = $bmBenchmark['country_codes'];
+
+        foreach ($marketEntries as $entry) {
+            $entryCountryId = $this->resolveCountryId($entry['market_code'] ?? null, $countryId);
+            if (! $entryCountryId) {
+                $entryCountryId = Country_model::query()->orderBy('id')->value('id');
+            }
+
+            if (! $entryCountryId) {
+                Log::warning('Refurbed: Unable to create listing without country', [
+                    'variation_id' => $variation->id,
+                ]);
+                continue;
+            }
+
+            $entryCurrencyId = $currencyId;
+            if (empty($entryCurrencyId) && !empty($entry['currency'])) {
+                $entryCurrencyId = $this->resolveCurrencyIdByCode($entry['currency']);
+            }
+
+            $listing = Listing_model::firstOrNew([
+                'country' => $entryCountryId,
+                'marketplace_id' => $marketplaceId,
+                'variation_id' => $variation->id,
+            ]);
+
+            if ($entryCurrencyId) {
+                $listing->currency_id = $entryCurrencyId;
+            }
+
+            if ($name) {
+                $listing->name = $name;
+            }
+
+            if ($referenceUuid) {
+                $listing->reference_uuid = $referenceUuid;
+            }
+
+            $listing->price = $referencePrice ?? $entry['price'] ?? $listing->price;
+            $listing->min_price = $referenceMinPrice ?? $entry['min_price'] ?? $listing->min_price;
+            if (!empty($entry['max_price']) || $offerMaxPrice !== null) {
+                $listing->max_price = $entry['max_price'] ?? $offerMaxPrice;
+            }
+            if (!empty($entry['price_limit'])) {
+                $listing->price_limit = $entry['price_limit'];
+            }
+            if (!empty($entry['min_price_limit'])) {
+                $listing->min_price_limit = $entry['min_price_limit'];
+            }
+
+            $isFranceOrSpain = false;
+            if ($entryCountryId && in_array($entryCountryId, $bmCountryIds, true)) {
+                $isFranceOrSpain = true;
+            } elseif (!empty($entry['market_code'])) {
+                $isFranceOrSpain = in_array(strtoupper($entry['market_code']), $bmCountryCodes, true);
+            }
+
+            if ($isFranceOrSpain) {
+                if ($bmMaxPrice !== null) {
+                    $listing->price = $listing->price !== null ? max($listing->price, $bmMaxPrice) : $bmMaxPrice;
                 }
-                $price = $offerSnapshot['reference_price'] ?? $marketEntry['price'] ?? null;
-                $minPrice = $offerSnapshot['reference_min_price'] ?? $marketEntry['min_price'] ?? null;
-                $maxPrice = $marketEntry['max_price'] ?? $offerSnapshot['max_price'] ?? null;
+                if ($bmMaxMinPrice !== null) {
+                    $listing->min_price = $listing->min_price !== null ? max($listing->min_price, $bmMaxMinPrice) : $bmMaxMinPrice;
+                }
+            }
+
+            if (! $listing->exists) {
+                $listing->status = 1;
+            }
+
+            $listing->save();
+        }
+    }
+
+    private function getBackMarketBenchmarkPrices(Variation_model $variation): array
+    {
+        $targetCodes = ['FR', 'ES'];
+        $countries = Country_model::whereIn('code', $targetCodes)->pluck('id', 'code');
+
+        if ($countries->isEmpty()) {
+            return [
+                'max_price' => null,
+                'max_min_price' => null,
+                'country_ids' => [],
+                'country_codes' => $targetCodes,
+            ];
+        }
+
+        $listings = Listing_model::where('variation_id', $variation->id)
+            ->where('marketplace_id', 1)
+            ->whereIn('country', $countries->values())
+            ->get(['country', 'price', 'min_price']);
+
+        $maxPrice = null;
+        $maxMinPrice = null;
+
+        foreach ($listings as $listing) {
+            if ($listing->price !== null) {
+                $maxPrice = $maxPrice === null ? $listing->price : max($maxPrice, $listing->price);
+            }
+
+            $minPriceValue = $listing->min_price ?? $listing->price;
+            if ($minPriceValue !== null) {
+                $maxMinPrice = $maxMinPrice === null ? $minPriceValue : max($maxMinPrice, $minPriceValue);
             }
         }
 
-        if (! $countryId) {
-            $countryId = Country_model::query()->orderBy('id')->value('id');
-        }
-
-        if (! $countryId) {
-            Log::warning('Refurbed: Unable to create listing without country', [
-                'variation_id' => $variation->id,
-            ]);
-            return;
-        }
-
-        Listing_model::firstOrCreate(
-            [
-                'country' => $countryId,
-                'marketplace_id' => $marketplaceId,
-                'variation_id' => $variation->id,
-            ],
-            [
-                'currency_id' => $currencyId,
-                'name' => $name,
-                'reference_uuid' => $referenceUuid,
-                'price' => $price,
-                'min_price' => $minPrice,
-                'max_price' => $maxPrice,
-                'price_limit' => $marketEntry['price_limit'] ?? null,
-                'min_price_limit' => $marketEntry['min_price_limit'] ?? null,
-                'status' => 1,
-            ]
-        );
+        return [
+            'max_price' => $maxPrice,
+            'max_min_price' => $maxMinPrice ?? $maxPrice,
+            'country_ids' => $countries->values()->all(),
+            'country_codes' => array_map('strtoupper', array_keys($countries->toArray())),
+        ];
     }
 
     private function fetchOfferSnapshot(?string $sku): ?array
@@ -622,8 +715,11 @@ class RefurbedListingsController extends Controller
                 $entries[$countryCode] = [
                     'market_code' => $countryCode,
                     'price' => $offer['price']['amount'] ?? $offer['price'] ?? null,
+                    'currency' => $offer['price']['currency'] ?? $offer['currency'] ?? null,
                     'min_price' => $offer['min_price'] ?? null,
                     'max_price' => $offer['max_price'] ?? null,
+                    'price_limit' => $offer['price_limit'] ?? null,
+                    'min_price_limit' => $offer['min_price_limit'] ?? null,
                 ];
             }
         }
