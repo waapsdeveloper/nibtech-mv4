@@ -6,6 +6,7 @@ use App\Console\Commands\FunctionsThirty;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
 use App\Models\Country_model;
+use App\Models\Currency_model;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -465,7 +466,38 @@ class RefurbedListingsController extends Controller
         }
 
         $referenceListing = $variation->listings()->first();
-        $countryId = $referenceListing->country ?? Country_model::query()->orderBy('id')->value('id');
+        $offerSnapshot = $this->fetchOfferSnapshot($variation->sku);
+        $currencyId = $referenceListing->currency_id ?? null;
+        $countryId = $referenceListing->country ?? null;
+        $price = null;
+        $minPrice = null;
+        $maxPrice = null;
+        // $referenceUuid = $variation->reference_uuid;
+        $name = $variation->name;
+        $marketEntry = null;
+
+        if ($offerSnapshot) {
+            $currencyId = $this->resolveCurrencyIdFromOffer($offerSnapshot, $currencyId);
+            $referenceUuid = $offerSnapshot['id'];
+            $name = $name ?? ($offerSnapshot['title'] ?? null);
+
+            $marketEntries = $this->extractMarketEntries($offerSnapshot);
+            $marketEntry = reset($marketEntries) ?: null;
+
+            if ($marketEntry) {
+                $countryId = $this->resolveCountryId($marketEntry['market_code'] ?? null, $countryId);
+                if (empty($currencyId) && !empty($marketEntry['currency'])) {
+                    $currencyId = $this->resolveCurrencyIdByCode($marketEntry['currency']);
+                }
+                $price = $offerSnapshot['reference_price'] ?? $marketEntry['price'] ?? null;
+                $minPrice = $offerSnapshot['reference_min_price'] ?? $marketEntry['min_price'] ?? null;
+                $maxPrice = $marketEntry['max_price'] ?? $offerSnapshot['max_price'] ?? null;
+            }
+        }
+
+        if (! $countryId) {
+            $countryId = Country_model::query()->orderBy('id')->value('id');
+        }
 
         if (! $countryId) {
             Log::warning('Refurbed: Unable to create listing without country', [
@@ -481,12 +513,122 @@ class RefurbedListingsController extends Controller
                 'variation_id' => $variation->id,
             ],
             [
-                'currency_id' => $referenceListing->currency_id ?? null,
-                'name' => $variation->name,
-                'reference_uuid' => $variation->reference_uuid,
+                'currency_id' => $currencyId,
+                'name' => $name,
+                'reference_uuid' => $referenceUuid,
+                'price' => $price,
+                'min_price' => $minPrice,
+                'max_price' => $maxPrice,
+                'price_limit' => $marketEntry['price_limit'] ?? null,
+                'min_price_limit' => $marketEntry['min_price_limit'] ?? null,
                 'status' => 1,
             ]
         );
+    }
+
+    private function fetchOfferSnapshot(?string $sku): ?array
+    {
+        if (empty($sku)) {
+            return null;
+        }
+
+        try {
+            $response = $this->refurbed->getOffer(['sku' => $sku]);
+            return $response['offer'] ?? $response ?? null;
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Failed to fetch offer snapshot', [
+                'sku' => $sku,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function resolveCurrencyIdFromOffer(array $offer, ?int $fallback = null): ?int
+    {
+        $currencyCode = $offer['price']['currency'] ?? $offer['currency'] ?? null;
+        $currencyId = $this->resolveCurrencyIdByCode($currencyCode);
+
+        return $currencyId ?? $fallback;
+    }
+
+    private function resolveCurrencyIdByCode(?string $currencyCode): ?int
+    {
+        if ($currencyCode) {
+            $currency = Currency_model::where('code', $currencyCode)->first();
+            if ($currency) {
+                return $currency->id;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveCountryId(?string $marketCode, ?int $fallback = null): ?int
+    {
+        if ($marketCode) {
+            $country = Country_model::where('code', $marketCode)->first();
+            if ($country) {
+                return $country->id;
+            }
+        }
+
+        return $fallback;
+    }
+
+    private function extractMarketEntries(array $offer): array
+    {
+        $entries = [];
+
+        $collectEntry = function (?array $marketPrice) use (&$entries) {
+            if (empty($marketPrice) || !is_array($marketPrice)) {
+                return;
+            }
+
+            $code = $marketPrice['market_code'] ?? null;
+            if (! $code) {
+                return;
+            }
+
+            $entries[$code] = [
+                'market_code' => $code,
+                'price' => $marketPrice['price']['amount'] ?? $marketPrice['price'] ?? null,
+                'currency' => $marketPrice['price']['currency'] ?? $marketPrice['currency'] ?? null,
+                'min_price' => $marketPrice['min_price'] ?? null,
+                'max_price' => $marketPrice['max_price'] ?? null,
+                'price_limit' => $marketPrice['price_limit'] ?? null,
+                'min_price_limit' => $marketPrice['min_price_limit'] ?? null,
+            ];
+        };
+
+        if (! empty($offer['market_price'])) {
+            $collectEntry($offer['market_price']);
+        }
+
+        foreach (['set_market_prices', 'calculated_market_prices'] as $key) {
+            if (empty($offer[$key]) || !is_array($offer[$key])) {
+                continue;
+            }
+
+            foreach ($offer[$key] as $marketPrice) {
+                $collectEntry($marketPrice);
+            }
+        }
+
+        if (empty($entries)) {
+            $countryCode = $offer['country'] ?? $offer['region'] ?? null;
+            if ($countryCode) {
+                $entries[$countryCode] = [
+                    'market_code' => $countryCode,
+                    'price' => $offer['price']['amount'] ?? $offer['price'] ?? null,
+                    'min_price' => $offer['min_price'] ?? null,
+                    'max_price' => $offer['max_price'] ?? null,
+                ];
+            }
+        }
+
+        return $entries;
     }
 
     private function sleepAfterSuccess(bool $bulkModeActive): void
