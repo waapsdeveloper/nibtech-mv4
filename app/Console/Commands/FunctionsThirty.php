@@ -29,6 +29,10 @@ class FunctionsThirty extends Command
      */
     protected $description = 'Command description';
 
+    protected array $bmBenchmarkCache = [];
+
+    protected ?array $bmBenchmarkCountryIds = null;
+
     /**
      * Execute the console command.
      *
@@ -391,6 +395,14 @@ class FunctionsThirty extends Command
                         $listing->min_price_limit = $marketPriceData['min_price_limit'] ?? $offerMeta['min_price_limit'];
                     }
 
+                    $bmBenchmark = $this->getBackMarketBenchmarkForVariation($offerMeta['variation_id']);
+                    if ($bmBenchmark['max_price'] !== null) {
+                        $listing->price = $listing->price !== null ? max($listing->price, $bmBenchmark['max_price']) : $bmBenchmark['max_price'];
+                    }
+                    if ($bmBenchmark['max_min_price'] !== null) {
+                        $listing->min_price = $listing->min_price !== null ? max($listing->min_price, $bmBenchmark['max_min_price']) : $bmBenchmark['max_min_price'];
+                    }
+
                     echo $listing->id . " ";
                     $listing->save();
                     $processedListings++;
@@ -416,5 +428,53 @@ class FunctionsThirty extends Command
             ]);
             echo "\nRefurbed sync failed: " . $e->getMessage() . "\n";
         }
+    }
+
+    protected function getBackMarketBenchmarkForVariation(int $variationId): array
+    {
+        if (isset($this->bmBenchmarkCache[$variationId])) {
+            return $this->bmBenchmarkCache[$variationId];
+        }
+
+        $countryIds = $this->getBenchmarkCountryIds();
+        if (empty($countryIds)) {
+            return $this->bmBenchmarkCache[$variationId] = [
+                'max_price' => null,
+                'max_min_price' => null,
+            ];
+        }
+
+        $listings = Listing_model::where('variation_id', $variationId)
+            ->where('marketplace_id', 1)
+            ->whereIn('country', $countryIds)
+            ->get(['price', 'min_price']);
+
+        $maxPrice = null;
+        $maxMinPrice = null;
+
+        foreach ($listings as $listing) {
+            if ($listing->price !== null) {
+                $maxPrice = $maxPrice === null ? $listing->price : max($maxPrice, $listing->price);
+            }
+
+            $minValue = $listing->min_price ?? $listing->price;
+            if ($minValue !== null) {
+                $maxMinPrice = $maxMinPrice === null ? $minValue : max($maxMinPrice, $minValue);
+            }
+        }
+
+        return $this->bmBenchmarkCache[$variationId] = [
+            'max_price' => $maxPrice,
+            'max_min_price' => $maxMinPrice ?? $maxPrice,
+        ];
+    }
+
+    protected function getBenchmarkCountryIds(): array
+    {
+        if ($this->bmBenchmarkCountryIds === null) {
+            $this->bmBenchmarkCountryIds = Country_model::whereIn('code', ['FR', 'ES'])->pluck('id')->all();
+        }
+
+        return $this->bmBenchmarkCountryIds;
     }
 }
