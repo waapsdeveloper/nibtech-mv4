@@ -503,8 +503,6 @@ class RefurbedListingsController extends Controller
         $bmBenchmark = $this->getBackMarketBenchmarkPrices($variation);
         $bmMaxPrice = $bmBenchmark['max_price'];
         $bmMaxMinPrice = $bmBenchmark['max_min_price'];
-        $bmCountryIds = $bmBenchmark['country_ids'];
-        $bmCountryCodes = $bmBenchmark['country_codes'];
 
         foreach ($marketEntries as $entry) {
             $entryCountryId = $this->resolveCountryId($entry['market_code'] ?? null, $countryId);
@@ -554,20 +552,12 @@ class RefurbedListingsController extends Controller
                 $listing->min_price_limit = $entry['min_price_limit'];
             }
 
-            $isFranceOrSpain = false;
-            if ($entryCountryId && in_array($entryCountryId, $bmCountryIds, true)) {
-                $isFranceOrSpain = true;
-            } elseif (!empty($entry['market_code'])) {
-                $isFranceOrSpain = in_array(strtoupper($entry['market_code']), $bmCountryCodes, true);
+            if ($bmMaxPrice !== null) {
+                $listing->price = $listing->price !== null ? max($listing->price, $bmMaxPrice) : $bmMaxPrice;
             }
 
-            if ($isFranceOrSpain) {
-                if ($bmMaxPrice !== null) {
-                    $listing->price = $listing->price !== null ? max($listing->price, $bmMaxPrice) : $bmMaxPrice;
-                }
-                if ($bmMaxMinPrice !== null) {
-                    $listing->min_price = $listing->min_price !== null ? max($listing->min_price, $bmMaxMinPrice) : $bmMaxMinPrice;
-                }
+            if ($bmMaxMinPrice !== null) {
+                $listing->min_price = $listing->min_price !== null ? max($listing->min_price, $bmMaxMinPrice) : $bmMaxMinPrice;
             }
 
             if (! $listing->exists) {
@@ -581,20 +571,21 @@ class RefurbedListingsController extends Controller
     private function getBackMarketBenchmarkPrices(Variation_model $variation): array
     {
         $targetCodes = ['FR', 'ES'];
-        $countries = Country_model::whereIn('code', $targetCodes)->pluck('id', 'code');
+        static $countryIds = null;
+        if ($countryIds === null) {
+            $countryIds = Country_model::whereIn('code', $targetCodes)->pluck('id')->all();
+        }
 
-        if ($countries->isEmpty()) {
+        if (empty($countryIds)) {
             return [
                 'max_price' => null,
                 'max_min_price' => null,
-                'country_ids' => [],
-                'country_codes' => $targetCodes,
             ];
         }
 
         $listings = Listing_model::where('variation_id', $variation->id)
             ->where('marketplace_id', 1)
-            ->whereIn('country', $countries->values())
+            ->whereIn('country', $countryIds)
             ->get(['country', 'price', 'min_price']);
 
         $maxPrice = null;
@@ -614,8 +605,6 @@ class RefurbedListingsController extends Controller
         return [
             'max_price' => $maxPrice,
             'max_min_price' => $maxMinPrice ?? $maxPrice,
-            'country_ids' => $countries->values()->all(),
-            'country_codes' => array_map('strtoupper', array_keys($countries->toArray())),
         ];
     }
 
