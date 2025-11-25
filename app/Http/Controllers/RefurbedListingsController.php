@@ -355,10 +355,10 @@ class RefurbedListingsController extends Controller
             $marketplaceId = 4;
 
             $variationQuery = Variation_model::query()
-                ->whereNotNull('sku')
-                ->whereHas('listings', function ($query) use ($marketplaceId) {
-                    $query->where('marketplace_id', $marketplaceId);
-                });
+                ->whereNotNull('sku');
+                // ->whereHas('listings', function ($query) use ($marketplaceId) {
+                //     $query->where('marketplace_id', $marketplaceId);
+                // });
 
             $totalVariations = (clone $variationQuery)->count();
 
