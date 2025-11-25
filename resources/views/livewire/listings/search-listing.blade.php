@@ -112,6 +112,17 @@
 
             </select>
         </div>
+        <div class="col-md col-sm-6">
+            {{-- <div class="card-header">
+                <h4 class="card-title mb-1">Brand</h4>
+            </div> --}}
+            <select name="marketplace" class="form-control form-select" data-bs-placeholder="Select Marketplace">
+                <option value="">Marketplace</option>
+                @foreach ($marketplaces as $id => $name)
+                    <option value="{{$id}}" @if(isset($_GET['marketplace']) && $id == $_GET['marketplace']) {{'selected'}}@endif>{{$name}}</option>
+                @endforeach
+            </select>
+        </div>
         <div class="">
 
             <div class="form-check form-switch">

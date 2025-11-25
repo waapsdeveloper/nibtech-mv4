@@ -458,6 +458,11 @@ class ListingController extends Controller
                 $q->where('handler_status', request('handler_status'));
             });
         })
+        ->when(request('marketplace') != '', function ($q) {
+            return $q->whereHas('listings', function ($q) {
+                $q->where('marketplace_id', request('marketplace'));
+            });
+        })
         ->where('sku', '!=', null)
         ->whereNull('variation.deleted_at')
         ->whereNull('products.deleted_at')
@@ -783,12 +788,12 @@ class ListingController extends Controller
         if($listing == null){
             return "Listing not found.";
         }
-        
+
         // Update marketplace_id if provided
         if(request('marketplace_id')){
             $listing->marketplace_id = request('marketplace_id');
         }
-        
+
         $bm = new BackMarketAPIController();
         if(request('min_price')){
             $listing->min_price = request('min_price');
@@ -814,12 +819,12 @@ class ListingController extends Controller
         $listing = Listing_model::find($id);
         $listing->min_price_limit = request('min_price_limit');
         $listing->price_limit = request('price_limit');
-        
+
         // Update marketplace_id if provided
         if(request('marketplace_id')){
             $listing->marketplace_id = request('marketplace_id');
         }
-        
+
         if($listing->min_price_limit == null && $listing->price_limit == null){
             $listing->handler_status = 0;
         }
