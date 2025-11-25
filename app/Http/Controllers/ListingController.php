@@ -11,6 +11,7 @@ use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listed_stock_verification_model;
 use App\Models\Listing_model;
+use App\Models\Marketplace_model;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Process_model;
@@ -56,6 +57,10 @@ class ListingController extends Controller
         $countries = Country_model::all();
         foreach($countries as $country){
             $data['countries'][$country->id] = $country;
+        }
+        $marketplaces = Marketplace_model::all();
+        foreach($marketplaces as $marketplace){
+            $data['marketplaces'][$marketplace->id] = $marketplace;
         }
 
 
@@ -103,6 +108,7 @@ class ListingController extends Controller
             'listings',
             'listings.country_id',
             'listings.currency',
+            'listings.marketplace',
             'product',
             'available_stocks',
             'pending_orders',
@@ -661,8 +667,50 @@ class ListingController extends Controller
                 return $responses;
             }
         // }
-        $listings = Listing_model::where('variation_id',$id)->get();
+        $listings = Listing_model::with('marketplace')->where('variation_id',$id)->get();
         return response()->json(['listings'=>$listings, 'error'=>$error]);
+    }
+
+    public function getOrCreateListing($variationId, $marketplaceId) {
+        $variation = Variation_model::find($variationId);
+        if(!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+
+        // Get EUR country (country id 73 based on the code)
+        $eurCountry = Country_model::where('id', 73)->first();
+        if(!$eurCountry) {
+            return response()->json(['error' => 'EUR country not found'], 404);
+        }
+
+        // Get EUR currency (currency_id 4)
+        $eurCurrency = Currency_model::where('id', 4)->first();
+        if(!$eurCurrency) {
+            return response()->json(['error' => 'EUR currency not found'], 404);
+        }
+
+        // Get or create listing for this variation, marketplace, and EUR country
+        $listing = Listing_model::firstOrNew([
+            'variation_id' => $variationId,
+            'marketplace_id' => $marketplaceId,
+            'country' => $eurCountry->id
+        ]);
+
+        // Set default values if it's a new listing
+        if(!$listing->exists) {
+            $listing->currency_id = $eurCurrency->id;
+            $listing->min_price = 0;
+            $listing->price = 0;
+            $listing->min_price_limit = 0;
+            $listing->price_limit = 0;
+            $listing->handler_status = 0;
+            $listing->buybox = 0;
+        }
+
+        $listing->save();
+        $listing->load('marketplace', 'country_id', 'currency');
+
+        return response()->json(['listing' => $listing]);
     }
     public function update_quantity($id){
         $variation = Variation_model::find($id);
@@ -735,6 +783,12 @@ class ListingController extends Controller
         if($listing == null){
             return "Listing not found.";
         }
+        
+        // Update marketplace_id if provided
+        if(request('marketplace_id')){
+            $listing->marketplace_id = request('marketplace_id');
+        }
+        
         $bm = new BackMarketAPIController();
         if(request('min_price')){
             $listing->min_price = request('min_price');
@@ -760,6 +814,12 @@ class ListingController extends Controller
         $listing = Listing_model::find($id);
         $listing->min_price_limit = request('min_price_limit');
         $listing->price_limit = request('price_limit');
+        
+        // Update marketplace_id if provided
+        if(request('marketplace_id')){
+            $listing->marketplace_id = request('marketplace_id');
+        }
+        
         if($listing->min_price_limit == null && $listing->price_limit == null){
             $listing->handler_status = 0;
         }

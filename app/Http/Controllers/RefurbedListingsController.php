@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Console\Commands\FunctionsThirty;
 use App\Models\Listing_model;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -195,36 +196,52 @@ class RefurbedListingsController extends Controller
                         }
                     }
 
-                    try {
-                        $identifier = ['sku' => $sku];
-                        $updates = ['stock' => 0];
+                    $identifier = ['sku' => $sku];
+                    $updates = ['stock' => 0];
+                    $attempt = 1;
+                    $maxAttempts = 5;
+                    $updateSucceeded = false;
+                    $lastException = null;
 
-                        $this->refurbed->updateOffer($identifier, $updates);
+                    while ($attempt <= $maxAttempts && ! $updateSucceeded) {
+                        try {
+                            $this->refurbed->updateOffer($identifier, $updates);
+                            $updateSucceeded = true;
+                            $updated++;
 
-                        $updated++;
-                        if (! $bulkModeActive && ($updated + $failed) > 10) {
-                            $bulkModeActive = true;
-                        }
-
-                        if ($targetSkus !== null) {
-                            $targetSkus[$sku] = true;
-
-                            // Stop as soon as we processed every requested SKU
-                            if (! in_array(false, $targetSkus, true)) {
-                                $hasMore = false;
-                                break;
+                            if (! $bulkModeActive && ($updated + $failed) > 10) {
+                                $bulkModeActive = true;
                             }
-                        }
 
-                        if ($bulkModeActive) {
-                            usleep(1000000); // 1 second delay for bulk updates
-                        }
+                            if ($targetSkus !== null) {
+                                $targetSkus[$sku] = true;
 
-                    } catch (\Exception $e) {
+                                // Stop as soon as we processed every requested SKU
+                                if (! in_array(false, $targetSkus, true)) {
+                                    $hasMore = false;
+                                }
+                            }
+
+                            $this->sleepAfterSuccess($bulkModeActive);
+
+                        } catch (\Throwable $e) {
+                            $lastException = $e;
+
+                            if ($this->isRateLimitException($e) && $attempt < $maxAttempts) {
+                                $this->sleepAfterRateLimit($attempt);
+                                $attempt++;
+                                continue;
+                            }
+
+                            break;
+                        }
+                    }
+
+                    if (! $updateSucceeded) {
                         $failed++;
                         $errors[] = [
                             'sku' => $sku,
-                            'error' => $e->getMessage(),
+                            'error' => $lastException?->getMessage() ?? 'Unknown error',
                         ];
 
                         if (! $bulkModeActive && ($updated + $failed) > 10) {
@@ -234,6 +251,10 @@ class RefurbedListingsController extends Controller
                         if ($bulkModeActive) {
                             usleep(2000000); // 2 second delay after error
                         }
+                    }
+
+                    if ($targetSkus !== null && ! $hasMore) {
+                        break;
                     }
                 }
 
@@ -434,5 +455,26 @@ class RefurbedListingsController extends Controller
                 'message' => 'Failed to update stock: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function sleepAfterSuccess(bool $bulkModeActive): void
+    {
+        $delayMicroseconds = $bulkModeActive ? 1000000 : 250000; // 1s vs 250ms
+        usleep($delayMicroseconds);
+    }
+
+    private function sleepAfterRateLimit(int $attempt): void
+    {
+        $seconds = min(5, 2 ** ($attempt - 1)); // 1,2,4,5
+        usleep((int) ($seconds * 1000000));
+    }
+
+    private function isRateLimitException(\Throwable $exception): bool
+    {
+        if ($exception instanceof RequestException && $exception->response) {
+            return $exception->response->status() === 429;
+        }
+
+        return str_contains(strtolower($exception->getMessage()), 'rate limit');
     }
 }
