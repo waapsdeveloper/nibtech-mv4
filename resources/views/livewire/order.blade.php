@@ -675,7 +675,7 @@
 
                                         @if ($item->status == 2)
                                             @if (count($items) < 2 && $item->quantity < 2)
-            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
+            <form id="dispatch_{{ $i."_".$j }}" class="form-inline dispatch-form" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
                 @if (!request('packing'))
                  onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}"
                 @endif
@@ -706,7 +706,7 @@
             </form>
                                             @elseif (count($items) < 2 && $item->quantity >= 2)
 
-            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
+            <form id="dispatch_{{ $i."_".$j }}" class="form-inline dispatch-form" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
                 @if (!request('packing'))
                  onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault();}"
                 @endif
@@ -737,7 +737,7 @@
                 </div>
             </form>
                                             @elseif (count($items) >= 2)
-            <form id="dispatch_{{ $i."_".$j }}" class="form-inline" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
+            <form id="dispatch_{{ $i."_".$j }}" class="form-inline dispatch-form" method="post" action="{{url('order')}}/dispatch/{{ $order->id }}"
                 @if (!request('packing'))
                  onsubmit="if($('#tracking_number_{{ $i }}_{{ $j }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}"
                 @endif
@@ -1588,6 +1588,41 @@
 
         $('.select2').select2({
             placeholder: "Exclude Topups",
+        });
+
+        document.addEventListener('DOMContentLoaded', function () {
+            const dispatchForms = document.querySelectorAll('form.dispatch-form');
+            dispatchForms.forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    const imeiInputs = Array.from(form.querySelectorAll('input[name="imei[]"]'));
+                    if (imeiInputs.length <= 1) {
+                        return;
+                    }
+
+                    const seen = new Set();
+                    for (const input of imeiInputs) {
+                        const value = (input.value || '').trim();
+                        if (value === '') {
+                            continue;
+                        }
+
+                        if (seen.has(value)) {
+                            event.preventDefault();
+                            event.stopPropagation();
+                            alert('Duplicate IMEI/Serial detected: ' + value + '. Please ensure each item has a unique identifier.');
+                            try {
+                                input.focus();
+                                input.select();
+                            } catch (e) {
+                                input.focus();
+                            }
+                            return false;
+                        }
+
+                        seen.add(value);
+                    }
+                });
+            });
         });
 
         // function get_customer_previous_orders(customer_id, order_id){
