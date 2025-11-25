@@ -1146,52 +1146,50 @@ class RefurbedListingsController extends Controller
 
     private function buildMarketPricePayload(string $marketCode, string $currencyCode, Listing_model $listing): ?array
     {
-        $pricePayload = $this->buildMoneyPayload($listing->price, $currencyCode);
-
-        $payload = [
-            'market_code' => strtoupper($marketCode),
-        ];
-
-        if ($pricePayload !== null) {
-            $payload['price'] = $pricePayload;
-        }
-
-        if (($minPrice = $this->roundPriceValue($listing->min_price)) !== null) {
-            $payload['min_price'] = $minPrice;
-        }
-
-        if (($maxPrice = $this->roundPriceValue($listing->max_price)) !== null) {
-            $payload['max_price'] = $maxPrice;
-        }
-
-        if (($priceLimit = $this->roundPriceValue($listing->price_limit)) !== null) {
-            $payload['price_limit'] = $priceLimit;
-        }
-
-        if (($minPriceLimit = $this->roundPriceValue($listing->min_price_limit)) !== null) {
-            $payload['min_price_limit'] = $minPriceLimit;
-        }
-
-        $hasValue = array_diff_key($payload, ['market_code' => true]);
-
-        return empty($hasValue) ? null : $payload;
-    }
-
-    private function buildMoneyPayload(?float $amount, string $currencyCode): ?array
-    {
-        if ($amount === null) {
+        if ($marketCode === '' || $currencyCode === '') {
             return null;
         }
 
-        return [
-            'amount' => $this->roundPriceValue($amount),
-            'currency' => $currencyCode,
+        $payload = [
+            'market_code' => strtoupper($marketCode),
+            'currency_code' => strtoupper($currencyCode),
         ];
+
+        if (($price = $this->formatPriceString($listing->price)) !== null) {
+            $payload['price'] = $price;
+        }
+
+        if (($minPrice = $this->formatPriceString($listing->min_price)) !== null) {
+            $payload['min_price'] = $minPrice;
+        }
+
+        if (($maxPrice = $this->formatPriceString($listing->max_price)) !== null) {
+            $payload['max_price'] = $maxPrice;
+        }
+
+        if (($priceLimit = $this->formatPriceString($listing->price_limit)) !== null) {
+            $payload['price_limit'] = $priceLimit;
+        }
+
+        if (($minPriceLimit = $this->formatPriceString($listing->min_price_limit)) !== null) {
+            $payload['min_price_limit'] = $minPriceLimit;
+        }
+
+        $hasValue = array_diff_key($payload, ['market_code' => true, 'currency_code' => true]);
+
+        return empty($hasValue) ? null : $payload;
     }
 
     private function roundPriceValue(?float $value): ?float
     {
         return $value === null ? null : round($value, 2);
+    }
+
+    private function formatPriceString(?float $value): ?string
+    {
+        $rounded = $this->roundPriceValue($value);
+
+        return $rounded === null ? null : number_format($rounded, 2, '.', '');
     }
 
     private function valueChanged(?float $original, ?float $current): bool
