@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Console\Commands\FunctionsThirty;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
+use App\Models\Country_model;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -373,7 +374,7 @@ class RefurbedListingsController extends Controller
             // Only apply aggressive rate limiting for bulk operations (more than 10 items)
             $isBulkOperation = $totalVariations > 10;
 
-            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, $isBulkOperation) {
+            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, $isBulkOperation, $marketplaceId) {
                 foreach ($variations as $variation) {
                     try {
                         $sku = trim($variation->sku ?? '');
@@ -389,12 +390,13 @@ class RefurbedListingsController extends Controller
                             $systemStock = 0;
                             continue;
                         }
-                        echo $sku . ' - ' . $systemStock . PHP_EOL;
                         $identifier = ['sku' => $sku];
                         $updates = ['stock' => $systemStock];
 
                         $this->refurbed->updateOffer($identifier, $updates);
                         $updated++;
+
+                        $this->ensureRefurbedListingExists($variation, $marketplaceId);
 
                         if ($isBulkOperation) {
                             usleep(100000); // 0.1 second delay for bulk updates
@@ -450,6 +452,41 @@ class RefurbedListingsController extends Controller
                 'message' => 'Failed to update stock: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    private function ensureRefurbedListingExists(Variation_model $variation, int $marketplaceId): void
+    {
+        $listingExists = Listing_model::where('variation_id', $variation->id)
+            ->where('marketplace_id', $marketplaceId)
+            ->exists();
+
+        if ($listingExists) {
+            return;
+        }
+
+        $referenceListing = $variation->listings()->first();
+        $countryId = $referenceListing->country ?? Country_model::query()->orderBy('id')->value('id');
+
+        if (! $countryId) {
+            Log::warning('Refurbed: Unable to create listing without country', [
+                'variation_id' => $variation->id,
+            ]);
+            return;
+        }
+
+        Listing_model::firstOrCreate(
+            [
+                'country' => $countryId,
+                'marketplace_id' => $marketplaceId,
+                'variation_id' => $variation->id,
+            ],
+            [
+                'currency_id' => $referenceListing->currency_id ?? null,
+                'name' => $variation->name,
+                'reference_uuid' => $variation->reference_uuid,
+                'status' => 1,
+            ]
+        );
     }
 
     private function sleepAfterSuccess(bool $bulkModeActive): void
