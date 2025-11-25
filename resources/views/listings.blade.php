@@ -243,6 +243,7 @@
                 grade: $('select[name="grade[]"]').val(),
                 category: $('select[name="category"]').val(),
                 brand: $('select[name="brand"]').val(),
+                marketplace: $('select[name="marketplace"]').val(),
                 listed_stock: $('select[name="listed_stock"]').val(),
                 available_stock: $('select[name="available_stock"]').val(),
                 handler_status: $('select[name="handler_status"]').val(),
