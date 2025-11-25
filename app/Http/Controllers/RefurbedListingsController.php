@@ -377,32 +377,21 @@ class RefurbedListingsController extends Controller
 
             $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, $isBulkOperation, $marketplaceId) {
                 foreach ($variations as $variation) {
+                    $sku = trim($variation->sku ?? '');
+
+                    if ($sku === '') {
+                        $skipped++;
+                        continue;
+                    }
+
                     try {
-                        $sku = trim($variation->sku ?? '');
-
-                        if ($sku === '') {
-                            $skipped++;
-                            continue;
-                        }
-
-                        $listedStock = $variation->listed_stock ?? 0;
-                        $systemStock = (int) $listedStock - 5;
-                        if ($systemStock < 0) {
-                            $systemStock = 0;
-                            continue;
-                        }
-                        $identifier = ['sku' => $sku];
-                        $updates = ['stock' => $systemStock];
-
-                        $this->refurbed->updateOffer($identifier, $updates);
-                        $updated++;
-
                         $this->ensureRefurbedListingExists($variation, $marketplaceId);
+                        $updated++;
 
                         if ($isBulkOperation) {
                             usleep(100000); // 0.1 second delay for bulk updates
                         }
-                    } catch (\Exception $e) {
+                    } catch (\Throwable $e) {
                         $failed++;
                         $errors[] = [
                             'sku' => $variation->sku ?? 'unknown',
@@ -417,7 +406,7 @@ class RefurbedListingsController extends Controller
             });
 
             // Log consolidated results
-            Log::info('Refurbed: Stock update from system completed', [
+            Log::info('Refurbed: Price sync from system completed', [
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
@@ -426,7 +415,7 @@ class RefurbedListingsController extends Controller
 
             // Log errors separately if any
             if (!empty($errors)) {
-                Log::error('Refurbed: Stock update had failures', [
+                Log::error('Refurbed: Price sync had failures', [
                     'total_failed' => $failed,
                     'errors' => $errors,
                 ]);
@@ -434,7 +423,7 @@ class RefurbedListingsController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'message' => "Stock updated for {$updated} listings from system variation->listed_stock",
+                'message' => "Prices synced for {$updated} listings based on system data",
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
@@ -443,14 +432,14 @@ class RefurbedListingsController extends Controller
             ]);
 
         } catch (\Exception $e) {
-            Log::error('Refurbed: Update stock from system failed', [
+            Log::error('Refurbed: Price sync from system failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
             ]);
 
             return response()->json([
                 'status' => 'error',
-                'message' => 'Failed to update stock: ' . $e->getMessage(),
+                'message' => 'Failed to sync prices: ' . $e->getMessage(),
             ], 500);
         }
     }
