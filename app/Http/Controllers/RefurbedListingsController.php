@@ -1155,7 +1155,6 @@ class RefurbedListingsController extends Controller
 
         $payload = [
             'market_code' => $normalizedMarket,
-            'currency_code' => $normalizedCurrency,
         ];
 
         if (($pricePayload = $this->buildMoneyPayload($listing->price, $normalizedCurrency)) !== null) {
@@ -1178,7 +1177,7 @@ class RefurbedListingsController extends Controller
             $payload['min_price_limit'] = $minPriceLimit;
         }
 
-        $hasValue = array_diff_key($payload, ['market_code' => true, 'currency_code' => true]);
+        $hasValue = array_diff_key($payload, ['market_code' => true]);
 
         return empty($hasValue) ? null : $payload;
     }
@@ -1203,7 +1202,6 @@ class RefurbedListingsController extends Controller
         return [
             'amount' => $amount,
             'currency' => $currencyCode,
-            'currency_code' => $currencyCode,
         ];
     }
 
