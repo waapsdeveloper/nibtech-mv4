@@ -33,6 +33,7 @@ use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Listed_stock_verification_model;
+use App\Models\Marketplace_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
@@ -78,6 +79,7 @@ class Order extends Component
         $data['missing_charge_count'] = Order_model::where('order_type_id',3)->whereNot('status',2)->whereNull('charges')->where('processed_at','<=',now()->subHours(12))->count();
         $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
         $data['order_statuses'] = Order_status_model::pluck('name','id');
+        $data['marketplaces'] = Marketplace_model::pluck('name','id');
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -128,7 +130,12 @@ class Order extends Component
 
         $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions', 'order_charges'])
         // ->where('orders.order_type_id',3)
-
+        ->when(request('marketplace') != null && request('marketplace') != 0, function ($q) {
+            return $q->where('marketplace_id', request('marketplace'));
+        })
+        ->when(request('marketplace') == null, function ($q) {
+            return $q->where('marketplace_id', 1);
+        })
         ->when(request('type') == '', function ($q) {
             return $q->where('orders.order_type_id',3);
         })

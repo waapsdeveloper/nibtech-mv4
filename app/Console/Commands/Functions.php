@@ -109,7 +109,7 @@ class Functions extends Command
 
         // Subquery to get the IDs of duplicate orders based on reference_id
         $subquery = Order_model::select('id')->where('reference_id','!=',null)->where('order_type_id',3)
-        ->selectRaw('ROW_NUMBER() OVER (PARTITION BY reference_id ORDER BY id) AS row_num');
+        ->selectRaw('ROW_NUMBER() OVER (PARTITION BY reference_id, marketplace_id ORDER BY id) AS row_num');
 
         // Final query to delete duplicate orders
         Order_model::whereIn('id', function ($query) use ($subquery) {

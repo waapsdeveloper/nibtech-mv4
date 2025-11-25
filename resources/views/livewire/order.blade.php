@@ -217,13 +217,13 @@
             </div>
                 <br>
             <div class="row">
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
                         <label for="">IMEI</label>
                     </div>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
                     {{-- <div class="form-floating"> --}}
                         <select id="adm_input" name="adm" class="form-control form-select" data-bs-placeholder="Select Processed By">
                             <option value="">Processed by</option>
@@ -235,14 +235,14 @@
                         {{-- <label for="adm_input">Processed By</label> --}}
                     {{-- </div> --}}
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
                     <div class="form-floating">
                         <input type="text" class="form-control" name="tracking_number" placeholder="Enter Tracking Number" value="@isset($_GET['tracking_number']){{$_GET['tracking_number']}}@endisset">
                         <label for="">Tracking Number</label>
                     </div>
                 </div>
 
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
                     <select name="with_stock" class="form-control form-select" data-bs-placeholder="Select With Stock">
                         <option value="">With & Without Stock</option>
                         <option value="1" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 1) {{'selected'}}@endif>With Stock</option>
@@ -250,7 +250,7 @@
                     </select>
                 </div>
 
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
                     <select name="exclude_topup[]" class="form-control form-select select2" multiple data-bs-placeholder="Exclude Topups">
                         <option value="">Exclude Topups</option>
                         @foreach ($topups as $id => $name)
@@ -259,7 +259,15 @@
                         @endforeach
                     </select>
                 </div>
-                <div class="col-lg-2 col-xl-2 col-md-3 col-sm-6">
+                <div class="col-md col-sm-6">
+                    <select id="marketplace_input" name="marketplace" class="form-control form-select" data-bs-placeholder="Select Marketplace">
+                        <option value="0" @if (request('marketplace') == 0) {{'selected'}} @endif>All Marketplace</option>
+                        @foreach ($marketplaces as $id => $name)
+                            <option value="{{$id}}" @if(isset($_GET['marketplace']) && $id == $_GET['marketplace']) {{'selected'}} @elseif (!isset($_GET['marketplace']) && $id == 1) {{'selected'}} @endif>{{$name }}</option>
+                        @endforeach
+                    </select>
+                </div>
+                <div class="col-md col-sm-6">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="invoice" name="invoice" value="1" @if (request('invoice') == "1") {{'checked'}} @endif>
                         <label class="form-check-label" for="invoice">Invoice Mode</label>

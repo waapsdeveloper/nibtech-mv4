@@ -62,6 +62,8 @@ Route::group(['middleware' => ['internal.only']], function () {
             ->name('refurbed.listings.active');
         Route::get('/orders', [RefurbedListingsController::class, 'orders'])
             ->name('refurbed.orders.index');
+        Route::post('/orders/{order}/shipping-label', [RefurbedListingsController::class, 'createOrderShippingLabel'])
+            ->name('refurbed.orders.shipping_label');
         Route::get('/listings/zero-stock', [RefurbedListingsController::class, 'zeroStock'])
             ->name('refurbed.listings.zero_stock');
         Route::get('/listings/sync', [RefurbedListingsController::class, 'syncListings'])
