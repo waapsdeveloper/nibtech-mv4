@@ -327,7 +327,7 @@ class FunctionsThirty extends Command
 
                         foreach ($marketEntries as $marketCode => $marketPriceData) {
                             if (!isset($countryMap[$marketCode])) {
-                                Log::info("Refurbed: Skipping offer for unsupported country", ['country' => $marketCode, 'sku' => $sku]);
+                                // Log::info("Refurbed: Skipping offer for unsupported country", ['country' => $marketCode, 'sku' => $sku]);
                                 continue;
                             }
 
