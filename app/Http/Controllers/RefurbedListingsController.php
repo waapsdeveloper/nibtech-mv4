@@ -355,6 +355,7 @@ class RefurbedListingsController extends Controller
             $skipped = 0;
             $errors = [];
             $marketplaceId = 4;
+            $syncedListings = [];
 
             $variationQuery = Variation_model::query()
                 ->whereNotNull('sku')
@@ -377,7 +378,7 @@ class RefurbedListingsController extends Controller
             // Only apply aggressive rate limiting for bulk operations (more than 10 items)
             $isBulkOperation = $totalVariations > 10;
 
-            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, $isBulkOperation, $marketplaceId) {
+            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, &$syncedListings, $isBulkOperation, $marketplaceId) {
                 foreach ($variations as $variation) {
                     $sku = trim($variation->sku ?? '');
 
@@ -389,6 +390,10 @@ class RefurbedListingsController extends Controller
                     try {
                         $this->ensureRefurbedListingExists($variation, $marketplaceId);
                         $updated++;
+                        $snapshot = $this->snapshotRefurbedListings($variation, $marketplaceId);
+                        if (! empty($snapshot)) {
+                            $syncedListings[] = $snapshot;
+                        }
 
                         if ($isBulkOperation) {
                             usleep(100000); // 0.1 second delay for bulk updates
@@ -431,6 +436,7 @@ class RefurbedListingsController extends Controller
                 'skipped' => $skipped,
                 'total' => $totalVariations,
                 'errors' => $errors,
+                'listings' => $syncedListings,
             ]);
 
         } catch (\Exception $e) {
@@ -593,6 +599,33 @@ class RefurbedListingsController extends Controller
         if (!empty($pendingMarketPriceUpdates) && !empty($variation->sku)) {
             $this->pushRefurbedPriceUpdates($variation->sku, array_values($pendingMarketPriceUpdates));
         }
+    }
+
+    private function snapshotRefurbedListings(Variation_model $variation, int $marketplaceId): array
+    {
+        $listings = Listing_model::where('variation_id', $variation->id)
+            ->where('marketplace_id', $marketplaceId)
+            ->get(['country', 'price', 'min_price', 'max_price', 'price_limit', 'min_price_limit']);
+
+        if ($listings->isEmpty()) {
+            return [];
+        }
+
+        return [
+            'sku' => $variation->sku,
+            'variation_id' => $variation->id,
+            'listings' => $listings->map(function ($listing) {
+                return [
+                    'country_id' => $listing->country,
+                    'country' => $this->resolveCountryCodeById($listing->country),
+                    'price' => $this->roundPriceValue($listing->price),
+                    'min_price' => $this->roundPriceValue($listing->min_price),
+                    'max_price' => $this->roundPriceValue($listing->max_price),
+                    'price_limit' => $this->roundPriceValue($listing->price_limit),
+                    'min_price_limit' => $this->roundPriceValue($listing->min_price_limit),
+                ];
+            })->all(),
+        ];
     }
 
     private function getBackMarketBenchmarkPrices(Variation_model $variation): array
