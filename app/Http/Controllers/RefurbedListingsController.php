@@ -358,6 +358,7 @@ class RefurbedListingsController extends Controller
 
             $variationQuery = Variation_model::query()
                 ->whereNotNull('sku');
+                ->where('listed_stock','>',0);
                 // ->whereHas('listings', function ($query) use ($marketplaceId) {
                 //     $query->where('marketplace_id', $marketplaceId);
                 // });
