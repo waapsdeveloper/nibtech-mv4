@@ -16,6 +16,11 @@ class RefurbedListingsController extends Controller
 {
     protected RefurbedAPIController $refurbed;
 
+    public function __construct(RefurbedAPIController $refurbed)
+    {
+        $this->refurbed = $refurbed;
+    }
+
     public function test(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
