@@ -553,13 +553,14 @@ class RefurbedListingsController extends Controller
                             continue;
                         }
 
-                        $this->pushRefurbedPriceUpdates($variation->sku, array_values($marketPayloads));
+                        $apiResult = $this->pushRefurbedPriceUpdates($variation->sku, array_values($marketPayloads));
 
                         $syncedListings[] = [
                             'sku' => $variation->sku,
                             'price' => $this->roundPriceValue($bmPrice),
                             'min_price' => $bmMinPrice !== null ? $this->roundPriceValue($bmMinPrice) : null,
                             'markets' => array_keys($marketPayloads),
+                            'api_result' => $apiResult,
                         ];
 
                         $updated++;
@@ -844,7 +845,7 @@ class RefurbedListingsController extends Controller
         try {
             $response = $this->refurbed->getOffer(['sku' => $sku]);
             return $response['offer'] ?? $response ?? null;
-        } catch (\Throwable $e) {
+                    } catch (\Throwable $e) {
             // Log::warning('Refurbed: Failed to fetch offer snapshot', [
             //     'sku' => $sku,
             //     'error' => $e->getMessage(),
@@ -1206,10 +1207,13 @@ class RefurbedListingsController extends Controller
         return abs($original - $current) > 0.0001;
     }
 
-    private function pushRefurbedPriceUpdates(string $sku, array $setMarketPrices): void
+    private function pushRefurbedPriceUpdates(string $sku, array $setMarketPrices): array
     {
         if (empty($setMarketPrices)) {
-            return;
+            return [
+                'success' => false,
+                'error' => 'No market prices to push',
+            ];
         }
 
         $identifier = ['sku' => $sku];
@@ -1220,19 +1224,27 @@ class RefurbedListingsController extends Controller
         try {
             $response = $this->refurbed->updateOffer($identifier, $payload);
 
-            if (config('app.debug')) {
-                Log::debug('Refurbed: Pushed market prices', [
-                    'sku' => $sku,
-                    'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
-                    'response' => $response,
-                ]);
-            }
+            Log::info('Refurbed: Pushed market prices', [
+                'sku' => $sku,
+                'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
+                'response' => $response,
+            ]);
+
+            return [
+                'success' => true,
+                'response' => $response,
+            ];
         } catch (\Throwable $e) {
             Log::error('Refurbed: Failed to push market prices', [
                 'sku' => $sku,
                 'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
                 'error' => $e->getMessage(),
             ]);
+
+            return [
+                'success' => false,
+                'error' => $e->getMessage(),
+            ];
         }
     }
 
