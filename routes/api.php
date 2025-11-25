@@ -60,6 +60,8 @@ Route::group(['middleware' => ['internal.only']], function () {
             ->name('refurbed.listings.test');
         Route::get('/listings/active', [RefurbedListingsController::class, 'active'])
             ->name('refurbed.listings.active');
+        Route::get('/orders', [RefurbedListingsController::class, 'orders'])
+            ->name('refurbed.orders.index');
         Route::get('/listings/zero-stock', [RefurbedListingsController::class, 'zeroStock'])
             ->name('refurbed.listings.zero_stock');
         Route::get('/listings/sync', [RefurbedListingsController::class, 'syncListings'])
