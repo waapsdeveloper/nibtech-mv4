@@ -133,6 +133,12 @@ class ListingController extends Controller
                 $productQuery->where('brand', $request->input('brand'));
             });
         })
+        ->when($request->filled('marketplace'), function ($q) use ($request) {
+            // Log::info('Filtering by marketplace: ' . request('marketplace'));
+             return $q->whereHas('listings', function ($q) {
+                 $q->where('marketplace_id', request('marketplace'));
+             });
+         })
         ->when($request->filled('product'), function ($q) use ($request) {
             return $q->where('product_id', $request->input('product'));
         })
@@ -459,7 +465,7 @@ class ListingController extends Controller
             });
         })
         ->when(request('marketplace') != '', function ($q) {
-            Log::info('Filtering by marketplace: ' . request('marketplace'));
+            // Log::info('Filtering by marketplace: ' . request('marketplace'));
             return $q->whereHas('listings', function ($q) {
                 $q->where('marketplace_id', request('marketplace'));
             });
