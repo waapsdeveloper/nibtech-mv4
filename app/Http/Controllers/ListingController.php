@@ -459,6 +459,7 @@ class ListingController extends Controller
             });
         })
         ->when(request('marketplace') != '', function ($q) {
+            Log::info('Filtering by marketplace: ' . request('marketplace'));
             return $q->whereHas('listings', function ($q) {
                 $q->where('marketplace_id', request('marketplace'));
             });
