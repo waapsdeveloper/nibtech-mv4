@@ -155,6 +155,7 @@ class FunctionsThirty extends Command
             $response = $refurbed->getAllOffers([], [], 100);
 
             $offers = $response['offers'] ?? [];
+            Log::info("Refurbed: Fetched offers", json_encode($offers));
             $totalOffers = $response['total'] ?? count($offers);
 
             Log::info("Refurbed: Fetched all offers", ['total' => $totalOffers]);
@@ -297,9 +298,9 @@ class FunctionsThirty extends Command
                             $listing->min_price_limit = $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null;
                         }
 
-                        if (!$listing->exists) {
-                            $listing->status = 1; // Active by default for new listings
-                        }
+                        // if (!$listing->exists) {
+                        //     $listing->status = 1; // Active by default for new listings
+                        // }
 
                         // Admin ID - can be set if you want to track who manages this listing
                         // $listing->admin_id = null; // Set if needed
