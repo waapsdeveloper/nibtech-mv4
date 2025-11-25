@@ -1554,7 +1554,7 @@
                                                 <thead>
                                                     <tr>
                                                         <th width="80"><small><b>Country</b></small></th>
-                                                        <th width="100"><small><b>Marketplace</b></small></th>
+                                                        <th width="100" title="Marketplace"><small><b>MP</b></small></th>
                                                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                                                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                                                         <th width="80"><small><b>BuyBox</b></small></th>
