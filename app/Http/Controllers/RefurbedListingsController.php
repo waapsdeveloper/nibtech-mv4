@@ -1017,10 +1017,10 @@ class RefurbedListingsController extends Controller
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to push market prices', [
-                'sku' => $sku,
-                'error' => $e->getMessage(),
-            ]);
+            // Log::error('Refurbed: Failed to push market prices', [
+            //     'sku' => $sku,
+            //     'error' => $e->getMessage(),
+            // ]);
         }
     }
 
