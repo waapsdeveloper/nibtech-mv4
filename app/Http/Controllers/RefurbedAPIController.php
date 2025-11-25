@@ -239,6 +239,17 @@ class RefurbedAPIController extends Controller
         ], $updates)));
     }
 
+    public function getOffer(array $identifier): array
+    {
+        if (empty($identifier)) {
+            throw new RuntimeException('Offer identifier is required when fetching offers.');
+        }
+
+        return $this->post('refb.merchant.v1.OfferService/GetOffer', $this->cleanPayload([
+            'identifier' => $identifier,
+        ]));
+    }
+
     public function createShippingLabel(string $orderId, string $merchantAddressId, float $parcelWeight, ?string $carrier = null): array
     {
         return $this->post('refb.merchant.v1.OrderService/CreateShippingLabel', $this->cleanPayload([
