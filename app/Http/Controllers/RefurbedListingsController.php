@@ -389,7 +389,7 @@ class RefurbedListingsController extends Controller
                             $systemStock = 0;
                             continue;
                         }
-
+                        echo $sku . ' - ' . $systemStock . PHP_EOL;
                         $identifier = ['sku' => $sku];
                         $updates = ['stock' => $systemStock];
 
