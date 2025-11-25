@@ -11,6 +11,7 @@ use App\Models\Color_model;
 use App\Models\ExchangeRate;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
+use App\Models\Marketplace_model;
 use App\Models\Order_item_model;
 use App\Models\Order_status_model;
 use App\Models\Stock_model;
@@ -35,6 +36,7 @@ class SearchListing extends Component
         $data['storages'] = session('dropdown_data')['storages'];
         $data['colors'] = session('dropdown_data')['colors'];
         $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
+        $data['marketplaces'] = Marketplace_model::pluck('name','id')->toArray();
 
         if(request('per_page') != null){
             $per_page = request('per_page');
