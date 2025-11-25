@@ -352,82 +352,73 @@ class RefurbedListingsController extends Controller
             $failed = 0;
             $skipped = 0;
             $errors = [];
+            $marketplaceId = 4;
 
-            // Get ALL offers from Refurbed API (with automatic pagination), sorted by stock descending
-            $sort = [
-                'order' => 'DESC',
-                'by' => 'STOCK',
-            ];
-            $response = $this->refurbed->getAllOffers([], $sort);
-            $offers = $response['offers'] ?? [];
+            $variationQuery = Variation_model::query()
+                ->whereNotNull('sku')
+                ->whereHas('listings', function ($query) use ($marketplaceId) {
+                    $query->where('marketplace_id', $marketplaceId);
+                });
 
-            if (empty($offers)) {
+            $totalVariations = (clone $variationQuery)->count();
+
+            if ($totalVariations === 0) {
                 return response()->json([
                     'status' => 'success',
-                    'message' => 'No Refurbed offers found',
+                    'message' => 'No Refurbed variations found',
                     'updated' => 0,
                 ]);
             }
 
             // Only apply aggressive rate limiting for bulk operations (more than 10 items)
-            $isBulkOperation = count($offers) > 10;
+            $isBulkOperation = $totalVariations > 10;
 
-            foreach ($offers as $index => $offer) {
-                try {
-                    $sku = $offer['sku'] ?? null;
+            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, $isBulkOperation) {
+                foreach ($variations as $variation) {
+                    try {
+                        $sku = trim($variation->sku ?? '');
 
-                    if (!$sku) {
-                        $skipped++;
-                        continue;
-                    }
+                        if ($sku === '') {
+                            $skipped++;
+                            continue;
+                        }
 
-                    // Find variation in local system by SKU
-                    $variation = Variation_model::where('sku', $sku)->first();
+                        $listedStock = $variation->listed_stock ?? 0;
+                        $systemStock = (int) $listedStock - 5;
+                        if ($systemStock < 0) {
+                            $systemStock = 0;
+                            continue;
+                        }
 
-                    if (!$variation) {
-                        $skipped++;
-                        continue;
-                    }
+                        $identifier = ['sku' => $sku];
+                        $updates = ['stock' => $systemStock];
 
-                    $systemStock = (int) ($variation->listed_stock-5 ?? 0);
-                    if ($systemStock < 0) {
-                        $systemStock = 0;
-                        continue;
-                    }
-                    // Update offer quantity to match system stock via Refurbed API
-                    // Use only SKU (oneof field - cannot use both sku and id)
-                    $identifier = ['sku' => $sku];
-                    $updates = ['stock' => $systemStock];
+                        $this->refurbed->updateOffer($identifier, $updates);
+                        $updated++;
 
-                    $this->refurbed->updateOffer($identifier, $updates);
+                        if ($isBulkOperation) {
+                            usleep(100000); // 0.1 second delay for bulk updates
+                        }
+                    } catch (\Exception $e) {
+                        $failed++;
+                        $errors[] = [
+                            'sku' => $variation->sku ?? 'unknown',
+                            'error' => $e->getMessage(),
+                        ];
 
-                    $updated++;
-
-                    // Add delay only for bulk operations to prevent rate limiting
-                    if ($isBulkOperation) {
-                        usleep(100000); // 0.1 second delay for bulk updates
-                    }
-
-                } catch (\Exception $e) {
-                    $failed++;
-                    $errors[] = [
-                        'sku' => $offer['sku'] ?? 'unknown',
-                        'error' => $e->getMessage(),
-                    ];
-
-                    // Add longer delay after error (likely rate limit)
-                    if ($isBulkOperation) {
-                        usleep(200000); // 0.2 second delay after error
+                        if ($isBulkOperation) {
+                            usleep(200000); // 0.2 second delay after error
+                        }
                     }
                 }
-            }
+            });
 
             // Log consolidated results
             Log::info('Refurbed: Stock update from system completed', [
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
-                'total' => count($offers),
+                'total' => $totalVariations,
             ]);
 
             // Log errors separately if any
@@ -444,7 +435,7 @@ class RefurbedListingsController extends Controller
                 'updated' => $updated,
                 'failed' => $failed,
                 'skipped' => $skipped,
-                'total' => count($offers),
+                'total' => $totalVariations,
                 'errors' => $errors,
             ]);
 
@@ -463,14 +454,14 @@ class RefurbedListingsController extends Controller
 
     private function sleepAfterSuccess(bool $bulkModeActive): void
     {
-        $delayMicroseconds = $bulkModeActive ? 1000000 : 250000; // 1s vs 250ms
+        $delayMicroseconds = $bulkModeActive ? 100000 : 250000; // 0.1s vs 250ms
         usleep($delayMicroseconds);
     }
 
     private function sleepAfterRateLimit(int $attempt): void
     {
         $seconds = min(5, 2 ** ($attempt - 1)); // 1,2,4,5
-        usleep((int) ($seconds * 1000000));
+        usleep((int) ($seconds * 100000));
     }
 
     private function isRateLimitException(\Throwable $exception): bool
