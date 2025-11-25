@@ -1274,7 +1274,7 @@ class RefurbedListingsController extends Controller
             return null;
         }
 
-        $quantity = (int) $variation->listed_stock;
+        $quantity = (int) $variation->listed_stock - 5;
 
         return $quantity < 0 ? 0 : $quantity;
     }
