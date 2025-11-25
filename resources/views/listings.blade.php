@@ -498,6 +498,8 @@
 
             // Filter listings by marketplace_id if provided
             var listingsToUpdate = listings || [];
+
+            console.log('Listings to update before filter:', listingsToUpdate);
             if (marketplaceId) {
                 listingsToUpdate = listings.filter(function(listing) {
                     return listing.marketplace_id == marketplaceId;
