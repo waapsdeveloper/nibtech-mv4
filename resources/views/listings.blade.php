@@ -1001,7 +1001,7 @@
 
                         let buybox_button = '';
                         if (listing.buybox !== 1 && listing.buybox_price > 0) {
-                            buybox_button = `<button class="${(best_price > 0 && $best_price < listing.buybox_price) ? 'btn btn-success' : 'btn btn-warning'}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})">
+                            buybox_button = `<button class="${(best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success' : 'btn btn-warning'}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})">
                                         Get Buybox
                                     </button>`;
                         }
