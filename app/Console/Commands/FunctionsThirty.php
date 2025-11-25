@@ -155,7 +155,7 @@ class FunctionsThirty extends Command
             $response = $refurbed->getAllOffers([], [], 100);
 
             $offers = $response['offers'] ?? [];
-            Log::info("Refurbed: Fetched offers", json_encode($offers));
+            Log::info("Refurbed: Fetched offers". json_encode($offers));
             $totalOffers = $response['total'] ?? count($offers);
 
             Log::info("Refurbed: Fetched all offers", ['total' => $totalOffers]);
