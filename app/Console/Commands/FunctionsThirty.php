@@ -181,6 +181,7 @@ class FunctionsThirty extends Command
 
             $offersByCountry = [];
             $processedListings = 0;
+            $pendingPriceUpdates = [];
 
             foreach ($offers as $offer) {
                     try {
@@ -280,28 +281,38 @@ class FunctionsThirty extends Command
                             'min_price_limit' => $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null,
                             'currency_id' => $currency->id,
                             'sku' => $sku,
+                            'buybox_entries' => $this->extractRefurbedBuyboxEntries($offer),
                         ];
 
                         // Collect market-specific price entries so each country gets its own listing
                         $marketEntries = [];
 
-                        if (!empty($offer['market_price']) && is_array($offer['market_price'])) {
-                            $marketCode = $offer['market_price']['market_code'] ?? null;
-                            if ($marketCode) {
-                                $marketEntries[$marketCode] = $offer['market_price'];
+                        $collectMarketEntry = function (?array $marketPrice, ?string $marketCode = null) use (&$marketEntries, $priceCurrency) {
+                            if (empty($marketPrice) || !is_array($marketPrice)) {
+                                return;
                             }
-                        }
+
+                            $code = $marketCode ?? $marketPrice['market_code'] ?? null;
+                            if (!$code) {
+                                return;
+                            }
+
+                            $marketEntries[$code] = [
+                                'market_code' => $code,
+                                'price' => $marketPrice['price'] ?? null,
+                                'min_price' => $marketPrice['min_price'] ?? null,
+                                'max_price' => $marketPrice['max_price'] ?? null,
+                                'price_limit' => $marketPrice['price_limit'] ?? null,
+                                'min_price_limit' => $marketPrice['min_price_limit'] ?? null,
+                                'currency' => $marketPrice['currency'] ?? ($marketPrice['price']['currency'] ?? $priceCurrency),
+                            ];
+                        };
+
+                        $collectMarketEntry($offer['market_price'] ?? null);
 
                         if (!empty($offer['set_market_prices']) && is_array($offer['set_market_prices'])) {
                             foreach ($offer['set_market_prices'] as $marketPrice) {
-                                if (!is_array($marketPrice)) {
-                                    continue;
-                                }
-                                $marketCode = $marketPrice['market_code'] ?? null;
-                                if (!$marketCode) {
-                                    continue;
-                                }
-                                $marketEntries[$marketCode] = $marketPrice;
+                                $collectMarketEntry($marketPrice);
                             }
                         }
 
@@ -310,13 +321,13 @@ class FunctionsThirty extends Command
                                 if (!is_array($marketPrice)) {
                                     continue;
                                 }
-                                $marketCode = $marketPrice['market_code'] ?? null;
-                                if (!$marketCode) {
+
+                                $code = $marketPrice['market_code'] ?? null;
+                                if ($code && isset($marketEntries[$code])) {
                                     continue;
                                 }
-                                if (!isset($marketEntries[$marketCode])) {
-                                    $marketEntries[$marketCode] = $marketPrice;
-                                }
+
+                                $collectMarketEntry($marketPrice);
                             }
                         }
 
@@ -326,6 +337,9 @@ class FunctionsThirty extends Command
                                 'price' => $priceAmount,
                                 'min_price' => $offer['min_price'] ?? null,
                                 'max_price' => $offer['max_price'] ?? null,
+                                'price_limit' => $offer['price_limit'] ?? null,
+                                'min_price_limit' => $offer['min_price_limit'] ?? null,
+                                'currency' => $priceCurrency,
                             ];
                         }
 
@@ -361,6 +375,8 @@ class FunctionsThirty extends Command
                 foreach ($countryOffers as $entry) {
                     $offerMeta = $entry['offer'];
                     $marketPriceData = $entry['market_price'];
+                    $marketCode = $marketPriceData['market_code'] ?? $countryCode;
+                    $sku = $offerMeta['sku'] ?? null;
 
                     $listing = Listing_model::firstOrNew([
                         'country' => $countryId,
@@ -368,15 +384,30 @@ class FunctionsThirty extends Command
                         'marketplace_id' => $marketplaceId
                     ]);
 
-                    $marketPriceAmount = $marketPriceData['price'] ?? $offerMeta['price_amount'];
-                    $marketMinPrice = $marketPriceData['min_price'] ?? $offerMeta['min_price'];
+                    $currencyId = $offerMeta['currency_id'];
+                    if (!empty($marketPriceData['currency'])) {
+                        $currencyId = $this->resolveCurrencyIdByCode($marketPriceData['currency']) ?? $currencyId;
+                    }
+                    if ($currencyId) {
+                        $listing->currency_id = $currencyId;
+                    }
 
-                    $listing->price = $offerMeta['reference_price'] ?? $marketPriceAmount;
-                    $listing->currency_id = $offerMeta['currency_id'];
                     $listing->reference_uuid = $offerMeta['offer_id'];
 
                     if ($listing->name == null && $offerMeta['title']) {
                         $listing->name = $offerMeta['title'];
+                    }
+
+                    $marketPriceAmount = $this->extractRefurbedPriceAmount($marketPriceData['price'] ?? null);
+                    if ($marketPriceAmount === null) {
+                        $marketPriceAmount = $offerMeta['price_amount'];
+                    }
+
+                    $listing->price = $offerMeta['reference_price'] ?? $marketPriceAmount;
+
+                    $marketMinPrice = $this->extractRefurbedPriceAmount($marketPriceData['min_price'] ?? null);
+                    if ($marketMinPrice === null) {
+                        $marketMinPrice = $offerMeta['min_price'];
                     }
 
                     $effectiveMinPrice = $offerMeta['reference_min_price'] ?? $marketMinPrice;
@@ -384,15 +415,40 @@ class FunctionsThirty extends Command
                         $listing->min_price = $effectiveMinPrice;
                     }
 
-                    if (isset($marketPriceData['max_price']) || $offerMeta['max_price'] !== null) {
-                        $listing->max_price = $marketPriceData['max_price'] ?? $offerMeta['max_price'];
+                    $marketMaxPrice = $this->extractRefurbedPriceAmount($marketPriceData['max_price'] ?? null);
+                    if ($marketMaxPrice !== null || $offerMeta['max_price'] !== null) {
+                        $listing->max_price = $marketMaxPrice ?? $offerMeta['max_price'];
                     }
 
-                    if (isset($marketPriceData['price_limit']) || $offerMeta['price_limit'] !== null) {
+                    if (array_key_exists('price_limit', $marketPriceData) || $offerMeta['price_limit'] !== null) {
                         $listing->price_limit = $marketPriceData['price_limit'] ?? $offerMeta['price_limit'];
                     }
-                    if (isset($marketPriceData['min_price_limit']) || $offerMeta['min_price_limit'] !== null) {
+
+                    if (array_key_exists('min_price_limit', $marketPriceData) || $offerMeta['min_price_limit'] !== null) {
                         $listing->min_price_limit = $marketPriceData['min_price_limit'] ?? $offerMeta['min_price_limit'];
+                    }
+
+                    $buyboxEntries = $offerMeta['buybox_entries'] ?? [];
+                    $entryBuybox = $this->normalizeRefurbedBuyboxEntry($marketPriceData);
+                    $resolvedBuybox = $entryBuybox ?: $this->resolveRefurbedBuyboxForMarket($buyboxEntries, $marketCode);
+
+                    if ($resolvedBuybox) {
+                        if (array_key_exists('has_buybox', $resolvedBuybox) && $resolvedBuybox['has_buybox'] !== null) {
+                            $listing->buybox = $resolvedBuybox['has_buybox'];
+                        }
+                        if (array_key_exists('price_to_win', $resolvedBuybox) && $resolvedBuybox['price_to_win'] !== null) {
+                            $listing->buybox_price = $resolvedBuybox['price_to_win'];
+                        }
+                        if (array_key_exists('winner_price', $resolvedBuybox) && $resolvedBuybox['winner_price'] !== null) {
+                            $listing->buybox_winner_price = $resolvedBuybox['winner_price'];
+                        }
+
+                        if (empty($currencyId) && !empty($resolvedBuybox['currency'])) {
+                            $currencyId = $this->resolveCurrencyIdByCode($resolvedBuybox['currency']);
+                            if ($currencyId) {
+                                $listing->currency_id = $currencyId;
+                            }
+                        }
                     }
 
                     $bmBenchmark = $this->getBackMarketBenchmarkForVariation($offerMeta['variation_id']);
@@ -406,11 +462,25 @@ class FunctionsThirty extends Command
                     echo $listing->id . " ";
                     $listing->save();
                     $processedListings++;
+
+                    if ($sku && $marketCode) {
+                        $currencyCode = $marketPriceData['currency'] ?? ($marketPriceData['price']['currency'] ?? $this->resolveCurrencyCodeById($listing->currency_id));
+                        if ($currencyCode && $this->shouldPushRefurbedMarketPrice($marketPriceData, $listing, $offerMeta)) {
+                            $payload = $this->buildRefurbedMarketPricePayload($marketCode, $currencyCode, $listing);
+                            if ($payload) {
+                                $pendingPriceUpdates[$sku][$payload['market_code']] = $payload;
+                            }
+                        }
+                    }
                 }
             }
 
             $countriesProcessed = array_intersect(array_keys($offersByCountry), array_keys($countryMap));
             $countryCount = count(array_unique($countriesProcessed));
+
+            foreach ($pendingPriceUpdates as $sku => $setMarketPrices) {
+                $this->pushRefurbedPriceUpdates($refurbed, $sku, $setMarketPrices);
+            }
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
@@ -476,5 +546,301 @@ class FunctionsThirty extends Command
         }
 
         return $this->bmBenchmarkCountryIds;
+    }
+
+    private function extractRefurbedBuyboxEntries(array $offer): array
+    {
+        $entries = [];
+
+        $collect = function (array $candidate, ?string $marketCode = null) use (&$entries) {
+            $normalized = $this->normalizeRefurbedBuyboxEntry($candidate);
+            if ($normalized === null) {
+                return;
+            }
+
+            $code = $marketCode ?? $candidate['market_code'] ?? $candidate['market'] ?? null;
+            if ($code) {
+                $entries[strtoupper($code)] = $normalized;
+            } else {
+                $entries['*'] = $normalized;
+            }
+        };
+
+        $walker = function ($payload, ?string $marketCode = null) use (&$walker, $collect) {
+            if (!is_array($payload)) {
+                return;
+            }
+
+            $currentMarket = $marketCode ?? $payload['market_code'] ?? $payload['market'] ?? null;
+
+            if ($this->looksLikeRefurbedBuyboxEntry($payload)) {
+                $collect($payload, $currentMarket);
+            }
+
+            foreach ($payload as $key => $value) {
+                if (!is_array($value)) {
+                    continue;
+                }
+
+                $childMarket = $value['market_code'] ?? $value['market'] ?? (is_string($key) && strlen($key) <= 3 ? strtoupper($key) : $currentMarket);
+                $walker($value, $childMarket);
+            }
+        };
+
+        $walker($offer);
+
+        return $entries;
+    }
+
+    private function normalizeRefurbedBuyboxEntry(?array $payload): ?array
+    {
+        if (empty($payload) || !is_array($payload)) {
+            return null;
+        }
+
+        $priceToWin = $this->extractRefurbedPriceAmount($payload['price_to_win'] ?? $payload['price_for_buybox'] ?? $payload['buybox_price'] ?? null);
+        $winnerPrice = $this->extractRefurbedPriceAmount($payload['winner_price'] ?? $payload['buybox_winner_price'] ?? null);
+        $hasBuybox = $this->normalizeRefurbedBoolean($payload['same_merchant_winner'] ?? $payload['is_winner'] ?? $payload['wins_buybox'] ?? $payload['has_buybox'] ?? $payload['buybox'] ?? null);
+        $currency = $payload['price_to_win']['currency'] ?? $payload['price_for_buybox']['currency'] ?? $payload['winner_price']['currency'] ?? $payload['currency'] ?? null;
+
+        if ($priceToWin === null && $winnerPrice === null && $hasBuybox === null && $currency === null) {
+            return null;
+        }
+
+        return [
+            'has_buybox' => $hasBuybox,
+            'price_to_win' => $priceToWin,
+            'winner_price' => $winnerPrice,
+            'currency' => $currency,
+        ];
+    }
+
+    private function resolveRefurbedBuyboxForMarket(array $entries, ?string $marketCode): ?array
+    {
+        if ($marketCode) {
+            $code = strtoupper($marketCode);
+            if (isset($entries[$code])) {
+                return $entries[$code];
+            }
+        }
+
+        return $entries['*'] ?? null;
+    }
+
+    private function looksLikeRefurbedBuyboxEntry(array $payload): bool
+    {
+        $hintKeys = [
+            'price_to_win',
+            'price_for_buybox',
+            'winner_price',
+            'buybox_price',
+            'buybox_winner_price',
+            'same_merchant_winner',
+            'is_winner',
+            'wins_buybox',
+            'has_buybox',
+            'buybox',
+        ];
+
+        foreach ($hintKeys as $key) {
+            if (array_key_exists($key, $payload)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private function extractRefurbedPriceAmount($value): ?float
+    {
+        if (is_array($value)) {
+            if (array_key_exists('amount', $value)) {
+                $value = $value['amount'];
+            } elseif (array_key_exists('value', $value)) {
+                $value = $value['value'];
+            }
+        }
+
+        if (is_numeric($value)) {
+            return (float) $value;
+        }
+
+        return null;
+    }
+
+    private function normalizeRefurbedBoolean($value): ?int
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_bool($value)) {
+            return $value ? 1 : 0;
+        }
+
+        if (is_numeric($value)) {
+            return ((int) $value) ? 1 : 0;
+        }
+
+        if (is_string($value)) {
+            $normalized = strtolower(trim($value));
+            if (in_array($normalized, ['1', 'true', 'yes', 'winner'], true)) {
+                return 1;
+            }
+            if (in_array($normalized, ['0', 'false', 'no'], true)) {
+                return 0;
+            }
+        }
+
+        return null;
+    }
+
+    private function resolveCurrencyCodeById(?int $currencyId): ?string
+    {
+        static $cache = [];
+
+        if (!$currencyId) {
+            return null;
+        }
+
+        if (!array_key_exists($currencyId, $cache)) {
+            $cache[$currencyId] = Currency_model::where('id', $currencyId)->value('code');
+        }
+
+        return $cache[$currencyId];
+    }
+
+    private function resolveCountryCodeById(?int $countryId): ?string
+    {
+        static $cache = [];
+
+        if (!$countryId) {
+            return null;
+        }
+
+        if (!array_key_exists($countryId, $cache)) {
+            $cache[$countryId] = Country_model::where('id', $countryId)->value('code');
+        }
+
+        return $cache[$countryId];
+    }
+
+    private function shouldPushRefurbedMarketPrice(array $marketPriceData, Listing_model $listing, array $offerMeta): bool
+    {
+        $baselinePrice = $offerMeta['reference_price']
+            ?? $this->extractRefurbedPriceAmount($marketPriceData['price'] ?? null)
+            ?? $offerMeta['price_amount'] ?? null;
+
+        if ($this->valueChanged($baselinePrice, $listing->price)) {
+            return true;
+        }
+
+        $baselineMinPrice = $offerMeta['reference_min_price']
+            ?? $marketPriceData['min_price'] ?? $offerMeta['min_price'] ?? null;
+        if ($this->valueChanged($baselineMinPrice, $listing->min_price)) {
+            return true;
+        }
+
+        $baselinePriceLimit = $marketPriceData['price_limit'] ?? $offerMeta['price_limit'] ?? null;
+        if ($this->valueChanged($baselinePriceLimit, $listing->price_limit)) {
+            return true;
+        }
+
+        $baselineMinPriceLimit = $marketPriceData['min_price_limit'] ?? $offerMeta['min_price_limit'] ?? null;
+        if ($this->valueChanged($baselineMinPriceLimit, $listing->min_price_limit)) {
+            return true;
+        }
+
+        return false;
+    }
+
+    private function buildRefurbedMarketPricePayload(string $marketCode, string $currencyCode, Listing_model $listing): ?array
+    {
+        $payload = [
+            'market_code' => strtoupper($marketCode),
+        ];
+
+        if (($pricePayload = $this->buildRefurbedMoneyPayload($listing->price, $currencyCode)) !== null) {
+            $payload['price'] = $pricePayload;
+        }
+
+        if (($minPrice = $this->roundPriceValue($listing->min_price)) !== null) {
+            $payload['min_price'] = $minPrice;
+        }
+
+        if (($maxPrice = $this->roundPriceValue($listing->max_price)) !== null) {
+            $payload['max_price'] = $maxPrice;
+        }
+
+        if (($priceLimit = $this->roundPriceValue($listing->price_limit)) !== null) {
+            $payload['price_limit'] = $priceLimit;
+        }
+
+        if (($minPriceLimit = $this->roundPriceValue($listing->min_price_limit)) !== null) {
+            $payload['min_price_limit'] = $minPriceLimit;
+        }
+
+        $hasValue = array_diff_key($payload, ['market_code' => true]);
+
+        return empty($hasValue) ? null : $payload;
+    }
+
+    private function buildRefurbedMoneyPayload(?float $amount, string $currencyCode): ?array
+    {
+        if ($amount === null) {
+            return null;
+        }
+
+        return [
+            'amount' => $this->roundPriceValue($amount),
+            'currency' => $currencyCode,
+        ];
+    }
+
+    private function roundPriceValue(?float $value): ?float
+    {
+        return $value === null ? null : round($value, 2);
+    }
+
+    private function valueChanged(?float $original, ?float $current): bool
+    {
+        if ($original === null && $current === null) {
+            return false;
+        }
+
+        if ($original === null || $current === null) {
+            return true;
+        }
+
+        return abs($original - $current) > 0.0001;
+    }
+
+    private function pushRefurbedPriceUpdates(RefurbedAPIController $refurbed, ?string $sku, array $setMarketPrices): void
+    {
+        if (empty($sku) || empty($setMarketPrices)) {
+            return;
+        }
+
+        try {
+            $refurbed->updateOffer([
+                'sku' => $sku,
+            ], [
+                'set_market_prices' => array_values($setMarketPrices),
+            ]);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to push price update', [
+                'sku' => $sku,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    private function resolveCurrencyIdByCode(?string $currencyCode): ?int
+    {
+        if (!$currencyCode) {
+            return null;
+        }
+
+        return Currency_model::where('code', $currencyCode)->value('id');
     }
 }
