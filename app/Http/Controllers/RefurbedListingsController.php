@@ -553,17 +553,21 @@ class RefurbedListingsController extends Controller
                             continue;
                         }
 
+                        $stockQuantity = $this->resolveStockQuantity($variation);
+
                         $apiResult = $this->pushRefurbedPriceUpdates(
                             $variation->sku,
                             array_values($marketPayloads),
                             $bmPrice,
-                            $bmMinPrice
+                            $bmMinPrice,
+                            $stockQuantity
                         );
 
                         $syncedListings[] = [
                             'sku' => $variation->sku,
                             'price' => $this->roundPriceValue($bmPrice),
                             'min_price' => $bmMinPrice !== null ? $this->roundPriceValue($bmMinPrice) : null,
+                            'stock' => $stockQuantity,
                             'markets' => array_keys($marketPayloads),
                             'api_result' => $apiResult,
                         ];
@@ -770,7 +774,13 @@ class RefurbedListingsController extends Controller
         }
 
         if (!empty($pendingMarketPriceUpdates) && !empty($variation->sku)) {
-            $this->pushRefurbedPriceUpdates($variation->sku, array_values($pendingMarketPriceUpdates));
+            $this->pushRefurbedPriceUpdates(
+                $variation->sku,
+                array_values($pendingMarketPriceUpdates),
+                $referencePrice,
+                $referenceMinPrice,
+                $this->resolveStockQuantity($variation)
+            );
         }
     }
 
@@ -1210,6 +1220,17 @@ class RefurbedListingsController extends Controller
         ];
     }
 
+    private function resolveStockQuantity(?Variation_model $variation): ?int
+    {
+        if (! $variation || $variation->listed_stock === null) {
+            return null;
+        }
+
+        $quantity = (int) $variation->listed_stock;
+
+        return $quantity < 0 ? 0 : $quantity;
+    }
+
     private function formatPriceString(?float $value): ?string
     {
         if ($value === null) {
@@ -1232,19 +1253,27 @@ class RefurbedListingsController extends Controller
         return abs($original - $current) > 0.0001;
     }
 
-    private function pushRefurbedPriceUpdates(string $sku, array $setMarketPrices, ?float $referencePrice = null, ?float $referenceMinPrice = null): array
+    private function pushRefurbedPriceUpdates(
+        string $sku,
+        array $setMarketPrices,
+        ?float $referencePrice = null,
+        ?float $referenceMinPrice = null,
+        ?int $stockQuantity = null
+    ): array
     {
-        if (empty($setMarketPrices)) {
+        if (empty($setMarketPrices) && $stockQuantity === null) {
             return [
                 'success' => false,
-                'error' => 'No market prices to push',
+                'error' => 'No market prices or stock values to push',
             ];
         }
 
         $identifier = ['sku' => $sku];
-        $payload = [
-            'set_market_prices' => array_values($setMarketPrices),
-        ];
+        $payload = [];
+
+        if (! empty($setMarketPrices)) {
+            $payload['set_market_prices'] = array_values($setMarketPrices);
+        }
 
         if (($formattedReference = $this->formatPriceString($referencePrice)) !== null) {
             $payload['reference_price'] = $formattedReference;
@@ -1254,17 +1283,22 @@ class RefurbedListingsController extends Controller
             $payload['reference_min_price'] = $formattedReferenceMin;
         }
 
+        if ($stockQuantity !== null) {
+            $payload['stock'] = max(0, $stockQuantity);
+        }
+
         try {
             $response = $this->refurbed->updateOffer($identifier, $payload);
 
-            Log::info('Refurbed: Pushed market prices', [
-                'sku' => $sku,
-                'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
-                'payload' => $payload['set_market_prices'],
-                'reference_price' => $payload['reference_price'] ?? null,
-                'reference_min_price' => $payload['reference_min_price'] ?? null,
-                'response' => $response,
-            ]);
+            // Log::info('Refurbed: Pushed market prices', [
+            //     'sku' => $sku,
+            //     'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices'] ?? []),
+            //     'payload' => $payload['set_market_prices'] ?? [],
+            //     'reference_price' => $payload['reference_price'] ?? null,
+            //     'reference_min_price' => $payload['reference_min_price'] ?? null,
+            //     'stock' => $payload['stock'] ?? null,
+            //     'response' => $response,
+            // ]);
 
             return [
                 'success' => true,
@@ -1273,10 +1307,11 @@ class RefurbedListingsController extends Controller
         } catch (\Throwable $e) {
             Log::error('Refurbed: Failed to push market prices', [
                 'sku' => $sku,
-                'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices']),
-                'payload' => $payload['set_market_prices'],
+                'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices'] ?? []),
+                'payload' => $payload['set_market_prices'] ?? [],
                 'reference_price' => $payload['reference_price'] ?? null,
                 'reference_min_price' => $payload['reference_min_price'] ?? null,
+                'stock' => $payload['stock'] ?? null,
                 'error' => $e->getMessage(),
             ]);
 
