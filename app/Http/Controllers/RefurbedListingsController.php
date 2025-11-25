@@ -161,7 +161,7 @@ class RefurbedListingsController extends Controller
             $pageCount = 0;
             $maxPages = 250;
             $hasMore = true;
-            $bulkModeActive = false;
+                            } catch (\Throwable $e) {
 
             while ($hasMore && $pageCount < $maxPages) {
                 $pagination = array_filter([
@@ -448,6 +448,173 @@ class RefurbedListingsController extends Controller
             return response()->json([
                 'status' => 'error',
                 'message' => 'Failed to sync prices: ' . $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    /**
+     * Force Refurbed offer prices to match the highest Back Market listing price.
+     */
+    public function updatePricesFromBackMarket(Request $request): JsonResponse
+    {
+        try {
+            set_time_limit(300);
+
+            $bmMarketplaceId = 1;
+            $refurbedMarketplaceId = 4;
+
+            $updated = 0;
+            $failed = 0;
+            $skipped = 0;
+            $errors = [];
+            $syncedListings = [];
+
+            $skuFilter = $this->normalizeList($request->input('sku'));
+
+            $variationQuery = Variation_model::query()
+                ->whereNotNull('sku')
+                ->whereHas('listings', function ($query) use ($bmMarketplaceId) {
+                    $query->where('marketplace_id', $bmMarketplaceId)
+                        ->whereNotNull('price');
+                })
+                ->whereHas('listings', function ($query) use ($refurbedMarketplaceId) {
+                    $query->where('marketplace_id', $refurbedMarketplaceId);
+                });
+
+            if (! empty($skuFilter)) {
+                $variationQuery->whereIn('sku', $skuFilter);
+            }
+
+            $totalVariations = (clone $variationQuery)->count();
+
+            if ($totalVariations === 0) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'No overlapping Back Market and Refurbed listings found',
+                    'updated' => 0,
+                ]);
+            }
+
+            $isBulkOperation = $totalVariations > 10;
+
+            $variationQuery->chunkById(100, function ($variations) use (&$updated, &$failed, &$skipped, &$errors, &$syncedListings, $refurbedMarketplaceId, $isBulkOperation) {
+                foreach ($variations as $variation) {
+                    $benchmark = $this->getBackMarketBenchmarkPrices($variation);
+                    $bmPrice = $benchmark['max_price'];
+                    $bmMinPrice = $benchmark['max_min_price'];
+
+                    if ($bmPrice === null) {
+                        $skipped++;
+                        continue;
+                    }
+
+                    $bmPrice = (float) $bmPrice;
+                    $bmMinPrice = $bmMinPrice !== null ? (float) $bmMinPrice : null;
+
+                    try {
+                        $refurbedListings = Listing_model::where('variation_id', $variation->id)
+                            ->where('marketplace_id', $refurbedMarketplaceId)
+                            ->get();
+
+                        if ($refurbedListings->isEmpty()) {
+                            $this->ensureRefurbedListingExists($variation, $refurbedMarketplaceId);
+                            $refurbedListings = Listing_model::where('variation_id', $variation->id)
+                                ->where('marketplace_id', $refurbedMarketplaceId)
+                                ->get();
+                        }
+
+                        if ($refurbedListings->isEmpty()) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        $marketPayloads = [];
+
+                        foreach ($refurbedListings as $listing) {
+                            $listing->price = $bmPrice;
+                            if ($bmMinPrice !== null) {
+                                $listing->min_price = $bmMinPrice;
+                            }
+                            $listing->save();
+
+                            $marketCode = $this->resolveCountryCodeById($listing->country);
+                            $currencyCode = $this->resolveCurrencyCodeById($listing->currency_id);
+
+                            if ($marketCode && $currencyCode) {
+                                $payload = $this->buildMarketPricePayload($marketCode, $currencyCode, $listing);
+                                if ($payload) {
+                                    $marketPayloads[$marketCode] = $payload;
+                                }
+                            }
+                        }
+
+                        if (empty($marketPayloads)) {
+                            $skipped++;
+                            continue;
+                        }
+
+                        $this->pushRefurbedPriceUpdates($variation->sku, array_values($marketPayloads));
+
+                        $syncedListings[] = [
+                            'sku' => $variation->sku,
+                            'price' => $this->roundPriceValue($bmPrice),
+                            'min_price' => $bmMinPrice !== null ? $this->roundPriceValue($bmMinPrice) : null,
+                            'markets' => array_keys($marketPayloads),
+                        ];
+
+                        $updated++;
+
+                        if ($isBulkOperation) {
+                            usleep(100000); // 0.1 second delay for bulk updates
+                        }
+                    } catch (	hrowable $e) {
+                        $failed++;
+                        $errors[] = [
+                            'sku' => $variation->sku ?? 'unknown',
+                            'error' => $e->getMessage(),
+                        ];
+
+                        if ($isBulkOperation) {
+                            usleep(200000); // 0.2 second delay after failure
+                        }
+                    }
+                }
+            });
+
+            Log::info('Refurbed: BM price sync completed', [
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => $totalVariations,
+            ]);
+
+            if (! empty($errors)) {
+                Log::error('Refurbed: BM price sync had failures', [
+                    'total_failed' => $failed,
+                    'errors' => $errors,
+                ]);
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'message' => "Refurbed prices aligned to Back Market max price for {$updated} variations",
+                'updated' => $updated,
+                'failed' => $failed,
+                'skipped' => $skipped,
+                'total' => $totalVariations,
+                'errors' => $errors,
+                'listings' => $syncedListings,
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Refurbed: BM price sync failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to update Refurbed prices from Back Market benchmark: ' . $e->getMessage(),
             ], 500);
         }
     }
