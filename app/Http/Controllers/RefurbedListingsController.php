@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Console\Commands\FunctionsThirty;
 use App\Models\Listing_model;
+use App\Models\Variation_model;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -381,15 +382,18 @@ class RefurbedListingsController extends Controller
                     }
 
                     // Find variation in local system by SKU
-                    $variation = \App\Models\Variation_model::where('sku', $sku)->first();
+                    $variation = Variation_model::where('sku', $sku)->first();
 
                     if (!$variation) {
                         $skipped++;
                         continue;
                     }
 
-                    $systemStock = (int) ($variation->listed_stock ?? 0);
-
+                    $systemStock = (int) ($variation->listed_stock-5 ?? 0);
+                    if ($systemStock < 0) {
+                        $systemStock = 0;
+                        continue;
+                    }
                     // Update offer quantity to match system stock via Refurbed API
                     // Use only SKU (oneof field - cannot use both sku and id)
                     $identifier = ['sku' => $sku];
@@ -401,7 +405,7 @@ class RefurbedListingsController extends Controller
 
                     // Add delay only for bulk operations to prevent rate limiting
                     if ($isBulkOperation) {
-                        usleep(1000000); // 1 second delay for bulk updates
+                        usleep(100000); // 0.1 second delay for bulk updates
                     }
 
                 } catch (\Exception $e) {
@@ -413,7 +417,7 @@ class RefurbedListingsController extends Controller
 
                     // Add longer delay after error (likely rate limit)
                     if ($isBulkOperation) {
-                        usleep(2000000); // 2 second delay after error
+                        usleep(200000); // 0.2 second delay after error
                     }
                 }
             }
