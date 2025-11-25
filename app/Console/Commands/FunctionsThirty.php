@@ -304,9 +304,9 @@ class FunctionsThirty extends Command
 
                         // Admin ID - can be set if you want to track who manages this listing
                         // $listing->admin_id = null; // Set if needed
-
+                        echo $listing->id." ";
                         $listing->save();
-                        $totalProcessed++;
+                        echo $totalProcessed++;
 
                     } catch (\Exception $e) {
                         Log::error("Refurbed: Error processing offer", [
