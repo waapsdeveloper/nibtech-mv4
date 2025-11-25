@@ -185,7 +185,7 @@ class FunctionsThirty extends Command
 
                         // Product details
                         $title = $offer['title'] ?? $offer['product_title'] ?? null;
-                        $condition = $offer['condition'] ?? $offer['grade'] ?? null;
+                        // $condition = $offer['condition'] ?? $offer['grade'] ?? null;
 
                         // Country/region (Refurbed might not have country-specific listings like BackMarket)
                         // Defaulting to a general country code, adjust as needed
@@ -195,53 +195,53 @@ class FunctionsThirty extends Command
                             Log::warning("Refurbed: Offer missing SKU", ['offer_id' => $offerId]);
                             continue;
                         }
-
+                        if(ctype_digit($sku) && strlen($sku) < 4){
+                            $sku = "00".$sku;
+                        }
                         // Find or create variation based on SKU
-                        $variation = Variation_model::firstOrNew(['sku' => trim($sku)]);
+                        $variation = Variation_model::where(['sku' => trim($sku)])->first();
 
-                        // Update variation if new
-                        if (!$variation->exists) {
-                            $variation->reference_id = $offerId;
-                            $variation->status = 1;
-                            echo $offerId." (new) ";
+                        if ($variation == null) {
+                            Log::warning("Refurbed: Variation not found for SKU", ['sku' => $sku, 'offer_id' => $offerId]);
+                            continue;
                         }
 
                         // Update variation fields
-                        if ($variation->name == null && $title) {
-                            $variation->name = $title;
-                        }
-                        if ($variation->reference_uuid == null && $productId) {
-                            $variation->reference_uuid = $productId;
-                        }
+                        // if ($variation->name == null && $title) {
+                        //     $variation->name = $title;
+                        // }
+                        // if ($variation->reference_uuid == null && $productId) {
+                        //     $variation->reference_uuid = $productId;
+                        // }
 
                         // Map Refurbed condition to grade (adjust mapping as needed)
-                        if ($condition) {
-                            $gradeMap = [
-                                'NEW' => 1,
-                                'EXCELLENT' => 2,
-                                'VERY_GOOD' => 3,
-                                'GOOD' => 4,
-                                'FAIR' => 5,
-                            ];
-                            $variation->grade = $gradeMap[strtoupper($condition)] ?? 3;
-                        }
+                        // if ($condition) {
+                        //     $gradeMap = [
+                        //         'NEW' => 1,
+                        //         'EXCELLENT' => 2,
+                        //         'VERY_GOOD' => 3,
+                        //         'GOOD' => 4,
+                        //         'FAIR' => 5,
+                        //     ];
+                        //     $variation->grade = $gradeMap[strtoupper($condition)] ?? 3;
+                        // }
 
                         // Set state based on offer state
                         // Refurbed uses enum values like OFFER_STATE_ACTIVE, OFFER_STATE_INACTIVE, etc.
-                        $stateMap = [
-                            'OFFER_STATE_ACTIVE' => 1,
-                            'ACTIVE' => 1,
-                            'OFFER_STATE_INACTIVE' => 2,
-                            'INACTIVE' => 2,
-                            'OFFER_STATE_PAUSED' => 2,
-                            'PAUSED' => 2,
-                            'OFFER_STATE_OUT_OF_STOCK' => 3,
-                            'OUT_OF_STOCK' => 3,
-                        ];
-                        $variation->state = $stateMap[$state] ?? 1;
-                        $variation->listed_stock = $quantity;
+                        // $stateMap = [
+                        //     'OFFER_STATE_ACTIVE' => 1,
+                        //     'ACTIVE' => 1,
+                        //     'OFFER_STATE_INACTIVE' => 2,
+                        //     'INACTIVE' => 2,
+                        //     'OFFER_STATE_PAUSED' => 2,
+                        //     'PAUSED' => 2,
+                        //     'OFFER_STATE_OUT_OF_STOCK' => 3,
+                        //     'OUT_OF_STOCK' => 3,
+                        // ];
+                        // $variation->state = $stateMap[$state] ?? 1;
+                        // $variation->listed_stock = $quantity;
 
-                        $variation->save();
+                        // $variation->save();
 
                         // Get currency
                         $currency = Currency_model::where('code', $priceCurrency)->first();
@@ -261,6 +261,9 @@ class FunctionsThirty extends Command
                             }
                         }
 
+                        $referencePrice = $offer['reference_price'] ?? null;
+                        $referenceMinPrice = $offer['reference_min_price'] ?? null;
+
                         // Create or update listing
                         $listing = Listing_model::firstOrNew([
                             'country' => $country->id,
@@ -269,7 +272,7 @@ class FunctionsThirty extends Command
                         ]);
 
                         // Core price fields
-                        $listing->price = $priceAmount;
+                        $listing->price = $referencePrice ?? $priceAmount;
                         $listing->currency_id = $currency->id;
                         $listing->reference_uuid = $offerId;
 
@@ -279,8 +282,8 @@ class FunctionsThirty extends Command
                         }
 
                         // Min/Max price from offer (if available)
-                        if (isset($offer['min_price'])) {
-                            $listing->min_price = $offer['min_price'];
+                        if ($referenceMinPrice !== null) {
+                            $listing->min_price = $referenceMinPrice;
                         }
                         if (isset($offer['max_price'])) {
                             $listing->max_price = $offer['max_price'];
