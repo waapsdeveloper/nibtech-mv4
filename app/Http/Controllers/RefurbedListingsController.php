@@ -643,10 +643,10 @@ class RefurbedListingsController extends Controller
             $response = $this->refurbed->getOffer(['sku' => $sku]);
             return $response['offer'] ?? $response ?? null;
         } catch (\Throwable $e) {
-            Log::warning('Refurbed: Failed to fetch offer snapshot', [
-                'sku' => $sku,
-                'error' => $e->getMessage(),
-            ]);
+            // Log::warning('Refurbed: Failed to fetch offer snapshot', [
+            //     'sku' => $sku,
+            //     'error' => $e->getMessage(),
+            // ]);
 
             return null;
         }
