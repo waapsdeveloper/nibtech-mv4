@@ -83,6 +83,47 @@ class RefurbedListingsController extends Controller
         ]);
     }
 
+    public function orders(Request $request): JsonResponse
+    {
+        $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
+
+        $filter = [];
+
+        $states = $this->normalizeList($request->input('state'));
+        if (! empty($states)) {
+            $filter['state'] = ['any_of' => $states];
+        }
+
+        $fulfillmentStates = $this->normalizeList($request->input('fulfillment_state'));
+        if (! empty($fulfillmentStates)) {
+            $filter['fulfillment_state'] = ['any_of' => $fulfillmentStates];
+        }
+
+        $orderIds = $this->normalizeList($request->input('order_id'));
+        if (! empty($orderIds)) {
+            $filter['id'] = ['any_of' => $orderIds];
+        }
+
+        $pagination = $this->buildPagination($perPage, $request->input('page_token'));
+        $sort = $this->buildSort(
+            $request->input('sort_by'),
+            $request->input('sort_direction', 'DESC')
+        );
+
+        $payload = $this->refurbed->listOrders($filter, $pagination, $sort);
+
+        return response()->json([
+            'request' => [
+                'filter' => $filter,
+                'pagination' => $pagination,
+                'sort' => $sort,
+            ],
+            'orders' => $payload['orders'] ?? [],
+            'has_more' => $payload['has_more'] ?? false,
+            'next_page_token' => $payload['next_page_token'] ?? null,
+        ]);
+    }
+
     private function normalizeList(mixed $value, array $default = []): array
     {
         if (is_string($value)) {
