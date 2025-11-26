@@ -437,7 +437,7 @@ class RefurbedListingsController extends Controller
 
             $variationQuery = Variation_model::query()
                 ->whereNotNull('sku')
-                ->where('listed_stock','>',0)
+                // ->where('listed_stock','>',0)
                 // ->where('sku','15Pro256White-1');
                 ->whereHas('listings', function ($query) use ($marketplaceId) {
                     $query->where('marketplace_id', $marketplaceId);
@@ -483,7 +483,7 @@ class RefurbedListingsController extends Controller
 
                         foreach ($refurbedListings as $listing) {
                             $referencePrice = $referencePrice ?? $listing->price;
-                            $referenceMinPrice = $referenceMinPrice ?? ($listing->min_price ?? $listing->price);
+                            $referenceMinPrice = $referenceMinPrice ?? ($listing->min_price);
 
                             $marketCode = $this->resolveCountryCodeById($listing->country);
                             $currencyCode = $this->resolveCurrencyCodeById($listing->currency_id);
