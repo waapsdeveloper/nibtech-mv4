@@ -561,7 +561,7 @@ class ListingController extends Controller
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3)->where('marketplace_id',1);
         })->with('order.currency_id')->get()->map(function($item) {
-            if($item->order->currency_id != 4) {
+            if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
             return $item->price * $rate;
             }
@@ -577,7 +577,7 @@ class ListingController extends Controller
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
         })->with('order.currency_id')->get()->map(function($item) {
-            if($item->order->currency_id != 4) {
+            if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
             return $item->price * $rate;
             }
@@ -593,7 +593,7 @@ class ListingController extends Controller
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
         })->with('order.currency_id')->get()->map(function($item) {
-            if($item->order->currency_id != 4) {
+            if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
             return $item->price * $rate;
             }
@@ -609,7 +609,7 @@ class ListingController extends Controller
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
         })->with('order.currency_id')->get()->map(function($item) {
-            if($item->order->currency_id != 4) {
+            if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
             return $item->price * $rate;
             }
@@ -625,7 +625,7 @@ class ListingController extends Controller
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
             $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
         })->with('order.currency_id')->get()->map(function($item) {
-            if($item->order->currency_id != 4) {
+            if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
             return $item->price * $rate;
             }
