@@ -169,12 +169,14 @@ class RefurbedSyncNewOrders extends Command
                 continue;
             }
 
-            $orderResponse = $this->fetchRefurbedOrderDetails($refurbed, $primaryOrderId, $fallbackOrderId);
+            $orderFetch = $this->fetchRefurbedOrderDetails($refurbed, $primaryOrderId, $fallbackOrderId);
 
-            if (! $orderResponse) {
+            if (! $orderFetch) {
                 continue;
             }
 
+            $orderId = $orderFetch['id'];
+            $orderResponse = $orderFetch['payload'];
             $orderPayload = $this->adaptOrderPayload($orderResponse['order'] ?? $orderResponse);
             $orderItems = $orderPayload['order_items'] ?? $orderPayload['items'] ?? null;
 
@@ -385,11 +387,17 @@ class RefurbedSyncNewOrders extends Command
         ?string $fallbackOrderId = null
     ): ?array {
         try {
-            return $refurbed->getOrder($primaryOrderId);
+            return [
+                'id' => $primaryOrderId,
+                'payload' => $refurbed->getOrder($primaryOrderId),
+            ];
         } catch (RequestException $primaryException) {
             if ($this->isOrderNotFound($primaryException) && $fallbackOrderId) {
                 try {
-                    return $refurbed->getOrder($fallbackOrderId);
+                    return [
+                        'id' => $fallbackOrderId,
+                        'payload' => $refurbed->getOrder($fallbackOrderId),
+                    ];
                 } catch (\Throwable $fallbackException) {
                     $this->logOrderRefreshFailure($fallbackOrderId, $fallbackException);
                     return null;
