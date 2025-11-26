@@ -1460,7 +1460,7 @@
                                     <div class="text-center">
                                         <h6 class="mb-0">
                                         <a class="" href="{{url('order').'?sku='}}${variation.sku}&status=2" target="_blank">
-                                            Pending Order Items: ${variation.pending_orders.length || 0}
+                                            Pending Order Items: ${variation.pending_orders.length || 0} (BM Orders: ${variation.pendingBMCount || 0})
                                         </a></h6>
                                         <h6 class="mb-0" id="available_stock_${variation.id}">
                                             <a href="{{url('inventory').'?product='}}${variation.product_id}&storage=${variation.storage}&color=${variation.color}&grade[]=${variation.grade}" target="_blank">
