@@ -1,0 +1,218 @@
+<?php
+
+namespace App\Console\Commands;
+
+use App\Http\Controllers\RefurbedAPIController;
+use App\Models\Country_model;
+use App\Models\Currency_model;
+use App\Models\Order_model;
+use Carbon\Carbon;
+use Illuminate\Console\Command;
+use Illuminate\Support\Facades\Log;
+
+class RefurbedSyncNewOrders extends Command
+{
+    /**
+     * The name and signature of the console command.
+     *
+     * @var string
+     */
+    protected $signature = 'refurbed:new
+        {--state=* : Override the default Refurbed states (NEW,PENDING)}
+        {--page-size=50 : Page size for each API request (max 200)}
+        {--lookback-hours=48 : Re-sync Refurbed orders created within the last N hours}
+        {--skip-items : Skip fetching order items for each order}';
+
+    /**
+     * The console command description.
+     *
+     * @var string
+     */
+    protected $description = 'Fetch the newest Refurbed orders and refresh recent ones that may still need shipping data.';
+
+    public function handle(): int
+    {
+        $states = $this->normalizeList($this->option('state'));
+        if (empty($states)) {
+            $states = ['NEW', 'PENDING'];
+        }
+
+        $refurbed = new RefurbedAPIController();
+        $orderModel = new Order_model();
+        $currencyCodes = $this->getCurrencyCodes();
+        $countryCodes = $this->getCountryCodes();
+
+        $filter = ['state' => ['any_of' => $states]];
+        $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
+        $sort = [
+            'order_by' => 'CREATED_AT',
+            'direction' => 'DESC',
+        ];
+
+        $processed = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes);
+
+        $lookbackHours = max(0, (int) $this->option('lookback-hours'));
+        $refreshed = 0;
+
+        if ($lookbackHours > 0) {
+            $refreshed = $this->refreshRecentOrders($refurbed, $orderModel, $currencyCodes, $countryCodes, $lookbackHours);
+        }
+
+        $this->info(sprintf('Refurbed new-order sync complete. processed=%d refreshed=%d', $processed, $refreshed));
+
+        return self::SUCCESS;
+    }
+
+    private function syncOrders(
+        RefurbedAPIController $refurbed,
+        Order_model $orderModel,
+        array $filter,
+        array $sort,
+        int $pageSize,
+        array $currencyCodes,
+        array $countryCodes
+    ): int {
+        try {
+            $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: failed to fetch new orders', [
+                'error' => $e->getMessage(),
+                'filter' => $filter,
+            ]);
+
+            $this->error('Refurbed new-order sync failed: ' . $e->getMessage());
+
+            return 0;
+        }
+
+        $orders = $response['orders'] ?? [];
+        $processed = 0;
+
+        foreach ($orders as $orderData) {
+            $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
+
+            if (! $orderId) {
+                Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
+                continue;
+            }
+
+            $orderItems = $this->option('skip-items') ? null : $this->fetchOrderItems($refurbed, $orderId);
+
+            try {
+                $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                $processed++;
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: failed to persist new order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $processed;
+    }
+
+    private function refreshRecentOrders(
+        RefurbedAPIController $refurbed,
+        Order_model $orderModel,
+        array $currencyCodes,
+        array $countryCodes,
+        int $lookbackHours
+    ): int {
+        $threshold = Carbon::now()->subHours($lookbackHours);
+
+        $recentOrders = Order_model::query()
+            ->where('marketplace_id', 4)
+            ->where(function ($query) {
+                $query->whereNull('delivery_note_url')
+                    ->orWhereNull('label_url');
+            })
+            ->where('created_at', '>=', $threshold)
+            ->get(['id', 'reference', 'reference_id']);
+
+        $refreshed = 0;
+
+        foreach ($recentOrders as $orderRecord) {
+            $orderId = $orderRecord->reference ?? $orderRecord->reference_id ?? null;
+
+            if (! $orderId) {
+                continue;
+            }
+
+            try {
+                $orderResponse = $refurbed->getOrder($orderId);
+            } catch (\Throwable $e) {
+                Log::warning('Refurbed: failed to fetch order details during refresh', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            $orderPayload = $orderResponse['order'] ?? $orderResponse;
+            $orderItems = $this->option('skip-items') ? null : $this->fetchOrderItems($refurbed, $orderId);
+
+            try {
+                $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+                $refreshed++;
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: failed to refresh order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        return $refreshed;
+    }
+
+    private function fetchOrderItems(RefurbedAPIController $refurbed, string $orderId): ?array
+    {
+        try {
+            $itemsResponse = $refurbed->getAllOrderItems($orderId);
+
+            return $itemsResponse['order_items'] ?? null;
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: unable to fetch order items', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function normalizeList($values): array
+    {
+        $values = array_map(function ($value) {
+            return strtoupper(trim((string) $value));
+        }, (array) $values);
+
+        $values = array_filter($values);
+
+        return array_values(array_unique($values));
+    }
+
+    private function sanitizePageSize(int $pageSize): int
+    {
+        if ($pageSize <= 0) {
+            return 50;
+        }
+
+        return min($pageSize, 200);
+    }
+
+    private function getCurrencyCodes(): array
+    {
+        return Currency_model::pluck('id', 'code')
+            ->map(fn ($id) => (int) $id)
+            ->toArray();
+    }
+
+    private function getCountryCodes(): array
+    {
+        return Country_model::pluck('id', 'code')
+            ->map(fn ($id) => (int) $id)
+            ->toArray();
+    }
+}
