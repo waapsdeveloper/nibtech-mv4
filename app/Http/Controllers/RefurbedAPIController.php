@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Psr\Log\LoggerInterface;
 use RuntimeException;
+use Throwable;
 
 class RefurbedAPIController extends Controller
 {
@@ -37,7 +38,13 @@ class RefurbedAPIController extends Controller
         $config = config('services.refurbed', []);
 
         // Try to get API key from marketplace table first, fallback to config
-        $marketplaceToken = Marketplace_model::where('name', 'Refurbed')->first()?->api_key;
+        try {
+            $marketplaceToken = Marketplace_model::where('name', 'Refurbed')->first()?->api_key;
+        } catch (Throwable $e) {
+            $marketplaceToken = null;
+            Log::warning('Refurbed: unable to read API key from marketplace table', ['error' => $e->getMessage()]);
+        }
+
         $this->apiKey = (string) ($marketplaceToken ?? $config['api_key'] ?? '');
 
         if ($this->apiKey === '') {
