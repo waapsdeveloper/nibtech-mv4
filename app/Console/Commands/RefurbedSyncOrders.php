@@ -69,6 +69,7 @@ class RefurbedSyncOrders extends Command
         $skipped = 0;
 
         foreach ($orders as $orderData) {
+            $orderData = $this->adaptOrderPayload($orderData);
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
@@ -156,5 +157,71 @@ class RefurbedSyncOrders extends Command
         return Country_model::pluck('id', 'code')
             ->map(fn ($id) => (int) $id)
             ->toArray();
+    }
+
+    /**
+     * Map Refurbed API fields (per sample payload) to what Order_model expects.
+     */
+    private function adaptOrderPayload(array $orderData): array
+    {
+        if (! isset($orderData['order_number'])) {
+            $orderData['order_number'] = $orderData['id'] ?? null;
+        }
+
+        if (! isset($orderData['currency'])) {
+            $orderData['currency'] = $orderData['currency_code'] ?? $orderData['settlement_currency_code'] ?? null;
+        }
+
+        if (! isset($orderData['total_amount'])) {
+            $orderData['total_amount'] = $orderData['total_paid']
+                ?? $orderData['total_charged']
+                ?? $orderData['settlement_total_paid']
+                ?? null;
+        }
+
+        $shippingRaw = $orderData['shipping_address'] ?? null;
+        $billingRaw = $orderData['invoice_address'] ?? null;
+        $shippingLookup = is_array($shippingRaw) ? $shippingRaw : [];
+
+        if (! isset($orderData['billing_address']) && $billingRaw) {
+            $orderData['billing_address'] = $this->mapRefurbedAddress($billingRaw);
+        }
+
+        if ($shippingRaw) {
+            $orderData['shipping_address'] = $this->mapRefurbedAddress($shippingRaw);
+        }
+
+        if (! isset($orderData['customer'])) {
+            $orderData['customer'] = [
+                'email' => $orderData['customer_email'] ?? null,
+                'first_name' => $shippingLookup['first_name'] ?? $shippingLookup['given_name'] ?? null,
+                'last_name' => $shippingLookup['family_name'] ?? $shippingLookup['last_name'] ?? null,
+                'phone' => $shippingLookup['phone_number'] ?? $shippingLookup['phone'] ?? null,
+            ];
+        }
+
+        if (isset($orderData['items']) && ! isset($orderData['order_items'])) {
+            $orderData['order_items'] = $orderData['items'];
+        }
+
+        return $orderData;
+    }
+
+    private function mapRefurbedAddress(array $address): array
+    {
+        $streetLine = trim(($address['street_name'] ?? '') . ' ' . ($address['house_no'] ?? ''));
+
+        return [
+            'company' => $address['company'] ?? null,
+            'first_name' => $address['first_name'] ?? $address['given_name'] ?? null,
+            'last_name' => $address['last_name'] ?? $address['family_name'] ?? null,
+            'street' => $streetLine ?: ($address['street'] ?? ''),
+            'street2' => $address['street2'] ?? $address['street_line2'] ?? '',
+            'postal_code' => $address['postal_code'] ?? $address['post_code'] ?? '',
+            'country' => $address['country'] ?? $address['country_code'] ?? '',
+            'city' => $address['city'] ?? $address['town'] ?? '',
+            'phone' => $address['phone'] ?? $address['phone_number'] ?? '',
+            'email' => $address['email'] ?? null,
+        ];
     }
 }
