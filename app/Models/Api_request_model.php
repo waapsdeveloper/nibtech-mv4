@@ -39,7 +39,9 @@ class Api_request_model extends Model
             // Convert each grade name to lowercase
         $lowercaseGrades = array_map('strtolower', $grades);
 
-        $requests = Api_request_model::where('status', null)->limit(100)->get();
+        $requests = Api_request_model::where('status', null)
+        ->where('request', 'LIKE', '%10565%')
+        ->limit(100)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
