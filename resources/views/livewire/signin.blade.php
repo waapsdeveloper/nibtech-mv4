@@ -28,7 +28,9 @@
                                         <div class="panel-body tabs-menu-body border-0 p-3">
                                             <div class="tab-content">
                                                 <div class="tab-pane active" id="tab5">
-                                                    {!! NoCaptcha::renderJs() !!}
+                                                    @if (env('APP_ENV') !== 'local')
+                                                        {!! NoCaptcha::renderJs() !!}
+                                                    @endif
                                                     <form action="{{url('/login')}}" method="POST">
                                                         @csrf
                                                         <div class="form-group">
@@ -37,11 +39,23 @@
                                                         <div class="form-group">
                                                             <label>Password</label> <input class="form-control" placeholder="Enter your password" name="password" type="password">
                                                         </div>
-                                                        <div class="mt-3">
-                                                            {!! NoCaptcha::display() !!}
-                                                        </div>
-                                                        @if ($errors->has('g-recaptcha-response'))
-                                                            <span class="text-danger">{{ $errors->first('g-recaptcha-response') }}</span>
+                                                        @if (env('APP_ENV') !== 'local')
+                                                            <div class="mt-3">
+                                                                {!! NoCaptcha::display() !!}
+                                                            </div>
+                                                            @if ($errors->has('g-recaptcha-response'))
+                                                                <span class="text-danger">{{ $errors->first('g-recaptcha-response') }}</span>
+                                                            @endif
+                                                            <script>
+                                                                grecaptcha.ready(function () {
+                                                                    grecaptcha.execute('{{ env('NOCAPTCHA_SITEKEY') }}', { action: 'login' }).then(function (token) {
+                                                                        document.getElementById('g-recaptcha-response').value = token;
+                                                                    });
+                                                                });
+                                                            </script>
+                                                        @else
+                                                            {{-- Bypass reCAPTCHA for local development --}}
+                                                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" value="local-bypass">
                                                         @endif
                                                         @if(isset($error))
                                                             <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">
@@ -52,13 +66,6 @@
                                                         @endif
                                                         <button type="submit" class="btn btn-primary btn-block">Sign In</button>
                                                         </form>
-                                                        <script>
-                                                            grecaptcha.ready(function () {
-                                                                grecaptcha.execute('{{ env('NOCAPTCHA_SITEKEY') }}', { action: 'login' }).then(function (token) {
-                                                                    document.getElementById('g-recaptcha-response').value = token;
-                                                                });
-                                                            });
-                                                        </script>
                                                 </div>
                                             </div>
                                         </div>
