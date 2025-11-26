@@ -43,7 +43,7 @@ class FunctionsThirty extends Command
     {
 
         ini_set('max_execution_time', 1200);
-        $this->get_refurbed_listings();
+        // $this->get_refurbed_listings();
         $this->get_listings();
         echo 'sad';
         $this->get_listingsBi();
