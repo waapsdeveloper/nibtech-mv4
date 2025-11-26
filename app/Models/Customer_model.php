@@ -44,7 +44,14 @@ class Customer_model extends Model
         return $this->hasOne(Address_model::class, 'customer_id', 'id')->where('type', 28)->orderByDesc('id');
     }
 
-    public function updateCustomerInDB($orderObj, $is_vendor = false, $currency_codes, $country_codes)
+    public function updateCustomerInDB(
+        $orderObj,
+        $is_vendor = false,
+        $currency_codes,
+        $country_codes,
+        ?int $orderId = null,
+        ?string $customerEmail = null
+    )
     {
         // Your implementation here using Eloquent ORM
         // Example:
@@ -60,6 +67,8 @@ class Customer_model extends Model
             $phone =  $numberWithoutSpaces;
         }
 
+        $customerEmail = $customerEmail ?? ($orderObj->customer_email ?? null);
+
         $customer = Customer_model::firstOrNew(['company' => $customerObj->company,'first_name' => $customerObj->first_name,'last_name' => $customerObj->last_name,'phone' => $phone,]);
         $customer->company = $customerObj->company;
         $customer->first_name = $customerObj->first_name;
@@ -74,10 +83,10 @@ class Customer_model extends Model
         $customer->country = $country_codes[$customerObj->country];
         $customer->city = $customerObj->city;
         $customer->phone =  $phone;
-        if(str_contains($customerObj->email, 'testinvoice')){
+        if(!empty($customerObj->email) && str_contains($customerObj->email, 'testinvoice')){
             $email = str_replace('testinvoice', 'invoice', $customerObj->email);
         }else{
-            $email = $customerObj->email;
+            $email = $customerObj->email ?? $customerEmail;
         }
         $customer->email = $email;
         // $customer->email = $customerObj->email;
@@ -89,28 +98,42 @@ class Customer_model extends Model
         // ... other fields
         $customer->save();
 
-        $this->storeCustomerAddress($customer, $customerObj, 28, $country_codes, $email);
+        $this->storeCustomerAddress($customer, $customerObj, 28, $country_codes, $email ?? $customerEmail, $orderId, $customerEmail);
 
         if (! empty($orderObj->shipping_address)) {
             $shippingAddress = $orderObj->shipping_address;
-            $shippingEmail = $shippingAddress->email ?? $email;
-            $this->storeCustomerAddress($customer, $shippingAddress, 27, $country_codes, $shippingEmail);
+            $shippingEmail = $shippingAddress->email ?? $email ?? $customerEmail;
+            $this->storeCustomerAddress($customer, $shippingAddress, 27, $country_codes, $shippingEmail, $orderId, $customerEmail);
         }
         // echo "----------------------------------------";
         return $customer->id;
     }
 
-    private function storeCustomerAddress(Customer_model $customer, $addressObj, int $type, array $country_codes, ?string $fallbackEmail = null): void
+    private function storeCustomerAddress(
+        Customer_model $customer,
+        $addressObj,
+        int $type,
+        array $country_codes,
+        ?string $fallbackEmail = null,
+        ?int $orderId = null,
+        ?string $customerEmail = null
+    ): void
     {
         if (! $addressObj) {
             return;
         }
 
         $countryCode = $addressObj->country ?? null;
-        $address = Address_model::firstOrNew([
+        $lookup = [
             'customer_id' => $customer->id,
             'type' => $type,
-        ]);
+        ];
+
+        if ($orderId) {
+            $lookup['order_id'] = $orderId;
+        }
+
+        $address = Address_model::firstOrNew($lookup);
 
         $address->street = $addressObj->street ?? '';
         $address->street2 = $addressObj->street2 ?? '';
@@ -120,7 +143,16 @@ class Customer_model extends Model
             : ($address->country ?? null);
         $address->city = $addressObj->city ?? '';
         $address->phone = $this->normalizePhoneValue($addressObj->phone ?? null);
-        $address->email = $addressObj->email ?? $fallbackEmail ?? $address->email;
+        $effectiveEmail = $addressObj->email
+            ?? $fallbackEmail
+            ?? $customerEmail
+            ?? $address->email;
+        if ($effectiveEmail) {
+            $address->email = $effectiveEmail;
+        }
+        if ($orderId) {
+            $address->order_id = $orderId;
+        }
         $address->status = $address->status ?? 1;
         $address->type = $type;
 
