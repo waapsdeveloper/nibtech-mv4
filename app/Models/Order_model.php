@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Http\Controllers\ListingController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -27,6 +28,8 @@ class Order_model extends Model
         'order_type_id',
         'scanned',
     ];
+
+    private const REFURBED_STOCK_SYNCED_REFERENCE = 'REFURBED_STOCK_SYNCED';
 
     public function transactions()
     {
@@ -338,7 +341,9 @@ class Order_model extends Model
 
         $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
         $order->marketplace_id = 4;
-        $order->reference = $orderData['id'] ?? $order->reference;
+        if (! $order->reference) {
+            $order->reference = $orderData['id'] ?? null;
+        }
         $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
         $order->currency = $currencyId ?? $order->currency;
 
@@ -398,6 +403,8 @@ class Order_model extends Model
         } else {
             Log::info('Refurbed order has no items array', ['order' => $orderNumber]);
         }
+
+        $this->syncBackMarketStockForRefurbedOrder($order, $legacyOrder);
 
         return $order->fresh(['order_items', 'customer']);
     }
@@ -603,6 +610,85 @@ class Order_model extends Model
             ?? Currency_model::value('id');
 
         return $defaultId ? (int) $defaultId : null;
+    }
+
+    protected function syncBackMarketStockForRefurbedOrder(self $order, object $legacyOrder): void
+    {
+        if ($order->marketplace_id !== 4) {
+            return;
+        }
+
+        if (($legacyOrder->orderlines ?? []) === []) {
+            return;
+        }
+
+        if ($order->reference === self::REFURBED_STOCK_SYNCED_REFERENCE) {
+            return;
+        }
+
+        $variationQuantities = [];
+
+        foreach ($legacyOrder->orderlines as $line) {
+            $variationId = $this->resolveVariationIdFromOrderLine($line);
+
+            if (! $variationId) {
+                continue;
+            }
+
+            $quantity = max(1, (int) ($line->quantity ?? 1));
+
+            $variationQuantities[$variationId] = ($variationQuantities[$variationId] ?? 0) + $quantity;
+        }
+
+        if (empty($variationQuantities)) {
+            return;
+        }
+
+        /** @var ListingController $listingController */
+        $listingController = app(ListingController::class);
+        $hasFailure = false;
+
+        foreach ($variationQuantities as $variationId => $quantity) {
+            try {
+                $listingController->add_quantity($variationId, -1 * $quantity);
+            } catch (\Throwable $e) {
+                $hasFailure = true;
+                Log::error('Refurbed: failed to adjust BackMarket listing quantity', [
+                    'order_reference_id' => $order->reference_id,
+                    'variation_id' => $variationId,
+                    'quantity' => $quantity,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if (! $hasFailure) {
+            $order->reference = self::REFURBED_STOCK_SYNCED_REFERENCE;
+            $order->save();
+        }
+    }
+
+    protected function resolveVariationIdFromOrderLine($orderLine): ?int
+    {
+        $listingId = $orderLine->listing_id ?? null;
+
+        if ($listingId) {
+            $variationId = Variation_model::where('reference_id', $listingId)->value('id');
+            if ($variationId) {
+                return (int) $variationId;
+            }
+        }
+
+        $sku = $orderLine->sku ?? null;
+
+        if ($sku) {
+            $variationId = Variation_model::where('sku', $sku)->value('id');
+            if ($variationId) {
+                return (int) $variationId;
+            }
+        }
+
+        return null;
     }
 
     private function mapStateToStatus($order) {

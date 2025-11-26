@@ -270,7 +270,10 @@ class RefurbedWebhookController extends Controller
         $order->country_id = $country->id ?? 1;
         $order->marketplace_id = $marketplace_id;
         $order->status = $this->mapOrderState($orderState);
-        $order->reference = $orderId;
+
+        if (! $order->reference) {
+            $order->reference = $orderId;
+        }
 
         // Set additional fields from order data
         if (isset($orderData['created_at'])) {
