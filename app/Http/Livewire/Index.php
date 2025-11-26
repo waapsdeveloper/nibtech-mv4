@@ -3,12 +3,9 @@
 namespace App\Http\Livewire;
 
 use App\Exports\StockSummeryExport;
-use App\Http\Controllers\BackMarketAPIController;
-use App\Models\Account_transaction_model;
 use App\Models\Admin_model;
 use App\Models\Brand_model;
 use App\Models\Category_model;
-use App\Models\Charge_value_model;
 use Carbon\Carbon;
 use Livewire\Component;
 use Illuminate\Support\Facades\DB;
@@ -22,14 +19,11 @@ use App\Models\ExchangeRate;
 use App\Models\Storage_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
-use App\Models\Order_charge_model;
 use App\Models\Process_model;
-use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
-use App\Models\Product_color_merge_model;
 use App\Models\Region_model;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
@@ -755,7 +749,7 @@ class Index extends Component
                 if (isset($yesterday_average[$variation_id])) {
                     $variation = Variation_model::find($variation_id);
                     $yesterday = $yesterday_average[$variation_id];
-                    $change = (($today->average_price - $yesterday->average_price) / $yesterday->average_price) * 100;
+                    $change = (($today->average_price - $yesterday->average_price) / ($yesterday->average_price ?? 1)) * 100;
                     $price_changes[] = [
                         'variation_id' => $variation_id,
                         'variation' => ($variation->product->model ?? '') . ' ' . ($variation->storage_id->name ?? '') . ' ' . ($variation->color_id->name ?? '') . ' ' . ($variation->grade_id->name ?? ''),
