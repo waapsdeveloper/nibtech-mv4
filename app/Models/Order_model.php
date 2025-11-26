@@ -651,6 +651,7 @@ class Order_model extends Model
         foreach ($variationQuantities as $variationId => $quantity) {
             try {
                 $listingController->add_quantity($variationId, -1 * $quantity);
+                usleep(500000); // 0.5 second delay to avoid rate limiting
             } catch (\Throwable $e) {
                 $hasFailure = true;
                 Log::error('Refurbed: failed to adjust BackMarket listing quantity', [
