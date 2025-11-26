@@ -42,7 +42,11 @@ class RefurbedSyncNewOrders extends Command
         $currencyCodes = $this->getCurrencyCodes();
         $countryCodes = $this->getCountryCodes();
 
-        $filter = ['state' => ['any_of' => $states]];
+        $filter = [];
+
+        if (! empty($states)) {
+            $filter['state'] = ['any_of' => $this->mapToOrderStateEnum($states)];
+        }
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
         $sort = [
             'order_by' => 'CREATED_AT',
@@ -270,6 +274,27 @@ class RefurbedSyncNewOrders extends Command
         return Country_model::pluck('id', 'code')
             ->map(fn ($id) => (int) $id)
             ->toArray();
+    }
+
+    private function mapToOrderStateEnum(array $states): array
+    {
+        $normalized = [];
+
+        foreach ($states as $state) {
+            $state = strtoupper(trim((string) $state));
+
+            if ($state === '') {
+                continue;
+            }
+
+            if (str_starts_with($state, 'ORDER_STATE_')) {
+                $normalized[] = $state;
+            } else {
+                $normalized[] = 'ORDER_STATE_' . $state;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     /**
