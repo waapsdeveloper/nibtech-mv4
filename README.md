@@ -103,6 +103,32 @@ $refurbed->updateOrderItemState(
 		'parcel_tracking_carrier' => 'UPS',
 	]
 );
+
+// Push tracking or fulfillment data for many order items at once (max 50 per API call)
+$updates = [
+	[
+		'id' => 'order-item-1',
+		'state' => 'SHIPPED',
+		'parcel_tracking_number' => '1Z9999999999999999',
+		'parcel_tracking_carrier' => 'UPS',
+	],
+	[
+		'id' => 'order-item-2',
+		'state' => 'DELIVERED',
+		'parcel_tracking_number' => '00340434123456789012',
+		'parcel_tracking_carrier' => 'DHL',
+	],
+];
+
+$result = $refurbed->batchUpdateOrderItemsState($updates);
+// $result['total'] === count($updates);
+// $result['batches'] contains the raw Refurbed responses for each chunked API call.
+
+// You can also update non-state attributes (tracking, references, etc.) via BatchUpdateOrderItems
+$refurbed->batchUpdateOrderItems($updates, [
+	'chunk_size' => 25, // optional override (defaults to 50 which is Refurbed's limit)
+	'body' => ['dry_run' => true], // merged into every request body if Refurbed adds flags in the future
+]);
 ```
 
 ## Back Market Pro (BMPRO) API integration

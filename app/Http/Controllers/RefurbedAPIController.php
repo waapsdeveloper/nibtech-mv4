@@ -13,6 +13,7 @@ use RuntimeException;
 
 class RefurbedAPIController extends Controller
 {
+    private const MAX_BATCH_SIZE = 50;
     protected string $baseUrl;
 
     protected string $apiKey;
@@ -168,6 +169,38 @@ class RefurbedAPIController extends Controller
             'id' => $orderItemId,
             'state' => $state,
         ], $attributes)));
+    }
+
+    /**
+     * Batch update order items (tracking payload, carrier info, etc.).
+     *
+     * @param  array  $orderItemUpdates  Each entry mirrors the payload of the single-item UpdateOrderItem endpoint.
+     * @param  array  $options  Optional keys: chunk_size (defaults to 50) and body (extra fields merged into every request).
+     */
+    public function batchUpdateOrderItems(array $orderItemUpdates, array $options = []): array
+    {
+        return $this->sendBatchedOrderItemUpdates(
+            'refb.merchant.v1.OrderItemService/BatchUpdateOrderItems',
+            'order_item_updates',
+            $orderItemUpdates,
+            $options
+        );
+    }
+
+    /**
+     * Batch update order item states (e.g. NEW -> SHIPPED) with optional tracking metadata per item.
+     *
+     * @param  array  $stateUpdates  Each entry must include at least an id and state field accepted by Refurbed.
+     * @param  array  $options  Optional keys: chunk_size (defaults to 50) and body (extra fields merged into every request).
+     */
+    public function batchUpdateOrderItemsState(array $stateUpdates, array $options = []): array
+    {
+        return $this->sendBatchedOrderItemUpdates(
+            'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState',
+            'order_item_state_updates',
+            $stateUpdates,
+            $options
+        );
     }
 
     public function listOffers(array $filter = [], array $pagination = [], array $sort = []): array
@@ -406,6 +439,39 @@ class RefurbedAPIController extends Controller
     protected function logError(string $message, array $context = []): void
     {
         $this->logger()->error($message, $context);
+    }
+
+    /**
+     * Send Refurbed OrderItem batch requests safely (enforcing the 50 item API limit).
+     */
+    protected function sendBatchedOrderItemUpdates(string $endpoint, string $payloadKey, array $updates, array $options = []): array
+    {
+        $updates = array_values(array_filter($updates, fn ($item) => ! empty($item)));
+
+        if ($updates === []) {
+            return [
+                'batches' => [],
+                'total' => 0,
+            ];
+        }
+
+        $chunkSize = (int) ($options['chunk_size'] ?? self::MAX_BATCH_SIZE);
+        $chunkSize = max(1, min($chunkSize, self::MAX_BATCH_SIZE));
+        $additionalBody = $options['body'] ?? [];
+        $responses = [];
+
+        foreach (array_chunk($updates, $chunkSize) as $chunk) {
+            $body = $this->cleanPayload(array_merge($additionalBody, [
+                $payloadKey => $chunk,
+            ]));
+
+            $responses[] = $this->post($endpoint, $body);
+        }
+
+        return [
+            'batches' => $responses,
+            'total' => count($updates),
+        ];
     }
 
     protected function logger(): LoggerInterface

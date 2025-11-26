@@ -27,6 +27,7 @@ Added Refurbed marketplace listing synchronization to the `FunctionsThirty` comm
 - Creates/updates `Listing_model` records with marketplace_id=4
 - Comprehensive error handling and logging
 - Progress tracking with console output
+- Order fulfillment endpoints (`batchUpdateOrderItems`, `batchUpdateOrderItemsState`) chunk payloads automatically (50 items per API call) so tracking + state updates can be applied in bulk once packing is complete.
 
 **Field Mapping:**
 
