@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
 
 class Order_model extends Model
@@ -335,8 +336,15 @@ class Order_model extends Model
         $order->reference = $orderData['id'] ?? $order->reference;
         $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
         $order->currency = $currencyId ?? $order->currency;
+
         if ($countryId) {
-            $order->country_id = $countryId;
+            if (Schema::hasColumn($order->getTable(), 'country_id')) {
+                $order->country_id = $countryId;
+            } elseif (Schema::hasColumn($order->getTable(), 'country')) {
+                $order->country = $countryCode;
+            }
+        } elseif ($countryCode && Schema::hasColumn($order->getTable(), 'country')) {
+            $order->country = $countryCode;
         }
 
         $order->price = $this->extractNumeric($orderData['total_amount'] ?? $orderData['price'] ?? $order->price);
