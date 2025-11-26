@@ -273,6 +273,13 @@ class RefurbedSyncNewOrders extends Command
             'state' => 'ACCEPTED',
         ], $pendingItems);
 
+        if ($logApiResponse) {
+            $this->info('Refurbed batch payload for order ' . $orderId . ':');
+            $this->line(json_encode([
+                'order_item_state_updates' => $updates,
+            ], JSON_PRETTY_PRINT));
+        }
+
         try {
             $response = $refurbed->batchUpdateOrderItemsState($updates);
 
@@ -291,7 +298,7 @@ class RefurbedSyncNewOrders extends Command
             // ]);
 
             if ($logApiResponse) {
-                $this->info('Refurbed batch response for order '.$orderId.':');
+                $this->info('Refurbed batch response for order ' . $orderId . ':');
                 $this->line(json_encode($response, JSON_PRETTY_PRINT));
             }
         } catch (RequestException $e) {
