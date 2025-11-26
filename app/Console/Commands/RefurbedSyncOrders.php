@@ -116,7 +116,7 @@ class RefurbedSyncOrders extends Command
 
         $states = $this->normalizeList($this->option('state'));
         if (! empty($states)) {
-            $filter['state'] = ['any_of' => $states];
+            $filter['state'] = ['any_of' => $this->mapToOrderStateEnum($states)];
         }
 
         $fulfillmentStates = $this->normalizeList($this->option('fulfillment'));
@@ -159,6 +159,27 @@ class RefurbedSyncOrders extends Command
         return Country_model::pluck('id', 'code')
             ->map(fn ($id) => (int) $id)
             ->toArray();
+    }
+
+    private function mapToOrderStateEnum(array $states): array
+    {
+        $normalized = [];
+
+        foreach ($states as $state) {
+            $state = strtoupper(trim((string) $state));
+
+            if ($state === '') {
+                continue;
+            }
+
+            if (str_starts_with($state, 'ORDER_STATE_')) {
+                $normalized[] = $state;
+            } else {
+                $normalized[] = 'ORDER_STATE_' . $state;
+            }
+        }
+
+        return array_values(array_unique($normalized));
     }
 
     private function acceptOrderIfNeeded(RefurbedAPIController $refurbed, array $orderData): array
