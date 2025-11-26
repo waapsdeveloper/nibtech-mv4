@@ -1435,6 +1435,20 @@ class RefurbedListingsController extends Controller
                 'response' => $response,
             ];
         } catch (\Throwable $e) {
+            $removedListingIds = [];
+
+            if ($this->isOfferMissingException($e)) {
+                $removedListingIds = $this->removeListingsForMissingOffer($sku, $setMarketPrices);
+
+                if (! empty($removedListingIds)) {
+                    Log::warning('Refurbed: Removed stale listings after missing offer response', [
+                        'sku' => $sku,
+                        'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices'] ?? []),
+                        'removed_listing_ids' => $removedListingIds,
+                    ]);
+                }
+            }
+
             Log::error('Refurbed: Failed to push market prices', [
                 'sku' => $sku,
                 'markets' => array_map(fn ($entry) => $entry['market_code'] ?? 'UNKNOWN', $payload['set_market_prices'] ?? []),
@@ -1443,13 +1457,64 @@ class RefurbedListingsController extends Controller
                 'reference_min_price' => $payload['reference_min_price'] ?? null,
                 'stock' => $payload['stock'] ?? null,
                 'error' => $e->getMessage(),
+                'removed_listing_ids' => $removedListingIds,
             ]);
 
             return [
                 'success' => false,
                 'error' => $e->getMessage(),
+                'removed_listing_ids' => $removedListingIds,
             ];
         }
+    }
+
+    private function isOfferMissingException(\Throwable $exception): bool
+    {
+        if ($exception instanceof RequestException && $exception->response && $exception->response->status() === 404) {
+            return true;
+        }
+
+        return str_contains(strtolower($exception->getMessage()), 'offer not found');
+    }
+
+    private function removeListingsForMissingOffer(string $sku, array $marketPayloads): array
+    {
+        $variation = Variation_model::where('sku', $sku)->first();
+
+        if (! $variation) {
+            return [];
+        }
+
+        $marketCodes = array_values(array_unique(array_filter(array_map(function ($entry) {
+            return isset($entry['market_code'])
+                ? strtoupper(trim((string) $entry['market_code']))
+                : null;
+        }, $marketPayloads))));
+
+        $query = Listing_model::where('variation_id', $variation->id)
+            ->where('marketplace_id', 4);
+
+        if (! empty($marketCodes)) {
+            $countryIds = Country_model::whereIn('code', $marketCodes)->pluck('id')->all();
+
+            if (! empty($countryIds)) {
+                $query->whereIn('country', $countryIds);
+            }
+        }
+
+        $listings = $query->get(['id']);
+
+        if ($listings->isEmpty()) {
+            return [];
+        }
+
+        $removedIds = $listings->pluck('id')->all();
+
+        foreach ($listings as $listing) {
+            $listing->delete();
+        }
+
+        return $removedIds;
     }
 
     private function sleepAfterSuccess(bool $bulkModeActive): void
