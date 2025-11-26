@@ -8,8 +8,10 @@ use App\Models\Currency_model;
 use App\Models\Order_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Http\Client\RequestException;
 
 class RefurbedSyncOrders extends Command
+    private static bool $acceptOrderUnavailable = false;
 {
     /**
      * The name and signature of the console command.
@@ -73,6 +75,7 @@ class RefurbedSyncOrders extends Command
             $orderData = $this->adaptOrderPayload($orderData);
             $preAcceptanceState = strtoupper($orderData['state'] ?? '');
             $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
+                $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
@@ -170,7 +173,7 @@ class RefurbedSyncOrders extends Command
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
 
-        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true)) {
+        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$acceptOrderUnavailable) {
             return $orderData;
         }
 
@@ -187,12 +190,34 @@ class RefurbedSyncOrders extends Command
             }
 
             $orderData['state'] = 'ACCEPTED';
+        } catch (RequestException $e) {
+            if ($this->isAcceptOrderUnsupported($e)) {
+                self::$acceptOrderUnavailable = true;
+                Log::notice('Refurbed: AcceptOrder endpoint unavailable, skipping future acceptance attempts.');
+            } else {
+                Log::warning('Refurbed: unable to accept order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         } catch (\Throwable $e) {
             Log::warning('Refurbed: unable to accept order', [
                 'order_id' => $orderId,
                 'error' => $e->getMessage(),
             ]);
         }
+    {
+        $response = $exception->response;
+
+        if (! $response || $response->status() !== 404) {
+            return false;
+        }
+
+        $body = $response->body();
+
+        return str_contains($body, 'AcceptOrder');
+    }
+
 
         return $orderData;
     }
