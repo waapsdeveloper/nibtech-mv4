@@ -10,9 +10,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class RefurbedSyncOrders extends Command
-{
-    /**
-     * The name and signature of the console command.
+        try {
+            $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
+        } catch (\Throwable $e) {
      *
      * @var string
      */
@@ -22,7 +22,6 @@ class RefurbedSyncOrders extends Command
         {--page-size=100 : Page size for each API request (max 200)}
         {--skip-items : Skip fetching order items for each order}';
 
-    /**
      * The console command description.
      *
      * @var string
@@ -56,7 +55,7 @@ class RefurbedSyncOrders extends Command
 
             return self::FAILURE;
         }
-        print_r($response);
+        // print_r($response);
         $orders = $response['orders'] ?? [];
 
         if (empty($orders)) {
@@ -67,6 +66,7 @@ class RefurbedSyncOrders extends Command
 
         $processed = 0;
         $skipped = 0;
+        $failed = 0;
 
         foreach ($orders as $orderData) {
             $orderData = $this->adaptOrderPayload($orderData);
@@ -78,9 +78,9 @@ class RefurbedSyncOrders extends Command
                 continue;
             }
 
-            $orderItems = null;
+            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
 
-            if (! $this->option('skip-items')) {
+            if (! $orderItems && ! $this->option('skip-items')) {
                 try {
                     $itemsResponse = $refurbed->getAllOrderItems($orderId);
                     $orderItems = $itemsResponse['order_items'] ?? null;
@@ -96,6 +96,7 @@ class RefurbedSyncOrders extends Command
                 $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
                 $processed++;
             } catch (\Throwable $e) {
+                $failed++;
                 Log::error('Refurbed: failed to persist order', [
                     'order_id' => $orderId,
                     'error' => $e->getMessage(),
@@ -103,7 +104,7 @@ class RefurbedSyncOrders extends Command
             }
         }
 
-        $this->info(sprintf('Refurbed orders synced. processed=%d skipped=%d', $processed, $skipped));
+        $this->info(sprintf('Refurbed orders synced. processed=%d skipped=%d failed=%d', $processed, $skipped, $failed));
 
         return self::SUCCESS;
     }
@@ -179,9 +180,23 @@ class RefurbedSyncOrders extends Command
                 ?? null;
         }
 
+        if (! isset($orderData['created_at']) && isset($orderData['released_at'])) {
+            $orderData['created_at'] = $orderData['released_at'];
+        }
+
+        if (! isset($orderData['updated_at']) && isset($orderData['released_at'])) {
+            $orderData['updated_at'] = $orderData['released_at'];
+        }
+
         $shippingRaw = $orderData['shipping_address'] ?? null;
         $billingRaw = $orderData['invoice_address'] ?? null;
         $shippingLookup = is_array($shippingRaw) ? $shippingRaw : [];
+
+        if (! isset($orderData['country'])) {
+            $orderData['country'] = $shippingLookup['country_code']
+                ?? $shippingLookup['country']
+                ?? ($billingRaw['country_code'] ?? null);
+        }
 
         if (! isset($orderData['billing_address']) && $billingRaw) {
             $orderData['billing_address'] = $this->mapRefurbedAddress($billingRaw);
