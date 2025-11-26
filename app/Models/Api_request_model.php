@@ -13,6 +13,7 @@ class Api_request_model extends Model
     use HasFactory;
     protected $table = 'api_requests';
     protected $primaryKey = 'id';
+    protected static $debugBuffer = [];
     // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
@@ -105,6 +106,9 @@ class Api_request_model extends Model
 
             }
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
+                self::recordDebugPoint($request, 'skipped request because stock lookup failed and no IMEI present', [
+                    'serial' => $datas->Serial ?? null,
+                ]);
                 continue;
             }
             if(in_array($datas->Memory, $storages)){
@@ -199,7 +203,10 @@ class Api_request_model extends Model
                 }elseif($gradeName == 'ok'){
                     $grade = 5;
                 }else{
-
+                    self::recordDebugPoint($request, 'unknown grade mapping encountered', [
+                        'grade' => $gradeName,
+                        'request_sample' => substr((string) $request->request, 0, 500),
+                    ]);
                     echo $gradeName;
                     continue;
                 }
@@ -226,6 +233,10 @@ class Api_request_model extends Model
                         continue;
                     }
                 }else{
+                    self::recordDebugPoint($request, 'tester name missing from admin list', [
+                        'tester' => $adminName,
+                        'stock_id' => $stock->id ?? null,
+                    ]);
                     echo "Hello";
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
@@ -534,7 +545,33 @@ class Api_request_model extends Model
             Log::info($log_info);
         }
 
+        self::flushDebugPoints();
+
         return $return;
+    }
+
+    protected static function recordDebugPoint(Api_request_model $request, string $reason, array $context = []): void
+    {
+        $requestId = $request->id ?? 0;
+        if(!isset(self::$debugBuffer[$requestId])){
+            self::$debugBuffer[$requestId] = [];
+        }
+        self::$debugBuffer[$requestId][] = [
+            'reason' => $reason,
+            'context' => $context,
+        ];
+    }
+
+    protected static function flushDebugPoints(): void
+    {
+        foreach(self::$debugBuffer as $requestId => $entries){
+            Log::debug('api_request push_testing combined debug', [
+                'api_request_id' => $requestId,
+                'debug_entries' => $entries,
+            ]);
+        }
+
+        self::$debugBuffer = [];
     }
 
     public function stock(){
