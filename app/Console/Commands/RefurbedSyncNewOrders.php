@@ -285,10 +285,10 @@ class RefurbedSyncNewOrders extends Command
 
             $orderData['state'] = 'ACCEPTED';
 
-            Log::info('Refurbed: order items accepted', [
-                'order_id' => $orderId,
-                'count' => count($updates),
-            ]);
+            // Log::info('Refurbed: order items accepted', [
+            //     'order_id' => $orderId,
+            //     'count' => count($updates),
+            // ]);
 
             if ($logApiResponse) {
                 $this->info('Refurbed batch response for order '.$orderId.':');
