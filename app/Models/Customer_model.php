@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Illuminate\Support\Collection;
 use Carbon\Carbon;
 
 
@@ -122,7 +123,7 @@ class Customer_model extends Model
         Customer_model $customer,
         $addressObj,
         int $type,
-        array $country_codes,
+        array|Collection $country_codes,
         ?string $fallbackEmail = null,
         ?int $orderId = null,
         ?string $customerEmail = null
@@ -131,6 +132,10 @@ class Customer_model extends Model
         if (! $addressObj) {
             return;
         }
+
+        $countryCodes = $country_codes instanceof Collection
+            ? $country_codes->toArray()
+            : $country_codes;
 
         $countryCode = $addressObj->country ?? null;
         $lookup = [
@@ -147,8 +152,8 @@ class Customer_model extends Model
         $address->street = $addressObj->street ?? '';
         $address->street2 = $addressObj->street2 ?? '';
         $address->postal_code = $addressObj->postal_code ?? '';
-        $address->country = $countryCode && isset($country_codes[$countryCode])
-            ? $country_codes[$countryCode]
+        $address->country = $countryCode && isset($countryCodes[$countryCode])
+            ? $countryCodes[$countryCode]
             : ($address->country ?? null);
         $address->city = $addressObj->city ?? '';
         $address->phone = $this->normalizePhoneValue($addressObj->phone ?? null);
