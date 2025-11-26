@@ -315,6 +315,18 @@ class RefurbedSyncNewOrders extends Command
                         'parcel_tracking_number' => $item['parcel_tracking_number'] ?? null,
                     ]);
                 }, $latestItems), JSON_PRETTY_PRINT));
+
+                $stillPending = array_filter($latestItems, function ($item) {
+                    $itemState = strtoupper($item['state'] ?? '');
+                    return ! empty($item['id']) && in_array($itemState, ['NEW', 'PENDING'], true);
+                });
+
+                if (! empty($stillPending)) {
+                    $this->info('Pending items remain after batch update, attempting single-item updates...');
+                    foreach ($stillPending as $pendingItem) {
+                        $this->attemptSingleItemAcceptance($refurbed, $pendingItem, $orderId);
+                    }
+                }
             }
         } catch (RequestException $e) {
             $response = $e->response;
@@ -577,6 +589,36 @@ class RefurbedSyncNewOrders extends Command
             'order_id' => $orderId,
             'error' => $exception->getMessage(),
         ]);
+    }
+
+    private function attemptSingleItemAcceptance(RefurbedAPIController $refurbed, array $item, string $orderId): void
+    {
+        $itemId = $item['id'] ?? null;
+
+        if (! $itemId) {
+            return;
+        }
+
+        $this->info('Calling single-item UpdateOrderItemState for item ' . $itemId . ' (order ' . $orderId . ')...');
+
+        try {
+            $response = $refurbed->updateOrderItemState($itemId, 'ACCEPTED');
+            $this->line(json_encode($response, JSON_PRETTY_PRINT));
+        } catch (RequestException $e) {
+            $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            Log::warning('Refurbed: single-item acceptance failed', [
+                'order_id' => $orderId,
+                'order_item_id' => $itemId,
+                'error' => $e->getMessage(),
+            ]);
+        } catch (\Throwable $e) {
+            $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            Log::warning('Refurbed: single-item acceptance failed', [
+                'order_id' => $orderId,
+                'order_item_id' => $itemId,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
 }
