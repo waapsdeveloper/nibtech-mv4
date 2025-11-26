@@ -14,6 +14,7 @@ use Illuminate\Support\Facades\Log;
 class RefurbedSyncNewOrders extends Command
 {
     private static bool $orderLineAcceptanceUnavailable = false;
+    private ?string $debugOrderId = null;
     /**
      * The name and signature of the console command.
      *
@@ -23,7 +24,8 @@ class RefurbedSyncNewOrders extends Command
         {--state=* : Override the default Refurbed states (NEW,PENDING)}
         {--page-size=50 : Page size for each API request (max 200)}
         {--lookback-hours=48 : Re-sync Refurbed orders created within the last N hours}
-        {--skip-items : Skip fetching order items for each order}';
+        {--skip-items : Skip fetching order items for each order}
+        {--debug-order= : Limit processing to a single Refurbed order id and print API responses}';
 
     /**
      * The console command description.
@@ -43,6 +45,17 @@ class RefurbedSyncNewOrders extends Command
         $orderModel = new Order_model();
         $currencyCodes = $this->getCurrencyCodes();
         $countryCodes = $this->getCountryCodes();
+
+        $this->debugOrderId = $this->normalizeRefurbedOrderId($this->option('debug-order'));
+        if ($this->debugOrderId) {
+            return $this->debugSingleOrder(
+                $refurbed,
+                $orderModel,
+                $currencyCodes,
+                $countryCodes,
+                $this->debugOrderId
+            );
+        }
 
         $filter = [];
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
@@ -109,7 +122,13 @@ class RefurbedSyncNewOrders extends Command
             }
 
             $preAcceptanceState = strtoupper($orderData['state'] ?? '');
-            $orderData = $this->acceptOrderLinesIfNeeded($refurbed, $orderData, $orderItems, ! $this->option('skip-items'));
+            $orderData = $this->acceptOrderLinesIfNeeded(
+                $refurbed,
+                $orderData,
+                $orderItems,
+                ! $this->option('skip-items'),
+                $this->isDebugOrder($orderId)
+            );
 
             if (! $orderId) {
                 $skipped++;
@@ -185,7 +204,13 @@ class RefurbedSyncNewOrders extends Command
                 $orderItems = $this->fetchOrderItems($refurbed, $orderId);
             }
 
-            $orderPayload = $this->acceptOrderLinesIfNeeded($refurbed, $orderPayload, $orderItems, ! $this->option('skip-items'));
+            $orderPayload = $this->acceptOrderLinesIfNeeded(
+                $refurbed,
+                $orderPayload,
+                $orderItems,
+                ! $this->option('skip-items'),
+                $this->isDebugOrder($orderId)
+            );
 
             try {
                 $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
@@ -217,7 +242,7 @@ class RefurbedSyncNewOrders extends Command
         }
     }
 
-    private function acceptOrderLinesIfNeeded(RefurbedAPIController $refurbed, array $orderData, ?array &$orderItems, bool $canFetchItems): array
+    private function acceptOrderLinesIfNeeded(RefurbedAPIController $refurbed, array $orderData, ?array &$orderItems, bool $canFetchItems, bool $logApiResponse = false): array
     {
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
@@ -249,7 +274,7 @@ class RefurbedSyncNewOrders extends Command
         ], $pendingItems);
 
         try {
-            $refurbed->batchUpdateOrderItemsState($updates);
+            $response = $refurbed->batchUpdateOrderItemsState($updates);
 
             foreach ($orderItems as &$item) {
                 if (in_array(strtoupper($item['state'] ?? ''), ['NEW', 'PENDING'], true)) {
@@ -264,6 +289,11 @@ class RefurbedSyncNewOrders extends Command
                 'order_id' => $orderId,
                 'count' => count($updates),
             ]);
+
+            if ($logApiResponse) {
+                $this->info('Refurbed batch response for order '.$orderId.':');
+                $this->line(json_encode($response, JSON_PRETTY_PRINT));
+            }
         } catch (RequestException $e) {
             $response = $e->response;
             if ($response && $response->status() === 404) {
@@ -283,6 +313,55 @@ class RefurbedSyncNewOrders extends Command
         }
 
         return $orderData;
+    }
+
+    private function isDebugOrder(?string $orderId): bool
+    {
+        if (! $orderId || ! $this->debugOrderId) {
+            return false;
+        }
+
+        return (string) $orderId === $this->debugOrderId;
+    }
+
+    private function debugSingleOrder(
+        RefurbedAPIController $refurbed,
+        Order_model $orderModel,
+        array $currencyCodes,
+        array $countryCodes,
+        string $orderId
+    ): int {
+        $this->info('Debugging Refurbed order '.$orderId.'...');
+
+        try {
+            $orderResponse = $refurbed->getOrder($orderId);
+        } catch (\Throwable $e) {
+            $this->error('Failed to fetch order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug fetch failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        $orderPayload = $this->adaptOrderPayload($orderResponse['order'] ?? $orderResponse);
+        $orderItems = $orderPayload['order_items'] ?? $orderPayload['items'] ?? null;
+
+        if (! $orderItems) {
+            $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+        }
+
+        $orderPayload = $this->acceptOrderLinesIfNeeded($refurbed, $orderPayload, $orderItems, true, true);
+
+        try {
+            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+            $this->info('Order '.$orderId.' persisted locally after debug run.');
+        } catch (\Throwable $e) {
+            $this->error('Failed to persist order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug persist failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     private function normalizeList($values): array
