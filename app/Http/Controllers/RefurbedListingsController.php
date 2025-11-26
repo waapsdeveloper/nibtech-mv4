@@ -460,13 +460,17 @@ class RefurbedListingsController extends Controller
                 foreach ($variations as $variation) {
                     $sku = trim($variation->sku ?? '');
 
+
                     if ($sku === '') {
                         $skipped++;
                         continue;
                     }
-
+                    if ($variation->listings()->where('marketplace_id', $marketplaceId)->doesntExist()) {
+                        $skipped++;
+                        continue;
+                    }
                     try {
-                        $this->ensureRefurbedListingExists($variation, $marketplaceId);
+                        // $this->ensureRefurbedListingExists($variation, $marketplaceId);
 
                         $refurbedListings = Listing_model::where('variation_id', $variation->id)
                             ->where('marketplace_id', $marketplaceId)
