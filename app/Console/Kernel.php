@@ -23,7 +23,7 @@ class Kernel extends ConsoleKernel
         $schedule->command('refresh:orders')->everyFiveMinutes()->between('6:00', '24:00');
         $schedule->command('refurbed:new')->everyFiveMinutes();
         $schedule->command('refurbed:orders')->hourly()->between('6:00', '24:00');
-        $schedule->command('refurbed:update-stock')->everyTwentyMinutes();
+        $schedule->command('refurbed:update-stock')->everyThirtyMinutes();
         $schedule->command('functions:ten')->everyTenMinutes()->between('6:00', '24:00');
         $schedule->command('functions:thirty')->hourly();
         $schedule->command('backup:email')->hourly()->between('6:00', '24:00');
