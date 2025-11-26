@@ -60,6 +60,7 @@ class Customer_model extends Model
         // $orderObj = (object) $orderObj[0];
         // print_r($orderObj);
         $customerObj = $orderObj->billing_address;
+        $countryCodes = $this->normalizeCountryCodes($country_codes);
 
         if((int) $customerObj->phone > 0){
             $numberWithoutSpaces = str_replace(' ', '', strval($customerObj->phone));
@@ -90,7 +91,7 @@ class Customer_model extends Model
         // if(Country_model::where('code', $customerObj->country)->first()  == null){
             // dd($country_codes);
         // }
-        $customer->country = $country_codes[$customerObj->country];
+        $customer->country = $countryCodes[$customerObj->country] ?? null;
         $customer->city = $customerObj->city;
         $customer->phone =  $phone;
         if(!empty($customerObj->email) && str_contains($customerObj->email, 'testinvoice')){
@@ -108,12 +109,12 @@ class Customer_model extends Model
         // ... other fields
         $customer->save();
 
-        $this->storeCustomerAddress($customer, $customerObj, 28, $country_codes, $email ?? $customerEmail, $orderId, $customerEmail);
+        $this->storeCustomerAddress($customer, $customerObj, 28, $countryCodes, $email ?? $customerEmail, $orderId, $customerEmail);
 
         if (! empty($orderObj->shipping_address)) {
             $shippingAddress = $orderObj->shipping_address;
             $shippingEmail = $shippingAddress->email ?? $email ?? $customerEmail;
-            $this->storeCustomerAddress($customer, $shippingAddress, 27, $country_codes, $shippingEmail, $orderId, $customerEmail);
+            $this->storeCustomerAddress($customer, $shippingAddress, 27, $countryCodes, $shippingEmail, $orderId, $customerEmail);
         }
         // echo "----------------------------------------";
         return $customer->id;
@@ -123,7 +124,7 @@ class Customer_model extends Model
         Customer_model $customer,
         $addressObj,
         int $type,
-        array|Collection $country_codes,
+        $country_codes,
         ?string $fallbackEmail = null,
         ?int $orderId = null,
         ?string $customerEmail = null
@@ -133,9 +134,7 @@ class Customer_model extends Model
             return;
         }
 
-        $countryCodes = $country_codes instanceof Collection
-            ? $country_codes->toArray()
-            : $country_codes;
+        $countryCodes = $this->normalizeCountryCodes($country_codes);
 
         $countryCode = $addressObj->country ?? null;
         $lookup = [
@@ -171,6 +170,23 @@ class Customer_model extends Model
         $address->type = $type;
 
         $address->save();
+    }
+
+    private function normalizeCountryCodes($countryCodes): array
+    {
+        if ($countryCodes instanceof Collection) {
+            return $countryCodes->toArray();
+        }
+
+        if (is_array($countryCodes)) {
+            return $countryCodes;
+        }
+
+        if ($countryCodes === null) {
+            return [];
+        }
+
+        return (array) $countryCodes;
     }
 
     private function normalizePhoneValue($value): ?string

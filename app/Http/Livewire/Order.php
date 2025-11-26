@@ -3977,8 +3977,8 @@ class Order extends Component
 
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
-        $currency_codes = Currency_model::pluck('id','code');
-        $country_codes = Country_model::pluck('id','code');
+        $currency_codes = Currency_model::pluck('id','code')->toArray();
+        $country_codes = Country_model::pluck('id','code')->toArray();
 
         $orderObj = $bm->getOneOrder($order_id);
         if(!isset($orderObj->orderlines)){
@@ -4227,8 +4227,8 @@ class Order extends Component
 
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
-        $currency_codes = Currency_model::pluck('id','code');
-        $country_codes = Country_model::pluck('id','code');
+        $currency_codes = Currency_model::pluck('id','code')->toArray();
+        $country_codes = Country_model::pluck('id','code')->toArray();
 
         $orderObj = $bm->getOneOrder($order_id);
         if(isset($orderObj->delivery_note)){
@@ -4259,8 +4259,8 @@ class Order extends Component
 
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
-        $currency_codes = Currency_model::pluck('id','code');
-        $country_codes = Country_model::pluck('id','code');
+        $currency_codes = Currency_model::pluck('id','code')->toArray();
+        $country_codes = Country_model::pluck('id','code')->toArray();
 
 
 
