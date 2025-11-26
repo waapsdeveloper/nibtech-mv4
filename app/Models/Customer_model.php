@@ -50,7 +50,8 @@ class Customer_model extends Model
         $currency_codes,
         $country_codes,
         ?int $orderId = null,
-        ?string $customerEmail = null
+        ?string $customerEmail = null,
+        string $marketplaceReference = 'BackMarket'
     )
     {
         // Your implementation here using Eloquent ORM
@@ -69,7 +70,15 @@ class Customer_model extends Model
 
         $customerEmail = $customerEmail ?? ($orderObj->customer_email ?? null);
 
-        $customer = Customer_model::firstOrNew(['company' => $customerObj->company,'first_name' => $customerObj->first_name,'last_name' => $customerObj->last_name,'phone' => $phone,]);
+        $reference = $marketplaceReference ?: 'BackMarket';
+
+        $customer = Customer_model::firstOrNew([
+            'company' => $customerObj->company,
+            'first_name' => $customerObj->first_name,
+            'last_name' => $customerObj->last_name,
+            'phone' => $phone,
+            'reference' => $reference,
+        ]);
         $customer->company = $customerObj->company;
         $customer->first_name = $customerObj->first_name;
         $customer->last_name = $customerObj->last_name;
@@ -94,7 +103,7 @@ class Customer_model extends Model
             $customer->is_vendor = 1;
             $customer->type = 1;
         }
-        $customer->reference = "BackMarket";
+        $customer->reference = $reference;
         // ... other fields
         $customer->save();
 
