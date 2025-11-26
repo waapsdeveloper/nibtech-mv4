@@ -98,6 +98,7 @@ class RefurbedSyncNewOrders extends Command
 
         foreach ($orders as $orderData) {
             $orderData = $this->adaptOrderPayload($orderData);
+            $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
@@ -203,6 +204,38 @@ class RefurbedSyncNewOrders extends Command
 
             return null;
         }
+    }
+
+    private function acceptOrderIfNeeded(RefurbedAPIController $refurbed, array $orderData): array
+    {
+        $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
+        $state = strtoupper($orderData['state'] ?? '');
+
+        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true)) {
+            return $orderData;
+        }
+
+        try {
+            $response = $refurbed->acceptOrder($orderId);
+            Log::info('Refurbed: order accepted', ['order_id' => $orderId]);
+
+            $updated = $response['order'] ?? $response;
+
+            if (is_array($updated) && ! empty($updated)) {
+                $merged = array_merge($orderData, $updated);
+
+                return $this->adaptOrderPayload($merged);
+            }
+
+            $orderData['state'] = 'ACCEPTED';
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: unable to accept order', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $orderData;
     }
 
     private function normalizeList($values): array
