@@ -1305,7 +1305,7 @@
                                 //     <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
                                 //     ${listing.country_id.code}
                                 // </a>`;
-                            }else{
+                            }else if (listing.marketplace_id == 1){
                                 withoutBuybox += `<a href="https://www.backmarket.${listing.country_id.market_url}/${listing.country_id.market_code}/p/gb/${listing._2_2}" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="10">
                                         ${listing.country_id.code}
