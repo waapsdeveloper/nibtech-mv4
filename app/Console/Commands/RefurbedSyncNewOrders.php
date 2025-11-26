@@ -291,7 +291,7 @@ class RefurbedSyncNewOrders extends Command
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
 
-        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$orderLineAcceptanceUnavailable) {
+        if (! $orderId || $state !== 'NEW' || self::$orderLineAcceptanceUnavailable) {
             return $orderData;
         }
 
@@ -308,7 +308,7 @@ class RefurbedSyncNewOrders extends Command
 
         foreach ($orderItems as &$item) {
             $itemState = strtoupper($item['state'] ?? '');
-            if (empty($item['id']) || ! in_array($itemState, ['NEW', 'PENDING'], true)) {
+            if (empty($item['id']) || $itemState !== 'NEW') {
                 continue;
             }
 
