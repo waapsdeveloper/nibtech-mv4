@@ -41,7 +41,7 @@ class Api_request_model extends Model
         $gradeLookup = self::buildLookup($grades);
 
         $requests = Api_request_model::where('status', null)
-        ->where('request', 'LIKE', '%10565%')
+        // ->where('request', 'LIKE', '%10565%')
         ->limit(1000)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
