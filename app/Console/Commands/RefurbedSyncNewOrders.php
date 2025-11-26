@@ -49,7 +49,7 @@ class RefurbedSyncNewOrders extends Command
             'direction' => 'DESC',
         ];
 
-        $processed = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes);
+        $syncStats = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes);
 
         $lookbackHours = max(0, (int) $this->option('lookback-hours'));
         $refreshed = 0;
@@ -58,7 +58,13 @@ class RefurbedSyncNewOrders extends Command
             $refreshed = $this->refreshRecentOrders($refurbed, $orderModel, $currencyCodes, $countryCodes, $lookbackHours);
         }
 
-        $this->info(sprintf('Refurbed new-order sync complete. processed=%d refreshed=%d', $processed, $refreshed));
+        $this->info(sprintf(
+            'Refurbed new-order sync complete. processed=%d skipped=%d failed=%d refreshed=%d',
+            $syncStats['processed'],
+            $syncStats['skipped'],
+            $syncStats['failed'],
+            $refreshed
+        ));
 
         return self::SUCCESS;
     }
@@ -71,7 +77,7 @@ class RefurbedSyncNewOrders extends Command
         int $pageSize,
         array $currencyCodes,
         array $countryCodes
-    ): int {
+    ): array {
         try {
             $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
         } catch (\Throwable $e) {
@@ -82,26 +88,35 @@ class RefurbedSyncNewOrders extends Command
 
             $this->error('Refurbed new-order sync failed: ' . $e->getMessage());
 
-            return 0;
+            return ['processed' => 0, 'skipped' => 0, 'failed' => 0];
         }
 
         $orders = $response['orders'] ?? [];
         $processed = 0;
+        $skipped = 0;
+        $failed = 0;
 
         foreach ($orders as $orderData) {
+            $orderData = $this->adaptOrderPayload($orderData);
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
+                $skipped++;
                 Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
                 continue;
             }
 
-            $orderItems = $this->option('skip-items') ? null : $this->fetchOrderItems($refurbed, $orderId);
+            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
+
+            if (! $orderItems && ! $this->option('skip-items')) {
+                $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+            }
 
             try {
                 $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
                 $processed++;
             } catch (\Throwable $e) {
+                $failed++;
                 Log::error('Refurbed: failed to persist new order', [
                     'order_id' => $orderId,
                     'error' => $e->getMessage(),
@@ -109,7 +124,11 @@ class RefurbedSyncNewOrders extends Command
             }
         }
 
-        return $processed;
+        return [
+            'processed' => $processed,
+            'skipped' => $skipped,
+            'failed' => $failed,
+        ];
     }
 
     private function refreshRecentOrders(
@@ -149,8 +168,12 @@ class RefurbedSyncNewOrders extends Command
                 continue;
             }
 
-            $orderPayload = $orderResponse['order'] ?? $orderResponse;
-            $orderItems = $this->option('skip-items') ? null : $this->fetchOrderItems($refurbed, $orderId);
+            $orderPayload = $this->adaptOrderPayload($orderResponse['order'] ?? $orderResponse);
+            $orderItems = $orderPayload['order_items'] ?? $orderPayload['items'] ?? null;
+
+            if (! $orderItems && ! $this->option('skip-items')) {
+                $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+            }
 
             try {
                 $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
@@ -214,5 +237,85 @@ class RefurbedSyncNewOrders extends Command
         return Country_model::pluck('id', 'code')
             ->map(fn ($id) => (int) $id)
             ->toArray();
+    }
+
+    /**
+     * Map Refurbed API fields (per sample payload) to what Order_model expects.
+     */
+    private function adaptOrderPayload(array $orderData): array
+    {
+        if (! isset($orderData['order_number'])) {
+            $orderData['order_number'] = $orderData['id'] ?? null;
+        }
+
+        if (! isset($orderData['currency'])) {
+            $orderData['currency'] = $orderData['currency_code'] ?? $orderData['settlement_currency_code'] ?? null;
+        }
+
+        if (! isset($orderData['total_amount'])) {
+            $orderData['total_amount'] = $orderData['total_paid']
+                ?? $orderData['total_charged']
+                ?? $orderData['settlement_total_paid']
+                ?? null;
+        }
+
+        if (! isset($orderData['created_at']) && isset($orderData['released_at'])) {
+            $orderData['created_at'] = $orderData['released_at'];
+        }
+
+        if (! isset($orderData['updated_at']) && isset($orderData['released_at'])) {
+            $orderData['updated_at'] = $orderData['released_at'];
+        }
+
+        $shippingRaw = $orderData['shipping_address'] ?? null;
+        $billingRaw = $orderData['invoice_address'] ?? null;
+        $shippingLookup = is_array($shippingRaw) ? $shippingRaw : [];
+
+        if (! isset($orderData['country'])) {
+            $orderData['country'] = $shippingLookup['country_code']
+                ?? $shippingLookup['country']
+                ?? ($billingRaw['country_code'] ?? null);
+        }
+
+        if (! isset($orderData['billing_address']) && $billingRaw) {
+            $orderData['billing_address'] = $this->mapRefurbedAddress($billingRaw);
+        }
+
+        if ($shippingRaw) {
+            $orderData['shipping_address'] = $this->mapRefurbedAddress($shippingRaw);
+        }
+
+        if (! isset($orderData['customer'])) {
+            $orderData['customer'] = [
+                'email' => $orderData['customer_email'] ?? null,
+                'first_name' => $shippingLookup['first_name'] ?? $shippingLookup['given_name'] ?? null,
+                'last_name' => $shippingLookup['family_name'] ?? $shippingLookup['last_name'] ?? null,
+                'phone' => $shippingLookup['phone_number'] ?? $shippingLookup['phone'] ?? null,
+            ];
+        }
+
+        if (isset($orderData['items']) && ! isset($orderData['order_items'])) {
+            $orderData['order_items'] = $orderData['items'];
+        }
+
+        return $orderData;
+    }
+
+    private function mapRefurbedAddress(array $address): array
+    {
+        $streetLine = trim(($address['street_name'] ?? '') . ' ' . ($address['house_no'] ?? ''));
+
+        return [
+            'company' => $address['company'] ?? null,
+            'first_name' => $address['first_name'] ?? $address['given_name'] ?? null,
+            'last_name' => $address['last_name'] ?? $address['family_name'] ?? null,
+            'street' => $streetLine ?: ($address['street'] ?? ''),
+            'street2' => $address['street2'] ?? $address['street_line2'] ?? '',
+            'postal_code' => $address['postal_code'] ?? $address['post_code'] ?? '',
+            'country' => $address['country'] ?? $address['country_code'] ?? '',
+            'city' => $address['city'] ?? $address['town'] ?? '',
+            'phone' => $address['phone'] ?? $address['phone_number'] ?? '',
+            'email' => $address['email'] ?? null,
+        ];
     }
 }

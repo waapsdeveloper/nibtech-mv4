@@ -373,11 +373,19 @@ class Order_model extends Model
             $orderItems,
             $orderNumber,
             $currencyCode,
-            $country_codes
+            $country_codes,
+            $orderData['customer_email'] ?? ($orderData['customer']['email'] ?? null)
         );
 
         $customerModel = new Customer_model();
-        $customerId = $customerModel->updateCustomerInDB($legacyOrder, false, $currency_codes, $country_codes);
+        $customerId = $customerModel->updateCustomerInDB(
+            $legacyOrder,
+            false,
+            $currency_codes,
+            $country_codes,
+            $order->id,
+            $legacyOrder->customer_email ?? null
+        );
         if ($customerId) {
             $order->customer_id = $customerId;
             $order->save();
@@ -398,7 +406,8 @@ class Order_model extends Model
         ?array $orderItems,
         string $orderNumber,
         string $currencyCode,
-        array $country_codes
+        array $country_codes,
+        ?string $customerEmail = null
     ): object {
         $orderObj = new \stdClass();
         $orderObj->order_id = $orderNumber;
@@ -410,12 +419,13 @@ class Order_model extends Model
         $orderObj->date_creation = $orderData['created_at'] ?? now()->toDateTimeString();
         $orderObj->date_modification = $orderData['updated_at'] ?? $orderObj->date_creation;
         $orderObj->date_shipping = $orderData['shipped_at'] ?? null;
+        $orderObj->customer_email = $customerEmail;
 
         $billingSource = $this->normalizeRefurbedPayload($orderData['billing_address'] ?? $orderData['customer'] ?? []);
         $shippingSource = $this->normalizeRefurbedPayload($orderData['shipping_address'] ?? $orderData['delivery_address'] ?? $billingSource);
 
-        $orderObj->billing_address = (object) $this->buildLegacyAddressArray($billingSource, $country_codes);
-        $orderObj->shipping_address = (object) $this->buildLegacyAddressArray($shippingSource, $country_codes);
+        $orderObj->billing_address = (object) $this->buildLegacyAddressArray($billingSource, $country_codes, $customerEmail);
+        $orderObj->shipping_address = (object) $this->buildLegacyAddressArray($shippingSource, $country_codes, $customerEmail);
 
         $orderObj->orderlines = [];
         $items = $orderItems ?? $orderData['items'] ?? $orderData['order_items'] ?? [];
@@ -429,7 +439,7 @@ class Order_model extends Model
         return $orderObj;
     }
 
-    protected function buildLegacyAddressArray(array $source, array $country_codes): array
+    protected function buildLegacyAddressArray(array $source, array $country_codes, ?string $customerEmail = null): array
     {
         $defaultCountry = array_key_first($country_codes) ?: 'DE';
 
@@ -443,7 +453,7 @@ class Order_model extends Model
             'country' => $source['country'] ?? $defaultCountry,
             'city' => $source['city'] ?? '',
             'phone' => $source['phone'] ?? $source['telephone'] ?? '',
-            'email' => $source['email'] ?? 'refurbed-customer@example.com',
+            'email' => $source['email'] ?? $customerEmail,
         ];
     }
 
