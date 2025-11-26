@@ -384,7 +384,8 @@ class Order_model extends Model
             $currency_codes,
             $country_codes,
             $order->id,
-            $legacyOrder->customer_email ?? null
+            $legacyOrder->customer_email ?? null,
+            'Refurbed'
         );
         if ($customerId) {
             $order->customer_id = $customerId;
