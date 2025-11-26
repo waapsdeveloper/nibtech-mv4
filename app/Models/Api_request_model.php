@@ -90,7 +90,6 @@ class Api_request_model extends Model
                 $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
             }
 
-            print_r($stock);
 
             if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
 
@@ -141,7 +140,7 @@ class Api_request_model extends Model
 
 
             $gradeName = strtolower(trim($datas->Grade)); // Convert grade name to lowercase
-
+            echo $gradeName. "<br>";
             if (in_array($gradeName, $lowercaseGrades)) {
                 // If the grade exists in the predefined grades array,
                 // retrieve its index
