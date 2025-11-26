@@ -317,13 +317,6 @@ class Order_model extends Model
             $country_codes = Country_model::pluck('id', 'code')->map(fn ($id) => (int) $id)->toArray();
         }
 
-        $currencyCode = $orderData['currency'] ?? 'EUR';
-        $currencyId = $currency_codes[$currencyCode] ?? Currency_model::where('code', $currencyCode)->value('id');
-
-        if (! $currencyId) {
-            Log::warning('Refurbed order currency not found', ['currency' => $currencyCode, 'order' => $orderNumber]);
-        }
-
         $countryCode = $orderData['country']
             ?? ($orderData['shipping_address']['country'] ?? null)
             ?? null;
@@ -331,11 +324,27 @@ class Order_model extends Model
             ? ($country_codes[$countryCode] ?? Country_model::where('code', $countryCode)->value('id'))
             : null;
 
+        $currencyCode = $orderData['currency'] ?? 'EUR';
+        $currencyMissingFromLookup = ! isset($currency_codes[$currencyCode]);
+        $currencyId = $this->resolveCurrencyIdForOrder($currencyCode, $currency_codes, $countryId);
+
+        if ($currencyMissingFromLookup) {
+            Log::warning('Refurbed order currency not found', [
+                'currency' => $currencyCode,
+                'order' => $orderNumber,
+                'resolved_currency_id' => $currencyId,
+            ]);
+        }
+
         $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
         $order->marketplace_id = 4;
         $order->reference = $orderData['id'] ?? $order->reference;
         $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
         $order->currency = $currencyId ?? $order->currency;
+
+        if (Schema::hasColumn($order->getTable(), 'order_type_id')) {
+            $order->order_type_id = $care ? 5 : 3;
+        }
 
         if ($countryId) {
             if (Schema::hasColumn($order->getTable(), 'country_id')) {
@@ -523,6 +532,66 @@ class Order_model extends Model
         }
 
         return is_numeric($value) ? (float) $value : null;
+    }
+
+    protected function resolveCurrencyIdForOrder(?string $currencyCode, array $currencyCodes, ?int $countryId): ?int
+    {
+        $currencyCode = $currencyCode ?: 'EUR';
+
+        if (isset($currencyCodes[$currencyCode])) {
+            return (int) $currencyCodes[$currencyCode];
+        }
+
+        $currencyId = Currency_model::where('code', $currencyCode)->value('id');
+        if ($currencyId) {
+            return (int) $currencyId;
+        }
+
+        $currencyId = $this->createCurrencyIfMissing($currencyCode, $countryId);
+        if ($currencyId) {
+            return $currencyId;
+        }
+
+        return $this->defaultCurrencyId();
+    }
+
+    protected function createCurrencyIfMissing(string $currencyCode, ?int $countryId): ?int
+    {
+        try {
+            $currency = Currency_model::firstOrNew(['code' => $currencyCode]);
+
+            if (! $currency->exists) {
+                $currency->name = $currencyCode;
+                $currency->sign = $currencyCode;
+                $currency->country_id = $countryId
+                    ?? Country_model::where('code', 'DE')->value('id')
+                    ?? Country_model::value('id');
+                $currency->save();
+            }
+
+            return (int) $currency->id;
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: failed to create currency record', [
+                'currency_code' => $currencyCode,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    protected function defaultCurrencyId(): ?int
+    {
+        static $defaultId;
+
+        if ($defaultId !== null) {
+            return $defaultId;
+        }
+
+        $defaultId = Currency_model::where('code', 'EUR')->value('id')
+            ?? Currency_model::value('id');
+
+        return $defaultId ? (int) $defaultId : null;
     }
 
     private function mapStateToStatus($order) {
