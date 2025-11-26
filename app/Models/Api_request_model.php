@@ -101,9 +101,9 @@ class Api_request_model extends Model
 
             }
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
-                self::recordDebugPoint($request, 'skipped request because stock lookup failed and no IMEI present', [
-                    'serial' => $datas->Serial ?? null,
-                ]);
+                // self::recordDebugPoint($request, 'skipped request because stock lookup failed and no IMEI present', [
+                //     'serial' => $datas->Serial ?? null,
+                // ]);
                 continue;
             }
             $storage = 0;
