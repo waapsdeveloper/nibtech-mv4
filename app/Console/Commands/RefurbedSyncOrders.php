@@ -11,8 +11,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\RequestException;
 
 class RefurbedSyncOrders extends Command
-    private static bool $acceptOrderUnavailable = false;
 {
+    private static bool $acceptOrderUnavailable = false;
     /**
      * The name and signature of the console command.
      *
@@ -75,7 +75,7 @@ class RefurbedSyncOrders extends Command
             $orderData = $this->adaptOrderPayload($orderData);
             $preAcceptanceState = strtoupper($orderData['state'] ?? '');
             $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
-                $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
+            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
@@ -206,6 +206,11 @@ class RefurbedSyncOrders extends Command
                 'error' => $e->getMessage(),
             ]);
         }
+
+        return $orderData;
+    }
+
+    private function isAcceptOrderUnsupported(RequestException $exception): bool
     {
         $response = $exception->response;
 
@@ -216,10 +221,6 @@ class RefurbedSyncOrders extends Command
         $body = $response->body();
 
         return str_contains($body, 'AcceptOrder');
-    }
-
-
-        return $orderData;
     }
 
     /**
