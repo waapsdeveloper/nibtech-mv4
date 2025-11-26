@@ -449,4 +449,17 @@ class RefurbedSyncNewOrders extends Command
             'error' => $exception->getMessage(),
         ]);
     }
+
+    private function isAcceptOrderUnsupported(RequestException $exception): bool
+    {
+        $response = $exception->response;
+
+        if (! $response || $response->status() !== 404) {
+            return false;
+        }
+
+        $body = $response->body();
+
+        return str_contains($body, 'AcceptOrder');
+    }
 }
