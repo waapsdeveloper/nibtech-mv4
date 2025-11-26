@@ -8,6 +8,7 @@ use App\Models\Currency_model;
 use App\Models\Order_model;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
 class RefurbedSyncNewOrders extends Command
@@ -162,19 +163,15 @@ class RefurbedSyncNewOrders extends Command
         $refreshed = 0;
 
         foreach ($recentOrders as $orderRecord) {
-            $orderId = $this->resolveRefurbedOrderId($orderRecord);
+            [$primaryOrderId, $fallbackOrderId] = $this->resolveRefurbedOrderIdentifiers($orderRecord);
 
-            if (! $orderId) {
+            if (! $primaryOrderId) {
                 continue;
             }
 
-            try {
-                $orderResponse = $refurbed->getOrder($orderId);
-            } catch (\Throwable $e) {
-                Log::warning('Refurbed: failed to fetch order details during refresh', [
-                    'order_id' => $orderId,
-                    'error' => $e->getMessage(),
-                ]);
+            $orderResponse = $this->fetchRefurbedOrderDetails($refurbed, $primaryOrderId, $fallbackOrderId);
+
+            if (! $orderResponse) {
                 continue;
             }
 
@@ -361,20 +358,64 @@ class RefurbedSyncNewOrders extends Command
         ];
     }
 
-    private function resolveRefurbedOrderId($orderRecord): ?string
+    private function resolveRefurbedOrderIdentifiers($orderRecord): array
     {
-        $preferred = $orderRecord->reference_id ?? null;
+        $primary = $orderRecord->reference_id ?? null;
+        $fallback = null;
 
-        if (! empty($preferred)) {
-            return (string) $preferred;
+        $reference = $orderRecord->reference ?? null;
+
+        if (! empty($reference) && $reference !== Order_model::REFURBED_STOCK_SYNCED_REFERENCE) {
+            if (empty($primary)) {
+                $primary = $reference;
+            } else {
+                $fallback = $reference;
+            }
         }
 
-        $fallback = $orderRecord->reference ?? null;
+        return [
+            $primary ? (string) $primary : null,
+            $fallback ? (string) $fallback : null,
+        ];
+    }
 
-        if ($fallback && $fallback !== Order_model::REFURBED_STOCK_SYNCED_REFERENCE) {
-            return (string) $fallback;
+    private function fetchRefurbedOrderDetails(
+        RefurbedAPIController $refurbed,
+        string $primaryOrderId,
+        ?string $fallbackOrderId = null
+    ): ?array {
+        try {
+            return $refurbed->getOrder($primaryOrderId);
+        } catch (RequestException $primaryException) {
+            if ($this->isOrderNotFound($primaryException) && $fallbackOrderId) {
+                try {
+                    return $refurbed->getOrder($fallbackOrderId);
+                } catch (\Throwable $fallbackException) {
+                    $this->logOrderRefreshFailure($fallbackOrderId, $fallbackException);
+                    return null;
+                }
+            }
+
+            $this->logOrderRefreshFailure($primaryOrderId, $primaryException);
+        } catch (\Throwable $e) {
+            $this->logOrderRefreshFailure($primaryOrderId, $e);
         }
 
         return null;
+    }
+
+    private function isOrderNotFound(RequestException $exception): bool
+    {
+        $response = $exception->response;
+
+        return $response && $response->status() === 404;
+    }
+
+    private function logOrderRefreshFailure(string $orderId, \Throwable $exception): void
+    {
+        Log::warning('Refurbed: failed to fetch order details during refresh', [
+            'order_id' => $orderId,
+            'error' => $exception->getMessage(),
+        ]);
     }
 }
