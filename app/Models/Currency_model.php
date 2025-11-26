@@ -10,6 +10,7 @@ class Currency_model extends Model
     use HasFactory;
     protected $table = 'currency';
     protected $primaryKey = 'id';
+    protected $fillable = ['code', 'name', 'sign', 'country_id'];
 
 
     public function process(){
