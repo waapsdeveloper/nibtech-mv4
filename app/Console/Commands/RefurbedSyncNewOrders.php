@@ -40,13 +40,15 @@ class RefurbedSyncNewOrders extends Command
     {
         $states = $this->normalizeList($this->option('state'));
         if (empty($states)) {
-            $states = ['NEW', 'PENDING'];
+            $states = ['NEW'];
         }
 
         $refurbed = new RefurbedAPIController();
         $orderModel = new Order_model();
         $currencyCodes = $this->getCurrencyCodes();
         $countryCodes = $this->getCountryCodes();
+
+        $filter = $this->buildStateFilter($states);
 
         $this->debugOrderId = $this->normalizeRefurbedOrderId($this->option('debug-order'));
         if ($this->debugOrderId) {
@@ -59,7 +61,6 @@ class RefurbedSyncNewOrders extends Command
             );
         }
 
-        $filter = [];
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
         $sort = [
             'order_by' => 'CREATED_AT',
@@ -96,6 +97,37 @@ class RefurbedSyncNewOrders extends Command
         ));
 
         return self::SUCCESS;
+    }
+
+    private function buildStateFilter(array $states): array
+    {
+        $states = array_values(array_filter(array_map(static function ($state) {
+            return strtoupper((string) $state);
+        }, $states)));
+
+        if (empty($states)) {
+            return [];
+        }
+
+        return [
+            'state' => [
+                'any_of' => $states,
+            ],
+        ];
+    }
+
+    private function shouldProcessLocalOrder(?Order_model $order): bool
+    {
+        if (! $order) {
+            return false;
+        }
+
+        $state = $order->state ?? null;
+        if ($state === null && isset($order->status)) {
+            $state = $order->status;
+        }
+
+        return (int) $state === 1;
     }
 
     private function syncOrders(
@@ -154,13 +186,6 @@ class RefurbedSyncNewOrders extends Command
                 }
 
                 $preAcceptanceState = strtoupper($orderData['state'] ?? '');
-                $orderData = $this->acceptOrderLinesIfNeeded(
-                    $refurbed,
-                    $orderData,
-                    $orderItems,
-                    ! $this->option('skip-items'),
-                    $this->isDebugOrder($orderId)
-                );
 
                 if (! $orderId) {
                     $skipped++;
@@ -175,12 +200,42 @@ class RefurbedSyncNewOrders extends Command
                     continue;
                 }
 
+                $savedOrder = null;
+
                 try {
-                    $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                    $savedOrder = $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
                     $processed++;
                 } catch (\Throwable $e) {
                     $failed++;
                     Log::error('Refurbed: failed to persist new order', [
+                        'order_id' => $orderId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    continue;
+                }
+
+                if (! $this->shouldProcessLocalOrder($savedOrder)) {
+                    continue;
+                }
+
+                $orderData = $this->acceptOrderLinesIfNeeded(
+                    $refurbed,
+                    $orderData,
+                    $orderItems,
+                    ! $this->option('skip-items'),
+                    $this->isDebugOrder($orderId)
+                );
+
+                $postAcceptanceState = strtoupper($orderData['state'] ?? '');
+
+                if ($postAcceptanceState === $preAcceptanceState) {
+                    continue;
+                }
+
+                try {
+                    $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                } catch (\Throwable $e) {
+                    Log::warning('Refurbed: failed to persist order after acceptance', [
                         'order_id' => $orderId,
                         'error' => $e->getMessage(),
                     ]);
@@ -248,6 +303,25 @@ class RefurbedSyncNewOrders extends Command
                 $orderItems = $this->fetchOrderItems($refurbed, $orderId);
             }
 
+            $savedOrder = null;
+
+            try {
+                $savedOrder = $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+                $refreshed++;
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: failed to refresh order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            if (! $this->shouldProcessLocalOrder($savedOrder)) {
+                continue;
+            }
+
+            $preAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
             $orderPayload = $this->acceptOrderLinesIfNeeded(
                 $refurbed,
                 $orderPayload,
@@ -256,11 +330,16 @@ class RefurbedSyncNewOrders extends Command
                 $this->isDebugOrder($orderId)
             );
 
+            $postAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+            if ($postAcceptanceState === $preAcceptanceState) {
+                continue;
+            }
+
             try {
                 $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
-                $refreshed++;
             } catch (\Throwable $e) {
-                Log::error('Refurbed: failed to refresh order', [
+                Log::warning('Refurbed: failed to persist order after acceptance during refresh', [
                     'order_id' => $orderId,
                     'error' => $e->getMessage(),
                 ]);
@@ -388,14 +467,39 @@ class RefurbedSyncNewOrders extends Command
             $orderItems = $this->fetchOrderItems($refurbed, $orderId);
         }
 
-        $orderPayload = $this->acceptOrderLinesIfNeeded($refurbed, $orderPayload, $orderItems, true, true);
+        $savedOrder = null;
 
         try {
-            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+            $savedOrder = $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
             $this->info('Order '.$orderId.' persisted locally after debug run.');
         } catch (\Throwable $e) {
             $this->error('Failed to persist order '.$orderId.': '.$e->getMessage());
             Log::error('Refurbed: debug persist failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        if (! $this->shouldProcessLocalOrder($savedOrder)) {
+            $this->warn('Skipping acceptance attempt because local order state is not 1.');
+
+            return self::SUCCESS;
+        }
+
+        $preAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+        $orderPayload = $this->acceptOrderLinesIfNeeded($refurbed, $orderPayload, $orderItems, true, true);
+
+        $postAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+        if ($postAcceptanceState === $preAcceptanceState) {
+            return self::SUCCESS;
+        }
+
+        try {
+            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+        } catch (\Throwable $e) {
+            $this->error('Failed to persist post-acceptance order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug persist failed after acceptance', ['order_id' => $orderId, 'error' => $e->getMessage()]);
 
             return self::FAILURE;
         }
