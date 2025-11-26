@@ -46,6 +46,12 @@ Added Refurbed marketplace listing synchronization to the `FunctionsThirty` comm
 | `min_price` | Listing.min_price | Optional |
 | `max_price` | Listing.max_price | Optional |
 
+### Packing Workflow Hooks
+
+- The Livewire packing screen (`app/Http/Livewire/Order.php`) now gathers every Refurbed order item ID for the order being shipped and calls `RefurbedAPIController::batchUpdateOrderItemsState()` right after a tracking number is captured.
+- Each payload marks the line as `SHIPPED` and includes the tracking number when available; helper chunking (≤50 updates/request) ensures large orders stay within Refurbed limits.
+- Failures are logged with order references so ops can retry without guessing which parcels were missed.
+
 ## Configuration Required
 
 ### 1. Database Setup

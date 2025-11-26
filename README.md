@@ -131,6 +131,8 @@ $refurbed->batchUpdateOrderItems($updates, [
 ]);
 ```
 
+Refurbed orders that are packed through the sales dashboard (see `app/Http/Livewire/Order.php`) now call these helpers automatically: once a tracking number is captured, the component batches every Refurbed order item ID for that order and sends a `SHIPPED` state update (plus tracking metadata when available). This keeps Refurbed aligned with Back Market without requiring extra manual clicks.
+
 ## Back Market Pro (BMPRO) API integration
 
 `App\Http\Controllers\BMPROAPIController` wraps Back Market's seller APIs (orders, listings, and status endpoints). The controller now resolves access tokens from the `marketplace` table: marketplace ID `2` is reserved for the EUR account, while ID `3` is for GBP. When you call any BMPRO method, pass either `marketplace_id` or `currency` via the optional `$options` array to determine which credential should be used. If no option is provided, the controller falls back to the legacy `BMPRO_API_TOKEN` environment variable.
