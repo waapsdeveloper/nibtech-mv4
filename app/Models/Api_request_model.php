@@ -90,6 +90,8 @@ class Api_request_model extends Model
                 $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
             }
 
+            print_r($stock);
+
             if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
 
                 $request->send_to_yk();
