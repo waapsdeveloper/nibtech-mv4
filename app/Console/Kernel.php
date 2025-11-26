@@ -17,10 +17,31 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         // $schedule->command('tenant:cron')->everyMinute();
-        $schedule->command('price:handler')->everyTenMinutes();
-        $schedule->command('refresh:latest')->everyFiveMinutes()->between('6:00', '24:00');
-        $schedule->command('refresh:new')->everyTwoMinutes();
-        $schedule->command('refresh:orders')->everyFiveMinutes()->between('6:00', '24:00');
+        $schedule->command('price:handler')
+            ->everyTenMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('refresh:latest')
+            ->everyFiveMinutes()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('refresh:new')
+            ->everyTwoMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('refresh:orders')
+            ->everyFiveMinutes()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
         $schedule->command('refurbed:new')
             ->everyFiveMinutes()
             ->withoutOverlapping()
@@ -39,11 +60,39 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
-        $schedule->command('functions:ten')->everyTenMinutes()->between('6:00', '24:00');
-        $schedule->command('functions:thirty')->hourly();
-        $schedule->command('backup:email')->hourly()->between('6:00', '24:00');
-        $schedule->command('functions:daily')->everyFourHours()->between('6:00', '24:00');
-        $schedule->command('fetch:exchange-rates')->hourly()->between('6:00', '24:00');
+        $schedule->command('functions:ten')
+            ->everyTenMinutes()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('functions:thirty')
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('backup:email')
+            ->hourly()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('functions:daily')
+            ->everyFourHours()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('fetch:exchange-rates')
+            ->hourly()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
     }
 
