@@ -251,6 +251,7 @@ class Order_model extends Model
             }
             $order->currency = $currency_codes[$orderObj->currency];
             $order->order_type_id = 3;
+            $order->marketplace_id = 1;
             $order->price = $orderObj->price;
             $order->delivery_note_url = $orderObj->delivery_note;
             if($order->label_url == null){
