@@ -563,7 +563,7 @@ class ListingController extends Controller
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
-            return $item->price * $rate;
+            return $item->price / $rate;
             }
             return $item->price;
         })->avg();
@@ -579,7 +579,7 @@ class ListingController extends Controller
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
-            return $item->price * $rate;
+            return $item->price / $rate;
             }
             return $item->price;
         })->avg();
@@ -595,7 +595,7 @@ class ListingController extends Controller
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
-            return $item->price * $rate;
+            return $item->price / $rate;
             }
             return $item->price;
         })->avg();
@@ -611,7 +611,7 @@ class ListingController extends Controller
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
-            return $item->price * $rate;
+            return $item->price / $rate;
             }
             return $item->price;
         })->avg();
@@ -627,7 +627,7 @@ class ListingController extends Controller
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
-            return $item->price * $rate;
+            return $item->price / $rate;
             }
             return $item->price;
         })->avg();
