@@ -30,6 +30,20 @@ class Customer_model extends Model
         return $this->hasMany(Order_model::class, 'customer_id', 'id');
     }
 
+    public function addresses(){
+        return $this->hasMany(Address_model::class, 'customer_id', 'id');
+    }
+
+    public function shipping_address()
+    {
+        return $this->hasOne(Address_model::class, 'customer_id', 'id')->where('type', 27)->orderByDesc('id');
+    }
+
+    public function billing_address()
+    {
+        return $this->hasOne(Address_model::class, 'customer_id', 'id')->where('type', 28)->orderByDesc('id');
+    }
+
     public function updateCustomerInDB($orderObj, $is_vendor = false, $currency_codes, $country_codes)
     {
         // Your implementation here using Eloquent ORM
@@ -62,10 +76,10 @@ class Customer_model extends Model
         $customer->phone =  $phone;
         if(str_contains($customerObj->email, 'testinvoice')){
             $email = str_replace('testinvoice', 'invoice', $customerObj->email);
-            $customer->email = $email;
         }else{
-            $customer->email = $customerObj->email;
+            $email = $customerObj->email;
         }
+        $customer->email = $email;
         // $customer->email = $customerObj->email;
         if($is_vendor == true){
             $customer->is_vendor = 1;
@@ -74,7 +88,53 @@ class Customer_model extends Model
         $customer->reference = "BackMarket";
         // ... other fields
         $customer->save();
+
+        $this->storeCustomerAddress($customer, $customerObj, 28, $country_codes, $email);
+
+        if (! empty($orderObj->shipping_address)) {
+            $shippingAddress = $orderObj->shipping_address;
+            $shippingEmail = $shippingAddress->email ?? $email;
+            $this->storeCustomerAddress($customer, $shippingAddress, 27, $country_codes, $shippingEmail);
+        }
         // echo "----------------------------------------";
         return $customer->id;
+    }
+
+    private function storeCustomerAddress(Customer_model $customer, $addressObj, int $type, array $country_codes, ?string $fallbackEmail = null): void
+    {
+        if (! $addressObj) {
+            return;
+        }
+
+        $countryCode = $addressObj->country ?? null;
+        $address = Address_model::firstOrNew([
+            'customer_id' => $customer->id,
+            'type' => $type,
+        ]);
+
+        $address->street = $addressObj->street ?? '';
+        $address->street2 = $addressObj->street2 ?? '';
+        $address->postal_code = $addressObj->postal_code ?? '';
+        $address->country = $countryCode && isset($country_codes[$countryCode])
+            ? $country_codes[$countryCode]
+            : ($address->country ?? null);
+        $address->city = $addressObj->city ?? '';
+        $address->phone = $this->normalizePhoneValue($addressObj->phone ?? null);
+        $address->email = $addressObj->email ?? $fallbackEmail ?? $address->email;
+        $address->status = $address->status ?? 1;
+        $address->type = $type;
+
+        $address->save();
+    }
+
+    private function normalizePhoneValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        $number = preg_replace('/\s+/', '', (string) $value);
+
+        return $number === '' ? null : substr($number, 0, 30);
     }
 }
