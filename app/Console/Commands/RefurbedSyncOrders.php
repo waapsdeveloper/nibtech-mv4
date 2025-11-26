@@ -191,7 +191,12 @@ class RefurbedSyncOrders extends Command
 
             $orderData['state'] = 'ACCEPTED';
         } catch (RequestException $e) {
-            if ($this->isAcceptOrderUnsupported($e)) {
+            $response = $e->response;
+            $acceptEndpointMissing = $response
+                && $response->status() === 404
+                && str_contains($response->body() ?? '', 'AcceptOrder');
+
+            if ($acceptEndpointMissing) {
                 self::$acceptOrderUnavailable = true;
                 Log::notice('Refurbed: AcceptOrder endpoint unavailable, skipping future acceptance attempts.');
             } else {
@@ -208,19 +213,6 @@ class RefurbedSyncOrders extends Command
         }
 
         return $orderData;
-    }
-
-    private function isAcceptOrderUnsupported(RequestException $exception): bool
-    {
-        $response = $exception->response;
-
-        if (! $response || $response->status() !== 404) {
-            return false;
-        }
-
-        $body = $response->body();
-
-        return str_contains($body, 'AcceptOrder');
     }
 
     /**
