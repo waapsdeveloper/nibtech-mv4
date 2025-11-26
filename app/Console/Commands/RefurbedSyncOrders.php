@@ -10,9 +10,9 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
 class RefurbedSyncOrders extends Command
-        try {
-            $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
-        } catch (\Throwable $e) {
+{
+    /**
+     * The name and signature of the console command.
      *
      * @var string
      */
@@ -22,6 +22,7 @@ class RefurbedSyncOrders extends Command
         {--page-size=100 : Page size for each API request (max 200)}
         {--skip-items : Skip fetching order items for each order}';
 
+    /**
      * The console command description.
      *
      * @var string
@@ -55,7 +56,6 @@ class RefurbedSyncOrders extends Command
 
             return self::FAILURE;
         }
-        // print_r($response);
         $orders = $response['orders'] ?? [];
 
         if (empty($orders)) {
