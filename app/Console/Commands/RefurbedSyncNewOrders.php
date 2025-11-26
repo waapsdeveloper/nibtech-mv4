@@ -6,6 +6,7 @@ use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Order_model;
+use App\Models\Variation_model;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\RequestException;
@@ -23,7 +24,7 @@ class RefurbedSyncNewOrders extends Command
     protected $signature = 'refurbed:new
         {--state=* : Override the default Refurbed states (NEW,PENDING)}
         {--page-size=50 : Page size for each API request (max 200)}
-        {--max-pages=1 : Maximum number of order pages to fetch per run}
+        {--max-pages=0 : Maximum number of order pages to fetch per run (0 = all)}
         {--lookback-hours=48 : Re-sync Refurbed orders created within the last N hours}
         {--skip-items : Skip fetching order items for each order}
         {--debug-order= : Limit processing to a single Refurbed order id and print API responses}';
@@ -65,7 +66,7 @@ class RefurbedSyncNewOrders extends Command
             'direction' => 'DESC',
         ];
 
-        $maxPages = max(1, (int) $this->option('max-pages'));
+        $maxPages = max(0, (int) $this->option('max-pages'));
 
         $syncStats = $this->syncOrders(
             $refurbed,
@@ -115,7 +116,7 @@ class RefurbedSyncNewOrders extends Command
         $pageCount = 0;
         $hasMore = true;
 
-        while ($hasMore && $pageCount < $maxPages) {
+        while ($hasMore && ($maxPages === 0 || $pageCount < $maxPages)) {
             $pageCount++;
             $pagination = array_filter([
                 'page_size' => $pageSize,
@@ -190,7 +191,7 @@ class RefurbedSyncNewOrders extends Command
             $hasMore = $pageToken && ($response['has_more'] ?? false);
         }
 
-        if ($hasMore) {
+        if ($hasMore && $maxPages > 0) {
             $this->warn(sprintf(
                 'Stopped after %d Refurbed order pages (pass --max-pages=%d to fetch more).',
                 $pageCount,
@@ -302,91 +303,52 @@ class RefurbedSyncNewOrders extends Command
             return $orderData;
         }
 
-        $pendingItems = array_values(array_filter($orderItems, function ($item) {
+        $acceptedItems = 0;
+        $attemptedItems = 0;
+
+        foreach ($orderItems as &$item) {
             $itemState = strtoupper($item['state'] ?? '');
-            return ! empty($item['id']) && in_array($itemState, ['NEW', 'PENDING'], true);
-        }));
-
-        if (empty($pendingItems)) {
-            return $orderData;
-        }
-
-        $updates = array_map(fn ($item) => [
-            'id' => $item['id'],
-            'state' => 'ACCEPTED',
-        ], $pendingItems);
-
-        if ($logApiResponse) {
-            $this->info('Refurbed batch payload for order ' . $orderId . ':');
-            $this->line(json_encode([
-                'order_item_state_updates' => $updates,
-            ], JSON_PRETTY_PRINT));
-        }
-
-        try {
-            $response = $refurbed->batchUpdateOrderItemsState($updates);
-
-            foreach ($orderItems as &$item) {
-                if (in_array(strtoupper($item['state'] ?? ''), ['NEW', 'PENDING'], true)) {
-                    $item['state'] = 'ACCEPTED';
-                }
+            if (empty($item['id']) || ! in_array($itemState, ['NEW', 'PENDING'], true)) {
+                continue;
             }
-            unset($item);
 
+            $attemptedItems++;
+            $accepted = $this->attemptSingleItemAcceptance($refurbed, $item, $orderId, $logApiResponse);
+
+            if ($accepted) {
+                $item['state'] = 'ACCEPTED';
+                $acceptedItems++;
+                $this->applyListingQuantityChange($item, $orderId);
+            }
+        }
+        unset($item);
+
+        if ($acceptedItems > 0) {
             $orderData['state'] = 'ACCEPTED';
+        }
 
-            // Log::info('Refurbed: order items accepted', [
-            //     'order_id' => $orderId,
-            //     'count' => count($updates),
-            // ]);
+        if ($logApiResponse && $attemptedItems > 0) {
+            $this->info(sprintf(
+                'Refurbed: attempted %d single-item updates, accepted=%d, failed=%d',
+                $attemptedItems,
+                $acceptedItems,
+                $attemptedItems - $acceptedItems
+            ));
 
-            if ($logApiResponse) {
-                $this->info('Refurbed batch response for order ' . $orderId . ':');
-                $this->line(json_encode($response, JSON_PRETTY_PRINT));
-
-                $latestItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
-                if (! empty($latestItems)) {
-                    $orderItems = $latestItems;
-                }
-
-                $this->info('Latest Refurbed order item states for order ' . $orderId . ':');
-                $this->line(json_encode(array_map(function ($item) {
-                    return array_filter([
-                        'id' => $item['id'] ?? null,
-                        'state' => $item['state'] ?? null,
-                        'sku' => $item['sku'] ?? null,
-                        'parcel_tracking_number' => $item['parcel_tracking_number'] ?? null,
-                    ]);
-                }, $latestItems), JSON_PRETTY_PRINT));
-
-                $stillPending = array_filter($latestItems, function ($item) {
-                    $itemState = strtoupper($item['state'] ?? '');
-                    return ! empty($item['id']) && in_array($itemState, ['NEW', 'PENDING'], true);
-                });
-
-                if (! empty($stillPending)) {
-                    $this->info('Pending items remain after batch update, attempting single-item updates...');
-                    foreach ($stillPending as $pendingItem) {
-                        $this->attemptSingleItemAcceptance($refurbed, $pendingItem, $orderId);
-                    }
-                }
+            $latestItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
+            if (! empty($latestItems)) {
+                $orderItems = $latestItems;
             }
-        } catch (RequestException $e) {
-            $response = $e->response;
-            if ($response && $response->status() === 404) {
-                self::$orderLineAcceptanceUnavailable = true;
-                Log::notice('Refurbed: Order-item acceptance endpoint unavailable, skipping future attempts.');
-            } else {
-                Log::warning('Refurbed: unable to accept order items', [
-                    'order_id' => $orderId,
-                    'error' => $e->getMessage(),
+
+            $this->info('Latest Refurbed order item states for order ' . $orderId . ':');
+            $this->line(json_encode(array_map(function ($item) {
+                return array_filter([
+                    'id' => $item['id'] ?? null,
+                    'state' => $item['state'] ?? null,
+                    'sku' => $item['sku'] ?? null,
+                    'parcel_tracking_number' => $item['parcel_tracking_number'] ?? null,
                 ]);
-            }
-        } catch (\Throwable $e) {
-            Log::warning('Refurbed: unable to accept order items', [
-                'order_id' => $orderId,
-                'error' => $e->getMessage(),
-            ]);
+            }, $latestItems), JSON_PRETTY_PRINT));
         }
 
         return $orderData;
@@ -634,34 +596,90 @@ class RefurbedSyncNewOrders extends Command
         ]);
     }
 
-    private function attemptSingleItemAcceptance(RefurbedAPIController $refurbed, array $item, string $orderId): void
+    private function attemptSingleItemAcceptance(RefurbedAPIController $refurbed, array $item, string $orderId, bool $logOutput = false): bool
     {
         $itemId = $item['id'] ?? null;
 
         if (! $itemId) {
-            return;
+            return false;
         }
 
-        $this->info('Calling single-item UpdateOrderItemState for item ' . $itemId . ' (order ' . $orderId . ')...');
+        if ($logOutput) {
+            $this->info('Calling single-item UpdateOrderItemState for item ' . $itemId . ' (order ' . $orderId . ')...');
+        }
 
         try {
             $response = $refurbed->updateOrderItemState($itemId, 'ACCEPTED');
-            $this->line(json_encode($response, JSON_PRETTY_PRINT));
+            if ($logOutput) {
+                $this->line(json_encode($response, JSON_PRETTY_PRINT));
+            }
+
+            return true;
         } catch (RequestException $e) {
-            $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            if ($logOutput) {
+                $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            }
             Log::warning('Refurbed: single-item acceptance failed', [
                 'order_id' => $orderId,
                 'order_item_id' => $itemId,
                 'error' => $e->getMessage(),
             ]);
         } catch (\Throwable $e) {
-            $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            if ($logOutput) {
+                $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            }
             Log::warning('Refurbed: single-item acceptance failed', [
                 'order_id' => $orderId,
                 'order_item_id' => $itemId,
                 'error' => $e->getMessage(),
             ]);
         }
+
+        return false;
+    }
+
+    private function applyListingQuantityChange(array $item, string $orderId): void
+    {
+        $sku = $item['sku'] ?? $item['merchant_sku'] ?? null;
+        if (! $sku) {
+            return;
+        }
+
+        $quantity = (int) ($item['quantity'] ?? 1);
+        if ($quantity <= 0) {
+            $quantity = 1;
+        }
+
+        $variation = Variation_model::where('sku', $sku)->first();
+
+        if (! $variation) {
+            Log::notice('Refurbed: unable to adjust listing quantity, variation missing', [
+                'order_id' => $orderId,
+                'sku' => $sku,
+                'quantity' => $quantity,
+            ]);
+
+            return;
+        }
+
+        $originalStock = (int) ($variation->listed_stock ?? 0);
+        $newStock = max(0, $originalStock - $quantity);
+
+        if ($newStock === $originalStock) {
+            return;
+        }
+
+        $variation->listed_stock = $newStock;
+        $variation->save();
+
+        Log::info('Refurbed: listing quantity adjusted after acceptance', [
+            'order_id' => $orderId,
+            'sku' => $sku,
+            'variation_id' => $variation->id,
+            'from' => $originalStock,
+            'to' => $newStock,
+            'delta' => -$quantity,
+        ]);
     }
 
 }
