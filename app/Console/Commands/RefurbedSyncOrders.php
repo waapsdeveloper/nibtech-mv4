@@ -56,7 +56,7 @@ class RefurbedSyncOrders extends Command
 
             return self::FAILURE;
         }
-
+        print_r($response);
         $orders = $response['orders'] ?? [];
 
         if (empty($orders)) {
