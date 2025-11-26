@@ -245,8 +245,11 @@ class RefurbedWebhookController extends Controller
         $customerData = $orderData['customer'] ?? $orderData['buyer'] ?? [];
         $customer = $this->getOrCreateCustomer($customerData);
 
-        // Get currency
-        $currencyCode = $orderData['currency'] ?? 'EUR';
+        // Get currency (prefer settlement currency so values align with EUR payouts)
+        $currencyCode = $orderData['settlement_currency_code']
+            ?? $orderData['currency']
+            ?? $orderData['currency_code']
+            ?? 'EUR';
         $currency = Currency_model::where('code', $currencyCode)->first();
 
         if (!$currency) {
@@ -280,8 +283,13 @@ class RefurbedWebhookController extends Controller
             $order->created_at = $orderData['created_at'];
         }
 
-        if (isset($orderData['total_amount'])) {
-            $order->price = $orderData['total_amount'];
+        $settlementTotal = $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? null;
+
+        if ($settlementTotal !== null) {
+            $order->price = $settlementTotal;
         }
 
         $order->save();

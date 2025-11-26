@@ -289,16 +289,16 @@ class RefurbedSyncNewOrders extends Command
             $orderData['order_number'] = $orderData['id'] ?? null;
         }
 
-        if (! isset($orderData['currency'])) {
-            $orderData['currency'] = $orderData['currency_code'] ?? $orderData['settlement_currency_code'] ?? null;
-        }
+        $orderData['currency'] = $orderData['settlement_currency_code']
+            ?? $orderData['currency']
+            ?? $orderData['currency_code']
+            ?? null;
 
-        if (! isset($orderData['total_amount'])) {
-            $orderData['total_amount'] = $orderData['total_paid']
-                ?? $orderData['total_charged']
-                ?? $orderData['settlement_total_paid']
-                ?? null;
-        }
+        $orderData['total_amount'] = $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? $orderData['total_charged']
+            ?? null;
 
         if (! isset($orderData['created_at']) && isset($orderData['released_at'])) {
             $orderData['created_at'] = $orderData['released_at'];

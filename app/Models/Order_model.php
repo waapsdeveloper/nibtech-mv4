@@ -328,7 +328,10 @@ class Order_model extends Model
             ? ($country_codes[$countryCode] ?? Country_model::where('code', $countryCode)->value('id'))
             : null;
 
-        $currencyCode = $orderData['currency'] ?? 'EUR';
+        $currencyCode = $orderData['settlement_currency_code']
+            ?? $orderData['currency']
+            ?? $orderData['currency_code']
+            ?? 'EUR';
         $currencyMissingFromLookup = ! isset($currency_codes[$currencyCode]);
         $currencyId = $this->resolveCurrencyIdForOrder($currencyCode, $currency_codes, $countryId);
 
@@ -362,7 +365,13 @@ class Order_model extends Model
             $order->country = $countryCode;
         }
 
-        $order->price = $this->extractNumeric($orderData['total_amount'] ?? $orderData['price'] ?? $order->price);
+        $order->price = $this->extractNumeric(
+            $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? $orderData['price']
+            ?? $order->price
+        );
         $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
 
         if (! empty($orderData['created_at'])) {
@@ -421,7 +430,13 @@ class Order_model extends Model
         $orderObj = new \stdClass();
         $orderObj->order_id = $orderNumber;
         $orderObj->currency = $currencyCode;
-        $orderObj->price = $this->extractNumeric($orderData['total_amount'] ?? $orderData['price'] ?? null) ?? 0;
+        $orderObj->price = $this->extractNumeric(
+            $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? $orderData['price']
+            ?? null
+        ) ?? 0;
         $orderObj->delivery_note = $orderData['delivery_note'] ?? null;
         $orderObj->payment_method = $orderData['payment_method'] ?? null;
         $orderObj->tracking_number = $orderData['tracking_number'] ?? null;
