@@ -13,6 +13,7 @@ use Illuminate\Support\Facades\Log;
 
 class RefurbedSyncNewOrders extends Command
 {
+    private static bool $acceptOrderUnavailable = false;
     /**
      * The name and signature of the console command.
      *
@@ -219,7 +220,7 @@ class RefurbedSyncNewOrders extends Command
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
 
-        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true)) {
+        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$acceptOrderUnavailable) {
             return $orderData;
         }
 
@@ -236,6 +237,16 @@ class RefurbedSyncNewOrders extends Command
             }
 
             $orderData['state'] = 'ACCEPTED';
+        } catch (RequestException $e) {
+            if ($this->isAcceptOrderUnsupported($e)) {
+                self::$acceptOrderUnavailable = true;
+                Log::notice('Refurbed: AcceptOrder endpoint unavailable, skipping future acceptance attempts.');
+            } else {
+                Log::warning('Refurbed: unable to accept order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         } catch (\Throwable $e) {
             Log::warning('Refurbed: unable to accept order', [
                 'order_id' => $orderId,
@@ -362,23 +373,35 @@ class RefurbedSyncNewOrders extends Command
 
     private function resolveRefurbedOrderIdentifiers($orderRecord): array
     {
-        $primary = $orderRecord->reference_id ?? null;
+        $primary = $this->normalizeRefurbedOrderId($orderRecord->reference_id ?? null);
         $fallback = null;
 
         $reference = $orderRecord->reference ?? null;
 
         if (! empty($reference) && $reference !== Order_model::REFURBED_STOCK_SYNCED_REFERENCE) {
-            if (empty($primary)) {
-                $primary = $reference;
-            } else {
-                $fallback = $reference;
+            $normalizedReference = $this->normalizeRefurbedOrderId($reference);
+
+            if ($normalizedReference) {
+                if (empty($primary)) {
+                    $primary = $normalizedReference;
+                } elseif ($normalizedReference !== $primary) {
+                    $fallback = $normalizedReference;
+                }
             }
         }
 
-        return [
-            $primary ? (string) $primary : null,
-            $fallback ? (string) $fallback : null,
-        ];
+        return [$primary, $fallback];
+    }
+
+    private function normalizeRefurbedOrderId($value): ?string
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        $value = trim((string) $value);
+
+        return preg_match('/^\d+$/', $value) ? $value : null;
     }
 
     private function fetchRefurbedOrderDetails(
