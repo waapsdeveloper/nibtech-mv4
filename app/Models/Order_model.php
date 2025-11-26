@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class Order_model extends Model
 {
@@ -214,6 +215,20 @@ class Order_model extends Model
         return $this->hasOne(Payment_method_model::class, 'id', 'payment_method_id');
     }
 
+    public function addresses(){
+        return $this->hasMany(Address_model::class, 'order_id', 'id');
+    }
+
+    public function shipping_address()
+    {
+        return $this->hasOne(Address_model::class, 'order_id', 'id')->where('type', 27)->orderByDesc('id');
+    }
+
+    public function billing_address()
+    {
+        return $this->hasOne(Address_model::class, 'order_id', 'id')->where('type', 28)->orderByDesc('id');
+    }
+
 
     public function updateOrderInDB($orderObj, $invoice = false, $bm, $currency_codes, $country_codes)
     {
@@ -267,6 +282,239 @@ class Order_model extends Model
         }
         // print_r(Order_model::find($order->id));
         // echo "----------------------------------------";
+    }
+
+    /**
+     * Store a Refurbed order (including customer + line items) that was fetched
+     * through the Refurbed Orders API.
+     */
+    public function storeRefurbedOrderInDB(
+        $orderPayload,
+        ?array $orderItems = null,
+        array $currency_codes = [],
+        array $country_codes = [],
+        $bm = null,
+        bool $care = false
+    ): ?self {
+        $orderData = $this->normalizeRefurbedPayload($orderPayload);
+
+        $orderNumber = $orderData['order_number']
+            ?? $orderData['reference']
+            ?? $orderData['id']
+            ?? null;
+
+        if (! $orderNumber) {
+            Log::warning('Refurbed order missing reference/order_number', ['payload' => $orderData]);
+            return null;
+        }
+
+        if (empty($currency_codes)) {
+            $currency_codes = Currency_model::pluck('id', 'code')->map(fn ($id) => (int) $id)->toArray();
+        }
+
+        if (empty($country_codes)) {
+            $country_codes = Country_model::pluck('id', 'code')->map(fn ($id) => (int) $id)->toArray();
+        }
+
+        $currencyCode = $orderData['currency'] ?? 'EUR';
+        $currencyId = $currency_codes[$currencyCode] ?? Currency_model::where('code', $currencyCode)->value('id');
+
+        if (! $currencyId) {
+            Log::warning('Refurbed order currency not found', ['currency' => $currencyCode, 'order' => $orderNumber]);
+        }
+
+        $countryCode = $orderData['country']
+            ?? ($orderData['shipping_address']['country'] ?? null)
+            ?? null;
+        $countryId = $countryCode
+            ? ($country_codes[$countryCode] ?? Country_model::where('code', $countryCode)->value('id'))
+            : null;
+
+        $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
+        $order->marketplace_id = 4;
+        $order->reference = $orderData['id'] ?? $order->reference;
+        $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
+        $order->currency = $currencyId ?? $order->currency;
+        if ($countryId) {
+            $order->country_id = $countryId;
+        }
+
+        $order->price = $this->extractNumeric($orderData['total_amount'] ?? $orderData['price'] ?? $order->price);
+        $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
+
+        if (! empty($orderData['created_at'])) {
+            $order->created_at = Carbon::parse($orderData['created_at'])->format('Y-m-d H:i:s');
+        }
+
+        if (! empty($orderData['updated_at'])) {
+            $order->updated_at = Carbon::parse($orderData['updated_at'])->format('Y-m-d H:i:s');
+        }
+
+        $order->save();
+        $legacyOrder = $this->buildLegacyOrderObject(
+            $orderData,
+            $orderItems,
+            $orderNumber,
+            $currencyCode,
+            $country_codes
+        );
+
+        $customerModel = new Customer_model();
+        $customerId = $customerModel->updateCustomerInDB($legacyOrder, false, $currency_codes, $country_codes);
+        if ($customerId) {
+            $order->customer_id = $customerId;
+            $order->save();
+        }
+
+        if (! empty($legacyOrder->orderlines)) {
+            $orderItemModel = new Order_item_model();
+            $orderItemModel->updateOrderItemsInDB($legacyOrder, null, $bm, $care);
+        } else {
+            Log::info('Refurbed order has no items array', ['order' => $orderNumber]);
+        }
+
+        return $order->fresh(['order_items', 'customer']);
+    }
+
+    protected function buildLegacyOrderObject(
+        array $orderData,
+        ?array $orderItems,
+        string $orderNumber,
+        string $currencyCode,
+        array $country_codes
+    ): object {
+        $orderObj = new \stdClass();
+        $orderObj->order_id = $orderNumber;
+        $orderObj->currency = $currencyCode;
+        $orderObj->price = $this->extractNumeric($orderData['total_amount'] ?? $orderData['price'] ?? null) ?? 0;
+        $orderObj->delivery_note = $orderData['delivery_note'] ?? null;
+        $orderObj->payment_method = $orderData['payment_method'] ?? null;
+        $orderObj->tracking_number = $orderData['tracking_number'] ?? null;
+        $orderObj->date_creation = $orderData['created_at'] ?? now()->toDateTimeString();
+        $orderObj->date_modification = $orderData['updated_at'] ?? $orderObj->date_creation;
+        $orderObj->date_shipping = $orderData['shipped_at'] ?? null;
+
+        $billingSource = $this->normalizeRefurbedPayload($orderData['billing_address'] ?? $orderData['customer'] ?? []);
+        $shippingSource = $this->normalizeRefurbedPayload($orderData['shipping_address'] ?? $orderData['delivery_address'] ?? $billingSource);
+
+        $orderObj->billing_address = (object) $this->buildLegacyAddressArray($billingSource, $country_codes);
+        $orderObj->shipping_address = (object) $this->buildLegacyAddressArray($shippingSource, $country_codes);
+
+        $orderObj->orderlines = [];
+        $items = $orderItems ?? $orderData['items'] ?? $orderData['order_items'] ?? [];
+        foreach ($items as $itemPayload) {
+            $line = $this->buildLegacyOrderLine($itemPayload);
+            if ($line) {
+                $orderObj->orderlines[] = (object) $line;
+            }
+        }
+
+        return $orderObj;
+    }
+
+    protected function buildLegacyAddressArray(array $source, array $country_codes): array
+    {
+        $defaultCountry = array_key_first($country_codes) ?: 'DE';
+
+        return [
+            'company' => $source['company'] ?? 'Refurbed Customer',
+            'first_name' => $source['first_name'] ?? $source['firstname'] ?? 'Refurbed',
+            'last_name' => $source['last_name'] ?? $source['lastname'] ?? 'Customer',
+            'street' => $source['street'] ?? ($source['address_line1'] ?? ''),
+            'street2' => $source['street2'] ?? ($source['address_line2'] ?? ''),
+            'postal_code' => $source['postal_code'] ?? ($source['zip'] ?? ''),
+            'country' => $source['country'] ?? $defaultCountry,
+            'city' => $source['city'] ?? '',
+            'phone' => $source['phone'] ?? $source['telephone'] ?? '',
+            'email' => $source['email'] ?? 'refurbed-customer@example.com',
+        ];
+    }
+
+    protected function buildLegacyOrderLine($itemPayload): ?array
+    {
+        $item = $this->normalizeRefurbedPayload($itemPayload);
+
+        $sku = $item['sku'] ?? $item['merchant_sku'] ?? null;
+        $listingId = $item['listing_id'] ?? null;
+
+        if (! $listingId && $sku) {
+            $listingId = Variation_model::where('sku', $sku)->value('reference_id');
+        }
+
+        $referenceId = $item['id'] ?? $item['order_item_id'] ?? (string) Str::uuid();
+
+        if (! $listingId && ! $sku) {
+            Log::warning('Refurbed order line missing identifiers', ['payload' => $item]);
+        }
+
+        return [
+            'id' => $referenceId,
+            'listing_id' => $listingId,
+            'sku' => $sku,
+            'quantity' => $item['quantity'] ?? 1,
+            'price' => $this->extractNumeric($item['price'] ?? $item['unit_price'] ?? null) ?? 0,
+            'state' => $this->mapRefurbedOrderItemState($item['state'] ?? 'NEW'),
+            'imei' => $item['imei'] ?? null,
+            'serial_number' => $item['serial_number'] ?? ($item['serial'] ?? null),
+            'title' => $item['title'] ?? null,
+        ];
+
+    }
+
+    protected function mapRefurbedOrderState(string $state): int
+    {
+        return match (strtoupper($state)) {
+            'NEW', 'PENDING' => 1,
+            'ACCEPTED', 'CONFIRMED' => 2,
+            'SHIPPED', 'IN_TRANSIT' => 3,
+            // 'DELIVERED', 'COMPLETED' => 4,
+            'CANCELLED' => 4,
+            'RETURNED' => 6,
+            default => 1,
+        };
+    }
+
+    protected function mapRefurbedOrderItemState(string $state): int
+    {
+        return match (strtoupper($state)) {
+            'NEW', 'PENDING' => 1,
+            'ACCEPTED', 'CONFIRMED' => 2,
+            'SHIPPED' => 3,
+            'DELIVERED' => 4,
+            'CANCELLED' => 5,
+            'RETURNED' => 6,
+            default => 1,
+        };
+    }
+
+    protected function normalizeRefurbedPayload($payload): array
+    {
+        if (is_array($payload)) {
+            return $payload;
+        }
+
+        if (is_object($payload)) {
+            return json_decode(json_encode($payload), true) ?? [];
+        }
+
+        return [];
+    }
+
+    protected function extractNumeric($value): ?float
+    {
+        if (is_array($value)) {
+            if (isset($value['amount'])) {
+                $value = $value['amount'];
+            } elseif (isset($value['value'])) {
+                $value = $value['value'];
+            }
+        }
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (float) $value : null;
     }
 
     private function mapStateToStatus($order) {

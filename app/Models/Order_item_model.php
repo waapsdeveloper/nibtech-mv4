@@ -165,28 +165,54 @@ class Order_item_model extends Model
         }
     }
 
-    public function updateOrderItemsInDB($orderObj, $tester = null, $bm, $care = false)
+    public function updateOrderItemsInDB($orderObj, $tester = null, $bm = null, $care = false)
     {
 
-        foreach ($orderObj->orderlines as $itemObj) {
+        foreach ($orderObj->orderlines ?? [] as $itemObj) {
             $order = Order_model::where(['reference_id' => $orderObj->order_id])->first();
-            $order_id = $order->id;
-            $orderItem = Order_item_model::firstOrNew(['reference_id' => $itemObj->id, 'order_id' => $order_id]);
-            $variation = Variation_model::where(['reference_id' => $itemObj->listing_id])->first();
-            if($variation == null){
-                // $this->updateBMOrdersAll();
-                $list = $bm->getOneListing($itemObj->listing_id);
-                $variation = Variation_model::firstOrNew(['reference_id' => $list->listing_id]);
-                $variation->name = $list->title;
-                $variation->sku = $list->sku;
-                $variation->grade = $list->state+1;
-                $variation->status = 1;
-                $variation->state = $list->publication_state;
-                $variation->listed_stock = $list->quantity;
-            }elseif($orderItem->id == null){
-                $variation->listed_stock -= $itemObj->quantity;
+            if (! $order) {
+                continue;
             }
-                $variation->save();
+
+            $order_id = $order->id;
+            $orderItem = Order_item_model::firstOrNew([
+                'reference_id' => $itemObj->id,
+                'order_id' => $order_id,
+            ]);
+
+            $variation = null;
+            if (! empty($itemObj->listing_id)) {
+                $variation = Variation_model::where(['reference_id' => $itemObj->listing_id])->first();
+            }
+
+            if (! $variation && ! empty($itemObj->sku)) {
+                $variation = Variation_model::where('sku', $itemObj->sku)->first();
+            }
+
+            if ($variation === null) {
+                if ($bm && ! empty($itemObj->listing_id)) {
+                    $list = $bm->getOneListing($itemObj->listing_id);
+                    $variation = Variation_model::firstOrNew(['reference_id' => $list->listing_id]);
+                    $variation->name = $list->title;
+                    $variation->sku = $list->sku;
+                    $variation->grade = $list->state + 1;
+                    $variation->status = 1;
+                    $variation->state = $list->publication_state;
+                    $variation->listed_stock = $list->quantity;
+                } elseif (! empty($itemObj->sku)) {
+                    $variation = Variation_model::firstOrNew(['sku' => $itemObj->sku]);
+                    $variation->name = $variation->name ?? ($itemObj->title ?? $itemObj->sku);
+                    $variation->status = $variation->status ?? 1;
+                }
+            } elseif ($orderItem->id == null) {
+                $variation->listed_stock = ($variation->listed_stock ?? 0) - ($itemObj->quantity ?? 0);
+            }
+
+            if (! $variation) {
+                continue;
+            }
+
+            $variation->save();
 
             if($orderItem->stock_id == null){
                 if($orderItem->stock_id === 0){
