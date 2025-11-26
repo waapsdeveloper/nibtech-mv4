@@ -43,17 +43,13 @@ class RefurbedSyncNewOrders extends Command
         $countryCodes = $this->getCountryCodes();
 
         $filter = [];
-
-        if (! empty($states)) {
-            $filter['state'] = ['any_of' => $this->mapToOrderStateEnum($states)];
-        }
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
         $sort = [
             'order_by' => 'CREATED_AT',
             'direction' => 'DESC',
         ];
 
-        $syncStats = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes);
+        $syncStats = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes, $states);
 
         $lookbackHours = max(0, (int) $this->option('lookback-hours'));
         $refreshed = 0;
@@ -80,7 +76,8 @@ class RefurbedSyncNewOrders extends Command
         array $sort,
         int $pageSize,
         array $currencyCodes,
-        array $countryCodes
+        array $countryCodes,
+        array $stateWhitelist
     ): array {
         try {
             $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
@@ -102,12 +99,20 @@ class RefurbedSyncNewOrders extends Command
 
         foreach ($orders as $orderData) {
             $orderData = $this->adaptOrderPayload($orderData);
+            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
             $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
                 $skipped++;
                 Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
+                continue;
+            }
+
+            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
+
+            if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
+                $skipped++;
                 continue;
             }
 
@@ -157,7 +162,7 @@ class RefurbedSyncNewOrders extends Command
         $refreshed = 0;
 
         foreach ($recentOrders as $orderRecord) {
-            $orderId = $orderRecord->reference ?? $orderRecord->reference_id ?? null;
+            $orderId = $this->resolveRefurbedOrderId($orderRecord);
 
             if (! $orderId) {
                 continue;
@@ -276,27 +281,6 @@ class RefurbedSyncNewOrders extends Command
             ->toArray();
     }
 
-    private function mapToOrderStateEnum(array $states): array
-    {
-        $normalized = [];
-
-        foreach ($states as $state) {
-            $state = strtoupper(trim((string) $state));
-
-            if ($state === '') {
-                continue;
-            }
-
-            if (str_starts_with($state, 'ORDER_STATE_')) {
-                $normalized[] = $state;
-            } else {
-                $normalized[] = 'ORDER_STATE_' . $state;
-            }
-        }
-
-        return array_values(array_unique($normalized));
-    }
-
     /**
      * Map Refurbed API fields (per sample payload) to what Order_model expects.
      */
@@ -375,5 +359,22 @@ class RefurbedSyncNewOrders extends Command
             'phone' => $address['phone'] ?? $address['phone_number'] ?? '',
             'email' => $address['email'] ?? null,
         ];
+    }
+
+    private function resolveRefurbedOrderId($orderRecord): ?string
+    {
+        $preferred = $orderRecord->reference_id ?? null;
+
+        if (! empty($preferred)) {
+            return (string) $preferred;
+        }
+
+        $fallback = $orderRecord->reference ?? null;
+
+        if ($fallback && $fallback !== Order_model::REFURBED_STOCK_SYNCED_REFERENCE) {
+            return (string) $fallback;
+        }
+
+        return null;
     }
 }

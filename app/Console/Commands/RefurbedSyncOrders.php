@@ -37,6 +37,7 @@ class RefurbedSyncOrders extends Command
         $currencyCodes = $this->getCurrencyCodes();
         $countryCodes = $this->getCountryCodes();
 
+        $stateWhitelist = $this->normalizeList($this->option('state'));
         $filter = $this->buildFilter();
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
         $sort = [
@@ -70,12 +71,20 @@ class RefurbedSyncOrders extends Command
 
         foreach ($orders as $orderData) {
             $orderData = $this->adaptOrderPayload($orderData);
+            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
             $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
 
             if (! $orderId) {
                 $skipped++;
                 Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
+                continue;
+            }
+
+            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
+
+            if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
+                $skipped++;
                 continue;
             }
 
@@ -113,11 +122,6 @@ class RefurbedSyncOrders extends Command
     private function buildFilter(): array
     {
         $filter = [];
-
-        $states = $this->normalizeList($this->option('state'));
-        if (! empty($states)) {
-            $filter['state'] = ['any_of' => $this->mapToOrderStateEnum($states)];
-        }
 
         $fulfillmentStates = $this->normalizeList($this->option('fulfillment'));
         if (! empty($fulfillmentStates)) {
@@ -159,27 +163,6 @@ class RefurbedSyncOrders extends Command
         return Country_model::pluck('id', 'code')
             ->map(fn ($id) => (int) $id)
             ->toArray();
-    }
-
-    private function mapToOrderStateEnum(array $states): array
-    {
-        $normalized = [];
-
-        foreach ($states as $state) {
-            $state = strtoupper(trim((string) $state));
-
-            if ($state === '') {
-                continue;
-            }
-
-            if (str_starts_with($state, 'ORDER_STATE_')) {
-                $normalized[] = $state;
-            } else {
-                $normalized[] = 'ORDER_STATE_' . $state;
-            }
-        }
-
-        return array_values(array_unique($normalized));
     }
 
     private function acceptOrderIfNeeded(RefurbedAPIController $refurbed, array $orderData): array
