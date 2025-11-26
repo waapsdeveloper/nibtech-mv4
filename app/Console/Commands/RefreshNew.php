@@ -47,8 +47,8 @@ class RefreshNew extends Command
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
 
-        $currency_codes = Currency_model::pluck('id','code');
-        $country_codes = Country_model::pluck('id','code');
+        $currency_codes = Currency_model::pluck('id','code')->toArray();
+        $country_codes = Country_model::pluck('id','code')->toArray();
 
         $resArray1 = $bm->getNewOrders();
         echo 1;

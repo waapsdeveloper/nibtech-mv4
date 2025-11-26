@@ -35,8 +35,8 @@ class UpdateOrderInDB implements ShouldQueue
 
         $bm = new BackMarketAPIController();
 
-        $currency_codes = Currency_model::pluck('id','code');
-        $country_codes = Country_model::pluck('id','code');
+        $currency_codes = Currency_model::pluck('id','code')->toArray();
+        $country_codes = Country_model::pluck('id','code')->toArray();
 
         $this->orderObj = $orderObj;
         $this->bm = $bm;
