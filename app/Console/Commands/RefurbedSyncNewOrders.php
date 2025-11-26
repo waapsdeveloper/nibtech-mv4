@@ -300,6 +300,21 @@ class RefurbedSyncNewOrders extends Command
             if ($logApiResponse) {
                 $this->info('Refurbed batch response for order ' . $orderId . ':');
                 $this->line(json_encode($response, JSON_PRETTY_PRINT));
+
+                $latestItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
+                if (! empty($latestItems)) {
+                    $orderItems = $latestItems;
+                }
+
+                $this->info('Latest Refurbed order item states for order ' . $orderId . ':');
+                $this->line(json_encode(array_map(function ($item) {
+                    return array_filter([
+                        'id' => $item['id'] ?? null,
+                        'state' => $item['state'] ?? null,
+                        'sku' => $item['sku'] ?? null,
+                        'parcel_tracking_number' => $item['parcel_tracking_number'] ?? null,
+                    ]);
+                }, $latestItems), JSON_PRETTY_PRINT));
             }
         } catch (RequestException $e) {
             $response = $e->response;
