@@ -319,7 +319,7 @@ class ListingController extends Controller
     {
         $availableCount = $variation->available_stocks ? $variation->available_stocks->count() : 0;
         $pendingCount = $variation->pending_orders ? $variation->pending_orders->count() : 0;
-
+        $pendingBMCount = $variation->pending_bm_orders ? $variation->pending_bm_orders->count() : 0;
         return [
             $variation->id,
             $variation->reference_id,
@@ -335,6 +335,7 @@ class ListingController extends Controller
             $variation->listed_stock,
             $availableCount,
             $pendingCount,
+            $pendingBMCount,
             optional($listing)->id,
             $listing ? (optional($listing->country_id)->title ?? $listing->country) : null,
             $listing ? $this->formatHandlerStatus($listing->handler_status) : null,
