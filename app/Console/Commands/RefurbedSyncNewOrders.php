@@ -23,6 +23,7 @@ class RefurbedSyncNewOrders extends Command
     protected $signature = 'refurbed:new
         {--state=* : Override the default Refurbed states (NEW,PENDING)}
         {--page-size=50 : Page size for each API request (max 200)}
+        {--max-pages=1 : Maximum number of order pages to fetch per run}
         {--lookback-hours=48 : Re-sync Refurbed orders created within the last N hours}
         {--skip-items : Skip fetching order items for each order}
         {--debug-order= : Limit processing to a single Refurbed order id and print API responses}';
@@ -64,7 +65,19 @@ class RefurbedSyncNewOrders extends Command
             'direction' => 'DESC',
         ];
 
-        $syncStats = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes, $states);
+        $maxPages = max(1, (int) $this->option('max-pages'));
+
+        $syncStats = $this->syncOrders(
+            $refurbed,
+            $orderModel,
+            $filter,
+            $sort,
+            $pageSize,
+            $maxPages,
+            $currencyCodes,
+            $countryCodes,
+            $states
+        );
 
         $lookbackHours = max(0, (int) $this->option('lookback-hours'));
         $refreshed = 0;
@@ -90,69 +103,99 @@ class RefurbedSyncNewOrders extends Command
         array $filter,
         array $sort,
         int $pageSize,
+        int $maxPages,
         array $currencyCodes,
         array $countryCodes,
         array $stateWhitelist
     ): array {
-        try {
-            $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: failed to fetch new orders', [
-                'error' => $e->getMessage(),
-                'filter' => $filter,
-            ]);
-
-            $this->error('Refurbed new-order sync failed: ' . $e->getMessage());
-
-            return ['processed' => 0, 'skipped' => 0, 'failed' => 0];
-        }
-
-        $orders = $response['orders'] ?? [];
         $processed = 0;
         $skipped = 0;
         $failed = 0;
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
 
-        foreach ($orders as $orderData) {
-            $orderData = $this->adaptOrderPayload($orderData);
-            $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
-            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
-
-            if (! $orderItems && ! $this->option('skip-items') && $orderId) {
-                $orderItems = $this->fetchOrderItems($refurbed, $orderId);
-            }
-
-            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
-            $orderData = $this->acceptOrderLinesIfNeeded(
-                $refurbed,
-                $orderData,
-                $orderItems,
-                ! $this->option('skip-items'),
-                $this->isDebugOrder($orderId)
-            );
-
-            if (! $orderId) {
-                $skipped++;
-                Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
-                continue;
-            }
-
-            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
-
-            if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
-                $skipped++;
-                continue;
-            }
+        while ($hasMore && $pageCount < $maxPages) {
+            $pageCount++;
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
 
             try {
-                $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
-                $processed++;
+                $response = $refurbed->listOrders($filter, $pagination, $sort);
             } catch (\Throwable $e) {
-                $failed++;
-                Log::error('Refurbed: failed to persist new order', [
-                    'order_id' => $orderId,
+                Log::error('Refurbed: failed to fetch new orders', [
                     'error' => $e->getMessage(),
+                    'filter' => $filter,
+                    'page' => $pageCount,
                 ]);
+
+                $this->error('Refurbed new-order sync failed while fetching page ' . $pageCount . ': ' . $e->getMessage());
+
+                break;
             }
+
+            $orders = $response['orders'] ?? [];
+
+            if (empty($orders)) {
+                $hasMore = false;
+                break;
+            }
+
+            foreach ($orders as $orderData) {
+                $orderData = $this->adaptOrderPayload($orderData);
+                $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
+                $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
+
+                if (! $orderItems && ! $this->option('skip-items') && $orderId) {
+                    $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+                }
+
+                $preAcceptanceState = strtoupper($orderData['state'] ?? '');
+                $orderData = $this->acceptOrderLinesIfNeeded(
+                    $refurbed,
+                    $orderData,
+                    $orderItems,
+                    ! $this->option('skip-items'),
+                    $this->isDebugOrder($orderId)
+                );
+
+                if (! $orderId) {
+                    $skipped++;
+                    Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
+                    continue;
+                }
+
+                $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
+
+                if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
+                    $skipped++;
+                    continue;
+                }
+
+                try {
+                    $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                    $processed++;
+                } catch (\Throwable $e) {
+                    $failed++;
+                    Log::error('Refurbed: failed to persist new order', [
+                        'order_id' => $orderId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            $pageToken = $response['next_page_token'] ?? null;
+            $hasMore = $pageToken && ($response['has_more'] ?? false);
+        }
+
+        if ($hasMore) {
+            $this->warn(sprintf(
+                'Stopped after %d Refurbed order pages (pass --max-pages=%d to fetch more).',
+                $pageCount,
+                $maxPages + 1
+            ));
         }
 
         return [
