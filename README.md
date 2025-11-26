@@ -141,7 +141,7 @@ All Refurbed artisan commands (`refurbed:new`, `refurbed:orders`, `refurbed:upda
 * * * * * cd /path/to/project && php artisan schedule:run >> /dev/null 2>&1
 ```
 
-Remove any legacy crons that call the Refurbed commands directly—let the scheduler orchestrate cadence and locking so the server isn't hammered by overlapping jobs.
+Remove any legacy crons that call the Refurbed commands directly—let the scheduler orchestrate cadence and locking so the server isn't hammered by overlapping jobs. The same guidance applies to the other long-running artisan commands (price handlers, refreshers, exchange rates, etc.); they now inherit the same scheduler guardrails, so one `schedule:run` entry is all you need.
 
 ## Back Market Pro (BMPRO) API integration
 
