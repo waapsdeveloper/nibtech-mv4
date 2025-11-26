@@ -42,7 +42,7 @@ class Api_request_model extends Model
 
         $requests = Api_request_model::where('status', null)
         ->where('request', 'LIKE', '%10565%')
-        ->limit(200)->get();
+        ->limit(500)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
