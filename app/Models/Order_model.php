@@ -29,7 +29,7 @@ class Order_model extends Model
         'scanned',
     ];
 
-    private const REFURBED_STOCK_SYNCED_REFERENCE = 'REFURBED_STOCK_SYNCED';
+    public const REFURBED_STOCK_SYNCED_REFERENCE = 'REFURBED_STOCK_SYNCED';
 
     public function transactions()
     {
