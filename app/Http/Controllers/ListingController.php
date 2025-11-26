@@ -112,6 +112,7 @@ class ListingController extends Controller
             'product',
             'available_stocks',
             'pending_orders',
+            'pending_bm_orders',
             'storage_id',
             'color_id',
             'grade_id',
