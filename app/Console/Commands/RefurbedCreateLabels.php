@@ -64,6 +64,12 @@ class RefurbedCreateLabels extends Command
             }
 
             $order->refresh();
+
+            if (empty($order->label_url)) {
+                $this->warn('  ⚠ Refurbed API responded but no label URL was returned. Order left in queue.');
+                continue;
+            }
+
             $successCount++;
 
             $this->info(sprintf('  ✓ Tracking: %s | Label: %s', $order->tracking_number ?? '-', $order->label_url ?? '-'));

@@ -309,14 +309,21 @@ class RefurbedAPIController extends Controller
         ]));
     }
 
-    public function createShippingLabel(string $orderId, string $merchantAddressId, float $parcelWeight, ?string $carrier = null): array
-    {
-        return $this->post('refb.merchant.v1.OrderService/CreateShippingLabel', $this->cleanPayload([
+    public function createShippingLabel(
+        string $orderId,
+        string $merchantAddressId,
+        float $parcelWeight,
+        ?string $carrier = null,
+        array $attributes = []
+    ): array {
+        $payload = array_merge([
             'order_id' => $orderId,
             'merchant_address_id' => $merchantAddressId,
             'parcel_weight' => $parcelWeight,
             'carrier' => $carrier,
-        ]));
+        ], $attributes);
+
+        return $this->post('refb.merchant.v1.OrderService/CreateShippingLabel', $this->cleanPayload($payload));
     }
 
     public function listShippingLabels(string $orderId): array
