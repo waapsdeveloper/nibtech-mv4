@@ -3084,6 +3084,7 @@ class Order extends Component
             }
 
             if($isRefurbed){
+                $this->ensureRefurbedLabelArtifacts($order, $refurbedApi, $detail);
                 $refurbedDocumentLinks = $this->captureRefurbedDocumentLinks($order, $refurbedApi);
             }
 
@@ -3323,6 +3324,73 @@ class Order extends Component
                 'carrier' => $carrier,
             ],
         ]);
+    }
+
+    protected function ensureRefurbedLabelArtifacts(Order_model $order, RefurbedAPIController $refurbedApi, $dispatchResult = null): void
+    {
+        $dirty = false;
+
+        if ($dispatchResult) {
+            $trackingNumber = data_get($dispatchResult, 'tracking_number');
+            $labelUrl = data_get($dispatchResult, 'label_url');
+
+            if ($trackingNumber && empty($order->tracking_number)) {
+                $order->tracking_number = trim((string) $trackingNumber);
+                $dirty = true;
+            }
+
+            if ($labelUrl && empty($order->label_url)) {
+                $order->label_url = trim((string) $labelUrl);
+                $dirty = true;
+            }
+        }
+
+        if ($dirty) {
+            $order->save();
+        }
+
+        if ($order->label_url && $order->tracking_number) {
+            return;
+        }
+
+        try {
+            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to hydrate shipping labels for order', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return;
+        }
+
+        $labelData = data_get($labelsResponse, 'shipping_labels.0')
+            ?? data_get($labelsResponse, 'labels.0')
+            ?? data_get($labelsResponse, 'label')
+            ?? $labelsResponse;
+
+        $downloadUrl = data_get($labelData, 'download_url')
+            ?? data_get($labelData, 'label.download_url')
+            ?? data_get($labelData, 'label.content_url');
+
+        $trackingNumber = data_get($labelData, 'tracking_number')
+            ?? data_get($labelData, 'label.tracking_number');
+
+        $dirty = false;
+
+        if ($downloadUrl && empty($order->label_url)) {
+            $order->label_url = trim((string) $downloadUrl);
+            $dirty = true;
+        }
+
+        if ($trackingNumber && empty($order->tracking_number)) {
+            $order->tracking_number = trim((string) $trackingNumber);
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $order->save();
+        }
     }
 
     protected function captureRefurbedDocumentLinks(Order_model $order, RefurbedAPIController $refurbedApi): array
@@ -3717,6 +3785,20 @@ class Order extends Component
         if (!$order) {
             session()->flash('error', 'Order not found');
             return redirect(url('order'));
+        }
+
+        if ((int) $order->marketplace_id === self::REFURBED_MARKETPLACE_ID) {
+            try {
+                $refurbedApi = new RefurbedAPIController();
+                $this->ensureRefurbedLabelArtifacts($order, $refurbedApi);
+                $this->captureRefurbedDocumentLinks($order, $refurbedApi);
+                $order->refresh();
+            } catch (\Throwable $e) {
+                Log::warning('Refurbed: Unable to refresh packing documents during reprint', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         $invoiceUrl = url('export_invoice').'/'.$id.'/1';
