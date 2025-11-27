@@ -65,12 +65,9 @@ class ListingQueryService
                 });
             })
             ->when($request->filled('marketplace'), function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('id', function ($subquery) use ($request) {
-                    $subquery->select('variation_id')
-                        ->from('listings')
-                        ->where('marketplace_id', $request->input('marketplace'))
-                        ->whereNull('deleted_at');
+                // Use whereHas - it's more efficient and works fine before joins
+                return $q->whereHas('listings', function ($q) use ($request) {
+                    $q->where('marketplace_id', $request->input('marketplace'));
                 });
             })
             ->when($request->filled('product'), function ($q) use ($request) {
@@ -95,12 +92,9 @@ class ListingQueryService
                 return $q->whereIn('grade', (array) $request->input('grade'));
             })
             ->when($request->filled('topup'), function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('id', function ($subquery) use ($request) {
-                    $subquery->select('variation_id')
-                        ->from('listed_stock_verifications')
-                        ->where('process_id', $request->input('topup'))
-                        ->whereNull('deleted_at');
+                // Use whereHas - it's more efficient
+                return $q->whereHas('listed_stock_verifications', function ($verificationQuery) use ($request) {
+                    $verificationQuery->where('process_id', $request->input('topup'));
                 });
             })
             ->when($request->filled('listed_stock'), function ($q) use ($request) {
@@ -124,12 +118,9 @@ class ListingQueryService
                 }
             })
             ->when($request->filled('process_id') && $request->input('special') === 'show_only', function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('id', function ($subquery) use ($request) {
-                    $subquery->select('variation_id')
-                        ->from('process_stock')
-                        ->where('process_id', $request->input('process_id'))
-                        ->whereNull('deleted_at');
+                // Use whereHas - it's more efficient
+                return $q->whereHas('process_stocks', function ($processStockQuery) use ($request) {
+                    $processStockQuery->where('process_id', $request->input('process_id'));
                 });
             })
             ->whereNotNull('sku')
@@ -146,22 +137,16 @@ class ListingQueryService
                     ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
             })
             ->when((int) $request->input('handler_status') === 2, function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('id', function ($subquery) use ($request) {
-                    $subquery->select('variation_id')
-                        ->from('listings')
-                        ->where('handler_status', $request->input('handler_status'))
-                        ->whereIn('country', [73, 199])
-                        ->whereNull('deleted_at');
+                // Use whereHas - it's more efficient and works fine before joins
+                return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                    $listingQuery->where('handler_status', $request->input('handler_status'))
+                        ->whereIn('country', [73, 199]);
                 });
             })
             ->when(in_array((int) $request->input('handler_status'), [1, 3], true), function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('id', function ($subquery) use ($request) {
-                    $subquery->select('variation_id')
-                        ->from('listings')
-                        ->where('handler_status', $request->input('handler_status'))
-                        ->whereNull('deleted_at');
+                // Use whereHas - it's more efficient and works fine before joins
+                return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                    $listingQuery->where('handler_status', $request->input('handler_status'));
                 });
             });
     }
@@ -193,22 +178,14 @@ class ListingQueryService
                 ->orderBy('variation.storage', 'asc')
                 ->orderBy('variation.color', 'asc')
                 ->orderBy('variation.grade', 'asc'),
-            2 => $query->leftJoin('listings', 'variation.id', '=', 'listings.variation_id')
-                ->select('variation.*', DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at) as latest_activity'))
-                ->groupBy('variation.id')
-                ->orderBy('listed_stock', 'asc') // Stock ASC (primary)
-                ->orderBy(DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at)'), 'desc') // Then most recent activity (tie-breaker)
-                ->orderBy('variation.storage', 'asc')
-                ->orderBy('variation.color', 'asc')
-                ->orderBy('variation.grade', 'asc'),
-            default => $query->leftJoin('listings', 'variation.id', '=', 'listings.variation_id')
-                ->select('variation.*', DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at) as latest_activity'))
-                ->groupBy('variation.id')
-                ->orderBy('listed_stock', 'desc') // Stock DESC (primary)
-                ->orderBy(DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at)'), 'desc') // Then most recent activity (tie-breaker)
-                ->orderBy('variation.storage', 'asc')
-                ->orderBy('variation.color', 'asc')
-                ->orderBy('variation.grade', 'asc'),
+            2 => $query->orderBy('listed_stock', 'asc')
+                ->orderBy('storage', 'asc')
+                ->orderBy('color', 'asc')
+                ->orderBy('grade', 'asc'),
+            default => $query->orderBy('listed_stock', 'desc')
+                ->orderBy('storage', 'asc')
+                ->orderBy('color', 'asc')
+                ->orderBy('grade', 'asc'),
         };
     }
 

@@ -123,32 +123,66 @@
      * Build listing filters from form
      */
     function buildListingFiltersV2(overrides = {}) {
-        const form = document.getElementById('v2-search-form');
-        const formData = new FormData(form);
+        // Build params object, only including non-empty values
+        const params = {};
         
-        const params = {
-            product_name: formData.get('product_name') || '',
-            reference_id: formData.get('reference_id') || '',
-            product: formData.get('product') || '',
-            sku: formData.get('sku') || '',
-            color: formData.get('color') || '',
-            storage: formData.get('storage') || '',
-            grade: formData.getAll('grade[]') || [],
-            category: formData.get('category') || '',
-            brand: formData.get('brand') || '',
-            marketplace: formData.get('marketplace') || '',
-            listed_stock: formData.get('listed_stock') || '',
-            available_stock: formData.get('available_stock') || '',
-            handler_status: formData.get('handler_status') || '',
-            state: formData.get('state') || '',
-            sort: formData.get('sort') || '1',
-            per_page: formData.get('per_page') || '10',
-            special: "{{ Request::get('special') }}",
-            sale_40: "{{ Request::get('sale_40') }}",
-            variation_id: "{{ Request::get('variation_id') }}",
-            process_id: "{{ Request::get('process_id') }}",
-            show: "{{ Request::get('show') }}",
-        };
+        // Get all form values - prioritize select dropdowns over hidden inputs
+        const productName = document.querySelector('[name="product_name"]')?.value || '';
+        const referenceId = document.querySelector('[name="reference_id"]')?.value || '';
+        const product = document.querySelector('[name="product"]')?.value || '';
+        const sku = document.querySelector('[name="sku"]')?.value || '';
+        const color = document.querySelector('[name="color"]')?.value || '';
+        const storage = document.querySelector('[name="storage"]')?.value || '';
+        const gradeSelect = document.querySelector('[name="grade[]"]');
+        const grades = gradeSelect ? Array.from(gradeSelect.selectedOptions).map(opt => opt.value) : [];
+        const category = document.querySelector('[name="category"]')?.value || '';
+        const brand = document.querySelector('[name="brand"]')?.value || '';
+        const marketplace = document.querySelector('[name="marketplace"]')?.value || '';
+        const listedStock = document.querySelector('[name="listed_stock"]')?.value || '';
+        const availableStock = document.querySelector('[name="available_stock"]')?.value || '';
+        const handlerStatus = document.querySelector('[name="handler_status"]')?.value || '';
+        const state = document.querySelector('[name="state"]')?.value || '';
+        
+        // Get sort and per_page from the select dropdowns (not hidden inputs)
+        // These are outside the form but have form="v2-search-form" attribute
+        // Always read directly from the DOM to get current values
+        const sortSelect = document.getElementById('v2-sort');
+        const perPageSelect = document.getElementById('v2-per-page');
+        const sort = (sortSelect && sortSelect.value) ? sortSelect.value : '1';
+        const perPage = (perPageSelect && perPageSelect.value) ? perPageSelect.value : '10';
+        
+        // Only add non-empty values to params
+        if (productName) params.product_name = productName;
+        if (referenceId) params.reference_id = referenceId;
+        if (product) params.product = product;
+        if (sku) params.sku = sku;
+        if (color) params.color = color;
+        if (storage) params.storage = storage;
+        if (grades.length > 0) params.grade = grades;
+        if (category) params.category = category;
+        if (brand) params.brand = brand;
+        if (marketplace) params.marketplace = marketplace;
+        if (listedStock) params.listed_stock = listedStock;
+        if (availableStock) params.available_stock = availableStock;
+        if (handlerStatus) params.handler_status = handlerStatus;
+        if (state) params.state = state;
+        
+        // Always include sort and per_page
+        params.sort = sort;
+        params.per_page = perPage;
+        
+        // Add special parameters from request
+        const special = "{{ Request::get('special') }}";
+        const sale40 = "{{ Request::get('sale_40') }}";
+        const variationId = "{{ Request::get('variation_id') }}";
+        const processId = "{{ Request::get('process_id') }}";
+        const show = "{{ Request::get('show') }}";
+        
+        if (special) params.special = special;
+        if (sale40) params.sale_40 = sale40;
+        if (variationId) params.variation_id = variationId;
+        if (processId) params.process_id = processId;
+        if (show) params.show = show;
 
         return Object.assign(params, overrides);
     }
@@ -158,8 +192,32 @@
      */
     function fetchVariationsV2(page = 1) {
         const params = buildListingFiltersV2({ page: page });
-        const queryString = new URLSearchParams(params).toString();
-        const url = "{{ url('v2/listings/get_variations') }}" + '?' + queryString;
+        
+        // Build query string manually to handle arrays properly
+        const queryParts = [];
+        for (const [key, value] of Object.entries(params)) {
+            // Always include sort and per_page, even if empty
+            if (key === 'sort' || key === 'per_page') {
+                queryParts.push(`${key}=${encodeURIComponent(value || (key === 'sort' ? '1' : '10'))}`);
+            } else if (value !== null && value !== undefined && value !== '') {
+                if (Array.isArray(value)) {
+                    value.forEach(v => {
+                        if (v) queryParts.push(`${key}[]=${encodeURIComponent(v)}`);
+                    });
+                } else {
+                    queryParts.push(`${key}=${encodeURIComponent(value)}`);
+                }
+            }
+        }
+        const queryString = queryParts.join('&');
+        const url = "{{ url('v2/listings/get_variations') }}" + (queryString ? '?' + queryString : '');
+        
+        // Debug: Log the URL to see what's being sent
+        console.log('Fetching variations with URL:', url);
+        console.log('Sort value:', params.sort, 'Per page:', params.per_page);
+        
+        // Update URL in browser without reloading page
+        window.history.pushState({}, '', window.location.pathname + (queryString ? '?' + queryString : ''));
 
         // Show loading state
         document.getElementById('v2-variations').innerHTML = `

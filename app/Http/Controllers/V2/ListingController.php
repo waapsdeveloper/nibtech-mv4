@@ -73,6 +73,9 @@ class ListingController extends Controller
     public function getVariations(Request $request)
     {
         try {
+            // Increase execution time limit for this operation
+            set_time_limit(120);
+            
             $perPage = $request->input('per_page', 10);
             
             // Build query using service
@@ -80,13 +83,16 @@ class ListingController extends Controller
             
             $page = $request->input('page', 1);
             
-            // Get total count
+            // Get total count - use distinct count if joins might cause duplicates
             $total = $query->count();
             
             // Get only IDs for lazy loading (much faster)
+            // Remove any potential duplicates from joins
             $variationIds = $query->skip(($page - 1) * $perPage)
                 ->take($perPage)
                 ->pluck('id')
+                ->unique()
+                ->values()
                 ->toArray();
 
             $lastPage = ceil($total / $perPage);
