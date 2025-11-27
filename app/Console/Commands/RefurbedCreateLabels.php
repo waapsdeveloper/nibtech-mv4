@@ -18,6 +18,7 @@ class RefurbedCreateLabels extends Command
         {--parcel-weight= : Override parcel weight in KG}
         {--merchant-address-id= : Override merchant address ID}
         {--mark-shipped : Mark orders as shipped after label creation}
+        {--no-mark-shipped : Do not mark orders as shipped or sync states}
         {--sync-identifiers : Push IMEI/serial identifiers after label creation}
         {--no-skip-existing : Process even if tracking/label already exists}
     ';
@@ -109,8 +110,16 @@ class RefurbedCreateLabels extends Command
 
     protected function buildOptions(): array
     {
+        $markShipped = true;
+
+        if ($this->option('no-mark-shipped')) {
+            $markShipped = false;
+        } elseif ($this->option('mark-shipped')) {
+            $markShipped = true;
+        }
+
         $options = [
-            'mark_shipped' => (bool) $this->option('mark-shipped'),
+            'mark_shipped' => $markShipped,
             'skip_if_exists' => ! (bool) $this->option('no-skip-existing'),
             'sync_identifiers' => (bool) $this->option('sync-identifiers'),
             'processed_by' => null,
