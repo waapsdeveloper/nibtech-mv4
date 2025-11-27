@@ -2870,6 +2870,8 @@ class Order extends Component
     if($canDispatch){
             foreach($imeis as $i => $imei){
 
+                $stocksForFreshBlock = collect();
+
                 $variant = Variation_model::where('sku',$sku[$i])->first();
                 if($variant->storage != null){
                     $storage2 = $variant->storage_id->name . " - ";
@@ -2904,7 +2906,7 @@ class Order extends Component
                     return redirect()->back();
                 }
                 if($stock[$i]->created_at->diffInDays() < 20 && !session('user')->hasPermission('allow_sell_new_stock')){
-                    $stocks = Stock_model::where('variation_id', $variant->id)
+                    $stocksForFreshBlock = Stock_model::where('variation_id', $variant->id)
                         ->where('status', 1)
                         ->where('order_id', '<', $stock[$i]->order_id)
                         ->where('updated_at', '<', now()->subDays(5))
@@ -2913,13 +2915,13 @@ class Order extends Component
                         })
                         ->whereHas('latest_listing_or_topup')
                         ->get();
-                    if($stocks->count() > 3 && !$stock[$i]->stock_repairs()->exists()){
-                        session()->put('error', "Sell Old Stock First | ".$stocks->count() . "pcs Available");
+                    if($stocksForFreshBlock->count() > 3 && !$stock[$i]->stock_repairs()->exists()){
+                        session()->put('error', "Sell Old Stock First | ".$stocksForFreshBlock->count() . "pcs Available");
                         return redirect()->back();
                     }
                 }
-                if(session('user_id') == 1){
-                    dd($stocks);
+                if(session('user_id') == 1 && $stocksForFreshBlock->isNotEmpty()){
+                    dd($stocksForFreshBlock);
                 }
                 // if($stock[$i]->status != 1){
 
