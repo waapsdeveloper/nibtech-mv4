@@ -1648,6 +1648,80 @@
             });
         });
 
+        document.addEventListener('click', function (event) {
+            const trigger = event.target.closest('.copy-support-context');
+            if (!trigger) {
+                return;
+            }
+
+            event.preventDefault();
+            const payload = trigger.getAttribute('data-copy-text') || '';
+            if (!payload.length) {
+                return;
+            }
+
+            copySupportContext(payload)
+                .then(function () {
+                    supportCopyFeedback(trigger, false);
+                })
+                .catch(function () {
+                    supportCopyFeedback(trigger, true);
+                });
+        });
+
+        function copySupportContext(text) {
+            const canUseClipboard = typeof navigator !== 'undefined'
+                && navigator.clipboard
+                && (typeof window.isSecureContext === 'undefined' || window.isSecureContext);
+
+            if (canUseClipboard) {
+                return navigator.clipboard.writeText(text);
+            }
+
+            return new Promise(function (resolve, reject) {
+                try {
+                    const scratch = document.createElement('textarea');
+                    scratch.value = text;
+                    scratch.setAttribute('readonly', '');
+                    scratch.style.position = 'absolute';
+                    scratch.style.left = '-9999px';
+                    document.body.appendChild(scratch);
+                    scratch.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(scratch);
+
+                    if (!successful) {
+                        reject(new Error('Copy command unsuccessful'));
+                        return;
+                    }
+
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function supportCopyFeedback(trigger, errored) {
+            if (!trigger) {
+                return;
+            }
+
+            const originalLabel = trigger.getAttribute('data-reset-label') || trigger.textContent || 'Copy chat context';
+            trigger.setAttribute('data-reset-label', originalLabel);
+
+            const feedbackClass = errored ? 'text-danger' : 'text-success';
+            const feedbackLabel = errored ? 'Copy failed' : 'Copied';
+
+            trigger.textContent = feedbackLabel;
+            trigger.classList.add(feedbackClass);
+
+            setTimeout(function () {
+                trigger.textContent = trigger.getAttribute('data-reset-label') || originalLabel;
+                trigger.classList.remove(feedbackClass);
+            }, 1400);
+        }
+
         // function get_customer_previous_orders(customer_id, order_id){
         //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
         //     $.ajax({

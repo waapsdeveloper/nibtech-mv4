@@ -115,6 +115,20 @@ class RefurbedAPIController extends Controller
         return $this->post('refb.merchant.v1.OrderService/GetOrder', ['id' => $orderId]);
     }
 
+    public function getOrderInvoice(string $orderId): array
+    {
+        return $this->post('refb.merchant.v1.OrderService/GetOrderInvoice', [
+            'order_id' => $orderId,
+        ]);
+    }
+
+    public function getOrderCommercialInvoice(string $orderId): array
+    {
+        return $this->post('refb.merchant.v1.OrderService/GetOrderCommercialInvoice', [
+            'order_id' => $orderId,
+        ]);
+    }
+
     public function acceptOrder(string $orderId): array
     {
         return $this->post('refb.merchant.v1.OrderService/AcceptOrder', ['id' => $orderId]);

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\RefurbedAPIController;
+use App\Services\RefurbedShippingService;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -416,7 +418,63 @@ class Order_model extends Model
 
         $this->syncBackMarketStockForRefurbedOrder($order, $legacyOrder);
 
+        $this->maybeAutoCreateRefurbedLabel($order);
+
         return $order->fresh(['order_items', 'customer']);
+    }
+
+    protected function maybeAutoCreateRefurbedLabel(self $order): void
+    {
+        $shippingConfig = config('services.refurbed.shipping', []);
+        $autoEnabled = (bool) ($shippingConfig['auto_label_on_accept'] ?? false);
+
+        if (! $autoEnabled) {
+            return;
+        }
+
+        if ((int) ($order->marketplace_id ?? 0) !== 4) {
+            return;
+        }
+
+        if ((int) ($order->status ?? 0) !== 2) {
+            return;
+        }
+
+        if (! empty($order->label_url) && ! empty($order->tracking_number)) {
+            return;
+        }
+
+        $order->loadMissing('order_items');
+
+        if ($order->order_items->isEmpty()) {
+            return;
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to initialize API client for auto label', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return;
+        }
+
+        $service = app(RefurbedShippingService::class);
+
+        $result = $service->createLabel($order, $refurbedApi, [
+            'mark_shipped' => false,
+            'skip_if_exists' => true,
+            'sync_identifiers' => false,
+        ]);
+
+        if (is_string($result)) {
+            Log::info('Refurbed: auto label not created', [
+                'order_id' => $order->id,
+                'reason' => $result,
+            ]);
+        }
     }
 
     protected function buildLegacyOrderObject(
