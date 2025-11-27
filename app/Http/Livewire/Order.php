@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
     use App\Http\Controllers\BackMarketAPIController;
+    use App\Http\Controllers\RefurbedAPIController;
     use Livewire\Component;
     use App\Models\Admin_model;
     use App\Models\Variation_model;
@@ -21,6 +22,7 @@ namespace App\Http\Livewire;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
     use App\Exports\PurchasesheetExport;
+    use App\Services\RefurbedShippingService;
 use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
     use TCPDF;
@@ -43,6 +45,7 @@ use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Http\Request;
 
@@ -80,6 +83,7 @@ class Order extends Component
         $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
         $data['order_statuses'] = Order_status_model::pluck('name','id');
         $data['marketplaces'] = Marketplace_model::pluck('name','id');
+        $data['refurbedShippingDefaults'] = config('services.refurbed.shipping', []);
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -2791,9 +2795,38 @@ class Order extends Component
     public function dispatch($id)
     {
         $order = Order_model::find($id);
-        $bm = new BackMarketAPIController();
-        // $orderObj = $bm->getOneOrder($order->reference_id);
-        $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+
+        if($order == null){
+            session()->put('error', "Order Not Found");
+            return redirect()->back();
+        }
+
+        $isRefurbed = (int) $order->marketplace_id === 4;
+        $bm = null;
+        $refurbedApi = null;
+        $refurbedDocumentLinks = [];
+
+        if($isRefurbed){
+            try {
+                $refurbedApi = new RefurbedAPIController();
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: Failed to initialize API client for dispatch', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+                session()->put('error', 'Unable to connect to Refurbed API: ' . $e->getMessage());
+                return redirect()->back();
+            }
+
+            $orderObj = (object) [
+                'state' => 3,
+                'tracking_number' => $order->tracking_number,
+            ];
+        }else{
+            $bm = new BackMarketAPIController();
+            // $orderObj = $bm->getOneOrder($order->reference_id);
+            $orderObj = $this->updateBMOrder($order->reference_id, false, null, true);
+        }
 
         if($orderObj == null){
 
@@ -2804,8 +2837,8 @@ class Order extends Component
         if (!is_array($tester)) {
             $tester = $tester !== null ? (array) $tester : [];
         }
-        $sku = request('sku');
-        $imeis = request('imei');
+        $sku = (array) request('sku', []);
+        $imeis = (array) request('imei', []);
 
         // Initialize an empty result array
         $skus = [];
@@ -2820,10 +2853,21 @@ class Order extends Component
                 // Add the current number to the skus array along with its index in the original array
                 $skus[$number][$index] = $number;
             }
+    }
+    // print_r(request('imei'));
+    $externalState = $isRefurbed ? 3 : $this->resolveExternalOrderState($orderObj, $order);
 
-        }
-        // print_r(request('imei'));
-        if($orderObj->state == 3){
+    if (! $isRefurbed && $externalState === null) {
+        Log::warning('Dispatch blocked: missing Back Market state data', [
+            'order_id' => $order->id,
+            'reference_id' => $order->reference_id,
+        ]);
+        session()->put('error', 'Unable to verify Back Market order state. Please refresh the order before dispatch.');
+        return redirect()->back();
+    }
+
+    $canDispatch = $isRefurbed ? true : ((int) $externalState === 3);
+    if($canDispatch){
             foreach($imeis as $i => $imei){
 
                 $variant = Variation_model::where('sku',$sku[$i])->first();
@@ -2995,38 +3039,47 @@ class Order extends Component
 
             }
             $items = $order->order_items;
-            if(count($items) > 1 || $items[0]->quantity > 1){
-                $indexes = 0;
-                foreach($skus as $each_sku){
-                    if($indexes == 0 && count($each_sku) == 1){
-                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
-                    }elseif($indexes == 0 && count($each_sku) > 1){
-                        // dd("Hello");
-                        $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial_number);
-                        if(count($each_sku) == 1){
+            $detail = null;
+            if($isRefurbed){
+                $detail = $this->handleRefurbedShipping($order, $refurbedApi);
+            }else{
+                if(count($items) > 1 || $items[0]->quantity > 1){
+                    $indexes = 0;
+                    foreach($skus as $each_sku){
+                        if($indexes == 0 && count($each_sku) == 1){
+                            $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
+                        }elseif($indexes == 0 && count($each_sku) > 1){
+                            // dd("Hello");
+                            $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],false,$orderObj->tracking_number,$serial_number);
+                            if(count($each_sku) == 1){
+                                $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($each_sku){
+                                    $q->whereIn('sku',$each_sku);
+                                })->first();
+                                $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[0]),$serial_number);
+                            }
+                        }elseif($indexes > 0 && count($each_sku) == 1){
                             $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($each_sku){
                                 $q->whereIn('sku',$each_sku);
                             })->first();
-                            $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[0]),$serial_number);
-                        }
-                    }elseif($indexes > 0 && count($each_sku) == 1){
-                        $order_item = Order_item_model::where('order_id',$order->id)->whereHas('variation', function($q) use ($each_sku){
-                            $q->whereIn('sku',$each_sku);
-                        })->first();
-                        $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[$indexes]),$serial_number);
-                    }else{
+                            $detail = $bm->orderlineIMEI($order_item->reference_id,trim($imeis[$indexes]),$serial_number);
+                        }else{
 
+                        }
+                        $indexes++;
                     }
-                    $indexes++;
+                }else{
+                    $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
                 }
-            }else{
-                $detail = $bm->shippingOrderlines($order->reference_id,$sku[0],trim($imeis[0]),$orderObj->tracking_number,$serial_number);
             }
             // print_r($detail);
 
             if(is_string($detail)){
                 session()->put('error', $detail);
                 return redirect()->back();
+            }
+
+            if($isRefurbed){
+                $refurbedDocumentLinks = $this->captureRefurbedDocumentLinks($order, $refurbedApi);
             }
 
             if(count($sku) == 1 && count($stock) == 1){
@@ -3085,7 +3138,13 @@ class Order extends Component
             // print_r($d[6]);
         }
 
-        $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+        if($isRefurbed){
+            $orderObj = (object) [
+                'tracking_number' => $order->tracking_number,
+            ];
+        }else{
+            $orderObj = $this->updateBMOrder($order->reference_id, true, null, false, $bm);
+        }
         $order->refresh();
     $resolvedTrackingNumber = $order->tracking_number ?? ($orderObj->tracking_number ?? null);
     $trackingPromptValue = $resolvedTrackingNumber ? strtoupper(trim($resolvedTrackingNumber)) : null;
@@ -3111,6 +3170,9 @@ class Order extends Component
                 $delivery_print_url = route('order.packing_delivery_print', ['id' => $id]);
             }
         }
+
+        $refurbedInvoicePrintUrl = $refurbedDocumentLinks['invoice_print'] ?? null;
+        $refurbedCommercialInvoicePrintUrl = $refurbedDocumentLinks['commercial_invoice_print'] ?? null;
 
         // Send invoice via email if no_invoice is requested
         if ($noInvoice && $order->customer && $order->customer->email) {
@@ -3188,6 +3250,16 @@ class Order extends Component
             }
         }
 
+        if ($packingEnabled && $refurbedInvoicePrintUrl) {
+            $scriptStatements[] = '    window.open('.json_encode($refurbedInvoicePrintUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(300);';
+        }
+
+        if ($packingEnabled && $refurbedCommercialInvoicePrintUrl) {
+            $scriptStatements[] = '    window.open('.json_encode($refurbedCommercialInvoicePrintUrl).', "_blank");';
+            $scriptStatements[] = '    await delay(300);';
+        }
+
 
         if ($packingEnabled && $trackingPromptValue) {
             $scriptStatements[] = '    try { window.sessionStorage.setItem("packing_tracking_verify", '.json_encode($trackingPromptValue).'); } catch (error) { console.warn("Unable to queue tracking confirmation", error); }';
@@ -3209,6 +3281,90 @@ class Order extends Component
 
 
 
+    }
+    protected function handleRefurbedShipping(Order_model $order, RefurbedAPIController $refurbedApi)
+    {
+        $service = app(RefurbedShippingService::class);
+
+        return $service->createLabel($order, $refurbedApi, [
+            'merchant_address_id' => request('refurbed_merchant_address_id'),
+            'parcel_weight' => request('refurbed_parcel_weight'),
+            'carrier' => request('refurbed_carrier'),
+            'mark_shipped' => true,
+            'processed_by' => session('user_id'),
+            'sync_identifiers' => true,
+            'identifier_options' => [
+                'carrier' => request('refurbed_carrier'),
+            ],
+        ]);
+    }
+
+    protected function captureRefurbedDocumentLinks(Order_model $order, RefurbedAPIController $refurbedApi): array
+    {
+        $links = [
+            'invoice' => null,
+            'invoice_print' => null,
+            'commercial_invoice' => null,
+            'commercial_invoice_number' => null,
+            'commercial_invoice_print' => null,
+        ];
+
+        $dirty = false;
+
+        try {
+            $invoiceResponse = $refurbedApi->getOrderInvoice($order->reference_id);
+            $invoiceUrl = data_get($invoiceResponse, 'url');
+
+            if ($invoiceUrl) {
+                if ($order->delivery_note_url !== $invoiceUrl) {
+                    $order->delivery_note_url = $invoiceUrl;
+                    $dirty = true;
+                }
+
+                $links['invoice'] = $invoiceUrl;
+                $links['invoice_print'] = $this->buildProxyDownloadUrl($invoiceUrl);
+            }
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to fetch invoice for dispatch', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            $commercialResponse = $refurbedApi->getOrderCommercialInvoice($order->reference_id);
+            $commercialUrl = data_get($commercialResponse, 'url');
+            $commercialNumber = data_get($commercialResponse, 'commercial_invoice_number');
+
+            if ($commercialUrl) {
+                $links['commercial_invoice'] = $commercialUrl;
+                $links['commercial_invoice_print'] = $this->buildProxyDownloadUrl($commercialUrl);
+            }
+
+            if ($commercialNumber) {
+                $links['commercial_invoice_number'] = $commercialNumber;
+            }
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to fetch commercial invoice for dispatch', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        if ($dirty) {
+            $order->save();
+        }
+
+        return array_filter($links);
+    }
+
+    protected function buildProxyDownloadUrl(?string $url): ?string
+    {
+        if ($url === null || $url === '') {
+            return null;
+        }
+
+        return url('order/proxy_server') . '?url=' . urlencode($url);
     }
     public function dispatch_allowed($id)
     {
@@ -3234,7 +3390,18 @@ class Order extends Component
             $skus[$number][$index] = $number;
         }
         // print_r(request('imei'));
-        if($orderObj->state == 3){
+        $externalState = $this->resolveExternalOrderState($orderObj, $order);
+
+        if ($externalState === null) {
+            Log::warning('Dispatch allowed check aborted: missing Back Market state', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+            ]);
+            session()->put('error', 'Unable to verify Back Market order state. Please refresh the order before dispatch.');
+            return redirect()->back();
+        }
+
+        if ((int) $externalState === 3){
             foreach(request('imei') as $i => $imei){
 
                 $variant = Variation_model::where('sku',$sku[$i])->first();
@@ -4295,6 +4462,37 @@ class Order extends Component
         $result = $bm->apiPost($end_point, $request_JSON);
 
         return $result;
+    }
+
+    protected function resolveExternalOrderState($orderObj, Order_model $order): ?int
+    {
+        if ($orderObj === null) {
+            return $order->status ? (int) $order->status : null;
+        }
+
+        $state = null;
+
+        if (is_object($orderObj) || is_array($orderObj)) {
+            $state = data_get($orderObj, 'state');
+
+            if ($state === null) {
+                $state = data_get($orderObj, 'status');
+            }
+
+            if ($state === null) {
+                $state = data_get($orderObj, 'order_status.state');
+            }
+
+            if ($state === null) {
+                $state = data_get($orderObj, 'order_state');
+            }
+        }
+
+        if ($state === null && $order->status !== null) {
+            $state = (int) $order->status;
+        }
+
+        return $state !== null ? (int) $state : null;
     }
 
 

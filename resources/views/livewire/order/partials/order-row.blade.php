@@ -2,11 +2,34 @@
     $items = $order->order_items;
     $items_count = $items->count();
     $customer = $order->customer;
+    $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : '';
+    $careTicketIds = $items->pluck('care_id')->filter()->unique()->values()->all();
+    $shouldFlagTickets = count($careTicketIds) > 0;
     $replacement_items = [];
     $rowItemIndex = 0;
     $testerIndex = $rowCounter['tester_start'] ? $rowCounter['tester_start'] - 1 : null;
     $imeiIndex = $rowCounter['imei_start'] ? $rowCounter['imei_start'] - 1 : null;
     $anchor = isset($inputAnchor) && $inputAnchor !== null ? $inputAnchor : ('order-' . $order->id);
+    $isRefurbed = (int) $order->marketplace_id === 4;
+    $refurbedDefaults = $refurbedShippingDefaults ?? [];
+    $refurbedAddressDefault = request('refurbed_merchant_address_id', $refurbedDefaults['default_merchant_address_id'] ?? '');
+    $refurbedWeightDefault = request('refurbed_parcel_weight', $refurbedDefaults['default_weight'] ?? 0.5);
+    $refurbedCarrierDefault = request('refurbed_carrier', $refurbedDefaults['default_carrier'] ?? '');
+    $refurbedSupport = config('services.refurbed.support', []);
+    $refurbedZendeskChatUrl = $refurbedSupport['chat_url'] ?? null;
+    $refurbedZendeskDocsUrl = $refurbedSupport['docs_url'] ?? null;
+    $refurbedZendeskHint = $refurbedSupport['chat_hint'] ?? 'Use Zendesk chat for Refurbed escalations.';
+    $refurbedZendeskTemplate = $refurbedSupport['chat_context_template']
+        ?? "Refurbed order :reference_id\nMarketplace reference: :reference\nCustomer: :customer";
+    $firstOrderItem = $items->first();
+    $primarySku = $firstOrderItem && $firstOrderItem->variation ? ($firstOrderItem->variation->sku ?? '') : '';
+    $refurbedSupportContext = strtr($refurbedZendeskTemplate, [
+        ':reference_id' => $order->reference_id ?? '',
+        ':reference' => $order->reference ?? '',
+        ':customer' => $customerName,
+        ':sku' => $primarySku,
+        ':marketplace' => 'Refurbed',
+    ]);
 
     $getNextTesterId = function () use (&$testerIndex, $anchor) {
         if ($testerIndex === null) {
@@ -31,6 +54,10 @@
     static $globalImeiTracker;
     if (! isset($globalImeiTracker)) {
         $globalImeiTracker = [];
+    }
+
+    if (! is_numeric($refurbedWeightDefault)) {
+        $refurbedWeightDefault = $refurbedDefaults['default_weight'] ?? 0.5;
     }
 @endphp
 
@@ -110,6 +137,24 @@
                 {{ $order->reference_id }}<br>
                 {{ $customer->company }}<br>
                 {{ $customer->first_name . ' ' . $customer->last_name }}
+                @if ($shouldFlagTickets)
+                    <div class="mt-2 alert alert-warning py-1 px-2 mb-1">
+                        <div class="d-flex align-items-center justify-content-between flex-wrap gap-1">
+                            <span class="badge bg-warning text-dark text-uppercase">Check Tickets</span>
+                            <small class="text-muted">{{ count($careTicketIds) }} open {{ count($careTicketIds) === 1 ? 'conversation' : 'conversations' }}</small>
+                        </div>
+                        <div class="mt-1 d-flex flex-wrap gap-2">
+                            @foreach ($careTicketIds as $careId)
+                                <a
+                                    href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $careId }}"
+                                    target="_blank"
+                                    class="small text-decoration-underline"
+                                >Ticket #{{ $careId }}</a>
+                            @endforeach
+                        </div>
+                        <small class="text-muted d-block">Review marketplace ticket before dispatch.</small>
+                    </div>
+                @endif
 
             </td>
         @endif
@@ -129,6 +174,36 @@
             @endif
             @if ($item->care_id != null)
                 <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+            @endif
+            @if ($isRefurbed && $itemIndex === 0)
+                <div class="mt-1 small refurbed-support-hint">
+                    <span class="badge bg-info text-uppercase me-1">Zendesk</span>
+                    @if ($refurbedZendeskChatUrl)
+                        <a
+                            class="fw-semibold"
+                            href="{{ $refurbedZendeskChatUrl }}"
+                            target="_blank"
+                            rel="noopener"
+                        >Open Chat</a>
+                    @else
+                        <span class="text-danger">Set Zendesk URL</span>
+                    @endif
+                    <button
+                        type="button"
+                        class="btn btn-link btn-sm p-0 align-baseline copy-support-context"
+                        data-copy-text="{{ $refurbedSupportContext }}"
+                        data-reset-label="Copy chat context"
+                    >Copy chat context</button>
+                    <span class="text-muted d-block">{{ $refurbedZendeskHint }}</span>
+                    @if ($refurbedZendeskDocsUrl)
+                        <a
+                            class="d-inline-block text-decoration-underline"
+                            href="{{ $refurbedZendeskDocsUrl }}"
+                            target="_blank"
+                            rel="noopener"
+                        >Zendesk playbook</a>
+                    @endif
+                </div>
             @endif
             <br>
             {{ $order->reference }}
@@ -194,7 +269,7 @@
                             $dispatchFormId = 'dispatch_' . $rowNumber . '_' . $rowItemIndex;
                         @endphp
                         <form id="{{ $dispatchFormId }}" class="form-inline" method="post" action="{{ url('order') }}/dispatch/{{ $order->id }}"
-                            @if (!request('packing'))
+                            @if (!request('packing') && ! $isRefurbed)
                                 onsubmit="if($('#tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}"
                             @endif
                         >
@@ -214,7 +289,14 @@
                                 </div>
 
                             </div>
-                            @if (!request('packing'))
+                            @if ($isRefurbed)
+                                <div class="w-100 mt-2 refurbed-shipping-fields">
+                                    <input type="text" name="refurbed_merchant_address_id" value="{{ $refurbedAddressDefault }}" placeholder="Merchant Address ID" class="form-control form-control-sm mb-1" required>
+                                    <input type="number" step="0.01" min="0.01" name="refurbed_parcel_weight" value="{{ $refurbedWeightDefault }}" placeholder="Parcel Weight (kg)" class="form-control form-control-sm mb-1" required>
+                                    <input type="text" name="refurbed_carrier" value="{{ $refurbedCarrierDefault }}" placeholder="Carrier (optional)" class="form-control form-control-sm">
+                                </div>
+                            @endif
+                            @if (!request('packing') && ! $isRefurbed)
                                 <div class="w-100">
                                     <input type="text" name="tracking_number" id="tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                 </div>
@@ -225,7 +307,7 @@
                             $dispatchFormId = 'dispatch_' . $rowNumber . '_' . $rowItemIndex;
                         @endphp
                         <form id="{{ $dispatchFormId }}" class="form-inline" method="post" action="{{ url('order') }}/dispatch/{{ $order->id }}"
-                            @if (!request('packing'))
+                            @if (!request('packing') && ! $isRefurbed)
                                 onsubmit="if($('#tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault();}"
                             @endif
                         >
@@ -246,7 +328,14 @@
                                 </div>
                                 <input type="hidden" name="sku[]" value="{{ $variation->sku }}">
                             @endfor
-                            @if (!request('packing'))
+                            @if ($isRefurbed)
+                                <div class="w-100 mt-2 refurbed-shipping-fields">
+                                    <input type="text" name="refurbed_merchant_address_id" value="{{ $refurbedAddressDefault }}" placeholder="Merchant Address ID" class="form-control form-control-sm mb-1" required>
+                                    <input type="number" step="0.01" min="0.01" name="refurbed_parcel_weight" value="{{ $refurbedWeightDefault }}" placeholder="Parcel Weight (kg)" class="form-control form-control-sm mb-1" required>
+                                    <input type="text" name="refurbed_carrier" value="{{ $refurbedCarrierDefault }}" placeholder="Carrier (optional)" class="form-control form-control-sm">
+                                </div>
+                            @endif
+                            @if (!request('packing') && ! $isRefurbed)
                                 <div class="w-100">
                                     <input type="text" name="tracking_number" id="tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                 </div>
@@ -260,7 +349,7 @@
                             $dispatchFormId = 'dispatch_' . $rowNumber . '_' . $rowItemIndex;
                         @endphp
                         <form id="{{ $dispatchFormId }}" class="form-inline" method="post" action="{{ url('order') }}/dispatch/{{ $order->id }}"
-                            @if (!request('packing'))
+                            @if (!request('packing') && ! $isRefurbed)
                                 onsubmit="if($('#tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}').val() == 'J{{ $order->tracking_number }}') {return true;}else{event.stopPropagation(); event.preventDefault(); alert('Wrong Tracking');}"
                             @endif
                         >
@@ -283,7 +372,14 @@
                                     <input type="hidden" name="sku[]" value="{{ $itm->variation->sku }}">
                                 @endfor
                             @endforeach
-                            @if (!request('packing'))
+                            @if ($isRefurbed)
+                                <div class="w-100 mt-2 refurbed-shipping-fields">
+                                    <input type="text" name="refurbed_merchant_address_id" value="{{ $refurbedAddressDefault }}" placeholder="Merchant Address ID" class="form-control form-control-sm mb-1" required>
+                                    <input type="number" step="0.01" min="0.01" name="refurbed_parcel_weight" value="{{ $refurbedWeightDefault }}" placeholder="Parcel Weight (kg)" class="form-control form-control-sm mb-1" required>
+                                    <input type="text" name="refurbed_carrier" value="{{ $refurbedCarrierDefault }}" placeholder="Carrier (optional)" class="form-control form-control-sm">
+                                </div>
+                            @endif
+                            @if (!request('packing') && ! $isRefurbed)
                                 <div class="w-100">
                                     <input type="text" name="tracking_number" id="tracking_number_{{ $rowNumber }}_{{ $rowItemIndex }}" placeholder="Tracking Number" class="form-control form-control-sm w-100" required>
                                 </div>
