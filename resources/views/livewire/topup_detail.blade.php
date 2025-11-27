@@ -19,6 +19,11 @@
     @endsection
     @section('content')
 
+        @php
+            $process_stocks_by_stock = $process_stocks_by_stock ?? collect();
+            $listed_stock_totals_by_variation = $listed_stock_totals_by_variation ?? [];
+        @endphp
+
 
         <!-- breadcrumb -->
             <div class="breadcrumb-header justify-content-between mt-0">
@@ -88,7 +93,7 @@
                         <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Topup</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Topup Detail</li>
                     </ol>
-                    @if ($process->status > 1 && $process->listed_stocks_verification->sum('qty_change') > $process->process_stocks->count())
+                    @if ($process->status > 1 && $process_listed_quantity > $process_scanned_quantity)
                         <a href="{{ url('topup/recheck_closed_topup').'/'.$process->id }}" class="btn btn-link">Recheck Topup</a>
 
                     @endif
@@ -96,12 +101,12 @@
             </div>
         <!-- /breadcrumb -->
         <div class="d-flex justify-content-between" style="border-bottom: 1px solid rgb(216, 212, 212);">
-            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process->process_stocks->count() }}
+            <h5>Reference: {{ $process->reference_id }} | Batch Quantity: {{ $process->quantity }} | Scanned Quantity: {{ $process_scanned_quantity }}
                 @if ($process->status > 1)
-                    | Verified Quantity: {{ $process->process_stocks->where('status', 2)->count() }}
+                    | Verified Quantity: {{ $process_verified_quantity }}
                 @endif
                 @if ($process->status == 3)
-                    | Listed Quantity: {{ $process->listed_stocks_verification->sum('qty_change') }}
+                    | Listed Quantity: {{ $process_listed_quantity }}
                 @endif
             </h5>
 
@@ -463,10 +468,10 @@
                             @endphp
                             @foreach ($variations as $variation)
                                 @php
-                                    if($process->status = 2){
+                                    if($process->status == 2){
                                         // Check if any stock in this variation has status 1
-                                        $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
-                                            $ps = $s->process_stock($process->id);
+                                        $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process, $process_stocks_by_stock) {
+                                            $ps = $process_stocks_by_stock->get($s->id);
                                             return $ps && $ps->status == 1;
                                         });
                                         if ($loop->first && $has_status_1) {
@@ -483,9 +488,8 @@
                                         }
                                     }
                                     $stock_count = $stocks->where('variation_id', $variation->id)->count();
+                                    $qty_change = $listed_stock_totals_by_variation[$variation->id] ?? 0;
                                     if($process->status > 1){
-                                        $qty_change = $variation->process_listed_stock_verifications($process->id)->sum('qty_change');
-
                                         $ttl += $qty_change;
                                     }
                                 @endphp
@@ -533,7 +537,7 @@
 
                                                 @php
                                                     $j = 0;
-                                                    if($process->status = 2){
+                                                    if($process->status == 2){
                                                         // Check if any stock in this variation has status 1
                                                         $has_status_1 = $stocks->where('variation_id', $variation->id)->contains(function($s) use ($process) {
                                                             $ps = $s->process_stock($process->id);
@@ -555,10 +559,10 @@
                                                 @endphp
                                                 @foreach ($stocks->where('variation_id', $variation->id) as $stock)
                                                     @php
-                                                        $process_stock = $stock->process_stock($process->id);
+                                                        $process_stock = $process_stocks_by_stock->get($stock->id);
                                                     @endphp
                                                     <tr
-                                                        @if ($process->status == 2 && $process_stock->status == 1)
+                                                        @if ($process->status == 2 && optional($process_stock)->status == 1)
                                                             class="table-danger"
                                                         @endif
                                                     >
@@ -571,10 +575,10 @@
                                                         <td>
                                                             {{ $stock->latest_operation->description ?? null }}
                                                         </td>
-                                                        <td style="width:220px">{{ $process_stock->created_at }}</td>
+                                                        <td style="width:220px">{{ optional($process_stock)->created_at }}</td>
                                                         <td>
-                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status <= 2)
-                                                                <a href="{{ url('topup/delete_topup_item').'/'.$stock->process_stock($process_id)->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
+                                                            @if (session('user')->hasPermission('delete_topup_item') && $process->status <= 2 && $process_stock)
+                                                                <a href="{{ url('topup/delete_topup_item').'/'.$process_stock->id }}" class="btn btn-danger btn-sm" onclick="return confirm('Are you sure you want to delete this item?');">
                                                                     <i class="fa fa-trash"></i>
                                                                 </a>
 

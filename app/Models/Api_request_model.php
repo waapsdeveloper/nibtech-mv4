@@ -239,6 +239,7 @@ class Api_request_model extends Model
                         $variation->status = 1;
                         $variation->save();
                     }
+
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'api_request_id' => $request->id,
@@ -459,6 +460,7 @@ class Api_request_model extends Model
 
                     $stock_operation = new Stock_operations_model();
                     $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $fail." | ".$m." | DrPhone", $admin, Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
+
                     // $stock_operation = Stock_operations_model::create([
                     //     'stock_id' => $stock->id,
                     //     'api_request_id' => $request->id,
