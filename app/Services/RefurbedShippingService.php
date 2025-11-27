@@ -262,6 +262,15 @@ class RefurbedShippingService
         $downloadUrl = data_get($labelResponse, 'label.download_url')
             ?? data_get($labelResponse, 'download_url')
             ?? data_get($labelResponse, 'shipping_label.download_url')
+            ?? data_get($labelResponse, 'shipping_label.label_printer_url')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.top_left')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.top_right')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.bottom_left')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.bottom_right')
+            ?? data_get($labelResponse, 'shipping_label.label_url')
+            ?? data_get($labelResponse, 'shipping_label.download_urls.0')
+            ?? data_get($labelResponse, 'label.url')
+            ?? data_get($labelResponse, 'shipping_label.url')
             ?? data_get($labelResponse, 'labels.0.download_url');
 
         if ($downloadUrl) {
@@ -303,6 +312,7 @@ class RefurbedShippingService
         return data_get($labelResponse, 'label.tracking_number')
             ?? data_get($labelResponse, 'tracking_number')
             ?? data_get($labelResponse, 'shipping_label.tracking_number')
+            ?? data_get($labelResponse, 'shipping_label.tracking_data.tracking_number')
             ?? data_get($labelResponse, 'labels.0.tracking_number');
     }
 
@@ -329,10 +339,14 @@ class RefurbedShippingService
 
         $downloadUrl = data_get($entry, 'download_url')
             ?? data_get($entry, 'label.download_url')
-            ?? data_get($entry, 'label.content_url');
+            ?? data_get($entry, 'label.content_url')
+            ?? data_get($entry, 'label_printer_url')
+            ?? data_get($entry, 'normal_printer_urls.top_left')
+            ?? data_get($entry, 'normal_printer_urls.top_right');
 
         $trackingNumber = data_get($entry, 'tracking_number')
-            ?? data_get($entry, 'label.tracking_number');
+            ?? data_get($entry, 'label.tracking_number')
+            ?? data_get($entry, 'tracking_data.tracking_number');
 
         return [
             'label_url' => $downloadUrl,

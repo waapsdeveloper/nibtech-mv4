@@ -664,6 +664,7 @@ class Api_request_model extends Model
             case 'ug':
             case 'a+':
             case 'a/a plus':
+            case '339':
             case 'a/a+':
                 return 7;
             case 'd':
