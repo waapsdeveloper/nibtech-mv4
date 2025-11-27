@@ -34,6 +34,7 @@ class RefurbedShippingService
             return (object) [
                 'tracking_number' => $order->tracking_number,
                 'label_url' => $order->label_url,
+                'carrier' => $carrier,
                 'skipped' => true,
             ];
         }
@@ -135,6 +136,7 @@ class RefurbedShippingService
             'tracking_number' => $trackingNumber,
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
+            'carrier' => $carrier,
             'response' => $labelResponse,
         ]);
     }

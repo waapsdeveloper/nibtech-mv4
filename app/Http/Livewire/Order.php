@@ -3088,6 +3088,11 @@ class Order extends Component
             if($isRefurbed){
                 $this->ensureRefurbedLabelArtifacts($order, $refurbedApi, $detail);
                 $refurbedDocumentLinks = $this->captureRefurbedDocumentLinks($order, $refurbedApi);
+                $carrierContext = data_get($detail, 'carrier')
+                    ?? request('refurbed_carrier')
+                    ?? data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
+                $carrierContext = $carrierContext ? $this->normalizeRefurbedCarrier($carrierContext) : null;
+                $this->syncRefurbedOrderItems($order, $refurbedApi, $carrierContext);
             }
 
             if(count($sku) == 1 && count($stock) == 1){
@@ -3520,7 +3525,6 @@ class Order extends Component
                 }else{
                     $color2 = null;
                 }
-
                 $serial_number = null;
                 $imei = trim($imei);
                 if(!ctype_digit($imei)){
