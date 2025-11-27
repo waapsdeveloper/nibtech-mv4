@@ -11,7 +11,7 @@
     $imeiIndex = $rowCounter['imei_start'] ? $rowCounter['imei_start'] - 1 : null;
     $anchor = isset($inputAnchor) && $inputAnchor !== null ? $inputAnchor : ('order-' . $order->id);
     $isRefurbed = (int) $order->marketplace_id === 4;
-    $refurbedDefaults = $refurbedShippingDefaults ?? config('services.refurbed.shipping', []);
+    $refurbedDefaults = $refurbedShippingDefaults ?? [];
     $refurbedAddressInput = request('refurbed_merchant_address_id');
     $refurbedAddressDefault = ($refurbedAddressInput !== null && $refurbedAddressInput !== '')
         ? $refurbedAddressInput

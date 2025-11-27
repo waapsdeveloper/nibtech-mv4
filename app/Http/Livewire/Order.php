@@ -84,7 +84,6 @@ class Order extends Component
         $data['order_statuses'] = Order_status_model::pluck('name','id');
         $data['marketplaces'] = Marketplace_model::pluck('name','id');
         $refurbedShippingDefaults = $this->buildRefurbedShippingDefaults();
-        config(['services.refurbed.shipping' => $refurbedShippingDefaults]);
         $data['refurbedShippingDefaults'] = $refurbedShippingDefaults;
         if(request('per_page') != null){
             $per_page = request('per_page');
@@ -4516,18 +4515,18 @@ class Order extends Component
 
     protected function buildRefurbedShippingDefaults(): array
     {
-        $defaults = config('services.refurbed.shipping', []);
+        $defaults = [];
         $marketplace = Marketplace_model::query()->find(4);
 
         if ($marketplace) {
-            $merchantAddress = data_get($marketplace, 'merchant_address_id');
+            $merchantAddress = data_get($marketplace, 'shipping_id');
             if (! empty($merchantAddress)) {
-                $defaults['default_merchant_address_id'] = $merchantAddress;
+                $defaults['default_merchant_address_id'] = trim($merchantAddress);
             }
 
             $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
             if (! empty($fallbackCarrier)) {
-                $defaults['default_carrier'] = $fallbackCarrier;
+                $defaults['default_carrier'] = trim($fallbackCarrier);
             }
         }
 
@@ -4542,12 +4541,12 @@ class Order extends Component
         }
 
         $marketplace = Marketplace_model::query()->find(4);
-        $addressFromMarketplace = data_get($marketplace, 'merchant_address_id');
+        $addressFromMarketplace = data_get($marketplace, 'shipping_id');
         if (! empty($addressFromMarketplace)) {
             return trim($addressFromMarketplace);
         }
 
-        return data_get(config('services.refurbed.shipping'), 'default_merchant_address_id');
+        return null;
     }
 
     protected function resolveRefurbedParcelWeight(Order_model $order): ?float
@@ -4562,8 +4561,7 @@ class Order extends Component
             return $categoryWeight;
         }
 
-        $configWeight = data_get(config('services.refurbed.shipping'), 'default_weight');
-        return $configWeight !== null ? (float) $configWeight : null;
+        return null;
     }
 
     protected function extractCategoryWeightFromOrder(Order_model $order): ?float

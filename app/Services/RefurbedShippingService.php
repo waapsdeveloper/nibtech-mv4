@@ -105,7 +105,7 @@ class RefurbedShippingService
 
     protected function resolveMerchantAddressId(Order_model $order, array $options): ?string
     {
-        $fromOptions = data_get($options, 'merchant_address_id');
+        $fromOptions = data_get($options, 'merchant_address_id') ?? data_get($options, 'shipping_id');
         if (! empty($fromOptions)) {
             return trim($fromOptions);
         }
