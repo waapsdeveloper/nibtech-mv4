@@ -136,12 +136,14 @@
 
         {{-- Global QZ Tray Connection Manager --}}
         {{-- Note: qz-tray.js is already loaded in layouts.components.scripts --}}
+        @if(env('QZ_TRAY_ENABLED', true))
         <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
              * Global QZ Tray Connection Manager
              * Establishes and maintains a single WebSocket connection across all pages
              * Uses existing functions.js for certificate configuration
+             * Only initializes if QZ_TRAY_ENABLED env variable is true
              */
             (function() {
                 // Check if QZ Tray manager has already been initialized (prevent duplicate initialization)
@@ -298,5 +300,18 @@
                 console.log('Global QZ Tray Connection Manager initialized');
             })();
         </script>
+        @else
+        <script>
+            // QZ Tray is disabled - provide stub functions for compatibility
+            window.qzConnectionManager = {
+                isConnected: function() { return false; },
+                ensureConnection: function() { return Promise.reject(new Error('QZ Tray is disabled')); },
+                reconnect: function() { console.log('QZ Tray is disabled'); }
+            };
+            window.isQzConnected = function() { return false; };
+            window.ensureQzConnection = function() { return Promise.reject(new Error('QZ Tray is disabled')); };
+            console.log('QZ Tray is disabled via QZ_TRAY_ENABLED environment variable');
+        </script>
+        @endif
     </body>
 </html>
