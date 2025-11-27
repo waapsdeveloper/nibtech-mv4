@@ -133,7 +133,11 @@ class RefurbedShippingService
         $order->loadMissing('marketplace');
         $fromMarketplace = data_get($order->marketplace, 'default_shipping_carrier');
 
-        return ! empty($fromMarketplace) ? trim($fromMarketplace) : null;
+        if (! empty($fromMarketplace)) {
+            return trim($fromMarketplace);
+        }
+
+        return 'DHL Express';
     }
 
     protected function resolveParcelWeight(Order_model $order, array $options): ?float
