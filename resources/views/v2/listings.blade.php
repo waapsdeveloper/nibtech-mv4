@@ -286,6 +286,18 @@
                 // Rescan for Livewire components
                 if (typeof Livewire !== 'undefined') {
                     Livewire.rescan();
+                    
+                    // Load sales data for all variations after components are ready
+                    setTimeout(function() {
+                        // Get all variation IDs from the rendered HTML
+                        const salesElements = document.querySelectorAll('[id^="sales_"]');
+                        salesElements.forEach(function(element) {
+                            const variationId = element.id.replace('sales_', '');
+                            if (variationId && !element.innerHTML.includes('Average:')) {
+                                element.load("{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}");
+                            }
+                        });
+                    }, 500);
                 }
             } else {
                 variationsContainer.innerHTML = 
@@ -366,5 +378,207 @@
     document.addEventListener('DOMContentLoaded', function() {
         fetchVariationsV2({{ Request::get('page', 1) }});
     });
+
+
+    /**
+     * Submit handler changes for marketplace-specific listings
+     */
+    function submitForm8Marketplace(event, variationId, marketplaceId) {
+        event.preventDefault();
+        var form = $('#change_all_handler_' + variationId + '_' + marketplaceId);
+        var min_price = $('#all_min_handler_' + variationId + '_' + marketplaceId).val();
+        var price = $('#all_handler_' + variationId + '_' + marketplaceId).val();
+
+        if (!min_price && !price) {
+            alert('Please enter at least one handler value');
+            return;
+        }
+
+        // Get listings for this marketplace from the Livewire component
+        // We'll need to get the listing IDs from the DOM or make an AJAX call
+        var listingIds = [];
+        $('#collapse_' + marketplaceId + '_' + variationId + ' .listing-table tbody tr').each(function() {
+            var formId = $(this).find('form[id^="change_limit_"]').attr('id');
+            if (formId) {
+                var listingId = formId.replace('change_limit_', '');
+                listingIds.push(listingId);
+            }
+        });
+
+        if (listingIds.length === 0) {
+            alert('No listings found for this marketplace');
+            return;
+        }
+
+        var updateCount = 0;
+        var totalCount = listingIds.length;
+
+        listingIds.forEach(function(listingId) {
+            if (min_price > 0) {
+                $('#min_price_limit_' + listingId).val(min_price);
+            }
+            if (price > 0) {
+                $('#price_limit_' + listingId).val(price);
+            }
+            
+            // Submit the form for this listing
+            submitForm5Marketplace(event, listingId, marketplaceId, function() {
+                updateCount++;
+                if (updateCount === totalCount) {
+                    // Reload the marketplace data
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                    }
+                    alert('Handlers updated successfully');
+                }
+            });
+        });
+    }
+
+    /**
+     * Submit price changes for marketplace-specific listings
+     */
+    function submitForm4Marketplace(event, variationId, marketplaceId) {
+        event.preventDefault();
+        var form = $('#change_all_price_' + variationId + '_' + marketplaceId);
+        var min_price = $('#all_min_price_' + variationId + '_' + marketplaceId).val();
+        var price = $('#all_price_' + variationId + '_' + marketplaceId).val();
+
+        if (!min_price && !price) {
+            alert('Please enter at least one price value');
+            return;
+        }
+
+        // Get listings for this marketplace from the DOM
+        var listingIds = [];
+        $('#collapse_' + marketplaceId + '_' + variationId + ' .listing-table tbody tr').each(function() {
+            var formId = $(this).find('form[id^="change_min_price_"]').attr('id');
+            if (formId) {
+                var listingId = formId.replace('change_min_price_', '');
+                listingIds.push(listingId);
+            }
+        });
+
+        if (listingIds.length === 0) {
+            alert('No listings found for this marketplace');
+            return;
+        }
+
+        var updateCount = 0;
+        var totalCount = listingIds.length;
+
+        listingIds.forEach(function(listingId) {
+            if (min_price > 0) {
+                $('#min_price_' + listingId).val(min_price);
+                submitForm2Marketplace(event, listingId, 'min_price', function() {
+                    updateCount++;
+                    if (updateCount === totalCount) {
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                        }
+                        alert('Prices updated successfully');
+                    }
+                });
+            }
+            if (price > 0) {
+                $('#price_' + listingId).val(price);
+                submitForm3Marketplace(event, listingId, 'price', function() {
+                    updateCount++;
+                    if (updateCount === totalCount) {
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                        }
+                        alert('Prices updated successfully');
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating min price limit (handler)
+     */
+    function submitForm5Marketplace(event, listingId, marketplaceId, callback) {
+        event.preventDefault();
+        var form = $('#change_limit_' + listingId);
+        var actionUrl = "{{ url('listing/update_limit') }}/" + listingId;
+        var formData = form.serialize();
+        if (marketplaceId) {
+            formData += '&marketplace_id=' + marketplaceId;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: formData,
+            success: function(data) {
+                $('#min_price_limit_' + listingId).addClass('bg-green');
+                $('#price_limit_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating min price
+     */
+    function submitForm2Marketplace(event, listingId, field, callback) {
+        event.preventDefault();
+        var form = $('#change_min_price_' + listingId);
+        var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            success: function(data) {
+                $('#min_price_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating price
+     */
+    function submitForm3Marketplace(event, listingId, field, callback) {
+        event.preventDefault();
+        var form = $('#change_price_' + listingId);
+        var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            success: function(data) {
+                $('#price_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
 </script>
 @endsection

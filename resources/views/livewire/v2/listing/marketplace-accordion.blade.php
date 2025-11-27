@@ -1,7 +1,7 @@
-<div class="accordion-item">
+<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}">
     <h2 class="accordion-header" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
         <button 
-            class="accordion-button {{ !$expanded ? 'collapsed' : '' }}" 
+            class="accordion-button {{ !$expanded ? 'collapsed' : '' }} p-2" 
             type="button" 
             data-bs-toggle="collapse" 
             data-bs-target="#collapse_{{ $marketplaceId }}_{{ $variationId }}" 
@@ -35,6 +35,83 @@
             </div>
         </button>
     </h2>
+    
+    {{-- Bulk Actions Section - Always Visible --}}
+    @if($ready && count($listings) > 0)
+        <div class="marketplace-bulk-actions p-3 border-top bg-light">
+            <div class="row g-3">
+                {{-- Change All € Handlers --}}
+                <div class="col-md-4">
+                    <label class="small fw-bold mb-2 d-block text-muted">Change All € Handlers</label>
+                    <form class="d-flex flex-column gap-2" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
+                        @csrf
+                        <div class="d-flex gap-2 align-items-end">
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Min Handler</label>
+                                <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_handler" step="0.01" value="" placeholder="0.00">
+                            </div>
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Handler</label>
+                                <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_handler" step="0.01" value="" placeholder="0.00">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="submitForm8Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
+                                Change
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                {{-- Change All € Prices --}}
+                <div class="col-md-4">
+                    <label class="small fw-bold mb-2 d-block text-muted">Change All € Prices</label>
+                    <form class="d-flex flex-column gap-2" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
+                        @csrf
+                        <div class="d-flex gap-2 align-items-end">
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Min Price</label>
+                                <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="" placeholder="0.00">
+                            </div>
+                            <div class="flex-grow-1">
+                                <label class="form-label small mb-1">Price</label>
+                                <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="" placeholder="0.00">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success" onclick="submitForm4Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
+                                Push
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                {{-- Without Buybox --}}
+                <div class="col-md-4">
+                    <div class="without-buybox-section">
+                        <h6 class="fw-bold mb-2">Without Buybox</h6>
+                        @php
+                            $withoutBuyboxListings = collect($listings)->filter(fn($listing) => ($listing['buybox'] ?? 0) != 1);
+                        @endphp
+                        <div class="d-flex flex-wrap gap-1">
+                            @forelse($withoutBuyboxListings as $listing)
+                                @php
+                                    $countryId = $listing['country_id'] ?? null;
+                                    $country = $countryId ? ($countries[$countryId] ?? null) : null;
+                                    $countryCode = is_object($country) ? $country->code : ($country['code'] ?? '');
+                                    $marketUrl = is_object($country) ? $country->market_url : ($country['market_url'] ?? '');
+                                    $marketCode = is_object($country) ? $country->market_code : ($country['market_code'] ?? '');
+                                    $referenceUuid2 = $listing['reference_uuid_2'] ?? '';
+                                @endphp
+                                <a href="https://www.backmarket.{{ $marketUrl }}/{{ $marketCode }}/p/gb/{{ $referenceUuid2 }}" target="_blank" class="btn btn-sm btn-link text-danger border border-danger p-1">
+                                    <img src="{{ asset('assets/img/flags/') }}/{{ strtolower($countryCode) }}.svg" height="10">
+                                    {{ $countryCode }}
+                                </a>
+                            @empty
+                                <span class="text-muted small">All listings have buybox or no listings.</span>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
     <div 
         id="collapse_{{ $marketplaceId }}_{{ $variationId }}" 
         class="accordion-collapse collapse {{ $expanded ? 'show' : '' }}" 

@@ -106,6 +106,8 @@ class ListingItem extends Component
             );
             
             $this->ready = true;
+            // Auto-expand marketplace accordion when ready
+            $this->detailsExpanded = true;
         }
     }
 

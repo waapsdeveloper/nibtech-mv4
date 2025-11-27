@@ -15,8 +15,8 @@
             <div class="variation-info flex-grow-1">
                 <h5 class="mb-1">
                     <a href="{{ url('inventory') }}?sku={{ $variation->sku }}" title="View Inventory" target="_blank">
-                        <span style="background-color: {{ $colors[$variation->color] ?? '' }}; width: 30px; height: 16px; display: inline-block; border-radius: 3px; vertical-align: middle; {{ (str_contains(strtolower($colors[$variation->color] ?? ''), 'white') || strtolower($colors[$variation->color] ?? '') === '#ffffff' || strtolower($colors[$variation->color] ?? '') === '#fff' || str_contains(strtolower($colors[$variation->color] ?? ''), 'starlight')) ? 'border: 1px solid #ccc;' : '' }}"></span>
                         <strong>{{ $variation->sku }}</strong>
+                        <span style="background-color: {{ $colors[$variation->color] ?? '' }}; width: 30px; height: 16px; display: inline-block; border-radius: 3px; vertical-align: middle; margin-left: 8px; {{ (str_contains(strtolower($colors[$variation->color] ?? ''), 'white') || strtolower($colors[$variation->color] ?? '') === '#ffffff' || strtolower($colors[$variation->color] ?? '') === '#fff' || str_contains(strtolower($colors[$variation->color] ?? ''), 'starlight')) ? 'border: 1px solid #ccc;' : '' }}"></span>
                     </a>
                     <a href="https://www.backmarket.fr/bo-seller/listings/active?sku={{ $variation->sku }}" title="View BM Ad" target="_blank" class="ms-2">
                         {{ $variation->product->model ?? '' }} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }}
@@ -24,6 +24,141 @@
                 </h5>
                 <div class="sales-info" id="sales_{{ $variation->id }}">Loading sales data...</div>
             </div>
+            
+            @if($ready && $variation)
+            <script>
+                (function() {
+                    // Load sales data when component is ready
+                    function loadSalesData() {
+                        if (typeof $ !== 'undefined' && $('#sales_{{ $variation->id }}').length) {
+                            $('#sales_{{ $variation->id }}').load("{{ url('listing/get_sales') }}/{{ $variation->id }}?csrf={{ csrf_token() }}");
+                        } else {
+                            // Retry if jQuery not ready yet
+                            setTimeout(loadSalesData, 100);
+                        }
+                    }
+                    
+                    // Try loading immediately
+                    if (document.readyState === 'loading') {
+                        document.addEventListener('DOMContentLoaded', loadSalesData);
+                    } else {
+                        loadSalesData();
+                    }
+                    
+                    // Auto-expand marketplace accordion and load marketplace data
+                    function autoExpandMarketplaces() {
+                        const variationId = {{ $variation->id }};
+                        const accordionId = '#marketplaceAccordion_' + variationId;
+                        
+                        // Wait for Livewire to finish rendering
+                        setTimeout(function() {
+                            // Expand the main marketplace accordion using Bootstrap
+                            const collapseElement = document.querySelector(accordionId);
+                            if (collapseElement) {
+                                if (!collapseElement.classList.contains('show')) {
+                                    // Use Bootstrap Collapse to expand
+                                    const bsCollapse = new bootstrap.Collapse(collapseElement, {
+                                        toggle: true
+                                    });
+                                    
+                                    // After main accordion expands, expand each marketplace one by one
+                                    collapseElement.addEventListener('shown.bs.collapse', function() {
+                                        setTimeout(function() {
+                                            expandMarketplacesSequentially(variationId);
+                                        }, 200);
+                                    }, { once: true });
+                                } else {
+                                    // Already expanded, just expand marketplaces
+                                    setTimeout(function() {
+                                        expandMarketplacesSequentially(variationId);
+                                    }, 200);
+                                }
+                            }
+                        }, 500);
+                    }
+                    
+                    // Expand marketplaces one by one sequentially
+                    function expandMarketplacesSequentially(variationId) {
+                        // Find all marketplace accordion buttons that are collapsed
+                        const marketplaceButtons = Array.from(
+                            document.querySelectorAll('#marketplaceAccordionInner_' + variationId + ' .accordion-button.collapsed')
+                        );
+                        
+                        if (marketplaceButtons.length === 0) {
+                            return; // All already expanded
+                        }
+                        
+                        let index = 0;
+                        const expandNext = function() {
+                            if (index >= marketplaceButtons.length) {
+                                return; // All done
+                            }
+                            
+                            const button = marketplaceButtons[index];
+                            const targetId = button.getAttribute('data-bs-target');
+                            
+                            if (targetId) {
+                                const targetElement = document.querySelector(targetId);
+                                if (targetElement && !targetElement.classList.contains('show')) {
+                                    // Click the button to trigger Livewire toggleAccordion and Bootstrap collapse
+                                    button.click();
+                                    
+                                    // Wait for this one to load before expanding next
+                                    // Check if Livewire is processing
+                                    const checkLoaded = setInterval(function() {
+                                        if (targetElement.classList.contains('show')) {
+                                            clearInterval(checkLoaded);
+                                            index++;
+                                            // Small delay before expanding next marketplace
+                                            setTimeout(expandNext, 300);
+                                        }
+                                    }, 100);
+                                    
+                                    // Timeout after 5 seconds to prevent infinite waiting
+                                    setTimeout(function() {
+                                        clearInterval(checkLoaded);
+                                        index++;
+                                        setTimeout(expandNext, 300);
+                                    }, 5000);
+                                } else {
+                                    // Already expanded, move to next
+                                    index++;
+                                    setTimeout(expandNext, 200);
+                                }
+                            } else {
+                                index++;
+                                setTimeout(expandNext, 200);
+                            }
+                        };
+                        
+                        // Start expanding after a small delay
+                        setTimeout(expandNext, 300);
+                    }
+                    
+                    // Trigger auto-expand after component is ready
+                    // Use a simple polling approach to check when the component is ready
+                    let checkCount = 0;
+                    const maxChecks = 20; // Check for up to 2 seconds (20 * 100ms)
+                    
+                    const checkAndExpand = function() {
+                        const accordionId = '#marketplaceAccordion_{{ $variation->id }}';
+                        const accordionElement = document.querySelector(accordionId);
+                        
+                        if (accordionElement || checkCount >= maxChecks) {
+                            if (accordionElement) {
+                                autoExpandMarketplaces();
+                            }
+                        } else {
+                            checkCount++;
+                            setTimeout(checkAndExpand, 100);
+                        }
+                    };
+                    
+                    // Start checking after a short delay
+                    setTimeout(checkAndExpand, 500);
+                })();
+            </script>
+            @endif
 
             {{-- Stock Controls --}}
             <div class="stock-controls ms-2">
@@ -73,79 +208,9 @@
             </div>
         </div>
 
-        {{-- Bulk Actions Row --}}
-        <div class="bulk-actions-row p-2 border-top">
-            <div class="row g-2">
-                <div class="col-md-4">
-                    <label class="small fw-bold mb-1 d-block">Change All € Handlers</label>
-                    <form class="form-inline d-flex align-items-center gap-2" method="POST" id="change_all_handler_{{ $variation->id }}">
-                        @csrf
-                        <div class="form-floating">
-                            <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variation->id }}" name="all_min_handler" step="0.01" value="" style="width:90px;">
-                            <label for="">Min Handler</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variation->id }}" name="all_handler" step="0.01" value="" style="width:90px;">
-                            <label for="">Handler</label>
-                        </div>
-                        <div class="btn-group d-inline">
-                            <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="change_handler_dropdown_{{ $variation->id }}" onclick="populateHandlerDropdownOnClick({{ $variation->id }})">
-                                Change
-                            </button>
-                            <ul class="dropdown-menu" id="change_handler_menu_{{ $variation->id }}">
-                                <li><span class="dropdown-item-text">Loading...</span></li>
-                            </ul>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-md-4">
-                    <label class="small fw-bold mb-1 d-block">Change All € Prices</label>
-                    <form class="form-inline d-flex align-items-center gap-2" method="POST" id="change_all_price_{{ $variation->id }}">
-                        @csrf
-                        <div class="form-floating">
-                            <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variation->id }}" name="all_min_price" step="0.01" value="" style="width:90px;">
-                            <label for="">Min Price</label>
-                        </div>
-                        <div class="form-floating">
-                            <input type="number" class="form-control form-control-sm" id="all_price_{{ $variation->id }}" name="all_price" step="0.01" value="" style="width:90px;">
-                            <label for="">Price</label>
-                        </div>
-                        <div class="btn-group d-inline">
-                            <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="change_price_dropdown_{{ $variation->id }}" onclick="populatePriceDropdownOnClick({{ $variation->id }})">
-                                Push
-                            </button>
-                            <ul class="dropdown-menu" id="change_price_menu_{{ $variation->id }}">
-                                <li><span class="dropdown-item-text">Loading...</span></li>
-                            </ul>
-                        </div>
-                    </form>
-                </div>
-                <div class="col-md-4">
-                    <div class="without-buybox-section">
-                        <h6 class="fw-bold">Without Buybox</h6>
-                        @php
-                            $withoutBuyboxListings = $variation->listings->filter(fn($listing) => $listing->buybox !== 1);
-                        @endphp
-                        @forelse($withoutBuyboxListings as $listing)
-                            <a href="https://www.backmarket.{{ $listing->country_id->market_url ?? '' }}/{{ $listing->country_id->market_code ?? '' }}/p/gb/{{ $listing->reference_uuid_2 ?? '' }}" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">
-                                <img src="{{ asset('assets/img/flags/') }}/{{ strtolower($listing->country_id->code ?? '') }}.svg" height="10">
-                                {{ $listing->country_id->code ?? '' }}
-                            </a>
-                        @empty
-                            <span class="text-muted">All listings have buybox or no listings.</span>
-                        @endforelse
-                    </div>
-                    <div class="status-badge-section mt-2">
-                        <h6 class="badge bg-light text-dark">
-                            {{ [0 => 'Missing price/comment', 1 => 'Pending validation', 2 => 'Online', 3 => 'Offline', 4 => 'Deactivated'][$variation->state] ?? 'Unknown' }}
-                        </h6>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         {{-- Marketplace Accordion Section --}}
-        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}">
+        <div class="card-body p-0 collapse multi_collapse {{ $detailsExpanded ? 'show' : '' }}" id="marketplaceAccordion_{{ $variation->id }}">
             <div class="accordion" id="marketplaceAccordionInner_{{ $variation->id }}">
                 @php
                     // Get all marketplaces from system
