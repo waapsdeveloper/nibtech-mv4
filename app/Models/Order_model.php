@@ -588,6 +588,7 @@ class Order_model extends Model
     protected function resolveRefurbedItemPrice(array $item): ?float
     {
         $candidates = [
+            'settlement_total_paid' => $item['settlement_total_paid'] ?? null,
             'unit_price' => $item['unit_price'] ?? null,
             'price' => $item['price'] ?? null,
             'settlement_unit_price' => $item['settlement_unit_price'] ?? null,
@@ -608,7 +609,7 @@ class Order_model extends Model
                 continue;
             }
 
-            $isAggregate = in_array($label, ['total_price', 'price_total'], true);
+            $isAggregate = in_array($label, ['total_price', 'price_total', 'settlement_total_paid'], true);
             if ($isAggregate && ! empty($item['quantity'])) {
                 $quantity = (float) $item['quantity'];
                 if ($quantity > 0) {
@@ -638,7 +639,7 @@ class Order_model extends Model
             'NEW', 'PENDING' => 1,
             'ACCEPTED', 'CONFIRMED' => 2,
             'SHIPPED', 'IN_TRANSIT' => 3,
-            // 'DELIVERED', 'COMPLETED' => 4,
+            'DELIVERED', 'COMPLETED' => 3,
             'CANCELLED' => 4,
             'RETURNED' => 6,
             default => 1,
