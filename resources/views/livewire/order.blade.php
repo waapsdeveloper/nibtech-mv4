@@ -146,7 +146,11 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Orders</span> --}}
-                <a href="{{url('refresh_order')}}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
+                @php
+                    $refreshMarketplaceParam = request()->has('marketplace') ? request('marketplace') : null;
+                    $refreshMarketplace = ($refreshMarketplaceParam === null || $refreshMarketplaceParam === '') ? 1 : $refreshMarketplaceParam;
+                @endphp
+                <a href="{{ url('refresh_order') }}?marketplace={{ $refreshMarketplace }}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
                 <a href="{{url('check_new')}}" class="mg-b-0 mg-b-lg-1 btn btn-primary">Check for New</a>
                 </div>
                 <div class="justify-content-center mt-2">

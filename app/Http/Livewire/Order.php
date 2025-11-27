@@ -45,6 +45,7 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
@@ -4421,30 +4422,111 @@ class Order extends Component
     }
     public function getapiorders($page = null)
     {
+        if ($this->isRefurbedRefreshRequest()) {
+            return $this->handleRefurbedOrdersRefresh();
+        }
 
-        if($page == 1){
-            for($i = 1; $i <= 10; $i++){
-                $j = $i*20;
-                echo $url = url('refresh_order').'/'.$j;
+        $output = $this->runBackMarketRefreshWorkflow($page);
+
+        return response($output, 200, ['Content-Type' => 'text/html']);
+    }
+
+    protected function runBackMarketRefreshWorkflow($page = null): string
+    {
+        ob_start();
+
+        if ($page == 1) {
+            for ($i = 1; $i <= 10; $i++) {
+                $j = $i * 20;
+                echo $url = url('refresh_order') . '/' . $j;
                 echo '<script>
-                var newTab1 = window.open("'.$url.'", "_blank");
+                var newTab1 = window.open("' . $url . '", "_blank");
                 </script>';
             }
             $this->updateBMOrdersAll($page);
-        }else if($page){
+        } elseif ($page) {
             $this->updateBMOrdersAll($page);
-
-        }else{
+        } else {
             $this->updateBMOrdersAll();
-
         }
 
+        echo '<script>window.close();</script>';
 
+        return ob_get_clean() ?: '<script>window.close();</script>';
+    }
 
-            echo '<script>window.close();</script>';
+    protected function isRefurbedRefreshRequest(): bool
+    {
+        $marketplace = request('marketplace');
 
+        if ($marketplace !== null && $marketplace !== '') {
+            return (int) $marketplace === self::REFURBED_MARKETPLACE_ID;
+        }
 
+        $source = strtolower((string) request('source', ''));
 
+        if ($source === 'refurbed') {
+            return true;
+        }
+
+        return request()->boolean('refurbed');
+    }
+
+    protected function handleRefurbedOrdersRefresh()
+    {
+        $options = [];
+
+        try {
+            $options = $this->buildRefurbedRefreshOptions();
+
+            Artisan::call('refurbed:orders', $options);
+
+            $output = trim((string) Artisan::output());
+
+            session()->put('success', 'Refurbed orders refresh completed.');
+
+            if ($output !== '') {
+                session()->put('copy', $output);
+            }
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual refresh failed', [
+                'error' => $e->getMessage(),
+                'options' => $options,
+                'user_id' => session('user_id'),
+            ]);
+
+            session()->put('error', 'Unable to refresh Refurbed orders: ' . $e->getMessage());
+        }
+
+        return response('<script>window.close();</script>', 200, ['Content-Type' => 'text/html']);
+    }
+
+    protected function buildRefurbedRefreshOptions(): array
+    {
+        $options = [];
+
+        $states = array_filter((array) request('state'), fn ($value) => $value !== null && $value !== '');
+        if (! empty($states)) {
+            $options['--state'] = array_values($states);
+        }
+
+        $fulfillment = array_filter((array) request('fulfillment'), fn ($value) => $value !== null && $value !== '');
+        if (! empty($fulfillment)) {
+            $options['--fulfillment'] = array_values($fulfillment);
+        }
+
+        if ($pageSize = request('page_size')) {
+            $pageSize = (int) $pageSize;
+            if ($pageSize > 0) {
+                $options['--page-size'] = min($pageSize, 200);
+            }
+        }
+
+        if (request()->boolean('skip_items')) {
+            $options['--skip-items'] = true;
+        }
+
+        return $options;
     }
 
     public function updateBMOrdersNew($return = false)
