@@ -135,7 +135,7 @@
         @endif
 
         {{-- Global QZ Tray Connection Manager --}}
-        <script src="{{ asset('assets/js/qz-tray.js') }}"></script>
+        {{-- Note: qz-tray.js is already loaded in layouts.components.scripts --}}
         <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
@@ -144,6 +144,15 @@
              * Uses existing functions.js for certificate configuration
              */
             (function() {
+                // Check if QZ Tray manager has already been initialized (prevent duplicate initialization)
+                if (window.qzConnectionManagerInitialized) {
+                    console.log('QZ Tray Connection Manager already initialized - skipping duplicate');
+                    return;
+                }
+                
+                // Mark as initialized
+                window.qzConnectionManagerInitialized = true;
+                
                 // Global flag to track connection state
                 window.qzGlobalConnectionEstablished = false;
                 window.qzGlobalConnectionInProgress = false;
