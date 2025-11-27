@@ -111,7 +111,7 @@ class RefurbedShippingService
         }
 
         $order->loadMissing('marketplace');
-        $fromMarketplace = data_get($order->marketplace, 'merchant_address_id');
+        $fromMarketplace = data_get($order->marketplace, 'shipping_id');
         if (! empty($fromMarketplace)) {
             return trim($fromMarketplace);
         }
