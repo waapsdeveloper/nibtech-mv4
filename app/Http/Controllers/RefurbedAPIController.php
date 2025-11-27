@@ -129,6 +129,41 @@ class RefurbedAPIController extends Controller
         ]);
     }
 
+    public function uploadOrderCommercialInvoice(
+        string $orderId,
+        string $invoiceNumber,
+        string $binaryDocument,
+        ?int $chunkSize = null
+    ): array {
+        $chunkSize = $chunkSize && $chunkSize > 0
+            ? min($chunkSize, 1024 * 1024) // API limit per chunk
+            : 1024 * 1024;
+
+        $payload = [
+            [
+                'meta' => [
+                    'order_id' => $this->normalizeOrderId($orderId),
+                    'commercial_invoice_number' => $invoiceNumber,
+                ],
+            ],
+        ];
+
+        $length = strlen($binaryDocument);
+        $offset = 0;
+
+        while ($offset < $length) {
+            $chunk = substr($binaryDocument, $offset, $chunkSize);
+            if ($chunk === '') {
+                break;
+            }
+
+            $payload[] = ['data' => base64_encode($chunk)];
+            $offset += strlen($chunk);
+        }
+
+        return $this->post('refb.merchant.v1.OrderService/UploadOrderCommercialInvoice', $payload);
+    }
+
     public function acceptOrder(string $orderId): array
     {
         return $this->post('refb.merchant.v1.OrderService/AcceptOrder', ['id' => $orderId]);
@@ -474,6 +509,11 @@ class RefurbedAPIController extends Controller
         }
 
         return $payload;
+    }
+
+    protected function normalizeOrderId(string $orderId): int|string
+    {
+        return is_numeric($orderId) ? (int) $orderId : $orderId;
     }
 
     protected function logError(string $message, array $context = []): void

@@ -22,6 +22,7 @@ namespace App\Http\Livewire;
     use App\Exports\DeliveryNotesExport;
     use App\Exports\OrdersheetExport;
     use App\Exports\PurchasesheetExport;
+    use App\Services\RefurbedCommercialInvoiceService;
     use App\Services\RefurbedShippingService;
 use Illuminate\Support\Facades\DB;
     use Maatwebsite\Excel\Facades\Excel;
@@ -3291,6 +3292,7 @@ class Order extends Component
     protected function handleRefurbedShipping(Order_model $order, RefurbedAPIController $refurbedApi)
     {
         $service = app(RefurbedShippingService::class);
+        app(RefurbedCommercialInvoiceService::class)->ensureCommercialInvoice($order, $refurbedApi);
 
         $merchantAddressId = $this->resolveRefurbedMerchantAddressId();
         if (empty($merchantAddressId)) {
@@ -3404,6 +3406,7 @@ class Order extends Component
         ];
 
         $dirty = false;
+        $commercialInvoiceService = app(RefurbedCommercialInvoiceService::class);
 
         try {
             $invoiceResponse = $refurbedApi->getOrderInvoice($order->reference_id);
@@ -3425,8 +3428,20 @@ class Order extends Component
             ]);
         }
 
+        $commercialResponse = null;
+
         try {
             $commercialResponse = $refurbedApi->getOrderCommercialInvoice($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to fetch commercial invoice for dispatch', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            $commercialResponse = $commercialInvoiceService->uploadCommercialInvoice($order, $refurbedApi);
+        }
+
+        if ($commercialResponse) {
             $commercialUrl = data_get($commercialResponse, 'url');
             $commercialNumber = data_get($commercialResponse, 'commercial_invoice_number');
 
@@ -3438,11 +3453,6 @@ class Order extends Component
             if ($commercialNumber) {
                 $links['commercial_invoice_number'] = $commercialNumber;
             }
-        } catch (\Throwable $e) {
-            Log::info('Refurbed: Unable to fetch commercial invoice for dispatch', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
         }
 
         if ($dirty) {
