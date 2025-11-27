@@ -61,6 +61,11 @@ class PriceHandler extends Command
         $variation_ids = $listings->pluck('variation_id');
         $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
         $references = $listings->pluck('reference_uuid')->unique()->toArray();
+        $referenceVariationMap = $listings
+            ->filter(fn ($listing) => ! empty($listing->reference_uuid) && ! empty($listing->variation_id))
+            ->pluck('variation_id', 'reference_uuid')
+            ->toArray();
+        $resolvedVariationCache = [];
         foreach ($references as $reference) {
 
             $responses = $bm->getListingCompetitors($reference);
@@ -102,6 +107,21 @@ class PriceHandler extends Command
                 if($country == null){
                     $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
                     continue;
+                }
+                if (! $listing->variation_id) {
+                    $variationId = $referenceVariationMap[$reference]
+                        ?? $resolvedVariationCache[$reference]
+                        ?? $this->resolveVariationIdForReference($reference);
+
+                    if (! $variationId) {
+                        Log::warning('Price handler unable to resolve variation for reference', [
+                            'reference_uuid' => $reference,
+                        ]);
+                        continue;
+                    }
+
+                    $listing->variation_id = $variationId;
+                    $resolvedVariationCache[$reference] = $variationId;
                 }
                 // if(!isset($list->id)){
                 //     $error .= "No listing ID found for market: " . $list->market . " for variation: " . json_encode($list) . "\n";
@@ -249,5 +269,17 @@ class PriceHandler extends Command
 
             $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
         }
+    }
+
+    protected function resolveVariationIdForReference(string $reference): ?int
+    {
+        $reference = trim($reference);
+
+        if ($reference === '') {
+            return null;
+        }
+
+        return Variation_model::where('reference_uuid', $reference)->value('id')
+            ?? Variation_model::where('reference_id', $reference)->value('id');
     }
 }
