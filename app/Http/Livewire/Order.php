@@ -4534,6 +4534,10 @@ class Order extends Component
             }
         }
 
+        if (! isset($defaults['default_carrier']) || $defaults['default_carrier'] === '') {
+            $defaults['default_carrier'] = 'DHL Express';
+        }
+
         return $defaults;
     }
 
