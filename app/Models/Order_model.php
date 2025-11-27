@@ -368,7 +368,11 @@ class Order_model extends Model
         }
 
         $order->price = $this->extractNumeric(
-            $orderData['settlement_total_paid'];
+            $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? $orderData['price']
+            ?? $order->price
         );
         $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
 
