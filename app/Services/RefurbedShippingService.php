@@ -68,11 +68,18 @@ class RefurbedShippingService
         }
 
         $labelUrl = $this->persistLabel($order, $labelResponse);
+        $trackingNumber = $this->extractTrackingNumber($labelResponse);
+
+        if (! $labelUrl || ! $trackingNumber) {
+            $fallback = $this->fetchLatestLabelMetadata($order, $refurbedApi);
+            $labelUrl = $labelUrl ?: $fallback['label_url'];
+            $trackingNumber = $trackingNumber ?: $fallback['tracking_number'];
+        }
+
         if ($labelUrl) {
             $order->label_url = $labelUrl;
         }
 
-        $trackingNumber = $this->extractTrackingNumber($labelResponse);
         if ($trackingNumber) {
             $order->tracking_number = $trackingNumber;
         }
@@ -259,6 +266,40 @@ class RefurbedShippingService
             ?? data_get($labelResponse, 'tracking_number')
             ?? data_get($labelResponse, 'shipping_label.tracking_number')
             ?? data_get($labelResponse, 'labels.0.tracking_number');
+    }
+
+    protected function fetchLatestLabelMetadata(Order_model $order, RefurbedAPIController $refurbedApi): array
+    {
+        try {
+            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to fetch shipping labels for hydration', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['label_url' => null, 'tracking_number' => null];
+        }
+
+        $entry = data_get($labelsResponse, 'shipping_labels.0')
+            ?? data_get($labelsResponse, 'labels.0')
+            ?? data_get($labelsResponse, 'label');
+
+        if (! $entry) {
+            return ['label_url' => null, 'tracking_number' => null];
+        }
+
+        $downloadUrl = data_get($entry, 'download_url')
+            ?? data_get($entry, 'label.download_url')
+            ?? data_get($entry, 'label.content_url');
+
+        $trackingNumber = data_get($entry, 'tracking_number')
+            ?? data_get($entry, 'label.tracking_number');
+
+        return [
+            'label_url' => $downloadUrl,
+            'tracking_number' => $trackingNumber,
+        ];
     }
 
     protected function updateOrderItemsState(Order_model $order, RefurbedAPIController $refurbedApi, ?string $trackingNumber, ?string $carrier): void
