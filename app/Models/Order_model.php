@@ -576,13 +576,60 @@ class Order_model extends Model
             'listing_id' => $listingId,
             'sku' => $sku,
             'quantity' => $item['quantity'] ?? 1,
-            'price' => $this->extractNumeric($item['price'] ?? $item['unit_price'] ?? null) ?? 0,
+            'price' => $this->resolveRefurbedItemPrice($item) ?? 0,
             'state' => $this->mapRefurbedOrderItemState($item['state'] ?? 'NEW'),
             'imei' => $item['imei'] ?? null,
             'serial_number' => $item['serial_number'] ?? ($item['serial'] ?? null),
             'title' => $item['title'] ?? null,
         ];
 
+    }
+
+    protected function resolveRefurbedItemPrice(array $item): ?float
+    {
+        $candidates = [
+            'unit_price' => $item['unit_price'] ?? null,
+            'price' => $item['price'] ?? null,
+            'settlement_unit_price' => $item['settlement_unit_price'] ?? null,
+            'settlement_price' => $item['settlement_price'] ?? null,
+            'total_price' => $item['total_price'] ?? null,
+            'price_total' => $item['price_total'] ?? null,
+            'gross_price' => $item['gross_price'] ?? null,
+            'net_price' => $item['net_price'] ?? null,
+        ];
+
+        foreach ($candidates as $label => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $numeric = $this->extractNumeric($value);
+            if ($numeric === null) {
+                continue;
+            }
+
+            $isAggregate = in_array($label, ['total_price', 'price_total'], true);
+            if ($isAggregate && ! empty($item['quantity'])) {
+                $quantity = (float) $item['quantity'];
+                if ($quantity > 0) {
+                    return round($numeric / $quantity, 2);
+                }
+            }
+
+            return $numeric;
+        }
+
+        if (! empty($item['quantity'])) {
+            $quantity = (float) $item['quantity'];
+            if ($quantity > 0 && isset($item['total_price'])) {
+                $total = $this->extractNumeric($item['total_price']);
+                if ($total !== null) {
+                    return round($total / $quantity, 2);
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function mapRefurbedOrderState(string $state): int
