@@ -3304,6 +3304,10 @@ class Order extends Component
             $carrier = data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
         }
 
+        if ($carrier === null || $carrier === '') {
+            return 'Refurbed carrier is required. Please enter a carrier in the dispatch form or set a default carrier for the marketplace.';
+        }
+
         return $service->createLabel($order, $refurbedApi, [
             'merchant_address_id' => $merchantAddressId,
             'parcel_weight' => $parcelWeight,
