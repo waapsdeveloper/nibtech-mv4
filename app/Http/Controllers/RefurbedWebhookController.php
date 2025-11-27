@@ -355,7 +355,10 @@ class RefurbedWebhookController extends Controller
             $orderItem->quantity = 1;
         }
 
-        $orderItem->price = $this->resolveOrderItemPrice($itemData);
+        $price = $this->resolveOrderItemPrice($itemData);
+        if ($price !== null) {
+            $orderItem->price = $price;
+        }
         $orderItem->status = $this->mapOrderItemState($itemState);
 
         $orderItem->save();
@@ -420,7 +423,7 @@ class RefurbedWebhookController extends Controller
         };
     }
 
-    protected function resolveOrderItemPrice(array $itemData): float
+    protected function resolveOrderItemPrice(array $itemData): ?float
     {
         $candidates = [
             'unit_price' => $itemData['unit_price'] ?? null,
@@ -457,7 +460,7 @@ class RefurbedWebhookController extends Controller
             }
         }
 
-        return 0.0;
+        return null;
     }
 
     protected function normalizePriceValue($value): ?float
