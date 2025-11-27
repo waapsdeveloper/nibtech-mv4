@@ -281,7 +281,7 @@ class RefurbedShippingService
             }
 
             if ($carrier) {
-                $entry['carrier'] = $carrier;
+                $entry['parcel_tracking_carrier'] = $carrier;
             }
 
             $updates[] = $entry;

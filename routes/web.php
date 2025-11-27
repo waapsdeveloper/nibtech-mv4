@@ -37,6 +37,7 @@ use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ListingController;
 use App\Http\Controllers\ReportController;
+use App\Http\Controllers\RefurbedDispatchCheckController;
 use App\Http\Livewire\BMInvoice;
 use App\Http\Livewire\Brand;
 use App\Http\Livewire\Category;
@@ -300,6 +301,7 @@ Route::get('order/export_refund_invoice/{id}', [Order::class,'export_refund_invo
 Route::get('order/label/{id}/{data?}/{update?}', [Order::class,'getLabel'])->name('dispatch_order');
 Route::post('order/printer-preferences', [Order::class,'storePrinterPreferences'])->name('order.store_printer_preferences');
 Route::get('order/packing/delivery-print/{id}', [Order::class,'packingDeliveryPrint'])->name('order.packing_delivery_print');
+Route::get('refurbed/dispatch-check', RefurbedDispatchCheckController::class)->name('refurbed.dispatch_check');
 
 Route::get('sales/allowed', [Order::class,'sales_allowed'])->name('dispatch_admin');
 Route::post('order/dispatch_allowed/{id}', [Order::class,'dispatch_allowed'])->name('dispatch_admin');
