@@ -4535,7 +4535,7 @@ class Order extends Component
         }
 
         if (! isset($defaults['default_carrier']) || $defaults['default_carrier'] === '') {
-            $defaults['default_carrier'] = 'DHL Express';
+            $defaults['default_carrier'] = 'DHL_EXPRESS';
         }
 
         return $defaults;
