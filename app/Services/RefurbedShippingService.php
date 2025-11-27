@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class RefurbedShippingService
 {
+    private const DEFAULT_CARRIER = 'DHL_EXPRESS';
     /**
      * Create a Refurbed shipping label and optionally mark the order as shipped.
      *
@@ -127,17 +128,17 @@ class RefurbedShippingService
     {
         $fromOptions = data_get($options, 'carrier');
         if (! empty($fromOptions)) {
-            return trim($fromOptions);
+            return $this->normalizeCarrier($fromOptions);
         }
 
         $order->loadMissing('marketplace');
         $fromMarketplace = data_get($order->marketplace, 'default_shipping_carrier');
 
         if (! empty($fromMarketplace)) {
-            return trim($fromMarketplace);
+            return $this->normalizeCarrier($fromMarketplace);
         }
 
-        return 'DHL Express';
+        return self::DEFAULT_CARRIER;
     }
 
     protected function resolveParcelWeight(Order_model $order, array $options): ?float
@@ -164,6 +165,25 @@ class RefurbedShippingService
         }
 
         return null;
+    }
+
+    protected function normalizeCarrier(?string $carrier): ?string
+    {
+        if ($carrier === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(str_replace(' ', '_', trim($carrier)));
+
+        if ($normalized === '' || $normalized === 'N/A') {
+            return null;
+        }
+
+        if ($normalized === 'DHL-EXPRESS') {
+            $normalized = 'DHL_EXPRESS';
+        }
+
+        return $normalized;
     }
 
     protected function extractWeightFromCategory($category): ?float
