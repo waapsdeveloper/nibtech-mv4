@@ -63,10 +63,10 @@ class PickListExport
             ->where(['orders.deleted_at' => null, 'order_items.deleted_at' => null, 'variation.deleted_at' => null, 'products.deleted_at' => null])
             ->where('orders.order_type_id',3)
             ->when(request('marketplace') != '' && request('marketplace') > 0, function ($q) {
-                return $q->where('orders.marketplace', request('marketplace'));
+                return $q->where('orders.marketplace_id', request('marketplace'));
             })
             ->when(request('marketplace') == null, function ($q) {
-                return $q->where('orders.marketplace', 1);
+                return $q->where('orders.marketplace_id', 1);
             })
             ->when(request('start_date') != '', function ($q) use ($start_date) {
                 return $q->where('orders.created_at', '>=', $start_date);
