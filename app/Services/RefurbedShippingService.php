@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -50,21 +51,43 @@ class RefurbedShippingService
             return 'Parcel weight must be greater than zero for Refurbed shipments.';
         }
 
+        $labelAttributes = $this->buildLabelAttributes($options);
+
         try {
             $labelResponse = $refurbedApi->createShippingLabel(
                 $order->reference_id,
                 $merchantAddressId,
                 $parcelWeight,
-                $carrier ?: null
+                $carrier ?: null,
+                $labelAttributes
             );
         } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to create shipping label', [
-                'order_id' => $order->id,
-                'order_reference' => $order->reference_id,
-                'error' => $e->getMessage(),
-            ]);
+            if ($this->shouldRetryWithCommercialInvoice($e, $labelAttributes)) {
+                $invoiceDetails = $this->fetchCommercialInvoiceDetails($order, $refurbedApi);
 
-            return 'Failed to create Refurbed shipping label: ' . $e->getMessage();
+                if (! empty($invoiceDetails['commercial_invoice_number'])) {
+                    try {
+                        $labelResponse = $refurbedApi->createShippingLabel(
+                            $order->reference_id,
+                            $merchantAddressId,
+                            $parcelWeight,
+                            $carrier ?: null,
+                            $this->buildLabelAttributes($invoiceDetails)
+                        );
+                    } catch (\Throwable $retryException) {
+                        return $this->handleLabelCreationFailure($order, $retryException, true);
+                    }
+                } else {
+                    Log::warning('Refurbed: Commercial invoice unavailable for label retry', [
+                        'order_id' => $order->id,
+                        'order_reference' => $order->reference_id,
+                    ]);
+
+                    return $this->handleLabelCreationFailure($order, $e);
+                }
+            } else {
+                return $this->handleLabelCreationFailure($order, $e);
+            }
         }
 
         $labelUrl = $this->persistLabel($order, $labelResponse);
@@ -113,6 +136,20 @@ class RefurbedShippingService
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
         ]);
+    }
+
+    protected function handleLabelCreationFailure(Order_model $order, \Throwable $exception, bool $wasRetry = false): string
+    {
+        $message = $this->extractApiErrorMessage($exception);
+
+        Log::error('Refurbed: Failed to create shipping label', [
+            'order_id' => $order->id,
+            'order_reference' => $order->reference_id,
+            'error' => $message,
+            'retry_after_invoice' => $wasRetry,
+        ]);
+
+        return 'Failed to create Refurbed shipping label: ' . $message;
     }
 
     protected function resolveMerchantAddressId(Order_model $order, array $options): ?string
@@ -397,5 +434,64 @@ class RefurbedShippingService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    protected function buildLabelAttributes(array $source): array
+    {
+        $attributes = [];
+        $invoiceNumber = $source['commercial_invoice_number'] ?? null;
+
+        if ($invoiceNumber) {
+            $attributes['commercial_invoice_number'] = $invoiceNumber;
+        }
+
+        return $attributes;
+    }
+
+    protected function shouldRetryWithCommercialInvoice(\Throwable $exception, array $currentAttributes): bool
+    {
+        if (! empty($currentAttributes['commercial_invoice_number'])) {
+            return false;
+        }
+
+        $message = strtolower($this->extractApiErrorMessage($exception));
+
+        return str_contains($message, 'commercial invoice') && str_contains($message, 'require');
+    }
+
+    protected function fetchCommercialInvoiceDetails(Order_model $order, RefurbedAPIController $refurbedApi): array
+    {
+        try {
+            $response = $refurbedApi->getOrderCommercialInvoice($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to fetch commercial invoice for label retry', [
+                'order_id' => $order->id,
+                'order_reference' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+
+        return array_filter([
+            'commercial_invoice_number' => data_get($response, 'commercial_invoice_number'),
+        ]);
+    }
+
+    protected function extractApiErrorMessage(\Throwable $exception): string
+    {
+        if ($exception instanceof RequestException && $exception->response) {
+            $payload = $exception->response->json();
+            if (is_array($payload) && isset($payload['message'])) {
+                return (string) $payload['message'];
+            }
+
+            $body = $exception->response->body();
+            if ($body !== '') {
+                return $body;
+            }
+        }
+
+        return $exception->getMessage();
     }
 }

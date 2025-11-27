@@ -663,6 +663,7 @@ class Api_request_model extends Model
                 return 24;
             case 'ug':
             case 'a+':
+            case 'a/a plus':
             case 'a/a+':
                 return 7;
             case 'd':
