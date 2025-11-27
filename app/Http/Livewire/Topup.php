@@ -249,20 +249,36 @@ class Topup extends Component
 
 
         $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
-        $process = Process_model::with(['process_stocks'])->find($process_id);
+        $process = Process_model::findOrFail($process_id);
         $data['process'] = $process;
+        $processStockStats = Process_stock_model::where('process_id', $process_id)
+            ->selectRaw('COUNT(*) as total')
+            ->selectRaw('SUM(CASE WHEN status = 2 THEN 1 ELSE 0 END) as verified')
+            ->first();
+        $data['process_scanned_quantity'] = (int) ($processStockStats->total ?? 0);
+        $data['process_verified_quantity'] = (int) ($processStockStats->verified ?? 0);
         $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
         if($process->status == 2){
             $data['verified_total'] = Process_stock_model::where('process_id',$process_id)->where('verified_by',session('user_id'))->count();
         }
         $data['process_id'] = $process_id;
+        $listedStocks = Listed_stock_verification_model::where('process_id', $process_id)
+            ->with(['variation', 'admin'])
+            ->get();
+        $data['listed_stocks'] = $listedStocks;
+        $data['process_listed_quantity'] = (int) $listedStocks->sum('qty_change');
+        $data['listed_stock_totals_by_variation'] = [];
 
         $data['products'] = session('dropdown_data')['products'];
         $data['storages'] = session('dropdown_data')['storages'];
         if(request('show') != null){
-            $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->pluck('stock_id')->toArray())->get();
+            $processStocks = Process_stock_model::where('process_id', $process_id)->get();
+            $data['process_stocks_by_stock'] = $processStocks->keyBy('stock_id');
+            $stocks = Stock_model::whereIn('id',$processStocks->pluck('stock_id')->toArray())
+                ->with(['latest_operation'])
+                ->get();
             // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
-            $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
+            $variation_ids = $processStocks->pluck('variation_id')->unique();
             $variations = Variation_model::whereIn('variation.id', $variation_ids)
             ->join('products', 'products.id', '=', 'variation.product_id')
             ->orderBy('products.model', 'asc')
@@ -280,16 +296,20 @@ class Topup extends Component
             // })
             ;
             $data['stocks'] = $stocks;
+            $data['listed_stock_totals_by_variation'] = $listedStocks
+                ->groupBy('variation_id')
+                ->map(function ($items) {
+                    return $items->sum('qty_change');
+                })
+                ->toArray();
 
             // if($process->status == 2){
             //     $unverified_stock
 
         }
-        // if($process->status == 2){
-            $data['listed_stocks'] = Listed_stock_verification_model::where('process_id', $process_id)
-            // ->orWhere('created_at','>', $process->updated_at)
-            ->get();
-        // }
+        if(!isset($data['process_stocks_by_stock'])){
+            $data['process_stocks_by_stock'] = collect();
+        }
 
         return view('livewire.topup_detail')->with($data);
 
