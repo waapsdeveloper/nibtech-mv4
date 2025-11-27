@@ -20,10 +20,9 @@ class RefurbedShippingService
      */
     public function createLabel(Order_model $order, RefurbedAPIController $refurbedApi, array $options = [])
     {
-        $shippingConfig = config('services.refurbed.shipping', []);
-        $merchantAddressId = $options['merchant_address_id'] ?? ($shippingConfig['default_merchant_address_id'] ?? null);
-        $parcelWeight = $options['parcel_weight'] ?? ($shippingConfig['default_weight'] ?? null);
-        $carrier = $options['carrier'] ?? ($shippingConfig['default_carrier'] ?? null);
+        $merchantAddressId = $this->resolveMerchantAddressId($order, $options);
+        $parcelWeight = $this->resolveParcelWeight($order, $options);
+        $carrier = $this->resolveCarrier($order, $options);
         $markShipped = (bool) ($options['mark_shipped'] ?? false);
         $skipIfExists = (bool) ($options['skip_if_exists'] ?? false);
         $syncIdentifiers = (bool) ($options['sync_identifiers'] ?? false);
@@ -102,6 +101,87 @@ class RefurbedShippingService
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
         ]);
+    }
+
+    protected function resolveMerchantAddressId(Order_model $order, array $options): ?string
+    {
+        $fromOptions = data_get($options, 'merchant_address_id');
+        if (! empty($fromOptions)) {
+            return trim($fromOptions);
+        }
+
+        $order->loadMissing('marketplace');
+        $fromMarketplace = data_get($order->marketplace, 'merchant_address_id');
+        if (! empty($fromMarketplace)) {
+            return trim($fromMarketplace);
+        }
+
+        return null;
+    }
+
+    protected function resolveCarrier(Order_model $order, array $options): ?string
+    {
+        $fromOptions = data_get($options, 'carrier');
+        if (! empty($fromOptions)) {
+            return trim($fromOptions);
+        }
+
+        $order->loadMissing('marketplace');
+        $fromMarketplace = data_get($order->marketplace, 'default_shipping_carrier');
+
+        return ! empty($fromMarketplace) ? trim($fromMarketplace) : null;
+    }
+
+    protected function resolveParcelWeight(Order_model $order, array $options): ?float
+    {
+        if (array_key_exists('parcel_weight', $options) && $options['parcel_weight'] !== null && $options['parcel_weight'] !== '') {
+            return (float) $options['parcel_weight'];
+        }
+
+        return $this->extractCategoryWeightFromOrder($order);
+    }
+
+    protected function extractCategoryWeightFromOrder(Order_model $order): ?float
+    {
+        $order->loadMissing('order_items.variation.product.category_id');
+
+        foreach ($order->order_items as $item) {
+            $variation = $item->variation;
+            $product = $variation ? $variation->product : null;
+            $category = $product ? $product->category_id : null;
+            $weight = $this->extractWeightFromCategory($category);
+            if ($weight !== null) {
+                return $weight;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractWeightFromCategory($category): ?float
+    {
+        if (! $category) {
+            return null;
+        }
+
+        $fields = [
+            'default_shipping_weight',
+            'default_weight',
+            'shipping_weight',
+            'weight',
+        ];
+
+        foreach ($fields as $field) {
+            $value = data_get($category, $field);
+            if ($value !== null && $value !== '' && is_numeric($value)) {
+                $numericValue = (float) $value;
+                if ($numericValue > 0) {
+                    return $numericValue;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function persistLabel(Order_model $order, array $labelResponse): ?string
