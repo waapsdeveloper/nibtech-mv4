@@ -324,6 +324,18 @@ class RefurbedAPIController extends Controller
         return $this->post('refb.merchant.v1.OrderService/ListShippingLabels', ['order_id' => $orderId]);
     }
 
+    public function listMerchantAddresses(array $pagination = []): array
+    {
+        return $this->post('refb.merchant.v1.MerchantService/ListMerchantAddresses', $this->cleanPayload([
+            'pagination' => $pagination,
+        ]));
+    }
+
+    public function createMerchantAddress(array $payload): array
+    {
+        return $this->post('refb.merchant.v1.MerchantService/CreateMerchantAddress', $this->cleanPayload($payload));
+    }
+
     public function listShippingProfiles(array $filter = [], array $pagination = [], array $sort = []): array
     {
         return $this->post('refb.merchant.v1.ShippingProfileService/ListShippingProfiles', $this->cleanPayload([

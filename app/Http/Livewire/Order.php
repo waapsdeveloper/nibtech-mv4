@@ -53,6 +53,7 @@ use Illuminate\Http\Request;
 class Order extends Component
 {
     protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
+    protected const REFURBED_MARKETPLACE_ID = 4;
 
     public function mount()
     {
@@ -4523,7 +4524,7 @@ class Order extends Component
     protected function buildRefurbedShippingDefaults(): array
     {
         $defaults = [];
-        $marketplace = Marketplace_model::query()->find(4);
+        $marketplace = $this->getRefurbedMarketplace();
 
         if ($marketplace) {
             $merchantAddress = data_get($marketplace, 'shipping_id');
@@ -4551,13 +4552,13 @@ class Order extends Component
             return trim($addressFromRequest);
         }
 
-        $marketplace = Marketplace_model::query()->find(4);
+        $marketplace = $this->getRefurbedMarketplace();
         $addressFromMarketplace = data_get($marketplace, 'shipping_id');
         if (! empty($addressFromMarketplace)) {
             return trim($addressFromMarketplace);
         }
 
-        return null;
+        return $this->autoCreateRefurbedMerchantAddress($marketplace);
     }
 
     protected function resolveRefurbedParcelWeight(Order_model $order): ?float
@@ -4635,6 +4636,98 @@ class Order extends Component
         }
 
         return $normalized;
+    }
+
+    protected function getRefurbedMarketplace(bool $refresh = false): ?Marketplace_model
+    {
+        static $cached;
+
+        if ($refresh || $cached === null) {
+            $cached = Marketplace_model::query()->find(self::REFURBED_MARKETPLACE_ID);
+        }
+
+        return $cached;
+    }
+
+    protected function autoCreateRefurbedMerchantAddress(?Marketplace_model $marketplace = null): ?string
+    {
+        static $attempted = false;
+
+        if ($attempted) {
+            return null;
+        }
+
+        $attempted = true;
+
+        $payload = $this->buildRefurbedMerchantAddressPayload();
+        if ($payload === null) {
+            return null;
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Unable to initialize API client for merchant address creation', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        try {
+            $response = $refurbedApi->createMerchantAddress($payload);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to auto-create merchant address', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $addressId = data_get($response, 'address.id')
+            ?? data_get($response, 'merchant_address.id')
+            ?? data_get($response, 'id');
+
+        if (empty($addressId)) {
+            Log::warning('Refurbed: Merchant address creation response missing ID', [
+                'response' => $response,
+            ]);
+
+            return null;
+        }
+
+        $marketplace = $marketplace ?: $this->getRefurbedMarketplace(true);
+        if ($marketplace) {
+            $marketplace->shipping_id = $addressId;
+            $marketplace->save();
+        }
+
+        return trim((string) $addressId);
+    }
+
+    protected function buildRefurbedMerchantAddressPayload(): ?array
+    {
+        $payload = array_filter(config('services.refurbed.shipping.address', []), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        if ($payload === []) {
+            Log::warning('Refurbed: Shipping address config is empty; cannot auto-create merchant address.');
+            return null;
+        }
+
+        $requiredFields = ['company', 'street', 'postal_code', 'city', 'country'];
+        foreach ($requiredFields as $field) {
+            if (empty($payload[$field])) {
+                Log::warning('Refurbed: Shipping address config missing required field', [
+                    'field' => $field,
+                ]);
+
+                return null;
+            }
+        }
+
+        return $payload;
     }
 
 
