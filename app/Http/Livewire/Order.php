@@ -83,7 +83,9 @@ class Order extends Component
         $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
         $data['order_statuses'] = Order_status_model::pluck('name','id');
         $data['marketplaces'] = Marketplace_model::pluck('name','id');
-        $data['refurbedShippingDefaults'] = config('services.refurbed.shipping', []);
+        $refurbedShippingDefaults = $this->buildRefurbedShippingDefaults();
+        config(['services.refurbed.shipping' => $refurbedShippingDefaults]);
+        $data['refurbedShippingDefaults'] = $refurbedShippingDefaults;
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -3288,15 +3290,30 @@ class Order extends Component
     {
         $service = app(RefurbedShippingService::class);
 
+        $merchantAddressId = $this->resolveRefurbedMerchantAddressId();
+        if (empty($merchantAddressId)) {
+            return 'Refurbed merchant address ID is required before dispatch. Update marketplace settings or include it in the dispatch form.';
+        }
+
+        $parcelWeight = $this->resolveRefurbedParcelWeight($order);
+        if ($parcelWeight === null || $parcelWeight <= 0) {
+            return 'Refurbed parcel weight is required. Please configure a category default weight or enter it manually.';
+        }
+
+        $carrier = request('refurbed_carrier');
+        if (empty($carrier)) {
+            $carrier = data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
+        }
+
         return $service->createLabel($order, $refurbedApi, [
-            'merchant_address_id' => request('refurbed_merchant_address_id'),
-            'parcel_weight' => request('refurbed_parcel_weight'),
-            'carrier' => request('refurbed_carrier'),
+            'merchant_address_id' => $merchantAddressId,
+            'parcel_weight' => $parcelWeight,
+            'carrier' => $carrier,
             'mark_shipped' => true,
             'processed_by' => session('user_id'),
             'sync_identifiers' => true,
             'identifier_options' => [
-                'carrier' => request('refurbed_carrier'),
+                'carrier' => $carrier,
             ],
         ]);
     }
@@ -4495,6 +4512,101 @@ class Order extends Component
         }
 
         return $state !== null ? (int) $state : null;
+    }
+
+    protected function buildRefurbedShippingDefaults(): array
+    {
+        $defaults = config('services.refurbed.shipping', []);
+        $marketplace = Marketplace_model::query()->find(4);
+
+        if ($marketplace) {
+            $merchantAddress = data_get($marketplace, 'merchant_address_id');
+            if (! empty($merchantAddress)) {
+                $defaults['default_merchant_address_id'] = $merchantAddress;
+            }
+
+            $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
+            if (! empty($fallbackCarrier)) {
+                $defaults['default_carrier'] = $fallbackCarrier;
+            }
+        }
+
+        return $defaults;
+    }
+
+    protected function resolveRefurbedMerchantAddressId(): ?string
+    {
+        $addressFromRequest = request('refurbed_merchant_address_id');
+        if (! empty($addressFromRequest)) {
+            return trim($addressFromRequest);
+        }
+
+        $marketplace = Marketplace_model::query()->find(4);
+        $addressFromMarketplace = data_get($marketplace, 'merchant_address_id');
+        if (! empty($addressFromMarketplace)) {
+            return trim($addressFromMarketplace);
+        }
+
+        return data_get(config('services.refurbed.shipping'), 'default_merchant_address_id');
+    }
+
+    protected function resolveRefurbedParcelWeight(Order_model $order): ?float
+    {
+        $weightFromRequest = request('refurbed_parcel_weight');
+        if ($weightFromRequest !== null && $weightFromRequest !== '') {
+            return (float) $weightFromRequest;
+        }
+
+        $categoryWeight = $this->extractCategoryWeightFromOrder($order);
+        if ($categoryWeight !== null) {
+            return $categoryWeight;
+        }
+
+        $configWeight = data_get(config('services.refurbed.shipping'), 'default_weight');
+        return $configWeight !== null ? (float) $configWeight : null;
+    }
+
+    protected function extractCategoryWeightFromOrder(Order_model $order): ?float
+    {
+        $order->loadMissing('order_items.variation.product.category_id');
+
+        foreach ($order->order_items as $item) {
+            $variation = $item->variation;
+            $product = $variation ? $variation->product : null;
+            $category = $product ? $product->category_id : null;
+            $weight = $this->extractWeightFromCategory($category);
+            if ($weight !== null) {
+                return $weight;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractWeightFromCategory($category): ?float
+    {
+        if (! $category) {
+            return null;
+        }
+
+        $fields = [
+            'default_shipping_weight',
+            'default_weight',
+            'shipping_weight',
+            'weight',
+        ];
+
+        foreach ($fields as $field) {
+            $value = data_get($category, $field);
+            if ($value !== null && $value !== '' && is_numeric($value)) {
+                $numericValue = (float) $value;
+                if ($numericValue > 0) {
+                    return $numericValue;
+                }
+            }
+        }
+
+        return null;
     }
 
 

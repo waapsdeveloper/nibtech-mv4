@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire\Order;
 
+use App\Models\Marketplace_model;
 use App\Models\Order_model;
 use Illuminate\Contracts\View\View;
 use Livewire\Component;
@@ -39,6 +40,9 @@ class OrderRow extends Component
 
     protected string $inputAnchor;
 
+    /** @var array<string, mixed> */
+    public array $refurbedShippingDefaults = [];
+
     public function mount(
         int $orderId,
         int $rowNumber,
@@ -60,6 +64,7 @@ class OrderRow extends Component
         $this->currencies = $currencies;
         $this->orderStatuses = $orderStatuses;
         $this->inputAnchor = 'order-' . $orderId;
+        $this->refurbedShippingDefaults = $this->resolveRefurbedShippingDefaults();
     }
 
     public function loadRow(): void
@@ -75,6 +80,7 @@ class OrderRow extends Component
                 'customer.orders.order_items.variation.grade_id',
                 'customer.orders.order_items.stock',
                 'order_items.variation.product',
+                'order_items.variation.product.category_id',
                 'order_items.variation.grade_id',
                 'order_items.stock',
                 'order_items.replacement.variation.product',
@@ -99,6 +105,36 @@ class OrderRow extends Component
     {
         return view('livewire.order.order-row', [
             'inputAnchor' => $this->inputAnchor,
+            'refurbedShippingDefaults' => $this->refurbedShippingDefaults,
         ]);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    protected function resolveRefurbedShippingDefaults(): array
+    {
+        static $cached;
+
+        if ($cached !== null) {
+            return $cached;
+        }
+
+        $defaults = config('services.refurbed.shipping', []);
+        $marketplace = Marketplace_model::query()->find(4);
+
+        if ($marketplace) {
+            $merchantAddress = data_get($marketplace, 'merchant_address_id');
+            if (! empty($merchantAddress)) {
+                $defaults['default_merchant_address_id'] = $merchantAddress;
+            }
+
+            $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
+            if (! empty($fallbackCarrier)) {
+                $defaults['default_carrier'] = $fallbackCarrier;
+            }
+        }
+
+        return $cached = $defaults;
     }
 }

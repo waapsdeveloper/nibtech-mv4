@@ -11,9 +11,30 @@
     $imeiIndex = $rowCounter['imei_start'] ? $rowCounter['imei_start'] - 1 : null;
     $anchor = isset($inputAnchor) && $inputAnchor !== null ? $inputAnchor : ('order-' . $order->id);
     $isRefurbed = (int) $order->marketplace_id === 4;
-    $refurbedDefaults = $refurbedShippingDefaults ?? [];
-    $refurbedAddressDefault = request('refurbed_merchant_address_id', $refurbedDefaults['default_merchant_address_id'] ?? '');
-    $refurbedWeightDefault = request('refurbed_parcel_weight', $refurbedDefaults['default_weight'] ?? 0.5);
+    $refurbedDefaults = $refurbedShippingDefaults ?? config('services.refurbed.shipping', []);
+    $refurbedAddressInput = request('refurbed_merchant_address_id');
+    $refurbedAddressDefault = ($refurbedAddressInput !== null && $refurbedAddressInput !== '')
+        ? $refurbedAddressInput
+        : ($refurbedDefaults['default_merchant_address_id'] ?? '');
+    $firstOrderItem = $items->first();
+    $categoryModel = $firstOrderItem && $firstOrderItem->variation && $firstOrderItem->variation->product
+        ? $firstOrderItem->variation->product->category_id
+        : null;
+    $refurbedCategoryWeight = null;
+    if ($isRefurbed && $categoryModel) {
+        $weightFields = ['default_shipping_weight', 'default_weight', 'shipping_weight', 'weight'];
+        foreach ($weightFields as $field) {
+            $value = $categoryModel->{$field} ?? null;
+            if ($value !== null && $value !== '' && is_numeric($value) && (float) $value > 0) {
+                $refurbedCategoryWeight = (float) $value;
+                break;
+            }
+        }
+    }
+    $refurbedWeightInput = request('refurbed_parcel_weight');
+    $refurbedWeightDefault = ($refurbedWeightInput !== null && $refurbedWeightInput !== '')
+        ? $refurbedWeightInput
+        : ($refurbedCategoryWeight ?? $refurbedDefaults['default_weight'] ?? 0.5);
     $refurbedCarrierDefault = request('refurbed_carrier', $refurbedDefaults['default_carrier'] ?? '');
     $refurbedSupport = config('services.refurbed.support', []);
     $refurbedZendeskChatUrl = $refurbedSupport['chat_url'] ?? null;
@@ -21,7 +42,6 @@
     $refurbedZendeskHint = $refurbedSupport['chat_hint'] ?? 'Use Zendesk chat for Refurbed escalations.';
     $refurbedZendeskTemplate = $refurbedSupport['chat_context_template']
         ?? "Refurbed order :reference_id\nMarketplace reference: :reference\nCustomer: :customer";
-    $firstOrderItem = $items->first();
     $primarySku = $firstOrderItem && $firstOrderItem->variation ? ($firstOrderItem->variation->sku ?? '') : '';
     $refurbedSupportContext = strtr($refurbedZendeskTemplate, [
         ':reference_id' => $order->reference_id ?? '',
