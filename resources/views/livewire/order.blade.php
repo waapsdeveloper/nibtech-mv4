@@ -369,6 +369,21 @@
         </div>
         <br>
 
+        <div class="card mb-3" id="qz-printer-preferences-card">
+            <div class="card-body d-flex flex-column flex-lg-row justify-content-between gap-3 align-items-lg-center">
+                <div>
+                    <div class="fw-semibold mb-1">QZ Tray Printers</div>
+                    <div class="small text-muted">Status: <span id="qz-order-status" class="fw-semibold text-muted">Checking...</span></div>
+                    <div class="small text-muted">Invoice Printer: <span id="invoice-printer-display" class="fw-semibold text-secondary">{{ session('a4_printer') ?? 'Not set' }}</span></div>
+                    <div class="small text-muted">Label Printer: <span id="label-printer-display" class="fw-semibold text-secondary">{{ session('label_printer') ?? 'Not set' }}</span></div>
+                </div>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="change-invoice-printer-btn">Change Invoice Printer</button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="change-label-printer-btn">Change Label Printer</button>
+                </div>
+            </div>
+        </div>
+
         @if (session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 <span class="alert-inner--icon"><i class="fe fe-thumbs-up"></i></span>
@@ -1633,6 +1648,80 @@
             });
         });
 
+        document.addEventListener('click', function (event) {
+            const trigger = event.target.closest('.copy-support-context');
+            if (!trigger) {
+                return;
+            }
+
+            event.preventDefault();
+            const payload = trigger.getAttribute('data-copy-text') || '';
+            if (!payload.length) {
+                return;
+            }
+
+            copySupportContext(payload)
+                .then(function () {
+                    supportCopyFeedback(trigger, false);
+                })
+                .catch(function () {
+                    supportCopyFeedback(trigger, true);
+                });
+        });
+
+        function copySupportContext(text) {
+            const canUseClipboard = typeof navigator !== 'undefined'
+                && navigator.clipboard
+                && (typeof window.isSecureContext === 'undefined' || window.isSecureContext);
+
+            if (canUseClipboard) {
+                return navigator.clipboard.writeText(text);
+            }
+
+            return new Promise(function (resolve, reject) {
+                try {
+                    const scratch = document.createElement('textarea');
+                    scratch.value = text;
+                    scratch.setAttribute('readonly', '');
+                    scratch.style.position = 'absolute';
+                    scratch.style.left = '-9999px';
+                    document.body.appendChild(scratch);
+                    scratch.select();
+                    const successful = document.execCommand('copy');
+                    document.body.removeChild(scratch);
+
+                    if (!successful) {
+                        reject(new Error('Copy command unsuccessful'));
+                        return;
+                    }
+
+                    resolve();
+                } catch (error) {
+                    reject(error);
+                }
+            });
+        }
+
+        function supportCopyFeedback(trigger, errored) {
+            if (!trigger) {
+                return;
+            }
+
+            const originalLabel = trigger.getAttribute('data-reset-label') || trigger.textContent || 'Copy chat context';
+            trigger.setAttribute('data-reset-label', originalLabel);
+
+            const feedbackClass = errored ? 'text-danger' : 'text-success';
+            const feedbackLabel = errored ? 'Copy failed' : 'Copied';
+
+            trigger.textContent = feedbackLabel;
+            trigger.classList.add(feedbackClass);
+
+            setTimeout(function () {
+                trigger.textContent = trigger.getAttribute('data-reset-label') || originalLabel;
+                trigger.classList.remove(feedbackClass);
+            }, 1400);
+        }
+
         // function get_customer_previous_orders(customer_id, order_id){
         //     let url = "{{ url('order/get_b2c_orders_by_customer_json') }}/".concat(customer_id).concat('/').concat(order_id);
         //     $.ajax({
@@ -1644,6 +1733,349 @@
         //         }
         //     })
         // }
+    </script>
+
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            const preferenceCard = document.getElementById('qz-printer-preferences-card');
+            if (!preferenceCard) {
+                return;
+            }
+
+            const printerEndpoint = @json(route('order.store_printer_preferences'));
+            const csrfToken = document.querySelector('meta[name="csrf-token"]')?.getAttribute('content') || '';
+            const qzStatusEl = document.getElementById('qz-order-status');
+            const invoiceDisplay = document.getElementById('invoice-printer-display');
+            const labelDisplay = document.getElementById('label-printer-display');
+            const toneClasses = ['text-success', 'text-danger', 'text-warning', 'text-muted'];
+
+            const storageProviders = [];
+            try { storageProviders.push(window.localStorage); } catch (error) { /* ignore */ }
+            try { storageProviders.push(window.sessionStorage); } catch (error) { /* ignore */ }
+
+            const preferences = {
+                invoice: {
+                    display: invoiceDisplay,
+                    button: document.getElementById('change-invoice-printer-btn'),
+                    storageKeys: ['Invoice_Printer', 'A4_Printer', 'Default_Printer'],
+                    payloadKey: 'a4_printer',
+                    dialogTitle: 'Select Invoice Printer',
+                    dialogDescription: 'Choose the printer QZ Tray should use for invoices and delivery notes.',
+                    current: @json(session('a4_printer')),
+                },
+                label: {
+                    display: labelDisplay,
+                    button: document.getElementById('change-label-printer-btn'),
+                    storageKeys: ['Label_Printer', 'Sticker_Printer', 'Shipping_Printer', 'DHL_Printer'],
+                    payloadKey: 'label_printer',
+                    dialogTitle: 'Select Label Printer',
+                    dialogDescription: 'Choose the printer QZ Tray should use for shipping labels.',
+                    current: @json(session('label_printer')),
+                }
+            };
+
+            function updateDisplay(pref, value) {
+                if (!pref.display) {
+                    return;
+                }
+
+                const resolved = value || null;
+                pref.display.textContent = resolved || 'Not set';
+                pref.display.classList.toggle('text-secondary', Boolean(resolved));
+                pref.display.classList.toggle('text-danger', !resolved);
+                pref.current = resolved;
+            }
+
+            function resolveFromStorage(keys) {
+                for (const store of storageProviders) {
+                    if (!store) {
+                        continue;
+                    }
+                    for (const key of keys) {
+                        try {
+                            const value = store.getItem(key);
+                            if (value) {
+                                return value;
+                            }
+                        } catch (error) {
+                            console.debug('Printer storage read failed', key, error);
+                        }
+                    }
+                }
+                return null;
+            }
+
+            Object.values(preferences).forEach(pref => {
+                updateDisplay(pref, pref.current || resolveFromStorage(pref.storageKeys));
+            });
+
+            function updateQzStatus(message, tone = 'muted') {
+                if (!qzStatusEl) {
+                    return;
+                }
+                qzStatusEl.textContent = message;
+                toneClasses.forEach(cls => qzStatusEl.classList.remove(cls));
+                const toneMap = {
+                    success: 'text-success',
+                    danger: 'text-danger',
+                    warning: 'text-warning',
+                    muted: 'text-muted'
+                };
+                qzStatusEl.classList.add(toneMap[tone] || 'text-muted');
+            }
+
+            function qzIsReady() {
+                try {
+                    if (typeof window.isQzConnected === 'function' && window.isQzConnected()) {
+                        return true;
+                    }
+                } catch (error) {
+                    console.debug('QZ status check failed.', error);
+                }
+                return typeof qz !== 'undefined' && qz.websocket && qz.websocket.isActive();
+            }
+
+            function refreshQzStatus() {
+                const connected = qzIsReady();
+                updateQzStatus(connected ? 'Connected ✓' : 'Not connected', connected ? 'success' : 'warning');
+            }
+
+            refreshQzStatus();
+            const qzStatusInterval = setInterval(refreshQzStatus, 6000);
+            document.addEventListener('visibilitychange', function () {
+                if (!document.hidden) {
+                    refreshQzStatus();
+                }
+            });
+            window.addEventListener('beforeunload', function () {
+                clearInterval(qzStatusInterval);
+            });
+
+            async function ensureQzConnection(timeout = 7000) {
+                if (typeof qz === 'undefined' || !qz.websocket) {
+                    throw new Error('QZ Tray libraries have not loaded yet.');
+                }
+
+                if (typeof window.ensureQzConnection === 'function') {
+                    await window.ensureQzConnection(timeout);
+                    return;
+                }
+
+                if (qz.websocket.isActive()) {
+                    return;
+                }
+
+                try {
+                    qz.websocket.connect();
+                } catch (error) {
+                    console.debug('Immediate QZ connect attempt failed.', error);
+                }
+
+                await new Promise((resolve, reject) => {
+                    const start = Date.now();
+                    const timer = setInterval(() => {
+                        if (qz.websocket.isActive()) {
+                            clearInterval(timer);
+                            resolve();
+                        } else if (Date.now() - start > timeout) {
+                            clearInterval(timer);
+                            reject(new Error('Timed out waiting for QZ Tray connection'));
+                        }
+                    }, 250);
+                });
+            }
+
+            function promptForPrinterDialog(options) {
+                return new Promise(resolve => {
+                    const overlay = document.createElement('div');
+                    overlay.style.position = 'fixed';
+                    overlay.style.top = '0';
+                    overlay.style.left = '0';
+                    overlay.style.width = '100vw';
+                    overlay.style.height = '100vh';
+                    overlay.style.background = 'rgba(15, 23, 42, 0.45)';
+                    overlay.style.zIndex = '2000';
+                    overlay.style.display = 'flex';
+                    overlay.style.alignItems = 'center';
+                    overlay.style.justifyContent = 'center';
+                    overlay.style.padding = '16px';
+
+                    const dialog = document.createElement('div');
+                    dialog.style.background = '#ffffff';
+                    dialog.style.borderRadius = '12px';
+                    dialog.style.padding = '24px';
+                    dialog.style.width = 'min(480px, 100%)';
+                    dialog.style.maxHeight = '85vh';
+                    dialog.style.overflow = 'auto';
+                    dialog.style.boxShadow = '0 18px 48px rgba(15,23,42,0.35)';
+                    dialog.style.fontFamily = 'Arial, sans-serif';
+
+                    const title = document.createElement('h2');
+                    title.textContent = options.title;
+                    title.style.margin = '0 0 10px';
+
+                    const description = document.createElement('p');
+                    description.textContent = options.description;
+                    description.style.margin = '0 0 16px';
+                    description.style.fontSize = '14px';
+                    description.style.color = '#475569';
+
+                    const select = document.createElement('select');
+                    select.style.width = '100%';
+                    select.style.padding = '10px 12px';
+                    select.style.border = '1px solid #cbd5f5';
+                    select.style.borderRadius = '8px';
+                    select.style.marginBottom = '20px';
+                    select.style.fontSize = '15px';
+
+                    options.printers.forEach(printer => {
+                        const option = document.createElement('option');
+                        option.value = printer;
+                        option.textContent = printer;
+                        select.appendChild(option);
+                    });
+
+                    if (options.preselect && options.printers.includes(options.preselect)) {
+                        select.value = options.preselect;
+                    }
+
+                    const actions = document.createElement('div');
+                    actions.style.display = 'flex';
+                    actions.style.justifyContent = 'flex-end';
+                    actions.style.gap = '12px';
+
+                    function closeDialog(value) {
+                        document.body.removeChild(overlay);
+                        document.removeEventListener('keydown', handleEscape, true);
+                        resolve(value);
+                    }
+
+                    const cancelBtn = document.createElement('button');
+                    cancelBtn.type = 'button';
+                    cancelBtn.textContent = 'Cancel';
+                    cancelBtn.className = 'btn btn-light';
+                    cancelBtn.addEventListener('click', () => closeDialog(null));
+
+                    const confirmBtn = document.createElement('button');
+                    confirmBtn.type = 'button';
+                    confirmBtn.textContent = 'Use Printer';
+                    confirmBtn.className = 'btn btn-primary';
+                    confirmBtn.addEventListener('click', () => closeDialog(select.value || null));
+
+                    function handleEscape(event) {
+                        if (event.key === 'Escape') {
+                            closeDialog(null);
+                        }
+                    }
+
+                    overlay.addEventListener('click', event => {
+                        if (event.target === overlay) {
+                            closeDialog(null);
+                        }
+                    });
+
+                    actions.appendChild(cancelBtn);
+                    actions.appendChild(confirmBtn);
+
+                    dialog.appendChild(title);
+                    dialog.appendChild(description);
+                    dialog.appendChild(select);
+                    dialog.appendChild(actions);
+
+                    overlay.appendChild(dialog);
+                    document.body.appendChild(overlay);
+
+                    document.addEventListener('keydown', handleEscape, true);
+                    setTimeout(() => select.focus(), 60);
+                });
+            }
+
+            function persistPreference(pref, printerName) {
+                storageProviders.forEach(store => {
+                    if (!store) {
+                        return;
+                    }
+                    pref.storageKeys.forEach(key => {
+                        try {
+                            store.setItem(key, printerName);
+                        } catch (error) {
+                            console.debug('Unable to persist printer preference', key, error);
+                        }
+                    });
+                });
+
+                if (!printerEndpoint) {
+                    return;
+                }
+
+                const payload = {};
+                payload[pref.payloadKey] = printerName;
+
+                fetch(printerEndpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': csrfToken,
+                        'Accept': 'application/json',
+                    },
+                    body: JSON.stringify(payload),
+                }).catch(error => console.debug('Failed to sync printer preference with server.', error));
+            }
+
+            async function handlePrinterChange(pref) {
+                if (!pref.button) {
+                    return;
+                }
+
+                if (typeof qz === 'undefined') {
+                    alert('QZ Tray libraries are still loading. Please try again in a moment.');
+                    return;
+                }
+
+                pref.button.disabled = true;
+                updateQzStatus('Connecting...', 'warning');
+
+                try {
+                    await ensureQzConnection();
+                    refreshQzStatus();
+
+                    const printers = await qz.printers.find();
+                    if (!printers || !printers.length) {
+                        updateQzStatus('No printers detected', 'danger');
+                        alert('No printers detected by QZ Tray.');
+                        return;
+                    }
+
+                    const selection = await promptForPrinterDialog({
+                        title: pref.dialogTitle,
+                        description: pref.dialogDescription,
+                        printers,
+                        preselect: pref.current,
+                    });
+
+                    if (!selection) {
+                        return;
+                    }
+
+                    persistPreference(pref, selection);
+                    updateDisplay(pref, selection);
+                    updateQzStatus('Printer saved ✓', 'success');
+                } catch (error) {
+                    console.error('Unable to update printer preference', error);
+                    updateQzStatus('Update failed', 'danger');
+                    alert(error.message || 'Unable to update printer preference.');
+                } finally {
+                    pref.button.disabled = false;
+                }
+            }
+
+            Object.values(preferences).forEach(pref => {
+                if (pref.button) {
+                    pref.button.addEventListener('click', () => handlePrinterChange(pref));
+                }
+            });
+        });
     </script>
 
 

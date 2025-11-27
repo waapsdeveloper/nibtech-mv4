@@ -6,6 +6,7 @@ use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Order_model;
+use App\Models\Variation_model;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Http\Client\RequestException;
@@ -13,7 +14,8 @@ use Illuminate\Support\Facades\Log;
 
 class RefurbedSyncNewOrders extends Command
 {
-    private static bool $acceptOrderUnavailable = false;
+    private static bool $orderLineAcceptanceUnavailable = false;
+    private ?string $debugOrderId = null;
     /**
      * The name and signature of the console command.
      *
@@ -22,8 +24,10 @@ class RefurbedSyncNewOrders extends Command
     protected $signature = 'refurbed:new
         {--state=* : Override the default Refurbed states (NEW,PENDING)}
         {--page-size=50 : Page size for each API request (max 200)}
+        {--max-pages=0 : Maximum number of order pages to fetch per run (0 = all)}
         {--lookback-hours=48 : Re-sync Refurbed orders created within the last N hours}
-        {--skip-items : Skip fetching order items for each order}';
+        {--skip-items : Skip fetching order items for each order}
+        {--debug-order= : Limit processing to a single Refurbed order id and print API responses}';
 
     /**
      * The console command description.
@@ -36,7 +40,7 @@ class RefurbedSyncNewOrders extends Command
     {
         $states = $this->normalizeList($this->option('state'));
         if (empty($states)) {
-            $states = ['NEW', 'PENDING'];
+            $states = ['NEW'];
         }
 
         $refurbed = new RefurbedAPIController();
@@ -44,14 +48,38 @@ class RefurbedSyncNewOrders extends Command
         $currencyCodes = $this->getCurrencyCodes();
         $countryCodes = $this->getCountryCodes();
 
-        $filter = [];
+        $filter = $this->buildStateFilter($states);
+
+        $this->debugOrderId = $this->normalizeRefurbedOrderId($this->option('debug-order'));
+        if ($this->debugOrderId) {
+            return $this->debugSingleOrder(
+                $refurbed,
+                $orderModel,
+                $currencyCodes,
+                $countryCodes,
+                $this->debugOrderId
+            );
+        }
+
         $pageSize = $this->sanitizePageSize((int) $this->option('page-size'));
         $sort = [
             'order_by' => 'CREATED_AT',
             'direction' => 'DESC',
         ];
 
-        $syncStats = $this->syncOrders($refurbed, $orderModel, $filter, $sort, $pageSize, $currencyCodes, $countryCodes, $states);
+        $maxPages = max(0, (int) $this->option('max-pages'));
+
+        $syncStats = $this->syncOrders(
+            $refurbed,
+            $orderModel,
+            $filter,
+            $sort,
+            $pageSize,
+            $maxPages,
+            $currencyCodes,
+            $countryCodes,
+            $states
+        );
 
         $lookbackHours = max(0, (int) $this->option('lookback-hours'));
         $refreshed = 0;
@@ -71,69 +99,159 @@ class RefurbedSyncNewOrders extends Command
         return self::SUCCESS;
     }
 
+    private function buildStateFilter(array $states): array
+    {
+        $states = array_values(array_filter(array_map(static function ($state) {
+            return strtoupper((string) $state);
+        }, $states)));
+
+        if (empty($states)) {
+            return [];
+        }
+
+        return [
+            'state' => [
+                'any_of' => $states,
+            ],
+        ];
+    }
+
+    private function shouldProcessLocalOrder(?Order_model $order): bool
+    {
+        if (! $order) {
+            return false;
+        }
+
+        $state = $order->state ?? null;
+        if ($state === null && isset($order->status)) {
+            $state = $order->status;
+        }
+
+        return (int) $state === 1;
+    }
+
     private function syncOrders(
         RefurbedAPIController $refurbed,
         Order_model $orderModel,
         array $filter,
         array $sort,
         int $pageSize,
+        int $maxPages,
         array $currencyCodes,
         array $countryCodes,
         array $stateWhitelist
     ): array {
-        try {
-            $response = $refurbed->getAllOrders($filter, $sort, $pageSize);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: failed to fetch new orders', [
-                'error' => $e->getMessage(),
-                'filter' => $filter,
-            ]);
-
-            $this->error('Refurbed new-order sync failed: ' . $e->getMessage());
-
-            return ['processed' => 0, 'skipped' => 0, 'failed' => 0];
-        }
-
-        $orders = $response['orders'] ?? [];
         $processed = 0;
         $skipped = 0;
         $failed = 0;
+        $pageToken = null;
+        $pageCount = 0;
+        $hasMore = true;
 
-        foreach ($orders as $orderData) {
-            $orderData = $this->adaptOrderPayload($orderData);
-            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
-            $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
-            $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
-
-            if (! $orderId) {
-                $skipped++;
-                Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
-                continue;
-            }
-
-            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
-
-            if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
-                $skipped++;
-                continue;
-            }
-
-            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
-
-            if (! $orderItems && ! $this->option('skip-items')) {
-                $orderItems = $this->fetchOrderItems($refurbed, $orderId);
-            }
+        while ($hasMore && ($maxPages === 0 || $pageCount < $maxPages)) {
+            $pageCount++;
+            $pagination = array_filter([
+                'page_size' => $pageSize,
+                'page_token' => $pageToken,
+            ]);
 
             try {
-                $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
-                $processed++;
+                $response = $refurbed->listOrders($filter, $pagination, $sort);
             } catch (\Throwable $e) {
-                $failed++;
-                Log::error('Refurbed: failed to persist new order', [
-                    'order_id' => $orderId,
+                Log::error('Refurbed: failed to fetch new orders', [
                     'error' => $e->getMessage(),
+                    'filter' => $filter,
+                    'page' => $pageCount,
                 ]);
+
+                $this->error('Refurbed new-order sync failed while fetching page ' . $pageCount . ': ' . $e->getMessage());
+
+                break;
             }
+
+            $orders = $response['orders'] ?? [];
+
+            if (empty($orders)) {
+                $hasMore = false;
+                break;
+            }
+
+            foreach ($orders as $orderData) {
+                $orderData = $this->adaptOrderPayload($orderData);
+                $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
+                $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
+
+                if (! $orderItems && ! $this->option('skip-items') && $orderId) {
+                    $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+                }
+
+                $preAcceptanceState = strtoupper($orderData['state'] ?? '');
+
+                if (! $orderId) {
+                    $skipped++;
+                    Log::warning('Refurbed: order payload missing identifier', ['payload' => $orderData]);
+                    continue;
+                }
+
+                $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
+
+                if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
+                    $skipped++;
+                    continue;
+                }
+
+                $savedOrder = null;
+
+                try {
+                    $savedOrder = $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                    $processed++;
+                } catch (\Throwable $e) {
+                    $failed++;
+                    Log::error('Refurbed: failed to persist new order', [
+                        'order_id' => $orderId,
+                        'error' => $e->getMessage(),
+                    ]);
+                    continue;
+                }
+
+                if (! $this->shouldProcessLocalOrder($savedOrder)) {
+                    continue;
+                }
+
+                $orderData = $this->acceptOrderLinesIfNeeded(
+                    $refurbed,
+                    $orderData,
+                    $orderItems,
+                    ! $this->option('skip-items'),
+                    $this->isDebugOrder($orderId)
+                );
+
+                $postAcceptanceState = strtoupper($orderData['state'] ?? '');
+
+                if ($postAcceptanceState === $preAcceptanceState) {
+                    continue;
+                }
+
+                try {
+                    $orderModel->storeRefurbedOrderInDB($orderData, $orderItems, $currencyCodes, $countryCodes);
+                } catch (\Throwable $e) {
+                    Log::warning('Refurbed: failed to persist order after acceptance', [
+                        'order_id' => $orderId,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
+            }
+
+            $pageToken = $response['next_page_token'] ?? null;
+            $hasMore = $pageToken && ($response['has_more'] ?? false);
+        }
+
+        if ($hasMore && $maxPages > 0) {
+            $this->warn(sprintf(
+                'Stopped after %d Refurbed order pages (pass --max-pages=%d to fetch more).',
+                $pageCount,
+                $maxPages + 1
+            ));
         }
 
         return [
@@ -185,11 +303,43 @@ class RefurbedSyncNewOrders extends Command
                 $orderItems = $this->fetchOrderItems($refurbed, $orderId);
             }
 
+            $savedOrder = null;
+
             try {
-                $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+                $savedOrder = $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
                 $refreshed++;
             } catch (\Throwable $e) {
                 Log::error('Refurbed: failed to refresh order', [
+                    'order_id' => $orderId,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            if (! $this->shouldProcessLocalOrder($savedOrder)) {
+                continue;
+            }
+
+            $preAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+            $orderPayload = $this->acceptOrderLinesIfNeeded(
+                $refurbed,
+                $orderPayload,
+                $orderItems,
+                ! $this->option('skip-items'),
+                $this->isDebugOrder($orderId)
+            );
+
+            $postAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+            if ($postAcceptanceState === $preAcceptanceState) {
+                continue;
+            }
+
+            try {
+                $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+            } catch (\Throwable $e) {
+                Log::warning('Refurbed: failed to persist order after acceptance during refresh', [
                     'order_id' => $orderId,
                     'error' => $e->getMessage(),
                 ]);
@@ -215,51 +365,146 @@ class RefurbedSyncNewOrders extends Command
         }
     }
 
-    private function acceptOrderIfNeeded(RefurbedAPIController $refurbed, array $orderData): array
+    private function acceptOrderLinesIfNeeded(RefurbedAPIController $refurbed, array $orderData, ?array &$orderItems, bool $canFetchItems, bool $logApiResponse = false): array
     {
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
 
-        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$acceptOrderUnavailable) {
+        if (! $orderId || $state !== 'NEW' || self::$orderLineAcceptanceUnavailable) {
             return $orderData;
         }
 
-        try {
-            $response = $refurbed->acceptOrder($orderId);
-            Log::info('Refurbed: order accepted', ['order_id' => $orderId]);
+        if ((! is_array($orderItems) || empty($orderItems)) && $canFetchItems) {
+            $orderItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
+        }
 
-            $updated = $response['order'] ?? $response;
+        if (empty($orderItems)) {
+            return $orderData;
+        }
 
-            if (is_array($updated) && ! empty($updated)) {
-                $merged = array_merge($orderData, $updated);
+        $acceptedItems = 0;
+        $attemptedItems = 0;
 
-                return $this->adaptOrderPayload($merged);
+        foreach ($orderItems as &$item) {
+            $itemState = strtoupper($item['state'] ?? '');
+            if (empty($item['id']) || $itemState !== 'NEW') {
+                continue;
             }
 
+            $attemptedItems++;
+            $accepted = $this->attemptSingleItemAcceptance($refurbed, $item, $orderId, $logApiResponse);
+
+            if ($accepted) {
+                $item['state'] = 'ACCEPTED';
+                $acceptedItems++;
+                $this->applyListingQuantityChange($item, $orderId);
+            }
+        }
+        unset($item);
+
+        if ($acceptedItems > 0) {
             $orderData['state'] = 'ACCEPTED';
-        } catch (RequestException $e) {
-            $response = $e->response;
-            $acceptEndpointMissing = $response
-                && $response->status() === 404
-                && str_contains($response->body() ?? '', 'AcceptOrder');
+        }
 
-            if ($acceptEndpointMissing) {
-                self::$acceptOrderUnavailable = true;
-                Log::notice('Refurbed: AcceptOrder endpoint unavailable, skipping future acceptance attempts.');
-            } else {
-                Log::warning('Refurbed: unable to accept order', [
-                    'order_id' => $orderId,
-                    'error' => $e->getMessage(),
-                ]);
+        if ($logApiResponse && $attemptedItems > 0) {
+            $this->info(sprintf(
+                'Refurbed: attempted %d single-item updates, accepted=%d, failed=%d',
+                $attemptedItems,
+                $acceptedItems,
+                $attemptedItems - $acceptedItems
+            ));
+
+            $latestItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
+            if (! empty($latestItems)) {
+                $orderItems = $latestItems;
             }
-        } catch (\Throwable $e) {
-            Log::warning('Refurbed: unable to accept order', [
-                'order_id' => $orderId,
-                'error' => $e->getMessage(),
-            ]);
+
+            $this->info('Latest Refurbed order item states for order ' . $orderId . ':');
+            $this->line(json_encode(array_map(function ($item) {
+                return array_filter([
+                    'id' => $item['id'] ?? null,
+                    'state' => $item['state'] ?? null,
+                    'sku' => $item['sku'] ?? null,
+                    'parcel_tracking_number' => $item['parcel_tracking_number'] ?? null,
+                ]);
+            }, $latestItems), JSON_PRETTY_PRINT));
         }
 
         return $orderData;
+    }
+
+    private function isDebugOrder(?string $orderId): bool
+    {
+        if (! $orderId || ! $this->debugOrderId) {
+            return false;
+        }
+
+        return (string) $orderId === $this->debugOrderId;
+    }
+
+    private function debugSingleOrder(
+        RefurbedAPIController $refurbed,
+        Order_model $orderModel,
+        array $currencyCodes,
+        array $countryCodes,
+        string $orderId
+    ): int {
+        $this->info('Debugging Refurbed order '.$orderId.'...');
+
+        try {
+            $orderResponse = $refurbed->getOrder($orderId);
+        } catch (\Throwable $e) {
+            $this->error('Failed to fetch order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug fetch failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        $orderPayload = $this->adaptOrderPayload($orderResponse['order'] ?? $orderResponse);
+        $orderItems = $orderPayload['order_items'] ?? $orderPayload['items'] ?? null;
+
+        if (! $orderItems) {
+            $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+        }
+
+        $savedOrder = null;
+
+        try {
+            $savedOrder = $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+            $this->info('Order '.$orderId.' persisted locally after debug run.');
+        } catch (\Throwable $e) {
+            $this->error('Failed to persist order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug persist failed', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        if (! $this->shouldProcessLocalOrder($savedOrder)) {
+            $this->warn('Skipping acceptance attempt because local order state is not 1.');
+
+            return self::SUCCESS;
+        }
+
+        $preAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+        $orderPayload = $this->acceptOrderLinesIfNeeded($refurbed, $orderPayload, $orderItems, true, true);
+
+        $postAcceptanceState = strtoupper($orderPayload['state'] ?? '');
+
+        if ($postAcceptanceState === $preAcceptanceState) {
+            return self::SUCCESS;
+        }
+
+        try {
+            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems, $currencyCodes, $countryCodes);
+        } catch (\Throwable $e) {
+            $this->error('Failed to persist post-acceptance order '.$orderId.': '.$e->getMessage());
+            Log::error('Refurbed: debug persist failed after acceptance', ['order_id' => $orderId, 'error' => $e->getMessage()]);
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     private function normalizeList($values): array
@@ -452,6 +697,92 @@ class RefurbedSyncNewOrders extends Command
         Log::warning('Refurbed: failed to fetch order details during refresh', [
             'order_id' => $orderId,
             'error' => $exception->getMessage(),
+        ]);
+    }
+
+    private function attemptSingleItemAcceptance(RefurbedAPIController $refurbed, array $item, string $orderId, bool $logOutput = false): bool
+    {
+        $itemId = $item['id'] ?? null;
+
+        if (! $itemId) {
+            return false;
+        }
+
+        if ($logOutput) {
+            $this->info('Calling single-item UpdateOrderItemState for item ' . $itemId . ' (order ' . $orderId . ')...');
+        }
+
+        try {
+            $response = $refurbed->updateOrderItemState($itemId, 'ACCEPTED');
+            if ($logOutput) {
+                $this->line(json_encode($response, JSON_PRETTY_PRINT));
+            }
+
+            return true;
+        } catch (RequestException $e) {
+            if ($logOutput) {
+                $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            }
+            Log::warning('Refurbed: single-item acceptance failed', [
+                'order_id' => $orderId,
+                'order_item_id' => $itemId,
+                'error' => $e->getMessage(),
+            ]);
+        } catch (\Throwable $e) {
+            if ($logOutput) {
+                $this->error(sprintf('Single-item state update failed for %s: %s', $itemId, $e->getMessage()));
+            }
+            Log::warning('Refurbed: single-item acceptance failed', [
+                'order_id' => $orderId,
+                'order_item_id' => $itemId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return false;
+    }
+
+    private function applyListingQuantityChange(array $item, string $orderId): void
+    {
+        $sku = $item['sku'] ?? $item['merchant_sku'] ?? null;
+        if (! $sku) {
+            return;
+        }
+
+        $quantity = (int) ($item['quantity'] ?? 1);
+        if ($quantity <= 0) {
+            $quantity = 1;
+        }
+
+        $variation = Variation_model::where('sku', $sku)->first();
+
+        if (! $variation) {
+            Log::notice('Refurbed: unable to adjust listing quantity, variation missing', [
+                'order_id' => $orderId,
+                'sku' => $sku,
+                'quantity' => $quantity,
+            ]);
+
+            return;
+        }
+
+        $originalStock = (int) ($variation->listed_stock ?? 0);
+        $newStock = max(0, $originalStock - $quantity);
+
+        if ($newStock === $originalStock) {
+            return;
+        }
+
+        $variation->listed_stock = $newStock;
+        $variation->save();
+
+        Log::info('Refurbed: listing quantity adjusted after acceptance', [
+            'order_id' => $orderId,
+            'sku' => $sku,
+            'variation_id' => $variation->id,
+            'from' => $originalStock,
+            'to' => $newStock,
+            'delta' => -$quantity,
         ]);
     }
 

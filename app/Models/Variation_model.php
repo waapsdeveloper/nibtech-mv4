@@ -95,7 +95,7 @@ class Variation_model extends Model
     }
     public function listings()
     {
-        return $this->hasMany(Listing_model::class, 'variation_id', 'id')->orderBy('country', 'asc');
+        return $this->hasMany(Listing_model::class, 'variation_id', 'id')->orderBy('country', 'asc')->orderBy('marketplace_id', 'asc');
     }
     public function grade_id()
     {
@@ -154,6 +154,12 @@ class Variation_model extends Model
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->whereHas('order', function($q){
             $q->where('order_type_id',3)->where('status',2);
+        });
+    }
+    public function pending_bm_orders()
+    {
+        return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->whereHas('order', function($q){
+            $q->where('order_type_id',3)->where('status',2)->where('marketplace_id',1);
         });
     }
     public function process_stocks()

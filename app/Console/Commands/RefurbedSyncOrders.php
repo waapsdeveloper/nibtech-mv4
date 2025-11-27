@@ -12,7 +12,7 @@ use Illuminate\Http\Client\RequestException;
 
 class RefurbedSyncOrders extends Command
 {
-    private static bool $acceptOrderUnavailable = false;
+    private static bool $orderLineAcceptanceUnavailable = false;
     /**
      * The name and signature of the console command.
      *
@@ -73,10 +73,16 @@ class RefurbedSyncOrders extends Command
 
         foreach ($orders as $orderData) {
             $orderData = $this->adaptOrderPayload($orderData);
-            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
-            $orderData = $this->acceptOrderIfNeeded($refurbed, $orderData);
-            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
             $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
+            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
+
+            if (! $orderItems && ! $this->option('skip-items') && $orderId) {
+                $orderItems = $this->fetchOrderItems($refurbed, $orderId);
+            }
+
+            $preAcceptanceState = strtoupper($orderData['state'] ?? '');
+            $orderData = $this->acceptOrderLinesIfNeeded($refurbed, $orderData, $orderItems, ! $this->option('skip-items'));
+            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
 
             if (! $orderId) {
                 $skipped++;
@@ -84,25 +90,9 @@ class RefurbedSyncOrders extends Command
                 continue;
             }
 
-            $orderState = $preAcceptanceState ?: strtoupper($orderData['state'] ?? '');
-
             if (! empty($stateWhitelist) && $orderState !== '' && ! in_array($orderState, $stateWhitelist, true)) {
                 $skipped++;
                 continue;
-            }
-
-            $orderItems = $orderData['order_items'] ?? $orderData['items'] ?? null;
-
-            if (! $orderItems && ! $this->option('skip-items')) {
-                try {
-                    $itemsResponse = $refurbed->getAllOrderItems($orderId);
-                    $orderItems = $itemsResponse['order_items'] ?? null;
-                } catch (\Throwable $e) {
-                    Log::warning('Refurbed: unable to fetch order items', [
-                        'order_id' => $orderId,
-                        'error' => $e->getMessage(),
-                    ]);
-                }
             }
 
             try {
@@ -168,45 +158,82 @@ class RefurbedSyncOrders extends Command
             ->toArray();
     }
 
-    private function acceptOrderIfNeeded(RefurbedAPIController $refurbed, array $orderData): array
+    private function fetchOrderItems(RefurbedAPIController $refurbed, string $orderId): ?array
+    {
+        try {
+            $itemsResponse = $refurbed->getAllOrderItems($orderId);
+
+            return $itemsResponse['order_items'] ?? null;
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: unable to fetch order items', [
+                'order_id' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    private function acceptOrderLinesIfNeeded(RefurbedAPIController $refurbed, array $orderData, ?array &$orderItems, bool $canFetchItems): array
     {
         $orderId = $orderData['id'] ?? $orderData['order_number'] ?? null;
         $state = strtoupper($orderData['state'] ?? '');
 
-        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$acceptOrderUnavailable) {
+        if (! $orderId || ! in_array($state, ['NEW', 'PENDING'], true) || self::$orderLineAcceptanceUnavailable) {
             return $orderData;
         }
 
+        if ((! is_array($orderItems) || empty($orderItems)) && $canFetchItems) {
+            $orderItems = $this->fetchOrderItems($refurbed, $orderId) ?? [];
+        }
+
+        if (empty($orderItems)) {
+            return $orderData;
+        }
+
+        $pendingItems = array_values(array_filter($orderItems, function ($item) {
+            $itemState = strtoupper($item['state'] ?? '');
+            return ! empty($item['id']) && in_array($itemState, ['NEW', 'PENDING'], true);
+        }));
+
+        if (empty($pendingItems)) {
+            return $orderData;
+        }
+
+        $updates = array_map(fn ($item) => [
+            'id' => $item['id'],
+            'state' => 'ACCEPTED',
+        ], $pendingItems);
+
         try {
-            $response = $refurbed->acceptOrder($orderId);
-            Log::info('Refurbed: order accepted', ['order_id' => $orderId]);
+            $refurbed->batchUpdateOrderItemsState($updates);
 
-            $updated = $response['order'] ?? $response;
-
-            if (is_array($updated) && ! empty($updated)) {
-                $merged = array_merge($orderData, $updated);
-
-                return $this->adaptOrderPayload($merged);
+            foreach ($orderItems as &$item) {
+                if (in_array(strtoupper($item['state'] ?? ''), ['NEW', 'PENDING'], true)) {
+                    $item['state'] = 'ACCEPTED';
+                }
             }
+            unset($item);
 
             $orderData['state'] = 'ACCEPTED';
+
+            Log::info('Refurbed: order items accepted', [
+                'order_id' => $orderId,
+                'count' => count($updates),
+            ]);
         } catch (RequestException $e) {
             $response = $e->response;
-            $acceptEndpointMissing = $response
-                && $response->status() === 404
-                && str_contains($response->body() ?? '', 'AcceptOrder');
-
-            if ($acceptEndpointMissing) {
-                self::$acceptOrderUnavailable = true;
-                Log::notice('Refurbed: AcceptOrder endpoint unavailable, skipping future acceptance attempts.');
+            if ($response && $response->status() === 404) {
+                self::$orderLineAcceptanceUnavailable = true;
+                Log::notice('Refurbed: Order-item acceptance endpoint unavailable, skipping future attempts.');
             } else {
-                Log::warning('Refurbed: unable to accept order', [
+                Log::warning('Refurbed: unable to accept order items', [
                     'order_id' => $orderId,
                     'error' => $e->getMessage(),
                 ]);
             }
         } catch (\Throwable $e) {
-            Log::warning('Refurbed: unable to accept order', [
+            Log::warning('Refurbed: unable to accept order items', [
                 'order_id' => $orderId,
                 'error' => $e->getMessage(),
             ]);

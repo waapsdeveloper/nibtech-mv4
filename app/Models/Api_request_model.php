@@ -13,6 +13,8 @@ class Api_request_model extends Model
     use HasFactory;
     protected $table = 'api_requests';
     protected $primaryKey = 'id';
+    protected static $debugBuffer = [];
+    protected static $stockCache = [];
     // public $timestamps = FALSE;
     protected $fillable = [
         // other fields...
@@ -29,17 +31,18 @@ class Api_request_model extends Model
         $return = [];
         $imeis = [];
         $admins = Admin_model::pluck('first_name','id')->toArray();
-        $lowercaseAdmins = array_map('strtolower', $admins);
+        $adminLookup = self::buildLookup($admins);
         // $products = Products_model::pluck('model','id')->toArray();
         $storages = Storage_model::pluck('name','id')->toArray();
+        $storageLookup = self::buildLookup($storages);
         $colors = Color_model::pluck('name','id')->toArray();
-            // Convert each color name to lowercase
-        $lowercaseColors = array_map('strtolower', $colors);
+        $colorLookup = self::buildLookup($colors);
         $grades = Grade_model::pluck('name','id')->toArray();
-            // Convert each grade name to lowercase
-        $lowercaseGrades = array_map('strtolower', $grades);
+        $gradeLookup = self::buildLookup($grades);
 
-        $requests = Api_request_model::where('status', null)->limit(100)->get();
+        $requests = Api_request_model::where('status', null)
+        // ->where('request', 'LIKE', '%10565%')
+        ->limit(500)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
@@ -81,12 +84,8 @@ class Api_request_model extends Model
             // echo "<br>";
             // print_r($datas);
 
+            $stock = self::resolveStock($datas);
 
-            if($datas->Imei == '' && $datas->Imei2 == ''){
-                $stock = Stock_model::where('serial_number',$datas->Serial)->first();
-            }else{
-                $stock = Stock_model::where('imei',$datas->Imei)->orWhere('imei',$datas->Imei2)->orWhere('serial_number',$datas->Serial)->first();
-            }
 
             if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
 
@@ -102,113 +101,85 @@ class Api_request_model extends Model
 
             }
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
+                // self::recordDebugPoint($request, 'skipped request because stock lookup failed and no IMEI present', [
+                //     'serial' => $datas->Serial ?? null,
+                // ]);
                 continue;
             }
-            if(in_array($datas->Memory, $storages)){
-                $storage = array_search($datas->Memory,$storages);
-            }elseif(in_array(substr($datas->Memory, 0, -2), $storages)){
-                $storage = array_search(substr($datas->Memory, 0, -2),$storages);
-            }else{
-                $storage = 0;
+            $storage = 0;
+            $memoryExact = self::normalizeValue($datas->Memory ?? '');
+            if($memoryExact !== '' && isset($storageLookup[$memoryExact])){
+                $storage = $storageLookup[$memoryExact];
+            }elseif(strlen((string) $datas->Memory) > 2){
+                $trimmed = self::normalizeValue(substr((string) $datas->Memory, 0, -2));
+                if($trimmed !== '' && isset($storageLookup[$trimmed])){
+                    $storage = $storageLookup[$trimmed];
+                }
             }
-            if(!in_array($datas->Imei, $imeis)){
-                $imeis[] = $datas->Imei;
+            $imeiKey = (string) ($datas->Imei ?? '');
+            if(!array_key_exists($imeiKey, $imeis)){
+                $imeis[$imeiKey] = true;
                 $return[] = $datas;
 
             }
 
-            $colorName = strtolower($datas->Color); // Convert color name to lowercase
+            $colorName = self::normalizeValue($datas->Color);
 
-            if (in_array($colorName, $lowercaseColors)) {
-                // If the color exists in the predefined colors array,
-                // retrieve its index
-                $color = array_search($colorName, $lowercaseColors);
+            if (isset($colorLookup[$colorName])) {
+                $color = $colorLookup[$colorName];
             } else {
-                // If the color doesn't exist in the predefined colors array,
-                // create a new color record in the database
                 $newColor = Color_model::create([
                     'name' => $colorName
                 ]);
-                $colors = Color_model::pluck('name','id')->toArray();
-                $lowercaseColors = array_map('strtolower', $colors);
-                // Retrieve the ID of the newly created color
+                $colors[$newColor->id] = $newColor->name;
+                $colorLookup[$colorName] = $newColor->id;
                 $color = $newColor->id;
             }
 
 
-            $gradeName = strtolower(trim($datas->Grade)); // Convert grade name to lowercase
-
-            if (in_array($gradeName, $lowercaseGrades)) {
-                // If the grade exists in the predefined grades array,
-                // retrieve its index
-                $grade = array_search($gradeName, $lowercaseGrades);
+            $gradeName = self::normalizeValue($datas->Grade);
+            if (isset($gradeLookup[$gradeName])) {
+                $grade = $gradeLookup[$gradeName];
             }else{
 
                 if(str_contains($gradeName, '|')){
-                    $gradeName1 = explode('|', $gradeName)[0];
-                    if($gradeName1 == 'ws'){
-                        $grade = 11;
-                    }elseif($gradeName1 == 'bt'){
-                        $grade = 21;
-                    }elseif($gradeName1 == 'cd'){
-                        $grade = 24;
-                    }else{
-                        $grade = array_search($gradeName1, $lowercaseGrades);
-                    }
+                    $gradeParts = explode('|', $gradeName);
+                    $gradeName1 = $gradeParts[0];
+                    $grade = self::gradeFromLookupOrAlias($gradeName1, $gradeLookup, $stock);
 
-                    $gradeName2 = explode('|', $gradeName)[1];
-                    if($gradeName2 == 'ok'){
-                        $sub_grade = 5;
-                    }else{
-                        $sub_grade = array_search($gradeName2, $lowercaseGrades);
+                    $gradeName2 = $gradeParts[1] ?? '';
+                    if($gradeName2 !== ''){
+                        $sub_grade = self::gradeFromLookupOrAlias($gradeName2, $gradeLookup);
                     }
 
                 }elseif(str_contains($gradeName, '/ ')){
-                    $gradeName1 = explode('/ ', $gradeName)[0];
-                    if($gradeName1 == 'ws'){
-                        $grade = 11;
-                    }elseif($gradeName1 == 'bt'){
-                        $grade = 21;
-                    }elseif($gradeName1 == 'cd'){
-                        $grade = 24;
-                    }else{
-                        $grade = array_search($gradeName1, $lowercaseGrades);
+                    $gradeParts = explode('/ ', $gradeName);
+                    $gradeName1 = $gradeParts[0];
+                    $grade = self::gradeFromLookupOrAlias($gradeName1, $gradeLookup, $stock);
+
+                    $gradeName2 = $gradeParts[1] ?? '';
+                    if($gradeName2 !== ''){
+                        $sub_grade = self::gradeFromLookupOrAlias($gradeName2, $gradeLookup);
                     }
 
-                    $gradeName2 = explode('/ ', $gradeName)[1];
-                    if($gradeName2 == 'ok'){
-                        $sub_grade = 5;
-                    }else{
-                        $sub_grade = array_search($gradeName2, $lowercaseGrades);
-                    }
-
-                }elseif($gradeName == '' || $gradeName == 'a+' || $gradeName == 'a/a+' || $gradeName == 'ug'){
-                    $grade = 7;
-                }elseif($gradeName == 'd'){
-                    $grade = $stock->variation->grade;
-                }elseif($gradeName == 'a'){
-                    $grade = 2;
-                }elseif($gradeName == 'verygood'){
-                    $grade = 2;
-                }elseif(in_array($gradeName, ['a-','b'])){
-                    $grade = 3;
-                }elseif(in_array($gradeName, ['ab','c'])){
-                    $grade = 5;
-                }elseif($gradeName == 'ok'){
-                    $grade = 5;
                 }else{
+                    $grade = self::gradeFromLookupOrAlias($gradeName, $gradeLookup, $stock, true);
+                }
 
+                if($grade === null){
+                    self::recordDebugPoint($request, 'unknown grade mapping encountered', [
+                        'grade' => $gradeName,
+                        'request_sample' => substr((string) $request->request, 0, 500),
+                    ]);
                     echo $gradeName;
                     continue;
                 }
             }
 
-            $adminName = strtolower(trim($datas->TesterName)); // Convert grade name to lowercase
+            $adminName = self::normalizeValue($datas->TesterName);
 
-            if (in_array($adminName, $lowercaseAdmins)) {
-                // If the grade exists in the predefined grades array,
-                // retrieve its index
-                $admin = array_search($adminName, $lowercaseAdmins);
+            if (isset($adminLookup[$adminName])) {
+                $admin = $adminLookup[$adminName];
             }else{
                 if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock != null){
 
@@ -224,6 +195,10 @@ class Api_request_model extends Model
                         continue;
                     }
                 }else{
+                    self::recordDebugPoint($request, 'tester name missing from admin list', [
+                        'tester' => $adminName,
+                        'stock_id' => $stock->id ?? null,
+                    ]);
                     echo "Hello";
                     echo "Please create/change Team Member First Name to: ".$adminName;
                     continue;
@@ -278,6 +253,7 @@ class Api_request_model extends Model
                     $stock->save();
 
                     $stock = Stock_model::find($stock->id);
+                    self::cacheStockForKeys(self::buildStockKeys($datas), $stock);
 
                 }
 
@@ -325,6 +301,7 @@ class Api_request_model extends Model
                     $stock->save();
 
                     $stock = Stock_model::find($stock->id);
+                    self::cacheStockForKeys(self::buildStockKeys($datas), $stock);
 
                 }
                 if((str_contains(strtolower($datas->Comments), 'new-battery') || str_contains(strtolower($datas->Comments), 'new battery') || str_contains(strtolower($datas->Comments), 'new_battery')) && !str_contains($p->model, 'New Battery')){
@@ -370,6 +347,7 @@ class Api_request_model extends Model
                     $stock->save();
 
                     $stock = Stock_model::find($stock->id);
+                    self::cacheStockForKeys(self::buildStockKeys($datas), $stock);
 
                 }
                 $new_variation = [
@@ -532,7 +510,176 @@ class Api_request_model extends Model
             Log::info($log_info);
         }
 
+        self::flushDebugPoints();
+        self::resetPushTestingCaches();
+
         return $return;
+    }
+
+    protected static function recordDebugPoint(Api_request_model $request, string $reason, array $context = []): void
+    {
+        $requestId = $request->id ?? 0;
+        if(!isset(self::$debugBuffer[$requestId])){
+            self::$debugBuffer[$requestId] = [];
+        }
+        self::$debugBuffer[$requestId][] = [
+            'reason' => $reason,
+            'context' => $context,
+        ];
+    }
+
+    protected static function flushDebugPoints(): void
+    {
+        foreach(self::$debugBuffer as $requestId => $entries){
+            Log::debug('api_request push_testing combined debug', [
+                'api_request_id' => $requestId,
+                'debug_entries' => $entries,
+            ]);
+        }
+
+        self::$debugBuffer = [];
+    }
+
+    protected static function resetPushTestingCaches(): void
+    {
+        self::$stockCache = [];
+    }
+
+    protected static function resolveStock($datas): ?Stock_model
+    {
+        $keys = self::buildStockKeys($datas);
+        foreach($keys as $key){
+            if($key === null){
+                continue;
+            }
+            if(array_key_exists($key, self::$stockCache)){
+                $cached = self::$stockCache[$key];
+                return $cached ?: null;
+            }
+        }
+
+        $hasIdentifier = false;
+        $query = Stock_model::query()->with(['variation.product', 'variation.storage_id']);
+
+        $identifiers = [
+            ['field' => 'imei', 'value' => $datas->Imei ?? null],
+            ['field' => 'imei', 'value' => $datas->Imei2 ?? null],
+            ['field' => 'serial_number', 'value' => $datas->Serial ?? null],
+        ];
+
+        foreach($identifiers as $identifier){
+            $value = trim((string) $identifier['value']);
+            if($value === ''){
+                continue;
+            }
+            if($hasIdentifier){
+                $query->orWhere($identifier['field'], $value);
+            }else{
+                $query->where($identifier['field'], $value);
+                $hasIdentifier = true;
+            }
+        }
+
+        if(!$hasIdentifier){
+            self::cacheStockForKeys($keys, null);
+            return null;
+        }
+
+        $stock = $query->first();
+
+        self::cacheStockForKeys($keys, $stock);
+
+        return $stock;
+    }
+
+    protected static function cacheStockForKeys(array $keys, ?Stock_model $stock): void
+    {
+        foreach($keys as $key){
+            if($key === null){
+                continue;
+            }
+            self::$stockCache[$key] = $stock ?: false;
+        }
+    }
+
+    protected static function buildStockKeys($datas): array
+    {
+        $keys = [];
+
+        $identifiers = [
+            ['prefix' => 'imei:', 'value' => $datas->Imei ?? null],
+            ['prefix' => 'imei:', 'value' => $datas->Imei2 ?? null],
+            ['prefix' => 'serial:', 'value' => $datas->Serial ?? null],
+        ];
+
+        foreach($identifiers as $identifier){
+            $value = trim((string) $identifier['value']);
+            if($value === ''){
+                continue;
+            }
+            $keys[] = $identifier['prefix'].$value;
+        }
+
+        return $keys;
+    }
+
+    protected static function buildLookup(array $items): array
+    {
+        $lookup = [];
+        foreach($items as $id => $value){
+            $normalized = self::normalizeValue($value);
+            if($normalized === ''){
+                continue;
+            }
+            $lookup[$normalized] = $id;
+        }
+
+        return $lookup;
+    }
+
+    protected static function normalizeValue($value): string
+    {
+        return strtolower(trim((string) $value));
+    }
+
+    protected static function gradeFromLookupOrAlias($value, array $gradeLookup, ?Stock_model $stock = null, bool $allowBlankDefault = false): ?int
+    {
+        $normalized = self::normalizeValue($value);
+
+        if($normalized === ''){
+            return $allowBlankDefault ? 7 : null;
+        }
+
+        if(isset($gradeLookup[$normalized])){
+            return $gradeLookup[$normalized];
+        }
+
+        switch($normalized){
+            case 'ws':
+                return 11;
+            case 'bt':
+                return 21;
+            case 'cd':
+                return 24;
+            case 'ug':
+            case 'a+':
+            case 'a/a+':
+                return 7;
+            case 'd':
+                return $stock->variation->grade ?? null;
+            case 'a':
+            case 'verygood':
+                return 2;
+            case 'a-':
+            case 'b':
+                return 3;
+            case 'ab':
+            case 'c':
+            case 'ok':
+                return 5;
+            default:
+                return null;
+        }
     }
 
     public function stock(){
