@@ -425,14 +425,7 @@ class Order_model extends Model
 
     protected function maybeAutoCreateRefurbedLabel(self $order): void
     {
-        $shippingConfig = config('services.refurbed.shipping', []);
-        $autoEnabled = (bool) ($shippingConfig['auto_label_on_accept'] ?? false);
-
-        if (! $autoEnabled) {
-            return;
-        }
-
-        if ((int) ($order->marketplace_id ?? 0) !== 4) {
+        if (! $this->shouldAutoCreateRefurbedLabel($order)) {
             return;
         }
 
@@ -475,6 +468,28 @@ class Order_model extends Model
                 'reason' => $result,
             ]);
         }
+    }
+
+    protected function shouldAutoCreateRefurbedLabel(self $order): bool
+    {
+        if ((int) ($order->marketplace_id ?? 0) !== 4) {
+            return false;
+        }
+
+        $order->loadMissing('marketplace');
+        $marketplace = $order->marketplace;
+
+        if (! $marketplace) {
+            return false;
+        }
+
+        $autoToggle = data_get($marketplace, 'auto_label_on_accept');
+
+        if ($autoToggle === null) {
+            $autoToggle = data_get($marketplace, 'refurbed_auto_label_on_accept');
+        }
+
+        return $autoToggle === null ? true : (bool) $autoToggle;
     }
 
     protected function buildLegacyOrderObject(

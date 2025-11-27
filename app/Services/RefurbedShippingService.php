@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Storage;
 
 class RefurbedShippingService
 {
+    private const DEFAULT_CARRIER = 'DHL_EXPRESS';
     /**
      * Create a Refurbed shipping label and optionally mark the order as shipped.
      *
@@ -20,10 +21,9 @@ class RefurbedShippingService
      */
     public function createLabel(Order_model $order, RefurbedAPIController $refurbedApi, array $options = [])
     {
-        $shippingConfig = config('services.refurbed.shipping', []);
-        $merchantAddressId = $options['merchant_address_id'] ?? ($shippingConfig['default_merchant_address_id'] ?? null);
-        $parcelWeight = $options['parcel_weight'] ?? ($shippingConfig['default_weight'] ?? null);
-        $carrier = $options['carrier'] ?? ($shippingConfig['default_carrier'] ?? null);
+        $merchantAddressId = $this->resolveMerchantAddressId($order, $options);
+        $parcelWeight = $this->resolveParcelWeight($order, $options);
+        $carrier = $this->resolveCarrier($order, $options);
         $markShipped = (bool) ($options['mark_shipped'] ?? false);
         $skipIfExists = (bool) ($options['skip_if_exists'] ?? false);
         $syncIdentifiers = (bool) ($options['sync_identifiers'] ?? false);
@@ -39,6 +39,10 @@ class RefurbedShippingService
 
         if ($merchantAddressId == null) {
             return 'Refurbed merchant address ID is required before dispatch.';
+        }
+
+        if ($carrier === null || $carrier === '') {
+            return 'Refurbed carrier is required before dispatch.';
         }
 
         $parcelWeight = $parcelWeight !== null ? (float) $parcelWeight : 0.0;
@@ -102,6 +106,110 @@ class RefurbedShippingService
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
         ]);
+    }
+
+    protected function resolveMerchantAddressId(Order_model $order, array $options): ?string
+    {
+        $fromOptions = data_get($options, 'merchant_address_id') ?? data_get($options, 'shipping_id');
+        if (! empty($fromOptions)) {
+            return trim($fromOptions);
+        }
+
+        $order->loadMissing('marketplace');
+        $fromMarketplace = data_get($order->marketplace, 'shipping_id');
+        if (! empty($fromMarketplace)) {
+            return trim($fromMarketplace);
+        }
+
+        return null;
+    }
+
+    protected function resolveCarrier(Order_model $order, array $options): ?string
+    {
+        $fromOptions = data_get($options, 'carrier');
+        if (! empty($fromOptions)) {
+            return $this->normalizeCarrier($fromOptions);
+        }
+
+        $order->loadMissing('marketplace');
+        $fromMarketplace = data_get($order->marketplace, 'default_shipping_carrier');
+
+        if (! empty($fromMarketplace)) {
+            return $this->normalizeCarrier($fromMarketplace);
+        }
+
+        return self::DEFAULT_CARRIER;
+    }
+
+    protected function resolveParcelWeight(Order_model $order, array $options): ?float
+    {
+        if (array_key_exists('parcel_weight', $options) && $options['parcel_weight'] !== null && $options['parcel_weight'] !== '') {
+            return (float) $options['parcel_weight'];
+        }
+
+        return $this->extractCategoryWeightFromOrder($order);
+    }
+
+    protected function extractCategoryWeightFromOrder(Order_model $order): ?float
+    {
+        $order->loadMissing('order_items.variation.product.category_id');
+
+        foreach ($order->order_items as $item) {
+            $variation = $item->variation;
+            $product = $variation ? $variation->product : null;
+            $category = $product ? $product->category_id : null;
+            $weight = $this->extractWeightFromCategory($category);
+            if ($weight !== null) {
+                return $weight;
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizeCarrier(?string $carrier): ?string
+    {
+        if ($carrier === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(str_replace(' ', '_', trim($carrier)));
+
+        if ($normalized === '' || $normalized === 'N/A') {
+            return null;
+        }
+
+        if ($normalized === 'DHL-EXPRESS') {
+            $normalized = 'DHL_EXPRESS';
+        }
+
+        return $normalized;
+    }
+
+    protected function extractWeightFromCategory($category): ?float
+    {
+        if (! $category) {
+            return null;
+        }
+
+        $fields = [
+            'default_shipping_weight',
+            'default_weight',
+            'shipping_weight',
+            'weight',
+        ];
+
+        foreach ($fields as $field) {
+            $value = data_get($category, $field);
+            if ($value !== null && $value !== '' && is_numeric($value)) {
+                $numericValue = (float) $value;
+                if ($numericValue > 0) {
+                    return $numericValue;
+                }
+            }
+        }
+
+        return null;
     }
 
     protected function persistLabel(Order_model $order, array $labelResponse): ?string
@@ -173,7 +281,7 @@ class RefurbedShippingService
             }
 
             if ($carrier) {
-                $entry['carrier'] = $carrier;
+                $entry['parcel_tracking_carrier'] = $carrier;
             }
 
             $updates[] = $entry;

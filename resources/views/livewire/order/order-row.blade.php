@@ -22,6 +22,7 @@
             'currencies' => $currencies,
             'order_statuses' => $orderStatuses,
             'inputAnchor' => $inputAnchor,
+            'refurbedShippingDefaults' => $refurbedShippingDefaults ?? null,
         ])
 
         @php

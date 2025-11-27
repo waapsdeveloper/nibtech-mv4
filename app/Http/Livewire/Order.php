@@ -52,6 +52,8 @@ use Illuminate\Http\Request;
 
 class Order extends Component
 {
+    protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
+    protected const REFURBED_MARKETPLACE_ID = 4;
 
     public function mount()
     {
@@ -83,7 +85,8 @@ class Order extends Component
         $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
         $data['order_statuses'] = Order_status_model::pluck('name','id');
         $data['marketplaces'] = Marketplace_model::pluck('name','id');
-        $data['refurbedShippingDefaults'] = config('services.refurbed.shipping', []);
+        $refurbedShippingDefaults = $this->buildRefurbedShippingDefaults();
+        $data['refurbedShippingDefaults'] = $refurbedShippingDefaults;
         if(request('per_page') != null){
             $per_page = request('per_page');
         }else{
@@ -3081,6 +3084,7 @@ class Order extends Component
             }
 
             if($isRefurbed){
+                $this->ensureRefurbedLabelArtifacts($order, $refurbedApi, $detail);
                 $refurbedDocumentLinks = $this->captureRefurbedDocumentLinks($order, $refurbedApi);
             }
 
@@ -3288,17 +3292,105 @@ class Order extends Component
     {
         $service = app(RefurbedShippingService::class);
 
+        $merchantAddressId = $this->resolveRefurbedMerchantAddressId();
+        if (empty($merchantAddressId)) {
+            return 'Refurbed merchant address ID is required before dispatch. Update marketplace settings or include it in the dispatch form.';
+        }
+
+        $parcelWeight = $this->resolveRefurbedParcelWeight($order);
+        if ($parcelWeight === null || $parcelWeight <= 0) {
+            return 'Refurbed parcel weight is required. Please configure a category default weight or enter it manually.';
+        }
+
+        $carrier = request('refurbed_carrier');
+        if (empty($carrier)) {
+            $carrier = data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
+        }
+
+        $carrier = $this->normalizeRefurbedCarrier($carrier);
+
+        if ($carrier === null || $carrier === '') {
+            return 'Refurbed carrier is required. Please enter a carrier in the dispatch form or set a default carrier for the marketplace.';
+        }
+
         return $service->createLabel($order, $refurbedApi, [
-            'merchant_address_id' => request('refurbed_merchant_address_id'),
-            'parcel_weight' => request('refurbed_parcel_weight'),
-            'carrier' => request('refurbed_carrier'),
+            'merchant_address_id' => $merchantAddressId,
+            'parcel_weight' => $parcelWeight,
+            'carrier' => $carrier,
             'mark_shipped' => true,
             'processed_by' => session('user_id'),
             'sync_identifiers' => true,
             'identifier_options' => [
-                'carrier' => request('refurbed_carrier'),
+                'carrier' => $carrier,
             ],
         ]);
+    }
+
+    protected function ensureRefurbedLabelArtifacts(Order_model $order, RefurbedAPIController $refurbedApi, $dispatchResult = null): void
+    {
+        $dirty = false;
+
+        if ($dispatchResult) {
+            $trackingNumber = data_get($dispatchResult, 'tracking_number');
+            $labelUrl = data_get($dispatchResult, 'label_url');
+
+            if ($trackingNumber && empty($order->tracking_number)) {
+                $order->tracking_number = trim((string) $trackingNumber);
+                $dirty = true;
+            }
+
+            if ($labelUrl && empty($order->label_url)) {
+                $order->label_url = trim((string) $labelUrl);
+                $dirty = true;
+            }
+        }
+
+        if ($dirty) {
+            $order->save();
+        }
+
+        if ($order->label_url && $order->tracking_number) {
+            return;
+        }
+
+        try {
+            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to hydrate shipping labels for order', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return;
+        }
+
+        $labelData = data_get($labelsResponse, 'shipping_labels.0')
+            ?? data_get($labelsResponse, 'labels.0')
+            ?? data_get($labelsResponse, 'label')
+            ?? $labelsResponse;
+
+        $downloadUrl = data_get($labelData, 'download_url')
+            ?? data_get($labelData, 'label.download_url')
+            ?? data_get($labelData, 'label.content_url');
+
+        $trackingNumber = data_get($labelData, 'tracking_number')
+            ?? data_get($labelData, 'label.tracking_number');
+
+        $dirty = false;
+
+        if ($downloadUrl && empty($order->label_url)) {
+            $order->label_url = trim((string) $downloadUrl);
+            $dirty = true;
+        }
+
+        if ($trackingNumber && empty($order->tracking_number)) {
+            $order->tracking_number = trim((string) $trackingNumber);
+            $dirty = true;
+        }
+
+        if ($dirty) {
+            $order->save();
+        }
     }
 
     protected function captureRefurbedDocumentLinks(Order_model $order, RefurbedAPIController $refurbedApi): array
@@ -3693,6 +3785,20 @@ class Order extends Component
         if (!$order) {
             session()->flash('error', 'Order not found');
             return redirect(url('order'));
+        }
+
+        if ((int) $order->marketplace_id === self::REFURBED_MARKETPLACE_ID) {
+            try {
+                $refurbedApi = new RefurbedAPIController();
+                $this->ensureRefurbedLabelArtifacts($order, $refurbedApi);
+                $this->captureRefurbedDocumentLinks($order, $refurbedApi);
+                $order->refresh();
+            } catch (\Throwable $e) {
+                Log::warning('Refurbed: Unable to refresh packing documents during reprint', [
+                    'order_id' => $order->id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
         }
 
         $invoiceUrl = url('export_invoice').'/'.$id.'/1';
@@ -4495,6 +4601,215 @@ class Order extends Component
         }
 
         return $state !== null ? (int) $state : null;
+    }
+
+    protected function buildRefurbedShippingDefaults(): array
+    {
+        $defaults = [];
+        $marketplace = $this->getRefurbedMarketplace();
+
+        if ($marketplace) {
+            $merchantAddress = data_get($marketplace, 'shipping_id');
+            if (! empty($merchantAddress)) {
+                $defaults['default_merchant_address_id'] = trim($merchantAddress);
+            }
+
+            $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
+            if (! empty($fallbackCarrier)) {
+                $defaults['default_carrier'] = $this->normalizeRefurbedCarrier($fallbackCarrier);
+            }
+        }
+
+        if (! isset($defaults['default_carrier']) || $defaults['default_carrier'] === '') {
+            $defaults['default_carrier'] = self::REFURBED_DEFAULT_CARRIER;
+        }
+
+        return $defaults;
+    }
+
+    protected function resolveRefurbedMerchantAddressId(): ?string
+    {
+        $addressFromRequest = request('refurbed_merchant_address_id');
+        if (! empty($addressFromRequest)) {
+            return trim($addressFromRequest);
+        }
+
+        $marketplace = $this->getRefurbedMarketplace();
+        $addressFromMarketplace = data_get($marketplace, 'shipping_id');
+        if (! empty($addressFromMarketplace)) {
+            return trim($addressFromMarketplace);
+        }
+
+        return $this->autoCreateRefurbedMerchantAddress($marketplace);
+    }
+
+    protected function resolveRefurbedParcelWeight(Order_model $order): ?float
+    {
+        $weightFromRequest = request('refurbed_parcel_weight');
+        if ($weightFromRequest !== null && $weightFromRequest !== '') {
+            return (float) $weightFromRequest;
+        }
+
+        $categoryWeight = $this->extractCategoryWeightFromOrder($order);
+        if ($categoryWeight !== null) {
+            return $categoryWeight;
+        }
+
+        return null;
+    }
+
+    protected function extractCategoryWeightFromOrder(Order_model $order): ?float
+    {
+        $order->loadMissing('order_items.variation.product.category_id');
+
+        foreach ($order->order_items as $item) {
+            $variation = $item->variation;
+            $product = $variation ? $variation->product : null;
+            $category = $product ? $product->category_id : null;
+            $weight = $this->extractWeightFromCategory($category);
+            if ($weight !== null) {
+                return $weight;
+            }
+        }
+
+        return null;
+    }
+
+    protected function extractWeightFromCategory($category): ?float
+    {
+        if (! $category) {
+            return null;
+        }
+
+        $fields = [
+            'default_shipping_weight',
+            'default_weight',
+            'shipping_weight',
+            'weight',
+        ];
+
+        foreach ($fields as $field) {
+            $value = data_get($category, $field);
+            if ($value !== null && $value !== '' && is_numeric($value)) {
+                $numericValue = (float) $value;
+                if ($numericValue > 0) {
+                    return $numericValue;
+                }
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizeRefurbedCarrier(?string $carrier): ?string
+    {
+        if ($carrier === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(str_replace(' ', '_', trim($carrier)));
+
+        if ($normalized === '' || $normalized === 'N/A') {
+            return null;
+        }
+
+        if ($normalized === 'DHL-EXPRESS') {
+            $normalized = 'DHL_EXPRESS';
+        }
+
+        return $normalized;
+    }
+
+    protected function getRefurbedMarketplace(bool $refresh = false): ?Marketplace_model
+    {
+        static $cached;
+
+        if ($refresh || $cached === null) {
+            $cached = Marketplace_model::query()->find(self::REFURBED_MARKETPLACE_ID);
+        }
+
+        return $cached;
+    }
+
+    protected function autoCreateRefurbedMerchantAddress(?Marketplace_model $marketplace = null): ?string
+    {
+        static $attempted = false;
+
+        if ($attempted) {
+            return null;
+        }
+
+        $attempted = true;
+
+        $payload = $this->buildRefurbedMerchantAddressPayload();
+        if ($payload === null) {
+            return null;
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Unable to initialize API client for merchant address creation', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        try {
+            $response = $refurbedApi->createMerchantAddress($payload);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to auto-create merchant address', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $addressId = data_get($response, 'address.id')
+            ?? data_get($response, 'merchant_address.id')
+            ?? data_get($response, 'id');
+
+        if (empty($addressId)) {
+            Log::warning('Refurbed: Merchant address creation response missing ID', [
+                'response' => $response,
+            ]);
+
+            return null;
+        }
+
+        $marketplace = $marketplace ?: $this->getRefurbedMarketplace(true);
+        if ($marketplace) {
+            $marketplace->shipping_id = $addressId;
+            $marketplace->save();
+        }
+
+        return trim((string) $addressId);
+    }
+
+    protected function buildRefurbedMerchantAddressPayload(): ?array
+    {
+        $payload = array_filter(config('services.refurbed.shipping.address', []), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        if ($payload === []) {
+            Log::warning('Refurbed: Shipping address config is empty; cannot auto-create merchant address.');
+            return null;
+        }
+
+        $requiredFields = ['company', 'street', 'postal_code', 'city', 'country'];
+        foreach ($requiredFields as $field) {
+            if (empty($payload[$field])) {
+                Log::warning('Refurbed: Shipping address config missing required field', [
+                    'field' => $field,
+                ]);
+
+                return null;
+            }
+        }
+
+        return $payload;
     }
 
 

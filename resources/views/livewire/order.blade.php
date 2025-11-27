@@ -339,6 +339,7 @@
             <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
             <input type="hidden" name="imei" value="{{ Request::get('imei') }}">
             <input type="hidden" name="tracking_number" value="{{ Request::get('tracking_number') }}">
+            <input type="hidden" name="marketplace" value="{{ Request::get('marketplace') }}">
             <input type="hidden" name="page" value="{{ Request::get('page') }}">
             <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
             @if (Request::get('exclude_topup'))
