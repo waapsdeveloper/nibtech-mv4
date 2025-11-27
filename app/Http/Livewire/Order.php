@@ -39,183 +39,11 @@ use App\Models\Listed_stock_verification_model;
 use App\Models\Marketplace_model;
 use App\Models\Order_issue_model;
 use App\Models\Process_model;
-use App\Models\Process_stock_model;
-use App\Models\Product_color_merge_model;
-use App\Models\Product_storage_sort_model;
-use App\Models\Stock_operations_model;
-use App\Models\Stock_movement_model;
-use App\Models\Vendor_grade_model;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\Mail;
-use Illuminate\Http\Request;
-
-
-class Order extends Component
-{
-    protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
-    protected const REFURBED_MARKETPLACE_ID = 4;
-
-    public function mount()
-    {
-        $user_id = session('user_id');
-        if($user_id == NULL){
-            return redirect('index');
-        }
-    }
-    public function render()
-    {
-        // ini_set('memory_limit', '2560M');
-        $data['title_page'] = "Sales";
-        session()->put('page_title', $data['title_page']);
-        $data['storages'] = session('dropdown_data')['storages'];
-        $data['colors'] = session('dropdown_data')['colors'];
-        $data['grades'] = session('dropdown_data')['grades'];
-        $data['topups'] = Process_model::where('process_type_id', 22)
-        ->where('status', '>=', 2)->orderByDesc('id')
-        ->pluck('reference_id', 'id');
-
-        $data['currencies'] = Currency_model::pluck('sign', 'id');
-        $data['last_hour'] = Carbon::now()->subHour();
-        $data['admins'] = Admin_model::pluck('first_name','id');
-        $data['testers'] = Admin_model::where('role_id',7)->pluck('last_name');
-        $user_id = session('user_id');
-        $data['user_id'] = $user_id;
-        $data['pending_orders_count'] = Order_model::where('order_type_id',3)->where('status',2)->count();
-        $data['missing_charge_count'] = Order_model::where('order_type_id',3)->whereNot('status',2)->whereNull('charges')->where('processed_at','<=',now()->subHours(12))->count();
-        $data['missing_processed_at_count'] = Order_model::where('order_type_id',3)->whereIn('status',[3,6])->where('processed_at',null)->count();
-        $data['order_statuses'] = Order_status_model::pluck('name','id');
-        $data['marketplaces'] = Marketplace_model::pluck('name','id');
-        $refurbedShippingDefaults = $this->buildRefurbedShippingDefaults();
-        $data['refurbedShippingDefaults'] = $refurbedShippingDefaults;
-        if(request('per_page') != null){
-            $per_page = request('per_page');
-        }else{
-            $per_page = 10;
-        }
-        // if(request('care')){
-        //     foreach(Order_model::where('status',2)->pluck('reference_id') as $pend){
-        //         $this->recheck($pend);
-        //     }
-        // }
-
-        switch (request('sort')){
-            case 2: $sort = "orders.reference_id"; $by = "ASC"; break;
-            case 3: $sort = "products.model"; $by = "DESC"; break;
-            case 4: $sort = "products.model"; $by = "ASC"; break;
-            default: $sort = "orders.reference_id"; $by = "DESC";
-        }
-        if(request('start_date') != '' && request('start_time') != ''){
-            $start_date = request('start_date').' '.request('start_time');
-        }elseif(request('start_date') != ''){
-            $start_date = request('start_date');
-        }else{
-            $start_date = 0;
-        }
-
-        if(request('end_date') != '' && request('end_time') != ''){
-            $end_date = request('end_date').' '.request('end_time');
-        }elseif(request('end_date') != ''){
-            $end_date = request('end_date')." 23:59:59";
-        }else{
-            $end_date = now();
-        }
-
-
-        $difference_variations = [];
-        if(request('exclude_topup') != [] && request('exclude_topup') != null){
-            $listed_stock_verification = Listed_stock_verification_model::whereIn('process_id', request('exclude_topup'))->get();
+                $serial_number = null;
 
             $variations = Variation_model::whereIn('id', $listed_stock_verification->pluck('variation_id'))->get()->keyBy('id');
 
-            foreach($variations as $variation){
-                $difference = $listed_stock_verification->where('variation_id', $variation->id)->sum('qty_change') - $variation->listed_stock;
-                if($difference > 0){
-                    $difference_variations[$variation->id] = $difference;
-                }
-            }
-        }
-
-        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions', 'order_charges'])
-        // ->where('orders.order_type_id',3)
-        ->when(request('marketplace') != null && request('marketplace') != 0, function ($q) {
-            return $q->where('marketplace_id', request('marketplace'));
-        })
-        ->when(request('marketplace') == null, function ($q) {
-            return $q->where('marketplace_id', 1);
-        })
-        ->when(request('type') == '', function ($q) {
-            return $q->where('orders.order_type_id',3);
-        })
-        ->when(request('items') == 1, function ($q) {
-            return $q->whereHas('order_items', operator: '>', count: 1);
-        })
-
-        ->when(request('start_date') != '', function ($q) use ($start_date) {
-            if(request('adm') > 0){
-                return $q->where('orders.processed_at', '>=', $start_date);
-            }else{
-                return $q->where('orders.created_at', '>=', $start_date);
-
-            }
-        })
-        ->when(request('end_date') != '', function ($q) use ($end_date) {
-            if(request('adm') > 0){
-                return $q->where('orders.processed_at', '<=',$end_date)->orderBy('orders.processed_at','desc');
-            }else{
-                return $q->where('orders.created_at', '<=',$end_date);
-            }
-        })
-        ->when(request('status') != '', function ($q) {
-            return $q->where('orders.status', request('status'));
-        })
-        ->when(request('adm') != '', function ($q) {
-            if(request('adm') == 0){
-                return $q->where('orders.processed_by', null);
-            }
-            return $q->where('orders.processed_by', request('adm'));
-        })
-        ->when(request('care') != '', function ($q) {
-            return $q->whereHas('order_items', function ($query) {
-                $query->where('care_id', '!=', null);
-            });
-        })
-        ->when(request('missing') == 'reimburse', function ($q) {
-            return $q->whereHas('order_items.linked_child', function ($qu) {
-                $qu->whereHas('order', function ($q) {
-                    $q->where('orders.status', '!=', 1);
-                });
-            })->where('status', 3)->orderBy('orders.updated_at','desc');
-        })
-        ->when(request('missing') == 'refund', function ($q) {
-            return $q->whereDoesntHave('order_items.linked_child')->wherehas('order_items.stock', function ($q) {
-                $q->where('status', '!=', null);
-            })->where('status', 6)->orderBy('orders.updated_at','desc');
-        })
-        ->when(request('missing') == 'charge', function ($q) {
-            return $q->whereNot('status', 2)->whereNull('charges')->where('processed_at', '<=', now()->subHours(12));
-        })
-        ->when(request('missing') == 'scan', function ($q) {
-            return $q->whereIn('status', [3,6])->whereNull('scanned')->where('processed_at', '<=', now()->subHours(24));
-        })
-        ->when(request('missing') == 'purchase', function ($q) {
-            return $q->whereHas('order_items.stock', function ($q) {
-                $q->whereNull('status');
-            });
-        })
-        ->when(request('missing') == 'processed_at', function ($q) {
-            return $q->whereIn('status', [3,6])->whereNull('processed_at');
-        })
-        ->when(request('transaction') == 1, function ($q) {
-            return $q->whereHas('transactions', function ($q) {
-                $q->where('status', null);
-            });
-        })
-        ->when(request('order_id') != '', function ($q) {
-            if(str_contains(request('order_id'),'<')){
-                $order_ref = str_replace('<','',request('order_id'));
-                return $q->where('orders.reference_id', '<', $order_ref);
+                $serial_number = null;
             }elseif(str_contains(request('order_id'),'>')){
                 $order_ref = str_replace('>','',request('order_id'));
                 return $q->where('orders.reference_id', '>', $order_ref);
@@ -3088,6 +2916,11 @@ class Order extends Component
             if($isRefurbed){
                 $this->ensureRefurbedLabelArtifacts($order, $refurbedApi, $detail);
                 $refurbedDocumentLinks = $this->captureRefurbedDocumentLinks($order, $refurbedApi);
+                $carrierContext = data_get($detail, 'carrier')
+                    ?? request('refurbed_carrier')
+                    ?? data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
+                $carrierContext = $carrierContext ? $this->normalizeRefurbedCarrier($carrierContext) : null;
+                $this->syncRefurbedOrderItems($order, $refurbedApi, $carrierContext);
             }
 
             if(count($sku) == 1 && count($stock) == 1){
@@ -3463,6 +3296,92 @@ class Order extends Component
         return array_filter($links);
     }
 
+    protected function syncRefurbedOrderItems(Order_model $order, RefurbedAPIController $refurbedApi, ?string $carrier = null): void
+    {
+        try {
+            $order->refresh();
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: unable to refresh order before syncing items', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        $order->loadMissing('order_items.stock');
+        $trackingNumber = $order->tracking_number ?: null;
+        $stateUpdates = [];
+        $identifierUpdates = [];
+
+        foreach ($order->order_items as $item) {
+            $referenceId = $item->reference_id;
+            if (! $referenceId) {
+                continue;
+            }
+
+            $stateEntry = [
+                'id' => $referenceId,
+                'state' => 'SHIPPED',
+            ];
+
+            if ($trackingNumber) {
+                $stateEntry['parcel_tracking_number'] = $trackingNumber;
+            }
+
+            if ($carrier) {
+                $stateEntry['parcel_tracking_carrier'] = $carrier;
+            }
+
+            $stateUpdates[] = $stateEntry;
+
+            $identifierEntry = ['id' => $referenceId];
+            $stock = $item->stock;
+
+            if ($stock && $stock->imei) {
+                $identifierEntry['imei'] = $stock->imei;
+            }
+
+            if ($stock && $stock->serial_number) {
+                $identifierEntry['serial_number'] = $stock->serial_number;
+            }
+
+            if ($trackingNumber) {
+                $identifierEntry['parcel_tracking_number'] = $trackingNumber;
+            }
+
+            if ($carrier) {
+                $identifierEntry['parcel_tracking_carrier'] = $carrier;
+            }
+
+            if (count($identifierEntry) > 1) {
+                $identifierUpdates[] = $identifierEntry;
+            }
+        }
+
+        if ($stateUpdates !== []) {
+            try {
+                $refurbedApi->batchUpdateOrderItemsState($stateUpdates);
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: unable to push shipped state for order items', [
+                    'order_id' => $order->id,
+                    'reference_id' => $order->reference_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+
+        if ($identifierUpdates !== []) {
+            try {
+                $refurbedApi->batchUpdateOrderItems($identifierUpdates);
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: unable to push IMEI/serial identifiers for order items', [
+                    'order_id' => $order->id,
+                    'reference_id' => $order->reference_id,
+                    'error' => $e->getMessage(),
+                ]);
+            }
+        }
+    }
+
     protected function buildProxyDownloadUrl(?string $url): ?string
     {
         if ($url === null || $url === '') {
@@ -3520,7 +3439,6 @@ class Order extends Component
                 }else{
                     $color2 = null;
                 }
-
                 $serial_number = null;
                 $imei = trim($imei);
                 if(!ctype_digit($imei)){
