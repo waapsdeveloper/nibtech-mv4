@@ -40,6 +40,10 @@ class RefurbedShippingService
             return 'Refurbed merchant address ID is required before dispatch.';
         }
 
+        if ($carrier === null || $carrier === '') {
+            return 'Refurbed carrier is required before dispatch.';
+        }
+
         $parcelWeight = $parcelWeight !== null ? (float) $parcelWeight : 0.0;
         if ($parcelWeight <= 0) {
             return 'Parcel weight must be greater than zero for Refurbed shipments.';
