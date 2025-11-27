@@ -94,7 +94,7 @@ class Api_request_model extends Model
 
             }
             // if domain = sdpos.nibritaintech.com
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel') || str_contains(strtolower($datas->TesterName), 'uzair ahmed'))){
 
                 $request->send_to_eg();
                 continue;
