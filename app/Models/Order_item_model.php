@@ -255,12 +255,20 @@ class Order_item_model extends Model
                     }
                 }
             }
-            if($orderItem->id == null){
-                $orderItem->order_id = Order_model::where(['reference_id' => $orderObj->order_id])->first()->id;
-                $orderItem->variation_id = $variation->id;
-                $orderItem->reference_id = $itemObj->id;
-                $orderItem->price = $itemObj->price;
-                $orderItem->quantity = $itemObj->quantity;
+            $orderItem->order_id = $order_id;
+            $orderItem->variation_id = $variation->id;
+            $orderItem->reference_id = $itemObj->id;
+
+            if (isset($itemObj->price) && $itemObj->price !== '' && $itemObj->price !== null) {
+                if (is_numeric($itemObj->price)) {
+                    $orderItem->price = (float) $itemObj->price;
+                }
+            }
+
+            if (isset($itemObj->quantity) && $itemObj->quantity !== null) {
+                $orderItem->quantity = (int) $itemObj->quantity;
+            } elseif ($orderItem->quantity === null) {
+                $orderItem->quantity = 1;
             }
             $orderItem->currency = $order->currency;
 
