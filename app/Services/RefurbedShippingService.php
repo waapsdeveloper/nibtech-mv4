@@ -135,6 +135,7 @@ class RefurbedShippingService
             'tracking_number' => $trackingNumber,
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
+            'response' => $labelResponse,
         ]);
     }
 

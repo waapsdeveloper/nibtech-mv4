@@ -65,8 +65,11 @@ class RefurbedCreateLabels extends Command
 
             $order->refresh();
 
+            $rawResponse = $result->response ?? null;
+
             if (empty($order->label_url)) {
                 $this->warn('  ⚠ Refurbed API responded but no label URL was returned. Order left in queue.');
+                $this->dumpRefurbedResponse($rawResponse);
                 continue;
             }
 
@@ -127,5 +130,22 @@ class RefurbedCreateLabels extends Command
         }
 
         return $options;
+    }
+
+    protected function dumpRefurbedResponse($response): void
+    {
+        if ($response === null) {
+            return;
+        }
+
+        $encoded = json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+        if ($encoded === false) {
+            $encoded = print_r($response, true);
+        }
+
+        $this->line('      ↳ Refurbed response payload:');
+        foreach (explode("\n", $encoded) as $line) {
+            $this->line('        ' . $line);
+        }
     }
 }
