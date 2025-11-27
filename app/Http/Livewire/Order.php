@@ -52,6 +52,7 @@ use Illuminate\Http\Request;
 
 class Order extends Component
 {
+    protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
 
     public function mount()
     {
@@ -3304,6 +3305,8 @@ class Order extends Component
             $carrier = data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
         }
 
+        $carrier = $this->normalizeRefurbedCarrier($carrier);
+
         if ($carrier === null || $carrier === '') {
             return 'Refurbed carrier is required. Please enter a carrier in the dispatch form or set a default carrier for the marketplace.';
         }
@@ -4530,12 +4533,12 @@ class Order extends Component
 
             $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
             if (! empty($fallbackCarrier)) {
-                $defaults['default_carrier'] = trim($fallbackCarrier);
+                $defaults['default_carrier'] = $this->normalizeRefurbedCarrier($fallbackCarrier);
             }
         }
 
         if (! isset($defaults['default_carrier']) || $defaults['default_carrier'] === '') {
-            $defaults['default_carrier'] = 'DHL_EXPRESS';
+            $defaults['default_carrier'] = self::REFURBED_DEFAULT_CARRIER;
         }
 
         return $defaults;
@@ -4613,6 +4616,25 @@ class Order extends Component
         }
 
         return null;
+    }
+
+    protected function normalizeRefurbedCarrier(?string $carrier): ?string
+    {
+        if ($carrier === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(str_replace(' ', '_', trim($carrier)));
+
+        if ($normalized === '' || $normalized === 'N/A') {
+            return null;
+        }
+
+        if ($normalized === 'DHL-EXPRESS') {
+            $normalized = 'DHL_EXPRESS';
+        }
+
+        return $normalized;
     }
 
 

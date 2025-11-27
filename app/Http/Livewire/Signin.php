@@ -24,11 +24,17 @@ class Signin extends Component
     }
     public function login(Request $request)
     {
-        $request->validate([
+        $rules = [
             'username' => 'required',
             'password' => 'required',
-            'g-recaptcha-response' => 'required|captcha',
-        ]);
+        ];
+
+        // Only require reCAPTCHA in non-local environments
+        if (env('APP_ENV') !== 'local') {
+            $rules['g-recaptcha-response'] = 'required|captcha';
+        }
+
+        $request->validate($rules);
 
         $login_detail = Admin_model::where('username',trim($request['username']))->first();
         if($login_detail == null){

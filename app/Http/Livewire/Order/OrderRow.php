@@ -9,6 +9,7 @@ use Livewire\Component;
 
 class OrderRow extends Component
 {
+    protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
     public int $orderId;
 
     public int $rowNumber;
@@ -131,10 +132,33 @@ class OrderRow extends Component
 
             $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
             if (! empty($fallbackCarrier)) {
-                $defaults['default_carrier'] = trim($fallbackCarrier);
+                $defaults['default_carrier'] = $this->normalizeRefurbedCarrier($fallbackCarrier);
             }
         }
 
+        if (empty($defaults['default_carrier'])) {
+            $defaults['default_carrier'] = self::REFURBED_DEFAULT_CARRIER;
+        }
+
         return $cached = $defaults;
+    }
+
+    protected function normalizeRefurbedCarrier(?string $carrier): ?string
+    {
+        if ($carrier === null) {
+            return null;
+        }
+
+        $normalized = strtoupper(str_replace(' ', '_', trim($carrier)));
+
+        if ($normalized === '' || $normalized === 'N/A') {
+            return null;
+        }
+
+        if ($normalized === 'DHL-EXPRESS') {
+            $normalized = 'DHL_EXPRESS';
+        }
+
+        return $normalized;
     }
 }

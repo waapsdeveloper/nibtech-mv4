@@ -35,7 +35,10 @@
     $refurbedWeightDefault = ($refurbedWeightInput !== null && $refurbedWeightInput !== '')
         ? $refurbedWeightInput
         : ($refurbedCategoryWeight ?? $refurbedDefaults['default_weight'] ?? 0.5);
-    $refurbedCarrierDefault = request('refurbed_carrier', $refurbedDefaults['default_carrier'] ?? '');
+    $refurbedCarrierDefault = request('refurbed_carrier', $refurbedDefaults['default_carrier'] ?? 'DHL_EXPRESS');
+    if (! empty($refurbedCarrierDefault)) {
+        $refurbedCarrierDefault = strtoupper(str_replace(' ', '_', trim($refurbedCarrierDefault)));
+    }
     $refurbedSupport = config('services.refurbed.support', []);
     $refurbedZendeskChatUrl = $refurbedSupport['chat_url'] ?? null;
     $refurbedZendeskDocsUrl = $refurbedSupport['docs_url'] ?? null;
