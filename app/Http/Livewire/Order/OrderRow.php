@@ -120,18 +120,18 @@ class OrderRow extends Component
             return $cached;
         }
 
-        $defaults = config('services.refurbed.shipping', []);
+        $defaults = [];
         $marketplace = Marketplace_model::query()->find(4);
 
         if ($marketplace) {
-            $merchantAddress = data_get($marketplace, 'merchant_address_id');
+            $merchantAddress = data_get($marketplace, 'shipping_id');
             if (! empty($merchantAddress)) {
-                $defaults['default_merchant_address_id'] = $merchantAddress;
+                $defaults['default_merchant_address_id'] = trim($merchantAddress);
             }
 
             $fallbackCarrier = data_get($marketplace, 'default_shipping_carrier');
             if (! empty($fallbackCarrier)) {
-                $defaults['default_carrier'] = $fallbackCarrier;
+                $defaults['default_carrier'] = trim($fallbackCarrier);
             }
         }
 
