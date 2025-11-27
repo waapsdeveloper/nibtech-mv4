@@ -60,6 +60,12 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+        $schedule->command('refurbed:create-labels')
+            ->everyTenMinutes()
+            ->between('6:00', '24:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
         $schedule->command('functions:ten')
             ->everyTenMinutes()
             ->between('6:00', '24:00')
