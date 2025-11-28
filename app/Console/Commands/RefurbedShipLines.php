@@ -14,6 +14,7 @@ class RefurbedShipLines extends Command
         {--order-item-id=* : Optional Refurbed order item IDs to restrict the update}
         {--tracking-number= : Tracking number to send with the shipment}
         {--carrier= : Carrier slug (e.g. DHL_EXPRESS)}
+        {--imei= : Optional IMEI/serial identifier to attach to each order line}
         {--force : Ship provided lines even if they are not ACCEPTED}
     ';
 
@@ -32,11 +33,12 @@ class RefurbedShipLines extends Command
             'order_item_ids' => array_values(array_filter((array) $this->option('order-item-id'), fn ($value) => $value !== null && $value !== '')),
             'tracking_number' => $this->option('tracking-number') ?: null,
             'carrier' => $this->option('carrier') ?: null,
+            'imei' => $this->option('imei') ?: null,
             'force' => (bool) $this->option('force'),
         ];
 
         $this->line(sprintf('Refurbed order: %s', $orderId));
-        $this->line('Options: ' . json_encode(Arr::only($options, ['tracking_number', 'carrier', 'force'])));
+        $this->line('Options: ' . json_encode(Arr::only($options, ['tracking_number', 'carrier', 'imei', 'force'])));
 
         try {
             $result = $this->orderLineService->shipOrderLines($orderId, $options);
