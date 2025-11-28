@@ -65,10 +65,18 @@ class RefurbedShipLines extends Command
             $this->line(sprintf('API batches sent: %d | Items acknowledged: %d', count($summary['batches'] ?? []), $summary['total']));
         }
 
+        $requestUrl = $result['request_url'] ?? null;
         $requestPayload = $result['request_payload'] ?? null;
-        if ($requestPayload !== null) {
-            $this->line('Refurbed request payload:');
-            $this->line(json_encode($requestPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+        if ($requestUrl || $requestPayload !== null) {
+            if ($requestUrl) {
+                $this->line('Refurbed request:');
+                $this->line(sprintf('POST %s', $requestUrl));
+            }
+
+            if ($requestPayload !== null) {
+                $this->line('Payload:');
+                $this->line(json_encode($requestPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+            }
         }
 
         $rawResponse = $result['raw_response'] ?? null;
