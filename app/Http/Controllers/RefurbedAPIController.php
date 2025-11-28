@@ -14,6 +14,8 @@ use Throwable;
 
 class RefurbedAPIController extends Controller
 {
+    public const ORDER_ITEM_STATE_ENDPOINT = 'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState';
+
     private const MAX_BATCH_SIZE = 50;
     protected string $baseUrl;
 
@@ -252,7 +254,7 @@ class RefurbedAPIController extends Controller
     public function batchUpdateOrderItemsState(array $stateUpdates, array $options = []): array
     {
         return $this->sendBatchedOrderItemUpdates(
-            'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState',
+            self::ORDER_ITEM_STATE_ENDPOINT,
             'order_item_state_updates',
             $stateUpdates,
             $options
@@ -494,6 +496,11 @@ class RefurbedAPIController extends Controller
     protected function buildUrl(string $path): string
     {
         return $this->baseUrl . '/' . ltrim($path, '/');
+    }
+
+    public function getEndpointUrl(string $path): string
+    {
+        return $this->buildUrl($path);
     }
 
     protected function cleanPayload(array $payload): array

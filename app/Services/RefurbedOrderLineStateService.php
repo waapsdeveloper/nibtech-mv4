@@ -63,6 +63,7 @@ class RefurbedOrderLineStateService
                 'skipped' => $skipped->all(),
                 'result' => ['batches' => [], 'total' => 0],
                 'request_payload' => null,
+                'request_url' => null,
                 'raw_response' => null,
             ];
         }
@@ -80,6 +81,8 @@ class RefurbedOrderLineStateService
                 'parcel_tracking_carrier' => $carrier,
             ], fn ($value) => $value !== null && $value !== '')
         );
+
+        $requestUrl = $this->refurbed->getEndpointUrl(RefurbedAPIController::ORDER_ITEM_STATE_ENDPOINT);
 
         try {
             $result = $this->refurbed->batchUpdateOrderItemsState($updates);
@@ -106,6 +109,7 @@ class RefurbedOrderLineStateService
             'skipped' => $skipped->all(),
             'result' => $summary,
             'request_payload' => $updates,
+            'request_url' => $requestUrl,
             'raw_response' => $result,
         ];
     }
