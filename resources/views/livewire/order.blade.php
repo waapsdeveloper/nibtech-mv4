@@ -811,6 +811,7 @@
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                             @if ((int) $order->marketplace_id === 4)
+                                            <a class="dropdown-item" href="{{ route('order.refurbed_sync_identifiers', ['id' => $order->id]) }}" onclick="return confirm('Push IMEI data to Refurbed for this order?');">Sync Refurbed IMEIs</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_resend_shipped', ['id' => $order->id]) }}" onclick="return confirm('Resend Refurbed SHIPPED request for this order?');">Resend Refurbed Shipped</a>
                                             @endif
                                             {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
