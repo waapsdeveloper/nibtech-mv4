@@ -3048,6 +3048,9 @@ class Order extends Component
             $items = $order->order_items;
             $detail = null;
             if($isRefurbed){
+                if ($refurbedApi) {
+                    $this->syncRefurbedOrderItems($order, $refurbedApi, null, null, true);
+                }
                 $detail = $this->handleRefurbedShipping($order, $refurbedApi);
             }else{
                 if(count($items) > 1 || $items[0]->quantity > 1){
@@ -3092,7 +3095,9 @@ class Order extends Component
                     ?? request('refurbed_carrier')
                     ?? data_get($this->buildRefurbedShippingDefaults(), 'default_carrier');
                 $carrierContext = $carrierContext ? $this->normalizeRefurbedCarrier($carrierContext) : null;
-                $this->syncRefurbedOrderItems($order, $refurbedApi, $carrierContext);
+                $trackingContext = data_get($detail, 'tracking_number')
+                    ?? $order->tracking_number;
+                $this->syncRefurbedOrderItems($order, $refurbedApi, $carrierContext, $trackingContext);
             }
 
             if(count($sku) == 1 && count($stock) == 1){
@@ -3332,6 +3337,48 @@ class Order extends Component
                 'carrier' => $carrier,
             ],
         ]);
+    }
+
+    protected function syncRefurbedOrderItems(
+        Order_model $order,
+        RefurbedAPIController $refurbedApi,
+        ?string $carrier = null,
+        ?string $trackingNumber = null,
+        bool $forceReload = false
+    ): void {
+        try {
+            $this->refreshRefurbedOrderItemsRelation($order, $forceReload);
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to refresh order items before identifier sync', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            return;
+        }
+
+        $options = array_filter([
+            'carrier' => $carrier,
+            'tracking_number' => $trackingNumber ?? $order->tracking_number,
+        ]);
+
+        try {
+            app(RefurbedShippingService::class)->syncOrderItemIdentifiers($order, $refurbedApi, $options);
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Failed to sync order item identifiers', [
+                'order_id' => $order->id,
+                'carrier' => $carrier,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
+    protected function refreshRefurbedOrderItemsRelation(Order_model $order, bool $forceReload = false): void
+    {
+        if ($forceReload) {
+            $order->unsetRelation('order_items');
+        }
+
+        $order->load(['order_items.stock']);
     }
 
     protected function ensureRefurbedLabelArtifacts(Order_model $order, RefurbedAPIController $refurbedApi, $dispatchResult = null): void
@@ -4270,6 +4317,21 @@ class Order extends Component
         $currency_codes = Currency_model::pluck('id','code')->toArray();
         $country_codes = Country_model::pluck('id','code')->toArray();
 
+        $localOrder = $this->loadLocalOrderForRecheck($order_id);
+        if ($this->shouldHandleRefurbedRecheck($order_id, $localOrder)) {
+            $this->handleRefurbedRecheck(
+                $order_id,
+                (bool) $refresh,
+                (bool) $invoice,
+                $tester,
+                (bool) $data,
+                $currency_codes,
+                $country_codes,
+                $localOrder
+            );
+            return;
+        }
+
         $orderObj = $bm->getOneOrder($order_id);
         if(!isset($orderObj->orderlines)){
             if($data == true){
@@ -4294,28 +4356,219 @@ class Order extends Component
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
             if($refresh == true){
                 $order = Order_model::where('reference_id',$order_id)->first();
-
-                $invoice_url = url('export_invoice').'/'.$order->id;
-                // JavaScript to open two tabs and print
-                echo '<script>
-                var newTab2 = window.open("'.$invoice_url.'", "_blank");
-                // var newTab1 = window.open("'.$order->delivery_note_url.'", "_blank");
-
-                // newTab1.onload = function() {
-                //     newTab1.print();
-                // };
-
-                newTab2.onload = function() {
-                    newTab2.print();
-                    newTab2.close();
-                };
-
-                window.close();
-                </script>';
+                if ($order) {
+                    $this->renderRecheckInvoiceScript($order);
+                }
             }
         }
         // return redirect()->back();
 
+    }
+
+    protected function loadLocalOrderForRecheck($orderId): ?Order_model
+    {
+        if ($orderId === null || $orderId === '') {
+            return null;
+        }
+
+        $query = Order_model::query()->where('reference_id', $orderId);
+
+        if (ctype_digit((string) $orderId)) {
+            $query->orWhere('id', (int) $orderId);
+        }
+
+        return $query->first();
+    }
+
+    protected function shouldHandleRefurbedRecheck($orderId, ?Order_model $localOrder = null): bool
+    {
+        if ($localOrder && (int) $localOrder->marketplace_id === self::REFURBED_MARKETPLACE_ID) {
+            return true;
+        }
+
+        $marketplaceParam = strtolower((string) request('marketplace', ''));
+        if ($marketplaceParam === 'refurbed') {
+            return true;
+        }
+
+        if ((int) request('marketplace_id', 0) === self::REFURBED_MARKETPLACE_ID) {
+            return true;
+        }
+
+        if (request()->boolean('refurbed')) {
+            return true;
+        }
+
+        if (! $localOrder) {
+            $localOrder = $this->loadLocalOrderForRecheck($orderId);
+        }
+
+        return $localOrder && (int) $localOrder->marketplace_id === self::REFURBED_MARKETPLACE_ID;
+    }
+
+    protected function handleRefurbedRecheck(
+        string $orderId,
+        bool $refresh,
+        bool $invoice,
+        $tester,
+        bool $dumpData,
+        array $currencyCodes,
+        array $countryCodes,
+        ?Order_model $localOrder = null
+    ): void {
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Unable to initialize API client for recheck', [
+                'order_reference' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+            session()->put('error', 'Unable to connect to Refurbed API: ' . $e->getMessage());
+            return;
+        }
+
+        try {
+            $orderResponse = $refurbedApi->getOrder($orderId);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to fetch order during recheck', [
+                'order_reference' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+            session()->put('error', 'Unable to fetch Refurbed order: ' . $e->getMessage());
+            return;
+        }
+
+        $orderPayload = $orderResponse['order'] ?? $orderResponse;
+
+        try {
+            $itemsResponse = $refurbedApi->getAllOrderItems($orderId);
+            $orderItems = $itemsResponse['order_items'] ?? [];
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to fetch order items during recheck', [
+                'order_reference' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+            $orderItems = $orderPayload['order_items'] ?? $orderPayload['items'] ?? [];
+        }
+
+        if ($dumpData) {
+            dd([
+                'order' => $orderPayload,
+                'items' => $orderItems,
+            ]);
+        }
+
+        try {
+            $savedOrder = (new Order_model())->storeRefurbedOrderInDB(
+                $orderPayload,
+                $orderItems,
+                $currencyCodes,
+                $countryCodes
+            );
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Failed to persist order during recheck', [
+                'order_reference' => $orderId,
+                'error' => $e->getMessage(),
+            ]);
+            session()->put('error', 'Unable to save Refurbed order: ' . $e->getMessage());
+            return;
+        }
+
+        if ($savedOrder) {
+            $this->applyRefurbedSettlementTotals($savedOrder, $orderItems);
+            session()->put('success', 'Refurbed order refreshed.');
+        }
+
+        if ($refresh && $savedOrder) {
+            $this->renderRecheckInvoiceScript($savedOrder);
+        }
+    }
+
+    protected function applyRefurbedSettlementTotals(Order_model $order, array $remoteItems): void
+    {
+        if (empty($remoteItems)) {
+            return;
+        }
+
+        $order->loadMissing('order_items');
+        if ($order->order_items->isEmpty()) {
+            return;
+        }
+
+        $remoteMap = [];
+        foreach ($remoteItems as $item) {
+            $reference = (string) ($item['id'] ?? $item['order_item_id'] ?? '');
+            if ($reference === '') {
+                continue;
+            }
+
+            $paidValue = $item['settlement_total_paid']
+                ?? $item['settlement_price']
+                ?? $item['price']
+                ?? null;
+
+            $normalized = $this->normalizeNumericValue($paidValue);
+            if ($normalized === null) {
+                continue;
+            }
+
+            $remoteMap[$reference] = $normalized;
+        }
+
+        if ($remoteMap === []) {
+            return;
+        }
+
+        foreach ($order->order_items as $orderItem) {
+            $reference = (string) $orderItem->reference_id;
+            if ($reference === '' || ! array_key_exists($reference, $remoteMap)) {
+                continue;
+            }
+
+            $newPrice = $remoteMap[$reference];
+            if ($newPrice === null || (float) $orderItem->price === (float) $newPrice) {
+                continue;
+            }
+
+            $orderItem->price = $newPrice;
+            $orderItem->save();
+        }
+    }
+
+    protected function normalizeNumericValue($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        if (is_numeric($value)) {
+            return round((float) $value, 2);
+        }
+
+        if (is_string($value)) {
+            $clean = preg_replace('/[^0-9\.\-]/', '', $value);
+            if ($clean === null || $clean === '' || ! is_numeric($clean)) {
+                return null;
+            }
+
+            return round((float) $clean, 2);
+        }
+
+        return null;
+    }
+
+    protected function renderRecheckInvoiceScript(Order_model $order): void
+    {
+        $invoice_url = url('export_invoice').'/'.$order->id;
+
+        echo '<script>
+            var newTab2 = window.open("'.$invoice_url.'", "_blank");
+            newTab2.onload = function() {
+                newTab2.print();
+                newTab2.close();
+            };
+            window.close();
+        </script>';
     }
     public function import()
     {
