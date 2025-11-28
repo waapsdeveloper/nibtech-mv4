@@ -159,7 +159,8 @@
 
 
         {{-- Marketplace Accordion Section --}}
-        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}">
+        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}" 
+             data-variation-id="{{ $variation->id }}">
             <div class="accordion" id="marketplaceAccordionInner_{{ $variation->id }}">
                 @php
                     // Get all marketplaces from system

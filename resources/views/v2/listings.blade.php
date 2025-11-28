@@ -505,6 +505,81 @@
     });
 
     /**
+     * Initialize marketplace accordion auto-loading
+     * When parent accordion expands, load all marketplace data simultaneously
+     */
+    function initializeMarketplaceAutoLoading() {
+        // Find all parent marketplace accordions
+        const parentAccordions = document.querySelectorAll('.multi_collapse[data-variation-id]');
+        
+        parentAccordions.forEach(parentAccordion => {
+            // Skip if already initialized
+            if (parentAccordion.dataset.loadingInitialized === 'true') {
+                return;
+            }
+            parentAccordion.dataset.loadingInitialized = 'true';
+
+            // Listen for Bootstrap collapse show event
+            parentAccordion.addEventListener('shown.bs.collapse', function() {
+                const variationId = this.dataset.variationId;
+                
+                // Find all marketplace accordion buttons within this parent
+                const marketplaceButtons = this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]');
+                
+                // Trigger loading for all marketplace accordions simultaneously
+                marketplaceButtons.forEach(button => {
+                    const targetId = button.getAttribute('data-bs-target');
+                    if (targetId) {
+                        // Extract marketplace ID and variation ID from target
+                        const accordionId = targetId.replace('#collapse_', '');
+                        const parts = accordionId.split('_');
+                        if (parts.length >= 2) {
+                            const marketplaceId = parts[0];
+                            const targetVariationId = parts[1];
+                            
+                                // Use Livewire to call loadData for each component
+                            if (typeof Livewire !== 'undefined') {
+                                // Try to find and call the component's loadData method
+                                Livewire.all().forEach(component => {
+                                    try {
+                                        // Check if this component matches our criteria
+                                        const data = component.__instance?.serverMemo?.data || {};
+                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                            // Load data if not ready
+                                            if (!data.ready) {
+                                                component.call('loadData');
+                                            }
+                                        }
+                                    } catch(e) {
+                                        // Component might not be ready yet, ignore
+                                    }
+                                });
+                            }
+                        }
+                    }
+                });
+            });
+        });
+    }
+
+    // Initialize on DOM ready and after Livewire updates
+    function initMarketplaceLoading() {
+        setTimeout(initializeMarketplaceAutoLoading, 300);
+    }
+
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initMarketplaceLoading);
+    } else {
+        initMarketplaceLoading();
+    }
+
+    // Re-initialize after Livewire updates
+    if (typeof Livewire !== 'undefined') {
+        document.addEventListener('livewire:load', initMarketplaceLoading);
+        document.addEventListener('livewire:update', initMarketplaceLoading);
+    }
+
+    /**
      * Initialize deferred sales data loading using Intersection Observer
      * Sales data will only load when variation cards scroll into viewport
      */

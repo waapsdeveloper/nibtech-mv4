@@ -410,15 +410,13 @@ class MarketplaceAccordion extends Component
     }
     
     /**
-     * Auto-expand and load data (called from JavaScript)
+     * Load marketplace data (public method that can be called from JavaScript)
+     * This is separate from toggleAccordion to allow simultaneous loading
      */
-    public function autoExpand(): void
+    public function loadData(): void
     {
-        if (!$this->expanded) {
-            $this->expanded = true;
-            if (!$this->ready) {
-                $this->loadMarketplaceData();
-            }
+        if (!$this->ready) {
+            $this->loadMarketplaceData();
         }
     }
 

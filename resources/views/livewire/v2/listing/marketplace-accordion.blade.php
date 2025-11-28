@@ -12,7 +12,11 @@
             <div class="d-flex justify-content-between align-items-center w-100 me-3">
                 <div class="flex-grow-1">
                     <strong>{{ $marketplaceName }}</strong>
-                    @if($ready && count($listings) > 0)
+                    @if(!$ready)
+                        <span class="spinner-border spinner-border-sm ms-2" role="status" style="width: 1rem; height: 1rem;">
+                            <span class="visually-hidden">Loading...</span>
+                        </span>
+                    @elseif($ready && count($listings) > 0)
                         <span class="badge bg-primary ms-2">{{ count($listings) }} listing(s)</span>
                     @endif
                 </div>
