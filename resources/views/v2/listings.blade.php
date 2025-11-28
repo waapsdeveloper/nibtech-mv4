@@ -28,6 +28,23 @@
         text-align: center;
         padding: 20px;
     }
+    /* Small side loader for variations loading */
+    #v2-variations-loader {
+        position: fixed;
+        top: 50%;
+        right: 20px;
+        transform: translateY(-50%);
+        z-index: 1050;
+        background: white;
+        padding: 10px 15px;
+        border-radius: 5px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        display: none;
+    }
+    #v2-variations-loader.show {
+        display: block;
+    }
+    
     .variations-container {
         min-height: 200px;
     }
@@ -92,6 +109,22 @@
         </div>
         <p class="mt-2 text-muted">Loading variations...</p>
     </div>
+</div>
+
+<!-- Small side loader indicator -->
+<div id="v2-variations-loader" class="text-center">
+    <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <small class="d-block mt-1 text-muted">Loading items...</small>
+</div>
+
+<!-- Small side loader indicator -->
+<div id="v2-variations-loader" class="text-center">
+    <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+        <span class="visually-hidden">Loading...</span>
+    </div>
+    <small class="d-block mt-1 text-muted">Loading items...</small>
 </div>
 
 <!-- Pagination -->
@@ -266,6 +299,9 @@
         document.getElementById('v2-page-info').textContent = 
             `From ${variations.from} To ${variations.to} Out Of ${variations.total}`;
 
+        // Show small side loader
+        showVariationsLoader();
+        
         // Render Livewire components from server
         fetch("{{ url('v2/listings/render_listing_items') }}", {
             method: 'POST',
@@ -281,6 +317,7 @@
         })
         .then(response => response.json())
         .then(data => {
+            hideVariationsLoader();
             if (data.html) {
                 variationsContainer.innerHTML = data.html;
                 // Rescan for Livewire components
@@ -296,6 +333,7 @@
             }
         })
         .catch(error => {
+            hideVariationsLoader();
             console.error('Error rendering listing items:', error);
             variationsContainer.innerHTML = 
                 '<p class="text-center text-danger">Error rendering components. Please refresh the page.</p>';
@@ -437,6 +475,26 @@
         const queryString = new URLSearchParams(params).toString();
         window.location.href = "{{ url('listing/export') }}?" + queryString;
     });
+
+    /**
+     * Show small side loader when variations are loading
+     */
+    function showVariationsLoader() {
+        const loader = document.getElementById('v2-variations-loader');
+        if (loader) {
+            loader.classList.add('show');
+        }
+    }
+    
+    /**
+     * Hide small side loader when variations are loaded
+     */
+    function hideVariationsLoader() {
+        const loader = document.getElementById('v2-variations-loader');
+        if (loader) {
+            loader.classList.remove('show');
+        }
+    }
 
     // Initial load
     document.addEventListener('DOMContentLoaded', function() {

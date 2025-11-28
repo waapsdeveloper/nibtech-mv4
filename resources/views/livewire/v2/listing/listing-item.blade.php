@@ -1,12 +1,12 @@
-<div class="card listing-item-card" wire:init="loadRow">
+<div class="card listing-item-card" @if(!$ready) wire:init="loadRow" @endif>
     @if (!$ready || $variation === null)
-        {{-- Loading State --}}
-        <div class="card-header py-2 d-flex justify-content-between align-items-center">
+        {{-- Minimal loading state - just show a small indicator --}}
+        <div class="card-header py-2">
             <div class="d-flex align-items-center">
-                <div class="spinner-border spinner-border-sm text-primary me-2" role="status">
+                <div class="spinner-border spinner-border-sm text-primary me-2" style="width: 1rem; height: 1rem;" role="status">
                     <span class="visually-hidden">Loading...</span>
                 </div>
-                <span class="text-muted">Loading variation {{ $variationId }}...</span>
+                <span class="text-muted small">Loading...</span>
             </div>
         </div>
     @else

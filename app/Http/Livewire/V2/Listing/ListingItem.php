@@ -52,7 +52,8 @@ class ListingItem extends Component
         array $currencySign,
         array $countries,
         array $marketplaces,
-        ?string $processId = null
+        ?string $processId = null,
+        ?array $preloadedVariationData = null
     ): void {
         $this->variationId = $variationId;
         $this->rowNumber = $rowNumber;
@@ -66,10 +67,43 @@ class ListingItem extends Component
         $this->countries = $countries;
         $this->marketplaces = $marketplaces;
         $this->processId = $processId;
+        
+        // If preloaded data is available, use it immediately
+        if ($preloadedVariationData !== null) {
+            $this->initializeFromPreloadedData($preloadedVariationData);
+        }
     }
 
     /**
-     * Load variation data lazily when component is initialized
+     * Initialize component from preloaded variation data
+     * Since the data is already loaded in renderListingItems, we just load it here with minimal queries
+     */
+    private function initializeFromPreloadedData(array $data): void
+    {
+        // Load variation with relationships (data already loaded in renderListingItems, this is fast)
+        $this->variation = Variation_model::with([
+            'listings',
+            'listings.country_id',
+            'listings.currency',
+            'listings.marketplace',
+            'product',
+            'available_stocks',
+            'pending_orders',
+            'storage_id',
+            'color_id',
+            'grade_id',
+        ])->find($this->variationId);
+        
+        if ($this->variation) {
+            // Calculate all stats immediately
+            $this->calculateStats();
+            $this->ready = true;
+            $this->detailsExpanded = false;
+        }
+    }
+
+    /**
+     * Load variation data lazily when component is initialized (fallback if no preloaded data)
      */
     public function loadRow(): void
     {
@@ -92,25 +126,42 @@ class ListingItem extends Component
         ])->find($this->variationId);
 
         if ($this->variation) {
-            // Calculate stats using service
-            $this->stats = $this->calculationService->calculateVariationStats($this->variation);
-            
-            // Calculate pricing info
-            $this->pricingInfo = $this->calculationService->calculatePricingInfo(
-                $this->variation->listings,
-                $this->exchangeRates,
-                $this->eurGbp
-            );
-            
-            // Calculate average cost
-            $this->averageCost = $this->calculationService->calculateAverageCost(
-                $this->variation->available_stocks ?? collect()
-            );
-            
-            // Calculate total orders count
-            $this->totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($this->variationId);
-            
-            // Get buybox listings with country info for display
+            $this->calculateStats();
+            $this->ready = true;
+            // Don't auto-expand - let user expand manually
+            $this->detailsExpanded = false;
+        }
+    }
+
+    /**
+     * Calculate all stats from variation data
+     */
+    private function calculateStats(): void
+    {
+        if (!$this->variation) {
+            return;
+        }
+
+        // Calculate stats using service
+        $this->stats = $this->calculationService->calculateVariationStats($this->variation);
+        
+        // Calculate pricing info
+        $this->pricingInfo = $this->calculationService->calculatePricingInfo(
+            $this->variation->listings ?? collect(),
+            $this->exchangeRates,
+            $this->eurGbp
+        );
+        
+        // Calculate average cost
+        $this->averageCost = $this->calculationService->calculateAverageCost(
+            $this->variation->available_stocks ?? collect()
+        );
+        
+        // Calculate total orders count
+        $this->totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($this->variationId);
+        
+        // Get buybox listings with country info for display
+        if ($this->variation->listings) {
             $this->buyboxListings = $this->variation->listings
                 ->where('buybox', 1)
                 ->map(function($listing) {
@@ -124,10 +175,6 @@ class ListingItem extends Component
                 })
                 ->values()
                 ->toArray();
-            
-            $this->ready = true;
-            // Don't auto-expand - let user expand manually
-            $this->detailsExpanded = false;
         }
     }
 

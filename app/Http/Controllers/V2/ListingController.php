@@ -8,6 +8,7 @@ use App\Services\V2\ListingDataService;
 use App\Services\V2\ListingQueryService;
 use App\Services\V2\ListingCalculationService;
 use App\Models\Process_model;
+use App\Models\Variation_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -136,13 +137,49 @@ class ListingController extends Controller
                 ]);
             }
 
+            // Load all variations with basic data in one batch query (much faster than individual loads)
+            $variations = Variation_model::with([
+                'product',
+                'storage_id',
+                'color_id',
+                'grade_id',
+                'listings' => function($q) {
+                    $q->select('id', 'variation_id', 'country', 'marketplace_id', 'buybox', 'reference_uuid_2');
+                },
+                'listings.country_id' => function($q) {
+                    $q->select('id', 'code', 'market_url', 'market_code');
+                },
+                'available_stocks' => function($q) {
+                    $q->select('id', 'variation_id', 'status');
+                },
+                'pending_orders' => function($q) {
+                    $q->select('id', 'variation_id');
+                },
+            ])
+            ->whereIn('id', $variationIds)
+            ->get()
+            ->keyBy('id');
+
+            // Preserve order from variationIds array
+            $orderedVariations = collect($variationIds)->map(function($id) use ($variations) {
+                return $variations->get($id);
+            })->filter()->values();
+
+            // Convert to array format for passing to components
+            $variationData = $orderedVariations->map(function($variation) {
+                return [
+                    'id' => $variation->id,
+                    'variation_data' => $variation->toArray(),
+                ];
+            })->toArray();
+
             // Get reference data
             $referenceData = $this->dataService->getReferenceData();
             $exchangeData = $this->calculationService->getExchangeRateData();
 
             // Mount Livewire component
             $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
-                'variationIds' => $variationIds,
+                'variationData' => $variationData, // Pass pre-loaded variation data
                 'storages' => $referenceData['storages'],
                 'colors' => $referenceData['colors'],
                 'grades' => $referenceData['grades'],
