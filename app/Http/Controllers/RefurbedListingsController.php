@@ -170,6 +170,7 @@ class RefurbedListingsController extends Controller
             'order_item_ids.*' => 'string',
             'tracking_number' => 'nullable|string|max:191',
             'carrier' => 'nullable|string|max:191',
+            'imei' => 'nullable|string|max:191',
             'force' => 'sometimes|boolean',
         ]);
         try {
@@ -177,6 +178,7 @@ class RefurbedListingsController extends Controller
                 'order_item_ids' => $validated['order_item_ids'] ?? [],
                 'tracking_number' => $validated['tracking_number'] ?? null,
                 'carrier' => $validated['carrier'] ?? null,
+                'imei' => $validated['imei'] ?? null,
                 'force' => $validated['force'] ?? false,
             ]);
         } catch (\RuntimeException $e) {
