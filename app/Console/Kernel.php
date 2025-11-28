@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refresh:latest')
             ->everyFiveMinutes()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -38,7 +38,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refresh:orders')
             ->everyFiveMinutes()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -50,7 +50,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refurbed:orders')
             ->hourly()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -62,13 +62,13 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
         $schedule->command('refurbed:create-labels')
             ->everyTenMinutes()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
         $schedule->command('functions:ten')
             ->everyTenMinutes()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -81,21 +81,21 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('backup:email')
             ->hourly()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         $schedule->command('functions:daily')
             ->everyFourHours()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         $schedule->command('fetch:exchange-rates')
             ->hourly()
-            ->between('6:00', '24:00')
+            ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
