@@ -694,7 +694,7 @@
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
                                         @if (isset($stock) && $item->status == 2 && !session()->has('refresh'))
-                                            @if ($order->marketplace_id == 4)
+                                            @if (request('marketplace') == 4)
                                             @else
                                             @php
                                                 session()->put('refresh', true);
