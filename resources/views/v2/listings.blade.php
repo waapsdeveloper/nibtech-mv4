@@ -522,19 +522,46 @@
             // Listen for Bootstrap collapse show event
             parentAccordion.addEventListener('shown.bs.collapse', function() {
                 // Find all marketplace accordion buttons within this parent
-                const marketplaceButtons = this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]');
-                
-                // Auto-expand all child marketplace accordions with a small staggered delay
-                marketplaceButtons.forEach((button, index) => {
-                    // Check if button is collapsed (not already expanded)
-                    if (button.classList.contains('collapsed')) {
-                        // Small staggered delay to expand them sequentially but quickly
-                        setTimeout(() => {
-                            // Click the button to expand it - this will trigger toggleAccordion and load data
-                            button.click();
-                        }, 100 + (index * 50)); // 100ms base + 50ms per accordion
-                    }
+                const marketplaceButtons = Array.from(this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]')).filter(button => {
+                    // Only include collapsed buttons (not already expanded)
+                    return button.classList.contains('collapsed');
                 });
+                
+                // Expand child accordions one by one sequentially
+                function expandNext(index) {
+                    if (index >= marketplaceButtons.length) {
+                        return; // All done
+                    }
+                    
+                    const button = marketplaceButtons[index];
+                    const targetId = button.getAttribute('data-bs-target');
+                    const targetElement = targetId ? document.querySelector(targetId) : null;
+                    
+                    if (targetElement) {
+                        // Listen for when this accordion finishes expanding
+                        const onExpanded = () => {
+                            targetElement.removeEventListener('shown.bs.collapse', onExpanded);
+                            // Wait a bit then expand next one
+                            setTimeout(() => {
+                                expandNext(index + 1);
+                            }, 100);
+                        };
+                        
+                        targetElement.addEventListener('shown.bs.collapse', onExpanded);
+                        // Click the button to expand it - this will trigger toggleAccordion and load data
+                        button.click();
+                    } else {
+                        // If target not found, just continue to next
+                        setTimeout(() => {
+                            expandNext(index + 1);
+                        }, 100);
+                    }
+                }
+                
+                // Start expanding from the first one
+                if (marketplaceButtons.length > 0) {
+                    expandNext(0);
+                }
             });
         });
     }
