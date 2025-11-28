@@ -23,6 +23,15 @@ class RefurbedListingsControllerTest extends TestCase
             'max_retries' => 0,
             'retry_delay_ms' => 0,
         ]]);
+
+        config([
+            'logging.default' => 'single',
+            'logging.channels.single' => [
+                'driver' => 'single',
+                'path' => storage_path('logs/laravel.log'),
+                'level' => 'debug',
+            ],
+        ]);
     }
 
     public function test_active_listings_endpoint_returns_active_state_by_default(): void
@@ -46,5 +55,72 @@ class RefurbedListingsControllerTest extends TestCase
                 && ($request['filter']['state']['any_of'] ?? []) === ['ACTIVE']
                 && ($request['pagination']['page_size'] ?? null) === 25;
         });
+    }
+
+    public function test_ship_order_lines_updates_only_accepted_items(): void
+    {
+        Http::fake([
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/ListOrderItemsByOrder' => Http::response([
+                'order_items' => [
+                    ['id' => 'line-1', 'state' => 'ACCEPTED'],
+                    ['id' => 'line-2', 'state' => 'SHIPPED'],
+                ],
+                'has_more' => false,
+            ], 200),
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState' => Http::response([
+                'result' => 'ok',
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/refurbed/orders/REF-123/ship-lines', [
+            'tracking_number' => 'TRACK123',
+            'carrier' => 'DHL',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'order_id' => 'REF-123',
+                'updated' => 1,
+                'skipped' => ['line-2'],
+            ]);
+
+        Http::assertSent(function (Request $request) {
+            return $request->url() === 'https://api.refurbed.com/refb.merchant.v1.OrderItemService/ListOrderItemsByOrder'
+                && $request['order_id'] === 'REF-123';
+        });
+
+        Http::assertSent(function (Request $request) {
+            if ($request->url() !== 'https://api.refurbed.com/refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState') {
+                return false;
+            }
+
+            $updates = $request['order_item_state_updates'] ?? [];
+            return count($updates) === 1
+                && $updates[0]['id'] === 'line-1'
+                && $updates[0]['state'] === 'SHIPPED'
+                && $updates[0]['parcel_tracking_number'] === 'TRACK123'
+                && $updates[0]['parcel_tracking_carrier'] === 'DHL';
+        });
+    }
+
+    public function test_ship_order_lines_returns_noop_when_nothing_to_update(): void
+    {
+        Http::fake([
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/ListOrderItemsByOrder' => Http::response([
+                'order_items' => [
+                    ['id' => 'line-1', 'state' => 'SHIPPED'],
+                ],
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/refurbed/orders/REF-999/ship-lines');
+
+        $response->assertStatus(422)
+            ->assertJson([
+                'status' => 'noop',
+                'order_id' => 'REF-999',
+            ]);
+
+        Http::assertSentCount(1);
     }
 }

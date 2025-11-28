@@ -51,6 +51,12 @@ Added Refurbed marketplace listing synchronization to the `FunctionsThirty` comm
 - The Livewire packing screen (`app/Http/Livewire/Order.php`) now gathers every Refurbed order item ID for the order being shipped and calls `RefurbedAPIController::batchUpdateOrderItemsState()` right after a tracking number is captured.
 - Each payload marks the line as `SHIPPED` and includes the tracking number when available; helper chunking (≤50 updates/request) ensures large orders stay within Refurbed limits.
 - Failures are logged with order references so ops can retry without guessing which parcels were missed.
+- When manual intervention is required, the internal endpoint `POST /api/refurbed/orders/{order_id}/ship-lines` can now be used to push every `ACCEPTED` order line to `SHIPPED`. Optional body fields:
+    - `tracking_number` and `carrier` (strings) propagate tracking data to Refurbed.
+    - `order_item_ids` (array of Refurbed order item IDs) restricts the update to a subset; leave empty to update every accepted line.
+    - `force` (boolean) bypasses the accepted-state guard and ships every provided ID.
+    - Response payload returns `updated`, `skipped`, and aggregate API batch info for quick auditing.
+- Ops can also trigger the same workflow from the CLI via `php artisan refurbed:ship-lines {order_id}` with the same optional flags (`--order-item-id=*`, `--tracking-number=`, `--carrier=`, `--force`). Useful for quick smoke-tests or shipping a stuck order without touching the UI.
 
 ## Configuration Required
 

@@ -7,6 +7,7 @@ use App\Models\Listing_model;
 use App\Models\Variation_model;
 use App\Models\Country_model;
 use App\Models\Currency_model;
+use App\Services\RefurbedOrderLineStateService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -15,10 +16,12 @@ use Illuminate\Support\Facades\Log;
 class RefurbedListingsController extends Controller
 {
     protected RefurbedAPIController $refurbed;
+    protected RefurbedOrderLineStateService $orderLineService;
 
-    public function __construct(RefurbedAPIController $refurbed)
+    public function __construct(RefurbedAPIController $refurbed, RefurbedOrderLineStateService $orderLineService)
     {
         $this->refurbed = $refurbed;
+        $this->orderLineService = $orderLineService;
     }
 
     public function test(Request $request): JsonResponse
@@ -57,9 +60,8 @@ class RefurbedListingsController extends Controller
     public function active(Request $request): JsonResponse
     {
         $perPage = $this->clampPageSize((int) $request->input('per_page', 50));
-        // Note: Refurbed uses different state enum values (OFFER_STATE_ACTIVE, etc.)
-        // For now, fetch all offers without state filter
-        $states = $this->normalizeList($request->input('state'), []);
+        // Default to ACTIVE listings unless an explicit filter is supplied
+        $states = $this->normalizeList($request->input('state'), ['ACTIVE']);
 
         $filter = [];
         if (!empty($states)) {
@@ -159,6 +161,34 @@ class RefurbedListingsController extends Controller
                 'message' => 'Failed to create shipping label: ' . $e->getMessage(),
             ], 500);
         }
+    }
+
+    public function shipOrderLines(Request $request, string $orderId): JsonResponse
+    {
+        $validated = $request->validate([
+            'order_item_ids' => 'nullable|array|min:1',
+            'order_item_ids.*' => 'string',
+            'tracking_number' => 'nullable|string|max:191',
+            'carrier' => 'nullable|string|max:191',
+            'force' => 'sometimes|boolean',
+        ]);
+        try {
+            $result = $this->orderLineService->shipOrderLines($orderId, [
+                'order_item_ids' => $validated['order_item_ids'] ?? [],
+                'tracking_number' => $validated['tracking_number'] ?? null,
+                'carrier' => $validated['carrier'] ?? null,
+                'force' => $validated['force'] ?? false,
+            ]);
+        } catch (\RuntimeException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => $e->getMessage(),
+            ], 502);
+        }
+
+        $statusCode = $result['status'] === 'noop' ? 422 : 200;
+
+        return response()->json($result, $statusCode);
     }
 
     private function normalizeList(mixed $value, array $default = []): array
