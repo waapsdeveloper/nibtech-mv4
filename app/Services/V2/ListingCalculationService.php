@@ -35,6 +35,7 @@ class ListingCalculationService
             'best_min_price' => null,
             'best_price' => null,
             'has_buybox' => false,
+            'buybox_count' => 0,
             'without_buybox_count' => 0,
             'total_listings' => $listings->count(),
         ];
@@ -52,9 +53,22 @@ class ListingCalculationService
         }
 
         $pricingInfo['has_buybox'] = $listings->contains(fn($listing) => $listing->buybox === 1);
+        $pricingInfo['buybox_count'] = $listings->filter(fn($listing) => $listing->buybox === 1)->count();
         $pricingInfo['without_buybox_count'] = $listings->filter(fn($listing) => $listing->buybox !== 1)->count();
 
         return $pricingInfo;
+    }
+
+    /**
+     * Calculate total orders count for a variation (sales orders only)
+     */
+    public function calculateTotalOrdersCount(int $variationId): int
+    {
+        return \App\Models\Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->where('order_type_id', 3); // Sales orders only
+            })
+            ->count();
     }
 
     /**

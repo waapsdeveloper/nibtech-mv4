@@ -25,6 +25,17 @@
                 <div class="sales-info" id="sales_{{ $variation->id }}" data-variation-id="{{ $variation->id }}">
                     <span class="text-muted small">Sales data will load when scrolled into view</span>
                 </div>
+                {{-- Buybox and Total Orders Info --}}
+                <div class="buybox-orders-info mt-1 d-flex gap-2 align-items-center flex-wrap">
+                    <small class="badge bg-success">
+                        Buybox: {{ $pricingInfo['buybox_count'] ?? 0 }}
+                    </small>
+                    <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}" target="_blank" title="View all orders for this variation">
+                        <small class="badge bg-info">
+                            Total Orders: {{ $totalOrdersCount ?? 0 }}
+                        </small>
+                    </a>
+                </div>
             </div>
 
             {{-- Stock Controls --}}

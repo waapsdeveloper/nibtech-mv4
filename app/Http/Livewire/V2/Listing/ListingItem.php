@@ -18,6 +18,7 @@ class ListingItem extends Component
     public array $stats = [];
     public array $pricingInfo = [];
     public float $averageCost = 0.0;
+    public int $totalOrdersCount = 0;
 
     // Reference data (passed from parent)
     public array $storages = [];
@@ -104,6 +105,9 @@ class ListingItem extends Component
             $this->averageCost = $this->calculationService->calculateAverageCost(
                 $this->variation->available_stocks ?? collect()
             );
+            
+            // Calculate total orders count
+            $this->totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($this->variationId);
             
             $this->ready = true;
             // Don't auto-expand - let user expand manually
