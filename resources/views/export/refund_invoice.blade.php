@@ -284,8 +284,16 @@
                                         <td>Amount Due:</td>
                                         <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
+                                    @php
+                                        $marketplaceLabel = optional($order->marketplace)->name;
+                                        if (! $marketplaceLabel) {
+                                            $marketplaceLabel = ((int) ($order->marketplace_id ?? 0) === 4)
+                                                ? 'Refurbed'
+                                                : 'Back Market';
+                                        }
+                                    @endphp
                                     <tr>
-                                        <td>Back Market:</td>
+                                        <td>{{ $marketplaceLabel }}:</td>
                                         <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
                                     <hr>
