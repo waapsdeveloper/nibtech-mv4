@@ -20,6 +20,7 @@ class ListingItem extends Component
     public float $averageCost = 0.0;
     public int $totalOrdersCount = 0;
     public array $buyboxListings = [];
+    public array $marketplaceSummaries = []; // Marketplace ID => summary data
 
     // Reference data (passed from parent)
     public array $storages = [];
@@ -153,6 +154,7 @@ class ListingItem extends Component
             $this->averageCost = $calculated['average_cost'] ?? 0.0;
             $this->totalOrdersCount = $calculated['total_orders_count'] ?? 0;
             $this->buyboxListings = $calculated['buybox_listings'] ?? [];
+            $this->marketplaceSummaries = $calculated['marketplace_summaries'] ?? [];
         } else {
             // Fallback: calculate stats if not pre-calculated
             $this->calculateStats();
@@ -219,6 +221,12 @@ class ListingItem extends Component
         
         // Calculate total orders count
         $this->totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($this->variationId);
+        
+        // Calculate marketplace summaries
+        $this->marketplaceSummaries = $this->calculationService->calculateMarketplaceSummaries(
+            $this->variationId,
+            $this->variation->listings ?? collect()
+        );
         
         // Get buybox listings with country info for display
         if ($this->variation->listings) {

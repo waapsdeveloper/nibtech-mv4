@@ -52,6 +52,61 @@
                         </small>
                     </a>
                 </div>
+                {{-- Marketplace Cards Row --}}
+                @if(!empty($marketplaceSummaries))
+                    <div class="marketplace-cards-row mt-2 d-flex gap-2 flex-wrap">
+                        @php
+                            $marketplaceIds = array_keys($marketplaceSummaries);
+                            // Debug: Log marketplace IDs if needed
+                            // \Log::info('Marketplace IDs for variation ' . $variation->id, ['ids' => $marketplaceIds, 'summaries' => array_keys($marketplaceSummaries)]);
+                        @endphp
+                        @foreach($marketplaceIds as $marketplaceId)
+                            @php
+                                $marketplace = $marketplaces[$marketplaceId] ?? null;
+                                $marketplaceName = is_object($marketplace) 
+                                    ? ($marketplace->name ?? 'Marketplace ' . $marketplaceId)
+                                    : (is_array($marketplace) 
+                                        ? ($marketplace['name'] ?? 'Marketplace ' . $marketplaceId)
+                                        : 'Marketplace ' . $marketplaceId);
+                                $summary = $marketplaceSummaries[$marketplaceId] ?? [];
+                            @endphp
+                            <div class="card marketplace-card border shadow-sm" style="min-width: 200px; max-width: 250px; flex: 1 1 auto;">
+                                <div class="card-body p-2">
+                                    <div class="d-flex align-items-center mb-2 border-bottom pb-2">
+                                        <div class="marketplace-avatar me-2" style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: white;">
+                                            {{ strtoupper(substr($marketplaceName, 0, 2)) }}
+                                        </div>
+                                        <h6 class="mb-0 small fw-bold text-truncate" style="flex: 1;">{{ $marketplaceName }}</h6>
+                                    </div>
+                                    <div class="sales-summary">
+                                        <div class="row g-2 small">
+                                            <div class="col-6">
+                                                <div class="text-muted" style="font-size: 10px;">Today</div>
+                                                <div class="fw-bold">{{ $summary['today_count'] ?? 0 }}</div>
+                                                <div class="text-success" style="font-size: 10px;">€{{ number_format($summary['today_total'] ?? 0, 2) }}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-muted" style="font-size: 10px;">Yesterday</div>
+                                                <div class="fw-bold">{{ $summary['yesterday_count'] ?? 0 }}</div>
+                                                <div class="text-success" style="font-size: 10px;">€{{ number_format($summary['yesterday_total'] ?? 0, 2) }}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-muted" style="font-size: 10px;">7 Days</div>
+                                                <div class="fw-bold">{{ $summary['last_7_days_count'] ?? 0 }}</div>
+                                                <div class="text-primary" style="font-size: 10px;">€{{ number_format($summary['last_7_days_total'] ?? 0, 2) }}</div>
+                                            </div>
+                                            <div class="col-6">
+                                                <div class="text-muted" style="font-size: 10px;">30 Days</div>
+                                                <div class="fw-bold">{{ $summary['last_30_days_count'] ?? 0 }}</div>
+                                                <div class="text-primary" style="font-size: 10px;">€{{ number_format($summary['last_30_days_total'] ?? 0, 2) }}</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
             </div>
 
             {{-- Stock Controls --}}

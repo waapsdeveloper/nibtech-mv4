@@ -115,6 +115,83 @@ class ListingCalculationService
     }
 
     /**
+     * Calculate marketplace order summaries for a variation
+     * Returns array keyed by marketplace ID with order summary data
+     * Includes ALL marketplaces that have listings, even if they have no orders
+     */
+    public function calculateMarketplaceSummaries(int $variationId, Collection $listings): array
+    {
+        // Get unique marketplace IDs from listings
+        $marketplaceIds = $listings->pluck('marketplace_id')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $summaries = [];
+
+        foreach ($marketplaceIds as $marketplaceId) {
+            // Initialize with empty values
+            $summaries[$marketplaceId] = [
+                'today_count' => 0,
+                'today_total' => 0.0,
+                'yesterday_count' => 0,
+                'yesterday_total' => 0.0,
+                'last_7_days_count' => 0,
+                'last_7_days_total' => 0.0,
+                'last_30_days_count' => 0,
+                'last_30_days_total' => 0.0,
+            ];
+            // Today's orders
+            $todayOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
+                ->whereHas('order', function($q) use ($marketplaceId) {
+                    $q->where('marketplace_id', $marketplaceId)
+                      ->where('order_type_id', 3)
+                      ->whereBetween('created_at', [now()->startOfDay(), now()]);
+                })
+                ->get();
+
+            // Yesterday's orders
+            $yesterdayOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
+                ->whereHas('order', function($q) use ($marketplaceId) {
+                    $q->where('marketplace_id', $marketplaceId)
+                      ->where('order_type_id', 3)
+                      ->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()]);
+                })
+                ->get();
+
+            // Last 7 days orders
+            $last7DaysOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
+                ->whereHas('order', function($q) use ($marketplaceId) {
+                    $q->where('marketplace_id', $marketplaceId)
+                      ->where('order_type_id', 3)
+                      ->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()]);
+                })
+                ->get();
+
+            // Last 30 days orders
+            $last30DaysOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
+                ->whereHas('order', function($q) use ($marketplaceId) {
+                    $q->where('marketplace_id', $marketplaceId)
+                      ->where('order_type_id', 3)
+                      ->whereBetween('created_at', [now()->subDays(30)->startOfDay(), now()->yesterday()->endOfDay()]);
+                })
+                ->get();
+
+            // Update with actual values (if any orders found)
+            $summaries[$marketplaceId]['today_count'] = $todayOrders->count();
+            $summaries[$marketplaceId]['today_total'] = round($todayOrders->sum('price'), 2);
+            $summaries[$marketplaceId]['yesterday_count'] = $yesterdayOrders->count();
+            $summaries[$marketplaceId]['yesterday_total'] = round($yesterdayOrders->sum('price'), 2);
+            $summaries[$marketplaceId]['last_7_days_count'] = $last7DaysOrders->count();
+            $summaries[$marketplaceId]['last_7_days_total'] = round($last7DaysOrders->sum('price'), 2);
+            $summaries[$marketplaceId]['last_30_days_count'] = $last30DaysOrders->count();
+            $summaries[$marketplaceId]['last_30_days_total'] = round($last30DaysOrders->sum('price'), 2);
+        }
+
+        return $summaries;
+    }
+
+    /**
      * Get exchange rate data
      */
     public function getExchangeRateData(): array

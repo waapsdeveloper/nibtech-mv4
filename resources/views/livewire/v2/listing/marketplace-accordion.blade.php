@@ -116,7 +116,7 @@
         id="collapse_{{ $marketplaceId }}_{{ $variationId }}" 
         class="accordion-collapse collapse {{ $expanded ? 'show' : '' }}" 
         aria-labelledby="heading_{{ $marketplaceId }}_{{ $variationId }}"
-        data-bs-parent="#marketplaceAccordionInner_{{ $variationId }}"
+        {{-- Removed data-bs-parent to allow multiple accordions open at once --}}
         wire:ignore.self
     >
         <div class="accordion-body p-2">

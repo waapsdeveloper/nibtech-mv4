@@ -202,6 +202,12 @@ class ListingController extends Controller
                     ->values()
                     ->toArray();
                 
+                // Calculate marketplace summaries
+                $marketplaceSummaries = $this->calculationService->calculateMarketplaceSummaries(
+                    $variation->id,
+                    $variation->listings ?? collect()
+                );
+                
                 return [
                     'id' => $variation->id,
                     'variation_data' => $variation->toArray(),
@@ -211,6 +217,7 @@ class ListingController extends Controller
                         'average_cost' => $averageCost,
                         'total_orders_count' => $totalOrdersCount,
                         'buybox_listings' => $buyboxListings,
+                        'marketplace_summaries' => $marketplaceSummaries,
                     ],
                 ];
             })->toArray();
