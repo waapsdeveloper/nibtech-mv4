@@ -515,7 +515,7 @@
                                                         @endif
                                                         @if ($order->status >= 3)
 
-                                                        <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                                        <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/true?marketplace={{ $order->marketplace_id }}" target="_blank">Invoice</a>
                                                         @endif
                                                         <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}&see-order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
                                                     </div>
@@ -665,11 +665,10 @@
                         <h3 class="modal-title mg-b-5">Update Order</h3>
                         <hr>
                         @php
-                            if(session('user')->role_id == 4){
-                                $replacement_url = url('order/replacement');
-                            }else {
-                                $replacement_url = url('order/replacement/1/1');
-                            }
+                            $roleId = (int) data_get(session('user'), 'role_id');
+                            $replacement_url = $roleId === 4
+                                ? url('order/replacement')
+                                : url('order/replacement/1/1');
                         @endphp
                         <form action="{{ $replacement_url }}" method="POST">
                             @csrf

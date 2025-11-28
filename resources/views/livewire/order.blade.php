@@ -825,7 +825,7 @@
                                             <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
                                             @endif
                                             @if ($order->status >= 3)
-                                            <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                            <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/true?marketplace={{ $order->marketplace_id }}" target="_blank">Invoice</a>
                                             @endif
                                             @if ($order->status == 6)
                                             <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
@@ -834,7 +834,7 @@
                                             <a class="dropdown-item" href="{{ route('order.packing_reprint', ['id' => $order->id]) }}@if(request()->filled('sort')){{ '?sort='.request('sort') }}@endif">Reprint Packing Docs</a>
                                             @endif
                                             @if (session('user')->hasPermission('view_api_data'))
-                                            <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true/true" target="_blank">Data</a>
+                                            <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/false/false/null/true/true?marketplace={{ $order->marketplace_id }}" target="_blank">Data</a>
                                             <a class="dropdown-item" href="{{url('order')}}/label/{{ $order->reference_id }}/true/true" target="_blank">Label Data</a>
                                             @endif
                                             <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>
