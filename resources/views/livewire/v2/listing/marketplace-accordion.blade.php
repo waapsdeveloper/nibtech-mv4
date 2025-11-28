@@ -1,4 +1,14 @@
 <div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}" data-variation-id="{{ $variationId }}">
+    <script>
+        // Listen for load event for this specific component
+        document.addEventListener('load-marketplace-data', function(event) {
+            if (event.detail && event.detail.variationId == {{ $variationId }} && event.detail.marketplaceId == {{ $marketplaceId }}) {
+                @if(!$ready)
+                    @this.call('loadData');
+                @endif
+            }
+        });
+    </script>
     <h2 class="accordion-header" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
         <button 
             class="accordion-button {{ !$expanded ? 'collapsed' : '' }} p-2" 
