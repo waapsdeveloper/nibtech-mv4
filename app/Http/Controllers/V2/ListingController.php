@@ -137,6 +137,9 @@ class ListingController extends Controller
                 ]);
             }
 
+            // Get exchange rate data first (needed for calculations)
+            $exchangeData = $this->calculationService->getExchangeRateData();
+
             // Load all variations with basic data in one batch query (much faster than individual loads)
             $variations = Variation_model::with([
                 'product',
@@ -214,7 +217,7 @@ class ListingController extends Controller
 
             // Get reference data
             $referenceData = $this->dataService->getReferenceData();
-            $exchangeData = $this->calculationService->getExchangeRateData();
+            // Exchange data already loaded above, reuse it
 
             // Mount Livewire component
             $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
