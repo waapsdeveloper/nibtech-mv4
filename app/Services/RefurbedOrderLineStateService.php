@@ -62,6 +62,7 @@ class RefurbedOrderLineStateService
                 'updated' => 0,
                 'skipped' => $skipped->all(),
                 'result' => ['batches' => [], 'total' => 0],
+                'request_payload' => null,
                 'raw_response' => null,
             ];
         }
@@ -104,6 +105,7 @@ class RefurbedOrderLineStateService
             'updated' => count($updates),
             'skipped' => $skipped->all(),
             'result' => $summary,
+            'request_payload' => $updates,
             'raw_response' => $result,
         ];
     }
