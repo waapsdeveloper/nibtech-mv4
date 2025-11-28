@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Order_model;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -21,32 +22,20 @@ class RefurbedOrderLineStateService
      */
     public function shipOrderLines(string $orderId, array $options = []): array
     {
+        $orderId = trim($orderId);
+        if ($orderId === '') {
+            throw new RuntimeException('Refurbed order ID is required.');
+        }
+
         $requestedLineIds = collect($options['order_item_ids'] ?? [])
             ->filter(fn ($id) => $id !== null && $id !== '')
             ->map(fn ($id) => (string) $id)
             ->unique()
             ->values();
 
-        $filter = [];
-        if ($requestedLineIds->isNotEmpty()) {
-            $filter['id'] = ['any_of' => $requestedLineIds->all()];
-        }
+        $force = (bool) ($options['force'] ?? false);
 
-        try {
-            $itemsResponse = $this->refurbed->getAllOrderItems($orderId, $filter);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: Unable to fetch order items for manual shipment', [
-                'order_id' => $orderId,
-                'filter' => $filter,
-                'error' => $e->getMessage(),
-            ]);
-
-            throw new RuntimeException('Unable to fetch order items from Refurbed.', 0, $e);
-        }
-
-        $items = collect($itemsResponse['order_items'] ?? [])
-            ->filter(fn ($item) => ! empty($item['id']))
-            ->values();
+        $items = $this->loadOrderItemsForShipment($orderId, $requestedLineIds);
 
         if ($requestedLineIds->isNotEmpty()) {
             $items = $items->filter(fn ($item) => $requestedLineIds->contains((string) $item['id']))->values();
@@ -56,17 +45,12 @@ class RefurbedOrderLineStateService
             ? collect()
             : $requestedLineIds->diff($items->pluck('id')->map(fn ($id) => (string) $id));
 
-        $force = (bool) ($options['force'] ?? false);
-
-        $eligibleItems = $force
-            ? $items
-            : $items->filter(fn ($item) => strtoupper($item['state'] ?? '') === 'ACCEPTED')->values();
-
-        $skippedDueToState = $force
-            ? collect()
-            : $items->pluck('id')
-                ->map(fn ($id) => (string) $id)
-                ->diff($eligibleItems->pluck('id')->map(fn ($id) => (string) $id));
+        if ($force) {
+            $eligibleItems = $items;
+            $skippedDueToState = collect();
+        } else {
+            [$eligibleItems, $skippedDueToState] = $this->partitionItemsByState($items, ['ACCEPTED']);
+        }
 
         $skipped = $skippedDueToState->merge($missingIds)->unique()->values();
 
@@ -86,22 +70,14 @@ class RefurbedOrderLineStateService
         $trackingNumber = $options['tracking_number'] ?? $localOrder?->tracking_number;
         $carrier = $options['carrier'] ?? null;
 
-        $updates = $eligibleItems->map(function ($item) use ($trackingNumber, $carrier) {
-            $payload = [
-                'id' => $item['id'],
-                'state' => 'SHIPPED',
-            ];
-
-            if ($trackingNumber) {
-                $payload['parcel_tracking_number'] = $trackingNumber;
-            }
-
-            if ($carrier) {
-                $payload['parcel_tracking_carrier'] = $carrier;
-            }
-
-            return $payload;
-        })->values()->all();
+        $updates = $this->buildStateUpdates(
+            $eligibleItems,
+            'SHIPPED',
+            array_filter([
+                'parcel_tracking_number' => $trackingNumber,
+                'parcel_tracking_carrier' => $carrier,
+            ], fn ($value) => $value !== null && $value !== '')
+        );
 
         try {
             $result = $this->refurbed->batchUpdateOrderItemsState($updates);
@@ -128,6 +104,63 @@ class RefurbedOrderLineStateService
             'skipped' => $skipped->all(),
             'result' => $summary,
         ];
+    }
+
+    /**
+     * Mirrors the RefurbedSyncOrders acceptance workflow for ACCEPTED -> SHIPPED transitions.
+     */
+    private function loadOrderItemsForShipment(string $orderId, Collection $requestedLineIds): Collection
+    {
+        $filter = [];
+        if ($requestedLineIds->isNotEmpty()) {
+            $filter['id'] = ['any_of' => $requestedLineIds->all()];
+        }
+
+        try {
+            $itemsResponse = $this->refurbed->getAllOrderItems($orderId, $filter);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: Unable to fetch order items for manual shipment', [
+                'order_id' => $orderId,
+                'filter' => $filter,
+                'error' => $e->getMessage(),
+            ]);
+
+            throw new RuntimeException('Unable to fetch order items from Refurbed.', 0, $e);
+        }
+
+        return collect($itemsResponse['order_items'] ?? [])
+            ->filter(fn ($item) => ! empty($item['id']))
+            ->values();
+    }
+
+    private function partitionItemsByState(Collection $items, array $allowedStates): array
+    {
+        $allowedStates = array_map('strtoupper', $allowedStates);
+        $eligible = collect();
+        $skipped = collect();
+
+        foreach ($items as $item) {
+            $state = strtoupper($item['state'] ?? '');
+            if (in_array($state, $allowedStates, true)) {
+                $eligible->push($item);
+            } else {
+                $skipped->push((string) ($item['id'] ?? ''));
+            }
+        }
+
+        return [$eligible->filter(fn ($item) => ! empty($item['id']))->values(), $skipped->filter()->values()];
+    }
+
+    private function buildStateUpdates(Collection $items, string $targetState, array $extraAttributes = []): array
+    {
+        return $items->map(function ($item) use ($targetState, $extraAttributes) {
+            $payload = array_merge([
+                'id' => $item['id'],
+                'state' => $targetState,
+            ], $extraAttributes);
+
+            return array_filter($payload, fn ($value) => $value !== null && $value !== '');
+        })->values()->all();
     }
 
     protected function findLocalOrder(string $orderId): ?Order_model
