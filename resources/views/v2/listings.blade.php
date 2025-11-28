@@ -524,15 +524,15 @@
                 // Find all marketplace accordion buttons within this parent
                 const marketplaceButtons = this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]');
                 
-                // Auto-expand all child marketplace accordions
-                marketplaceButtons.forEach(button => {
+                // Auto-expand all child marketplace accordions with a small staggered delay
+                marketplaceButtons.forEach((button, index) => {
                     // Check if button is collapsed (not already expanded)
                     if (button.classList.contains('collapsed')) {
-                        // Small delay to allow UI to update
+                        // Small staggered delay to expand them sequentially but quickly
                         setTimeout(() => {
                             // Click the button to expand it - this will trigger toggleAccordion and load data
                             button.click();
-                        }, 100);
+                        }, 100 + (index * 50)); // 100ms base + 50ms per accordion
                     }
                 });
             });
