@@ -4318,9 +4318,11 @@ class Order extends Component
         $country_codes = Country_model::pluck('id','code')->toArray();
 
         $localOrder = $this->loadLocalOrderForRecheck($order_id);
-        if ($this->shouldHandleRefurbedRecheck($order_id, $localOrder)) {
+        $remoteOrderId = $localOrder?->reference_id ?? $order_id;
+
+        if ($this->shouldHandleRefurbedRecheck($remoteOrderId, $localOrder)) {
             $this->handleRefurbedRecheck(
-                $order_id,
+                $remoteOrderId,
                 (bool) $refresh,
                 (bool) $invoice,
                 $tester,
@@ -4332,7 +4334,7 @@ class Order extends Component
             return;
         }
 
-        $orderObj = $bm->getOneOrder($order_id);
+        $orderObj = $bm->getOneOrder($remoteOrderId);
         if(!isset($orderObj->orderlines)){
             if($data == true){
                 dd($orderObj);
@@ -4355,7 +4357,7 @@ class Order extends Component
 
             $order_item_model->updateOrderItemsInDB($orderObj, $tester, $bm);
             if($refresh == true){
-                $order = Order_model::where('reference_id',$order_id)->first();
+                $order = $localOrder ?? Order_model::where('reference_id',$remoteOrderId)->first();
                 if ($order) {
                     $this->renderRecheckInvoiceScript($order);
                 }
