@@ -416,12 +416,13 @@ class RefurbedShippingService
 
             $payload = ['id' => $item->reference_id];
 
-            if ($imei) {
-                $payload['imei'] = $imei;
-            }
+            $identifierValue = $imei ?: $serialNumber;
+            $identifierLabel = null;
 
-            if ($serialNumber) {
-                $payload['serial_number'] = $serialNumber;
+            if ($identifierValue) {
+                $identifierLabel = $imei ? 'IMEI' : 'SERIAL';
+                $payload['identifier'] = $identifierValue;
+                $payload['identifier_label'] = $identifierLabel;
             }
 
             if ($trackingNumber) {

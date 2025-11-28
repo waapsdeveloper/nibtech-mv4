@@ -121,4 +121,38 @@ class RefurbedListingsControllerTest extends TestCase
 
         Http::assertSentCount(1);
     }
+
+    public function test_ship_order_lines_accepts_identifier_option(): void
+    {
+        Http::fake([
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/ListOrderItemsByOrder' => Http::response([
+                'order_items' => [
+                    ['id' => 'line-1', 'state' => 'ACCEPTED'],
+                ],
+            ], 200),
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/UpdateOrderItemState' => Http::response([
+                'result' => 'ok',
+            ], 200),
+        ]);
+
+        $response = $this->postJson('/api/refurbed/orders/REF-444/ship-lines', [
+            'order_item_ids' => ['line-1'],
+            'imei' => '359876543210123',
+        ]);
+
+        $response->assertOk()
+            ->assertJson([
+                'order_id' => 'REF-444',
+                'updated' => 1,
+            ]);
+
+        Http::assertSent(function (Request $request) {
+            if ($request->url() !== 'https://api.refurbed.com/refb.merchant.v1.OrderItemService/UpdateOrderItemState') {
+                return false;
+            }
+
+            return $request['identifier'] === '359876543210123'
+                && $request['identifier_label'] === 'IMEI';
+        });
+    }
 }

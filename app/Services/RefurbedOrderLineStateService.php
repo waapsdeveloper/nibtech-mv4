@@ -72,7 +72,11 @@ class RefurbedOrderLineStateService
 
         $trackingNumber = $options['tracking_number'] ?? $localOrder?->tracking_number;
         $carrier = $options['carrier'] ?? null;
-        $imei = $options['imei'] ?? null;
+        $identifier = $options['identifier']
+            ?? $options['imei']
+            ?? null;
+        $identifierLabel = $options['identifier_label']
+            ?? ($options['imei'] ?? false ? 'IMEI' : null);
 
         $updates = $this->buildStateUpdates(
             $eligibleItems,
@@ -80,7 +84,8 @@ class RefurbedOrderLineStateService
             array_filter([
                 'parcel_tracking_number' => $trackingNumber,
                 'parcel_tracking_carrier' => $carrier,
-                'imei' => $imei,
+                'identifier' => $identifier,
+                'identifier_label' => $identifierLabel,
             ], fn ($value) => $value !== null && $value !== '')
         );
 
