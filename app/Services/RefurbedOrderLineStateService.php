@@ -74,26 +74,22 @@ class RefurbedOrderLineStateService
         $carrier = $options['carrier'] ?? null;
 
         $identifierValue = $options['identifier'] ?? null;
-        $identifierLabel = strtoupper(trim((string) ($options['identifier_label'] ?? '')));
+        $identifierType = strtoupper(trim((string) ($options['identifier_label'] ?? '')));
 
-        $imeiOverride = $options['imei'] ?? null;
-        $serialOverride = $options['serial_number'] ?? null;
+        if (! empty($options['imei'])) {
+            $identifierValue = $options['imei'];
+            $identifierType = 'IMEI';
+        } elseif (! empty($options['serial_number'])) {
+            $identifierValue = $options['serial_number'];
+            $identifierType = 'SERIAL';
+        }
 
         $identifierFields = [];
+        if ($identifierValue) {
+            $identifierFields['item_identifier'] = $identifierValue;
 
-        if ($imeiOverride) {
-            $identifierFields['imei'] = $imeiOverride;
-        }
-
-        if ($serialOverride) {
-            $identifierFields['serial_number'] = $serialOverride;
-        }
-
-        if ($identifierValue && empty($identifierFields)) {
-            if (in_array($identifierLabel, ['SERIAL', 'SERIAL_NUMBER', 'SN'], true)) {
-                $identifierFields['serial_number'] = $identifierValue;
-            } else {
-                $identifierFields['imei'] = $identifierValue;
+            if ($identifierType !== '') {
+                $identifierFields['item_identifier_type'] = $identifierType;
             }
         }
 

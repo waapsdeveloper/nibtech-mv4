@@ -151,7 +151,8 @@ class RefurbedListingsControllerTest extends TestCase
                 return false;
             }
 
-            return $request['imei'] === '359876543210123';
+            return $request['item_identifier'] === '359876543210123'
+                && $request['item_identifier_type'] === 'IMEI';
         });
     }
 }
