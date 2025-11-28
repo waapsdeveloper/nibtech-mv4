@@ -122,7 +122,31 @@
         aria-labelledby="heading_{{ $marketplaceId }}_{{ $variationId }}"
         {{-- Removed data-bs-parent to allow multiple accordions open at once --}}
         wire:ignore.self
+        data-variation-id="{{ $variationId }}"
+        data-marketplace-id="{{ $marketplaceId }}"
     >
+        <script>
+            // Ensure loading fires when accordion starts showing
+            (function() {
+                const collapseElement = document.getElementById('collapse_{{ $marketplaceId }}_{{ $variationId }}');
+                if (!collapseElement) return;
+                
+                const handleShow = function() {
+                    @if(!$ready)
+                        // Trigger loading immediately when accordion starts to show
+                        @this.call('loadData');
+                    @endif
+                };
+                
+                // Listen for when accordion starts showing (not just when fully shown)
+                collapseElement.addEventListener('show.bs.collapse', handleShow);
+                
+                // Also trigger if already shown when script runs
+                if (collapseElement.classList.contains('show')) {
+                    setTimeout(handleShow, 50);
+                }
+            })();
+        </script>
         <div class="accordion-body p-2">
             @if(!$ready)
                 <div class="text-center py-3">
