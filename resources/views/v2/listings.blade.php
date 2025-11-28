@@ -548,8 +548,24 @@
                         };
                         
                         targetElement.addEventListener('shown.bs.collapse', onExpanded);
-                        // Click the button to expand it - this will trigger toggleAccordion and load data
-                        button.click();
+                        
+                        // Trigger Livewire method first to ensure loading starts
+                        const wireId = button.closest('[wire\\:id]')?.getAttribute('wire:id');
+                        if (wireId && typeof Livewire !== 'undefined') {
+                            try {
+                                const component = Livewire.find(wireId);
+                                if (component) {
+                                    // Call toggleAccordion to ensure loading is triggered
+                                    component.call('toggleAccordion');
+                                }
+                            } catch(e) {
+                                // Fallback: just click the button
+                                button.click();
+                            }
+                        } else {
+                            // Fallback: click the button to expand it - this will trigger toggleAccordion and load data
+                            button.click();
+                        }
                     } else {
                         // If target not found, just continue to next
                         setTimeout(() => {
