@@ -15,6 +15,7 @@ use Throwable;
 class RefurbedAPIController extends Controller
 {
     public const ORDER_ITEM_STATE_ENDPOINT = 'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState';
+    public const ORDER_ITEM_SINGLE_STATE_ENDPOINT = 'refb.merchant.v1.OrderItemService/UpdateOrderItemState';
 
     private const MAX_BATCH_SIZE = 50;
     protected string $baseUrl;
@@ -223,7 +224,7 @@ class RefurbedAPIController extends Controller
 
     public function updateOrderItemState(string $orderItemId, string $state, array $attributes = []): array
     {
-        return $this->post('refb.merchant.v1.OrderItemService/UpdateOrderItemState', $this->cleanPayload(array_merge([
+        return $this->post(self::ORDER_ITEM_SINGLE_STATE_ENDPOINT, $this->cleanPayload(array_merge([
             'id' => $orderItemId,
             'state' => $state,
         ], $attributes)));
