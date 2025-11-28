@@ -19,6 +19,7 @@ class ListingItem extends Component
     public array $pricingInfo = [];
     public float $averageCost = 0.0;
     public int $totalOrdersCount = 0;
+    public array $buyboxListings = [];
 
     // Reference data (passed from parent)
     public array $storages = [];
@@ -108,6 +109,21 @@ class ListingItem extends Component
             
             // Calculate total orders count
             $this->totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($this->variationId);
+            
+            // Get buybox listings with country info for display
+            $this->buyboxListings = $this->variation->listings
+                ->where('buybox', 1)
+                ->map(function($listing) {
+                    $countryId = is_object($listing->country_id) ? $listing->country_id->id : ($listing->country_id ?? null);
+                    return [
+                        'id' => $listing->id,
+                        'country_id' => $countryId,
+                        'reference_uuid_2' => $listing->reference_uuid_2 ?? '',
+                        'country' => is_object($listing->country_id) ? $listing->country_id : null,
+                    ];
+                })
+                ->values()
+                ->toArray();
             
             $this->ready = true;
             // Don't auto-expand - let user expand manually

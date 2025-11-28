@@ -27,9 +27,25 @@
                 </div>
                 {{-- Buybox and Total Orders Info --}}
                 <div class="buybox-orders-info mt-1 d-flex gap-2 align-items-center flex-wrap">
-                    <small class="badge bg-success">
-                        Buybox: {{ $pricingInfo['buybox_count'] ?? 0 }}
-                    </small>
+                    <div class="d-flex align-items-center flex-wrap gap-1">
+                        <span class="small fw-bold me-1">Buybox:</span>
+                        @forelse($buyboxListings as $listing)
+                            @php
+                                $countryId = $listing['country_id'] ?? null;
+                                $country = $countryId ? ($countries[$countryId] ?? null) : null;
+                                $countryCode = is_object($country) ? $country->code : ($country['code'] ?? '');
+                                $marketUrl = is_object($country) ? $country->market_url : ($country['market_url'] ?? '');
+                                $marketCode = is_object($country) ? $country->market_code : ($country['market_code'] ?? '');
+                                $referenceUuid2 = $listing['reference_uuid_2'] ?? '';
+                            @endphp
+                            <a href="https://www.backmarket.{{ $marketUrl }}/{{ $marketCode }}/p/gb/{{ $referenceUuid2 }}" target="_blank" class="btn btn-sm btn-link border p-1" title="View listing">
+                                <img src="{{ asset('assets/img/flags/') }}/{{ strtolower($countryCode) }}.svg" height="10" alt="{{ $countryCode }}">
+                                {{ $countryCode }}
+                            </a>
+                        @empty
+                            <span class="text-muted small">No buybox listings</span>
+                        @endforelse
+                    </div>
                     <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}" target="_blank" title="View all orders for this variation">
                         <small class="badge bg-info">
                             Total Orders: {{ $totalOrdersCount ?? 0 }}
