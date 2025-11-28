@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Http\Controllers\RefurbedAPIController;
+use App\Models\Order_model;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
 
@@ -80,7 +81,9 @@ class RefurbedOrderLineStateService
             ];
         }
 
-        $trackingNumber = $options['tracking_number'] ?? null;
+        $localOrder = $this->findLocalOrder($orderId);
+
+        $trackingNumber = $options['tracking_number'] ?? $localOrder?->tracking_number;
         $carrier = $options['carrier'] ?? null;
 
         $updates = $eligibleItems->map(function ($item) use ($trackingNumber, $carrier) {
@@ -125,5 +128,20 @@ class RefurbedOrderLineStateService
             'skipped' => $skipped->all(),
             'result' => $summary,
         ];
+    }
+
+    protected function findLocalOrder(string $orderId): ?Order_model
+    {
+        if ($orderId === '') {
+            return null;
+        }
+
+        $query = Order_model::query()->where('reference_id', $orderId);
+
+        if (ctype_digit($orderId)) {
+            $query->orWhere('id', (int) $orderId);
+        }
+
+        return $query->first();
     }
 }
