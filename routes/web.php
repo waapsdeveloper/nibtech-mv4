@@ -282,6 +282,7 @@ Route::get('refresh_order/{id}', [Order::class,'getapiorders'])->name('view_orde
 Route::get('order/refresh/{id?}', [Order::class,'updateBMOrder'])->name('view_order');
 Route::post('order/dispatch/{id}', [Order::class,'dispatch'])->name('dispatch_order');
 Route::get('order/refurbed/resend-shipped/{id}', [Order::class,'resendRefurbedShipment'])->name('order.refurbed_resend_shipped');
+Route::get('order/refurbed/sync-identifiers/{id}', [Order::class,'syncRefurbedIdentifiers'])->name('order.refurbed_sync_identifiers');
 Route::get('order/track/{id}', [Order::class,'track_order'])->name('view_order');
 Route::get('order/delete_item/{id}', [Order::class,'delete_item'])->name('delete_order');
 Route::post('order/tracking', [Order::class,'tracking'])->name('change_order_tracking');

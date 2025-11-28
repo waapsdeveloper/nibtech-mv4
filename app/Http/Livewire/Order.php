@@ -3344,6 +3344,63 @@ class Order extends Component
         return redirect()->back();
     }
 
+    public function syncRefurbedIdentifiers($orderId)
+    {
+        $order = Order_model::with('order_items.stock')->find($orderId);
+
+        if (! $order) {
+            session()->put('error', 'Order not found.');
+            return redirect()->back();
+        }
+
+        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
+            session()->put('error', 'Only Refurbed orders support this action.');
+            return redirect()->back();
+        }
+
+        if ($order->order_items->isEmpty()) {
+            session()->put('error', 'Order has no items to sync.');
+            return redirect()->back();
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to initialize API for identifier sync', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            session()->put('error', 'Unable to initialize Refurbed API client.');
+            return redirect()->back();
+        }
+
+        $service = app(RefurbedShippingService::class);
+
+        try {
+            $service->syncOrderItemIdentifiers($order, $refurbedApi);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual IMEI sync failed', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+            session()->put('error', 'Failed to sync IMEIs with Refurbed.');
+            return redirect()->back();
+        }
+
+        $identifiedLines = $order->order_items->filter(function ($item) {
+            $stock = $item->stock;
+            return $stock && ($stock->imei || $stock->serial_number);
+        })->count();
+
+        if ($identifiedLines === 0) {
+            session()->put('error', 'No IMEI or serial numbers were found on this order.');
+        } else {
+            session()->put('success', "Synced IMEI data to Refurbed for {$identifiedLines} line(s).");
+        }
+
+        return redirect()->back();
+    }
+
     protected function handleRefurbedShipping(Order_model $order, RefurbedAPIController $refurbedApi)
     {
         $service = app(RefurbedShippingService::class);
