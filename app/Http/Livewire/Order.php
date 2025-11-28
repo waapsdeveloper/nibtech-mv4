@@ -4386,8 +4386,19 @@ class Order extends Component
             return true;
         }
 
-        $marketplaceParam = strtolower((string) request('marketplace', ''));
-        if ($marketplaceParam === 'refurbed') {
+        $marketplaceValue = request('marketplace');
+        if ($marketplaceValue !== null && $marketplaceValue !== '') {
+            if ((int) $marketplaceValue === self::REFURBED_MARKETPLACE_ID) {
+                return true;
+            }
+
+            if (strtolower((string) $marketplaceValue) === 'refurbed') {
+                return true;
+            }
+        }
+
+        $sourceParam = strtolower((string) request('source', ''));
+        if ($sourceParam === 'refurbed') {
             return true;
         }
 
