@@ -72,21 +72,38 @@ class RefurbedOrderLineStateService
 
         $trackingNumber = $options['tracking_number'] ?? $localOrder?->tracking_number;
         $carrier = $options['carrier'] ?? null;
-        $identifier = $options['identifier']
-            ?? $options['imei']
-            ?? null;
-        $identifierLabel = $options['identifier_label']
-            ?? ($options['imei'] ?? false ? 'IMEI' : null);
+
+        $identifierValue = $options['identifier'] ?? null;
+        $identifierLabel = strtoupper(trim((string) ($options['identifier_label'] ?? '')));
+
+        $imeiOverride = $options['imei'] ?? null;
+        $serialOverride = $options['serial_number'] ?? null;
+
+        $identifierFields = [];
+
+        if ($imeiOverride) {
+            $identifierFields['imei'] = $imeiOverride;
+        }
+
+        if ($serialOverride) {
+            $identifierFields['serial_number'] = $serialOverride;
+        }
+
+        if ($identifierValue && empty($identifierFields)) {
+            if (in_array($identifierLabel, ['SERIAL', 'SERIAL_NUMBER', 'SN'], true)) {
+                $identifierFields['serial_number'] = $identifierValue;
+            } else {
+                $identifierFields['imei'] = $identifierValue;
+            }
+        }
 
         $updates = $this->buildStateUpdates(
             $eligibleItems,
             'SHIPPED',
-            array_filter([
+            array_filter(array_merge([
                 'parcel_tracking_number' => $trackingNumber,
                 'parcel_tracking_carrier' => $carrier,
-                'identifier' => $identifier,
-                'identifier_label' => $identifierLabel,
-            ], fn ($value) => $value !== null && $value !== '')
+            ], $identifierFields), fn ($value) => $value !== null && $value !== '')
         );
 
         $requestUrl = $this->refurbed->getEndpointUrl(RefurbedAPIController::ORDER_ITEM_SINGLE_STATE_ENDPOINT);
