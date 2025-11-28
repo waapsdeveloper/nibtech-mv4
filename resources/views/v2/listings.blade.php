@@ -505,102 +505,34 @@
     });
 
     /**
-     * Initialize marketplace accordion auto-loading
-     * When parent accordion expands, load all marketplace data simultaneously
+     * Initialize marketplace accordion auto-expansion
+     * When parent accordion expands, automatically expand all child marketplace accordions
      */
-    function initializeMarketplaceAutoLoading() {
+    function initializeMarketplaceAutoExpansion() {
         // Find all parent marketplace accordions
         const parentAccordions = document.querySelectorAll('.multi_collapse[data-variation-id]');
         
         parentAccordions.forEach(parentAccordion => {
             // Skip if already initialized
-            if (parentAccordion.dataset.loadingInitialized === 'true') {
+            if (parentAccordion.dataset.expansionInitialized === 'true') {
                 return;
             }
-            parentAccordion.dataset.loadingInitialized = 'true';
+            parentAccordion.dataset.expansionInitialized = 'true';
 
             // Listen for Bootstrap collapse show event
             parentAccordion.addEventListener('shown.bs.collapse', function() {
-                const variationId = this.dataset.variationId;
-                
                 // Find all marketplace accordion buttons within this parent
                 const marketplaceButtons = this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]');
                 
-                // Trigger loading for all marketplace accordions simultaneously
+                // Auto-expand all child marketplace accordions
                 marketplaceButtons.forEach(button => {
-                    const targetId = button.getAttribute('data-bs-target');
-                    if (targetId) {
-                        // Extract marketplace ID and variation ID from target
-                        const accordionId = targetId.replace('#collapse_', '');
-                        const parts = accordionId.split('_');
-                        if (parts.length >= 2) {
-                            const marketplaceId = parts[0];
-                            const targetVariationId = parts[1];
-                            
-                                // Use Livewire to call loadData for each component
-                            // Dispatch a custom event that the component can listen to
-                            const loadEvent = new CustomEvent('load-marketplace-data', {
-                                detail: {
-                                    variationId: targetVariationId,
-                                    marketplaceId: marketplaceId
-                                }
-                            });
-                            document.dispatchEvent(loadEvent);
-                            
-                            // Also try direct Livewire approach
-                            if (typeof Livewire !== 'undefined') {
-                                // Small delay to ensure DOM is ready
-                                setTimeout(() => {
-                                    // Find component by wire:id or by matching properties
-                                    const componentKey = 'marketplace-accordion-' + targetVariationId + '-' + marketplaceId;
-                                    
-                                    // Try to find by wire:id attribute
-                                    const wireElement = document.querySelector(`[wire\\:id*="${componentKey}"], [data-marketplace-id="${marketplaceId}"][data-variation-id="${targetVariationId}"]`);
-                                    if (wireElement) {
-                                        const wireId = wireElement.getAttribute('wire:id');
-                                        if (wireId) {
-                                            try {
-                                                const component = Livewire.find(wireId);
-                                                if (component) {
-                                                    const data = component.get('ready');
-                                                    if (!data) {
-                                                        component.call('loadData');
-                                                    }
-                                                }
-                                            } catch(e) {
-                                                // Fallback: search all components
-                                                Livewire.all().forEach(component => {
-                                                    try {
-                                                        if (component && component.__instance) {
-                                                            const data = component.__instance?.serverMemo?.data || {};
-                                                            if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId && !data.ready) {
-                                                                component.call('loadData');
-                                                            }
-                                                        }
-                                                    } catch(e2) {
-                                                        // Ignore errors
-                                                    }
-                                                });
-                                            }
-                                        }
-                                    } else {
-                                        // Fallback: search all components
-                                        Livewire.all().forEach(component => {
-                                            try {
-                                                if (component && component.__instance) {
-                                                    const data = component.__instance?.serverMemo?.data || {};
-                                                    if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId && !data.ready) {
-                                                        component.call('loadData');
-                                                    }
-                                                }
-                                            } catch(e) {
-                                                // Ignore errors
-                                            }
-                                        });
-                                    }
-                                }, 100);
-                            }
-                        }
+                    // Check if button is collapsed (not already expanded)
+                    if (button.classList.contains('collapsed')) {
+                        // Small delay to allow UI to update
+                        setTimeout(() => {
+                            // Click the button to expand it - this will trigger toggleAccordion and load data
+                            button.click();
+                        }, 100);
                     }
                 });
             });
@@ -608,20 +540,20 @@
     }
 
     // Initialize on DOM ready and after Livewire updates
-    function initMarketplaceLoading() {
-        setTimeout(initializeMarketplaceAutoLoading, 300);
+    function initMarketplaceExpansion() {
+        setTimeout(initializeMarketplaceAutoExpansion, 300);
     }
 
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMarketplaceLoading);
+        document.addEventListener('DOMContentLoaded', initMarketplaceExpansion);
     } else {
-        initMarketplaceLoading();
+        initMarketplaceExpansion();
     }
 
     // Re-initialize after Livewire updates
     if (typeof Livewire !== 'undefined') {
-        document.addEventListener('livewire:load', initMarketplaceLoading);
-        document.addEventListener('livewire:update', initMarketplaceLoading);
+        document.addEventListener('livewire:load', initMarketplaceExpansion);
+        document.addEventListener('livewire:update', initMarketplaceExpansion);
     }
 
     /**
