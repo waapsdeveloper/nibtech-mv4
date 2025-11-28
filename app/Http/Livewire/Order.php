@@ -3440,6 +3440,41 @@ class Order extends Component
         ]);
     }
 
+    protected function syncRefurbedOrderItems(Order_model $order, RefurbedAPIController $refurbedApi, ?string $carrier = null): void
+    {
+        $trackingNumber = $order->tracking_number ? trim((string) $order->tracking_number) : null;
+        $normalizedCarrier = $carrier ? $this->normalizeRefurbedCarrier($carrier) : null;
+
+        $stateService = app(RefurbedOrderLineStateService::class);
+
+        try {
+            $stateService->shipOrderLines($order->reference_id, array_filter([
+                'tracking_number' => $trackingNumber,
+                'carrier' => $normalizedCarrier,
+                'force' => true,
+            ], fn ($value) => $value !== null && $value !== ''));
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to update order item states after dispatch', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            app(RefurbedShippingService::class)->syncOrderItemIdentifiers($order, $refurbedApi, array_filter([
+                'tracking_number' => $trackingNumber,
+                'carrier' => $normalizedCarrier,
+            ], fn ($value) => $value !== null && $value !== ''));
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to sync identifier data after dispatch', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+    }
+
     protected function ensureRefurbedLabelArtifacts(Order_model $order, RefurbedAPIController $refurbedApi, $dispatchResult = null): void
     {
         $dirty = false;
