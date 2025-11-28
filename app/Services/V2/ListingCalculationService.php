@@ -134,12 +134,11 @@ class ListingCalculationService
             $summaries[$marketplaceId] = [
                 'today_count' => 0,
                 'today_total' => 0.0,
-                'yesterday_count' => 0,
-                'yesterday_total' => 0.0,
                 'last_7_days_count' => 0,
                 'last_7_days_total' => 0.0,
                 'last_30_days_count' => 0,
                 'last_30_days_total' => 0.0,
+                'pending_count' => 0,
             ];
             // Today's orders
             $todayOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
@@ -147,15 +146,6 @@ class ListingCalculationService
                     $q->where('marketplace_id', $marketplaceId)
                       ->where('order_type_id', 3)
                       ->whereBetween('created_at', [now()->startOfDay(), now()]);
-                })
-                ->get();
-
-            // Yesterday's orders
-            $yesterdayOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
-                ->whereHas('order', function($q) use ($marketplaceId) {
-                    $q->where('marketplace_id', $marketplaceId)
-                      ->where('order_type_id', 3)
-                      ->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()]);
                 })
                 ->get();
 
@@ -177,15 +167,23 @@ class ListingCalculationService
                 })
                 ->get();
 
+            // Calculate pending orders
+            $pendingOrders = \App\Models\Order_model::whereHas('order_items', function($q) use ($variationId) {
+                    $q->where('variation_id', $variationId);
+                })
+                ->where('marketplace_id', $marketplaceId)
+                ->where('status', 2)
+                ->where('order_type_id', 3)
+                ->count();
+
             // Update with actual values (if any orders found)
             $summaries[$marketplaceId]['today_count'] = $todayOrders->count();
             $summaries[$marketplaceId]['today_total'] = round($todayOrders->sum('price'), 2);
-            $summaries[$marketplaceId]['yesterday_count'] = $yesterdayOrders->count();
-            $summaries[$marketplaceId]['yesterday_total'] = round($yesterdayOrders->sum('price'), 2);
             $summaries[$marketplaceId]['last_7_days_count'] = $last7DaysOrders->count();
             $summaries[$marketplaceId]['last_7_days_total'] = round($last7DaysOrders->sum('price'), 2);
             $summaries[$marketplaceId]['last_30_days_count'] = $last30DaysOrders->count();
             $summaries[$marketplaceId]['last_30_days_total'] = round($last30DaysOrders->sum('price'), 2);
+            $summaries[$marketplaceId]['pending_count'] = $pendingOrders;
         }
 
         return $summaries;

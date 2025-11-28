@@ -70,37 +70,38 @@
                                         : 'Marketplace ' . $marketplaceId);
                                 $summary = $marketplaceSummaries[$marketplaceId] ?? [];
                             @endphp
-                            <div class="card marketplace-card border shadow-sm" style="min-width: 200px; max-width: 250px; flex: 1 1 auto;">
+                            <div class="card marketplace-card border shadow-sm" style="min-width: 180px; max-width: 200px; flex: 1 1 auto;">
                                 <div class="card-body p-2">
-                                    <div class="d-flex align-items-center mb-2 border-bottom pb-2">
-                                        <div class="marketplace-avatar me-2" style="width: 32px; height: 32px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; color: white;">
+                                    <div class="d-flex align-items-center mb-2 border-bottom pb-1">
+                                        <div class="marketplace-avatar me-2" style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: white;">
                                             {{ strtoupper(substr($marketplaceName, 0, 2)) }}
                                         </div>
-                                        <h6 class="mb-0 small fw-bold text-truncate" style="flex: 1;">{{ $marketplaceName }}</h6>
+                                        <h6 class="mb-0 small fw-bold text-truncate" style="flex: 1; font-size: 12px;">{{ $marketplaceName }}</h6>
                                     </div>
                                     <div class="sales-summary">
-                                        <div class="row g-2 small">
-                                            <div class="col-6">
-                                                <div class="text-muted" style="font-size: 10px;">Today</div>
-                                                <div class="fw-bold">{{ $summary['today_count'] ?? 0 }}</div>
-                                                <div class="text-success" style="font-size: 10px;">€{{ number_format($summary['today_total'] ?? 0, 2) }}</div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-muted" style="font-size: 10px;">Yesterday</div>
-                                                <div class="fw-bold">{{ $summary['yesterday_count'] ?? 0 }}</div>
-                                                <div class="text-success" style="font-size: 10px;">€{{ number_format($summary['yesterday_total'] ?? 0, 2) }}</div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-muted" style="font-size: 10px;">7 Days</div>
-                                                <div class="fw-bold">{{ $summary['last_7_days_count'] ?? 0 }}</div>
-                                                <div class="text-primary" style="font-size: 10px;">€{{ number_format($summary['last_7_days_total'] ?? 0, 2) }}</div>
-                                            </div>
-                                            <div class="col-6">
-                                                <div class="text-muted" style="font-size: 10px;">30 Days</div>
-                                                <div class="fw-bold">{{ $summary['last_30_days_count'] ?? 0 }}</div>
-                                                <div class="text-primary" style="font-size: 10px;">€{{ number_format($summary['last_30_days_total'] ?? 0, 2) }}</div>
-                                            </div>
-                                        </div>
+                                        @if(($summary['today_count'] ?? 0) > 0)
+                                            <span class="badge bg-info mb-1 d-block" style="font-size: 10px;" title="Today's orders">
+                                                Today: €{{ number_format($summary['today_total'] ?? 0, 2) }} ({{ $summary['today_count'] ?? 0 }})
+                                            </span>
+                                        @endif
+                                        @if(($summary['last_7_days_count'] ?? 0) > 0)
+                                            <span class="badge bg-secondary mb-1 d-block" style="font-size: 10px;" title="Last 7 days orders">
+                                                7d: €{{ number_format($summary['last_7_days_total'] ?? 0, 2) }} ({{ $summary['last_7_days_count'] ?? 0 }})
+                                            </span>
+                                        @endif
+                                        @if(($summary['last_30_days_count'] ?? 0) > 0)
+                                            <span class="badge bg-warning mb-1 d-block" style="font-size: 10px;" title="Last 30 days orders">
+                                                30d: €{{ number_format($summary['last_30_days_total'] ?? 0, 2) }} ({{ $summary['last_30_days_count'] ?? 0 }})
+                                            </span>
+                                        @endif
+                                        @if(($summary['pending_count'] ?? 0) > 0)
+                                            <span class="badge bg-danger mb-1 d-block" style="font-size: 10px;" title="Pending orders">
+                                                Pending: {{ $summary['pending_count'] ?? 0 }}
+                                            </span>
+                                        @endif
+                                        @if(($summary['today_count'] ?? 0) == 0 && ($summary['last_7_days_count'] ?? 0) == 0 && ($summary['last_30_days_count'] ?? 0) == 0 && ($summary['pending_count'] ?? 0) == 0)
+                                            <span class="text-muted small">No orders</span>
+                                        @endif
                                     </div>
                                 </div>
                             </div>
