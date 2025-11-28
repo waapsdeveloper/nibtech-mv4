@@ -1421,6 +1421,14 @@
                         //     console.log(variation);
                         // }
 
+                                                // <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="change_price_dropdown_${variation.id}" onclick="populatePriceDropdownOnClick(${variation.id})">
+                                                //     Push
+                                                // </button>
+
+                                                // <ul class="dropdown-menu" id="change_price_menu_${variation.id}">
+                                                //     <li><span class="dropdown-item-text">Loading...</span></li>
+                                                // </ul>
+
                         variationsContainer.append(`
                             <div class="card">
                                 <div class="card-header py-0 d-flex justify-content-between">
@@ -1510,12 +1518,7 @@
                                                 <label for="">Price</label>
                                             </div>
                                             <div class="btn-group d-inline">
-                                                <button type="button" class="btn btn-light dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" id="change_price_dropdown_${variation.id}" onclick="populatePriceDropdownOnClick(${variation.id})">
-                                                    Push
-                                                </button>
-                                                <ul class="dropdown-menu" id="change_price_menu_${variation.id}">
-                                                    <li><span class="dropdown-item-text">Loading...</span></li>
-                                                </ul>
+                                                <a class="dropdown-item" href="#" onclick="event.preventDefault(); submitForm4(event, ' + variationId + ', window.eur_listings[' + ${variation.id} + '] || [], '1');">Push</a>
                                             </div>
                                         </form>
                                     </div>
