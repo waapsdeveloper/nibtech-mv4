@@ -67,7 +67,7 @@ class RefurbedListingsControllerTest extends TestCase
                 ],
                 'has_more' => false,
             ], 200),
-            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState' => Http::response([
+            'https://api.refurbed.com/refb.merchant.v1.OrderItemService/UpdateOrderItemState' => Http::response([
                 'result' => 'ok',
             ], 200),
         ]);
@@ -90,16 +90,14 @@ class RefurbedListingsControllerTest extends TestCase
         });
 
         Http::assertSent(function (Request $request) {
-            if ($request->url() !== 'https://api.refurbed.com/refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState') {
+            if ($request->url() !== 'https://api.refurbed.com/refb.merchant.v1.OrderItemService/UpdateOrderItemState') {
                 return false;
             }
 
-            $updates = $request['order_item_state_updates'] ?? [];
-            return count($updates) === 1
-                && $updates[0]['id'] === 'line-1'
-                && $updates[0]['state'] === 'SHIPPED'
-                && $updates[0]['parcel_tracking_number'] === 'TRACK123'
-                && $updates[0]['parcel_tracking_carrier'] === 'DHL';
+            return $request['id'] === 'line-1'
+                && $request['state'] === 'SHIPPED'
+                && $request['parcel_tracking_number'] === 'TRACK123'
+                && $request['parcel_tracking_carrier'] === 'DHL';
         });
     }
 

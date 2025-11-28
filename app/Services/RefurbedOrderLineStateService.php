@@ -82,23 +82,37 @@ class RefurbedOrderLineStateService
             ], fn ($value) => $value !== null && $value !== '')
         );
 
-        $requestUrl = $this->refurbed->getEndpointUrl(RefurbedAPIController::ORDER_ITEM_STATE_ENDPOINT);
+        $requestUrl = $this->refurbed->getEndpointUrl(RefurbedAPIController::ORDER_ITEM_SINGLE_STATE_ENDPOINT);
 
-        try {
-            $result = $this->refurbed->batchUpdateOrderItemsState($updates);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to update order item states', [
-                'order_id' => $orderId,
-                'item_ids' => array_column($updates, 'id'),
-                'error' => $e->getMessage(),
-            ]);
+        $responses = [];
 
-            throw new RuntimeException('Failed to update order item states: ' . $e->getMessage(), 0, $e);
+        foreach ($updates as $payload) {
+            $orderItemId = (string) ($payload['id'] ?? '');
+            $state = (string) ($payload['state'] ?? '');
+            $attributes = $payload;
+            unset($attributes['id'], $attributes['state']);
+
+            try {
+                $response = $this->refurbed->updateOrderItemState($orderItemId, $state, $attributes);
+            } catch (\Throwable $e) {
+                Log::error('Refurbed: Failed to update order item state', [
+                    'order_id' => $orderId,
+                    'order_item_id' => $orderItemId,
+                    'error' => $e->getMessage(),
+                ]);
+
+                throw new RuntimeException('Failed to update order item state: ' . $e->getMessage(), 0, $e);
+            }
+
+            $responses[] = [
+                'request' => array_merge(['id' => $orderItemId, 'state' => $state], $attributes),
+                'response' => $response,
+            ];
         }
 
         $summary = [
-            'batches' => $result['batches'] ?? [],
-            'total' => $result['total'] ?? count($updates),
+            'batches' => array_map(fn ($entry) => $entry['response'], $responses),
+            'total' => count($responses),
         ];
 
         return [
@@ -110,7 +124,7 @@ class RefurbedOrderLineStateService
             'result' => $summary,
             'request_payload' => $updates,
             'request_url' => $requestUrl,
-            'raw_response' => $result,
+            'raw_response' => $responses,
         ];
     }
 
