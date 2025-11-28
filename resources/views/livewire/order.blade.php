@@ -520,7 +520,9 @@
                                 $items_count = count($items);
                                 $total_items += $items_count;
                                 $customer = $order->customer;
-                                $orderAboveDispatched = $previousOrderDispatched;
+                                if ($orderAboveDispatched == false) {
+                                    $orderAboveDispatched = ($order->status == 3);
+                                }
                                 $isCurrentOrderDispatched = ($order->status == 3);
                             @endphp
 
