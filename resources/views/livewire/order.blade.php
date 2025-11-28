@@ -146,7 +146,11 @@
             <div class="breadcrumb-header justify-content-between">
                 <div class="left-content">
                 {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Orders</span> --}}
-                <a href="{{url('refresh_order')}}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
+                @php
+                    $refreshMarketplaceParam = request()->has('marketplace') ? request('marketplace') : null;
+                    $refreshMarketplace = ($refreshMarketplaceParam === null || $refreshMarketplaceParam === '') ? 1 : $refreshMarketplaceParam;
+                @endphp
+                <a href="{{ url('refresh_order') }}?marketplace={{ $refreshMarketplace }}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
                 <a href="{{url('check_new')}}" class="mg-b-0 mg-b-lg-1 btn btn-primary">Check for New</a>
                 </div>
                 <div class="justify-content-center mt-2">
@@ -686,7 +690,7 @@
                                         @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                        @if (isset($stock) && $item->status == 2 && !session()->has('refresh'))
+                                        @if (isset($stock) && $item->status == 2 && !session()->has('refresh') && $order->marketplace_id != 4)
                                             @php
                                                 session()->put('refresh', true);
                                             @endphp
@@ -806,6 +810,10 @@
                                         <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                         <div class="dropdown-menu">
                                             <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
+                                            @if ((int) $order->marketplace_id === 4)
+                                            <a class="dropdown-item" href="{{ route('order.refurbed_sync_identifiers', ['id' => $order->id]) }}" onclick="return confirm('Push IMEI data to Refurbed for this order?');">Sync Refurbed IMEIs</a>
+                                            <a class="dropdown-item" href="{{ route('order.refurbed_resend_shipped', ['id' => $order->id]) }}" onclick="return confirm('Resend Refurbed SHIPPED request for this order?');">Resend Refurbed Shipped</a>
+                                            @endif
                                             {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                             @if (session('user')->hasPermission('change_order_tracking'))
                                             <a class="dropdown-item" id="tracking_{{ $order->id }}" href="javascript:void(0);" data-bs-target="#tracking_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-order="{{ $order->id }}"> Change Tracking </a>
@@ -821,7 +829,7 @@
                                             <a class="dropdown-item" id="replacement_{{ $item->id }}" href="javascript:void(0);" data-bs-target="#replacement_model" data-bs-toggle="modal" data-bs-reference="{{ $order->reference_id }}" data-bs-item="{{ $item->id }}" data-bs-return="@if($item->check_return) 1 @endif"> Replacement </a>
                                             @endif
                                             @if ($order->status >= 3)
-                                            <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/true" target="_blank">Invoice</a>
+                                            <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/true?marketplace={{ $order->marketplace_id }}" target="_blank">Invoice</a>
                                             @endif
                                             @if ($order->status == 6)
                                             <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
@@ -830,7 +838,7 @@
                                             <a class="dropdown-item" href="{{ route('order.packing_reprint', ['id' => $order->id]) }}@if(request()->filled('sort')){{ '?sort='.request('sort') }}@endif">Reprint Packing Docs</a>
                                             @endif
                                             @if (session('user')->hasPermission('view_api_data'))
-                                            <a class="dropdown-item" href="{{url('order')}}/recheck/{{ $order->reference_id }}/false/false/null/true/true" target="_blank">Data</a>
+                                            <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/false/false/null/true/true?marketplace={{ $order->marketplace_id }}" target="_blank">Data</a>
                                             <a class="dropdown-item" href="{{url('order')}}/label/{{ $order->reference_id }}/true/true" target="_blank">Label Data</a>
                                             @endif
                                             <a class="dropdown-item" href="https://backmarket.fr/bo-seller/orders/all?orderId={{ $order->reference_id }}#order-details={{ $order->reference_id }}" target="_blank">View in Backmarket</a>

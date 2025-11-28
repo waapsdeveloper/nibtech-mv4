@@ -42,7 +42,7 @@ class Api_request_model extends Model
 
         $requests = Api_request_model::where('status', null)
         // ->where('request', 'LIKE', '%10565%')
-        ->limit(500)->get();
+        ->limit(600)->get();
         // $requests = Api_request_model::orderBy('id','asc')->get();
         $log_info = 'Add these products manually:'."\n";
         foreach($requests as $request){
@@ -94,7 +94,7 @@ class Api_request_model extends Model
 
             }
             // if domain = sdpos.nibritaintech.com
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel'))){
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && $stock == null && (str_contains(strtolower($datas->BatchID), 'eg') || str_contains(strtolower($datas->TesterName), 'rizwan') || str_contains(strtolower($datas->TesterName), 'aqeel') || str_contains(strtolower($datas->TesterName), 'uzair ahmed'))){
 
                 $request->send_to_eg();
                 continue;
@@ -239,6 +239,7 @@ class Api_request_model extends Model
                         $variation->status = 1;
                         $variation->save();
                     }
+
                     $stock_operation = Stock_operations_model::create([
                         'stock_id' => $stock->id,
                         'api_request_id' => $request->id,
@@ -459,6 +460,7 @@ class Api_request_model extends Model
 
                     $stock_operation = new Stock_operations_model();
                     $stock_operation->new_operation($stock->id, null, 1, $request->id, $stock->variation_id, $variation->id, $fail." | ".$m." | DrPhone", $admin, Carbon::parse($datas->Time)->format('Y-m-d H:i:s'));
+
                     // $stock_operation = Stock_operations_model::create([
                     //     'stock_id' => $stock->id,
                     //     'api_request_id' => $request->id,
@@ -663,6 +665,8 @@ class Api_request_model extends Model
                 return 24;
             case 'ug':
             case 'a+':
+            case 'a/a plus':
+            case '339':
             case 'a/a+':
                 return 7;
             case 'd':

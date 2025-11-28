@@ -749,7 +749,12 @@ class Index extends Component
                 if (isset($yesterday_average[$variation_id])) {
                     $variation = Variation_model::find($variation_id);
                     $yesterday = $yesterday_average[$variation_id];
-                    $change = (($today->average_price - $yesterday->average_price) / ($yesterday->average_price ?? 1)) * 100;
+                    $yesterdayAverage = (float) $yesterday->average_price;
+                    if ($yesterdayAverage == 0.0) {
+                        $change = 0;
+                    } else {
+                        $change = (($today->average_price - $yesterdayAverage) / $yesterdayAverage) * 100;
+                    }
                     $price_changes[] = [
                         'variation_id' => $variation_id,
                         'variation' => ($variation->product->model ?? '') . ' ' . ($variation->storage_id->name ?? '') . ' ' . ($variation->color_id->name ?? '') . ' ' . ($variation->grade_id->name ?? ''),

@@ -505,10 +505,6 @@ class Order_model extends Model
         $orderObj->currency = $currencyCode;
         $orderObj->price = $this->extractNumeric(
             $orderData['settlement_total_paid']
-            ?? $orderData['total_amount']
-            ?? $orderData['total_paid']
-            ?? $orderData['price']
-            ?? null
         ) ?? 0;
         $orderObj->delivery_note = $orderData['delivery_note'] ?? null;
         $orderObj->payment_method = $orderData['payment_method'] ?? null;
@@ -576,7 +572,7 @@ class Order_model extends Model
             'listing_id' => $listingId,
             'sku' => $sku,
             'quantity' => $item['quantity'] ?? 1,
-            'price' => $this->extractNumeric($item['price'] ?? $item['unit_price'] ?? null) ?? 0,
+            'price' => $this->resolveRefurbedItemPrice($item) ?? 0,
             'state' => $this->mapRefurbedOrderItemState($item['state'] ?? 'NEW'),
             'imei' => $item['imei'] ?? null,
             'serial_number' => $item['serial_number'] ?? ($item['serial'] ?? null),
@@ -585,13 +581,61 @@ class Order_model extends Model
 
     }
 
+    protected function resolveRefurbedItemPrice(array $item): ?float
+    {
+        $candidates = [
+            'settlement_total_paid' => $item['settlement_total_paid'] ?? null,
+            'unit_price' => $item['unit_price'] ?? null,
+            'price' => $item['price'] ?? null,
+            'settlement_unit_price' => $item['settlement_unit_price'] ?? null,
+            'settlement_price' => $item['settlement_price'] ?? null,
+            'total_price' => $item['total_price'] ?? null,
+            'price_total' => $item['price_total'] ?? null,
+            'gross_price' => $item['gross_price'] ?? null,
+            'net_price' => $item['net_price'] ?? null,
+        ];
+
+        foreach ($candidates as $label => $value) {
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $numeric = $this->extractNumeric($value);
+            if ($numeric === null) {
+                continue;
+            }
+
+            $isAggregate = in_array($label, ['total_price', 'price_total', 'settlement_total_paid'], true);
+            if ($isAggregate && ! empty($item['quantity'])) {
+                $quantity = (float) $item['quantity'];
+                if ($quantity > 0) {
+                    return round($numeric / $quantity, 2);
+                }
+            }
+
+            return $numeric;
+        }
+
+        if (! empty($item['quantity'])) {
+            $quantity = (float) $item['quantity'];
+            if ($quantity > 0 && isset($item['total_price'])) {
+                $total = $this->extractNumeric($item['total_price']);
+                if ($total !== null) {
+                    return round($total / $quantity, 2);
+                }
+            }
+        }
+
+        return null;
+    }
+
     protected function mapRefurbedOrderState(string $state): int
     {
         return match (strtoupper($state)) {
             'NEW', 'PENDING' => 1,
             'ACCEPTED', 'CONFIRMED' => 2,
             'SHIPPED', 'IN_TRANSIT' => 3,
-            // 'DELIVERED', 'COMPLETED' => 4,
+            'DELIVERED', 'COMPLETED' => 3,
             'CANCELLED' => 4,
             'RETURNED' => 6,
             default => 1,

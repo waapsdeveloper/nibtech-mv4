@@ -1336,9 +1336,7 @@
                                         <img src="{{ asset('assets/img/flags/') }}/${listing.country_id.code.toLowerCase()}.svg" height="15">
                                         ${listing.country_id.code}
                                         </a>
-                                    </td>
-                                    <td>
-                                        <small>${marketplaceNameDisplay}</small>
+                                        ${marketplaceNameDisplay}
                                     </td>
                                     <td>
                                         <form class="form-inline" method="POST" id="change_limit_${listing.id}">
@@ -1554,7 +1552,6 @@
                                                 <thead>
                                                     <tr>
                                                         <th width="80"><small><b>Country</b></small></th>
-                                                        <th width="100" title="Marketplace"><small><b>MP</b></small></th>
                                                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                                                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                                                         <th width="80"><small><b>BuyBox</b></small></th>

@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 
@@ -33,6 +34,7 @@ class RefurbedShippingService
             return (object) [
                 'tracking_number' => $order->tracking_number,
                 'label_url' => $order->label_url,
+                'carrier' => $carrier,
                 'skipped' => true,
             ];
         }
@@ -50,29 +52,58 @@ class RefurbedShippingService
             return 'Parcel weight must be greater than zero for Refurbed shipments.';
         }
 
+        $labelAttributes = $this->buildLabelAttributes($options);
+
         try {
             $labelResponse = $refurbedApi->createShippingLabel(
                 $order->reference_id,
                 $merchantAddressId,
                 $parcelWeight,
-                $carrier ?: null
+                $carrier ?: null,
+                $labelAttributes
             );
         } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to create shipping label', [
-                'order_id' => $order->id,
-                'order_reference' => $order->reference_id,
-                'error' => $e->getMessage(),
-            ]);
+            if ($this->shouldRetryWithCommercialInvoice($e, $labelAttributes)) {
+                $invoiceDetails = $this->fetchCommercialInvoiceDetails($order, $refurbedApi);
 
-            return 'Failed to create Refurbed shipping label: ' . $e->getMessage();
+                if (! empty($invoiceDetails['commercial_invoice_number'])) {
+                    try {
+                        $labelResponse = $refurbedApi->createShippingLabel(
+                            $order->reference_id,
+                            $merchantAddressId,
+                            $parcelWeight,
+                            $carrier ?: null,
+                            $this->buildLabelAttributes($invoiceDetails)
+                        );
+                    } catch (\Throwable $retryException) {
+                        return $this->handleLabelCreationFailure($order, $retryException, true);
+                    }
+                } else {
+                    Log::warning('Refurbed: Commercial invoice unavailable for label retry', [
+                        'order_id' => $order->id,
+                        'order_reference' => $order->reference_id,
+                    ]);
+
+                    return $this->handleLabelCreationFailure($order, $e);
+                }
+            } else {
+                return $this->handleLabelCreationFailure($order, $e);
+            }
         }
 
         $labelUrl = $this->persistLabel($order, $labelResponse);
+        $trackingNumber = $this->extractTrackingNumber($labelResponse);
+
+        if (! $labelUrl || ! $trackingNumber) {
+            $fallback = $this->fetchLatestLabelMetadata($order, $refurbedApi);
+            $labelUrl = $labelUrl ?: $fallback['label_url'];
+            $trackingNumber = $trackingNumber ?: $fallback['tracking_number'];
+        }
+
         if ($labelUrl) {
             $order->label_url = $labelUrl;
         }
 
-        $trackingNumber = $this->extractTrackingNumber($labelResponse);
         if ($trackingNumber) {
             $order->tracking_number = $trackingNumber;
         }
@@ -105,7 +136,23 @@ class RefurbedShippingService
             'tracking_number' => $trackingNumber,
             'label_url' => $order->label_url,
             'mark_shipped' => $markShipped,
+            'carrier' => $carrier,
+            'response' => $labelResponse,
         ]);
+    }
+
+    protected function handleLabelCreationFailure(Order_model $order, \Throwable $exception, bool $wasRetry = false): string
+    {
+        $message = $this->extractApiErrorMessage($exception);
+
+        Log::error('Refurbed: Failed to create shipping label', [
+            'order_id' => $order->id,
+            'order_reference' => $order->reference_id,
+            'error' => $message,
+            'retry_after_invoice' => $wasRetry,
+        ]);
+
+        return 'Failed to create Refurbed shipping label: ' . $message;
     }
 
     protected function resolveMerchantAddressId(Order_model $order, array $options): ?string
@@ -217,6 +264,15 @@ class RefurbedShippingService
         $downloadUrl = data_get($labelResponse, 'label.download_url')
             ?? data_get($labelResponse, 'download_url')
             ?? data_get($labelResponse, 'shipping_label.download_url')
+            ?? data_get($labelResponse, 'shipping_label.label_printer_url')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.top_left')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.top_right')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.bottom_left')
+            ?? data_get($labelResponse, 'shipping_label.normal_printer_urls.bottom_right')
+            ?? data_get($labelResponse, 'shipping_label.label_url')
+            ?? data_get($labelResponse, 'shipping_label.download_urls.0')
+            ?? data_get($labelResponse, 'label.url')
+            ?? data_get($labelResponse, 'shipping_label.url')
             ?? data_get($labelResponse, 'labels.0.download_url');
 
         if ($downloadUrl) {
@@ -258,7 +314,46 @@ class RefurbedShippingService
         return data_get($labelResponse, 'label.tracking_number')
             ?? data_get($labelResponse, 'tracking_number')
             ?? data_get($labelResponse, 'shipping_label.tracking_number')
+            ?? data_get($labelResponse, 'shipping_label.tracking_data.tracking_number')
             ?? data_get($labelResponse, 'labels.0.tracking_number');
+    }
+
+    protected function fetchLatestLabelMetadata(Order_model $order, RefurbedAPIController $refurbedApi): array
+    {
+        try {
+            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::info('Refurbed: Unable to fetch shipping labels for hydration', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return ['label_url' => null, 'tracking_number' => null];
+        }
+
+        $entry = data_get($labelsResponse, 'shipping_labels.0')
+            ?? data_get($labelsResponse, 'labels.0')
+            ?? data_get($labelsResponse, 'label');
+
+        if (! $entry) {
+            return ['label_url' => null, 'tracking_number' => null];
+        }
+
+        $downloadUrl = data_get($entry, 'download_url')
+            ?? data_get($entry, 'label.download_url')
+            ?? data_get($entry, 'label.content_url')
+            ?? data_get($entry, 'label_printer_url')
+            ?? data_get($entry, 'normal_printer_urls.top_left')
+            ?? data_get($entry, 'normal_printer_urls.top_right');
+
+        $trackingNumber = data_get($entry, 'tracking_number')
+            ?? data_get($entry, 'label.tracking_number')
+            ?? data_get($entry, 'tracking_data.tracking_number');
+
+        return [
+            'label_url' => $downloadUrl,
+            'tracking_number' => $trackingNumber,
+        ];
     }
 
     protected function updateOrderItemsState(Order_model $order, RefurbedAPIController $refurbedApi, ?string $trackingNumber, ?string $carrier): void
@@ -321,12 +416,9 @@ class RefurbedShippingService
 
             $payload = ['id' => $item->reference_id];
 
-            if ($imei) {
-                $payload['imei'] = $imei;
-            }
-
-            if ($serialNumber) {
-                $payload['serial_number'] = $serialNumber;
+            if ($imei || $serialNumber) {
+                $payload['item_identifier'] = $imei ?: $serialNumber;
+                $payload['item_identifier_type'] = $imei ? 'IMEI' : 'SERIAL';
             }
 
             if ($trackingNumber) {
@@ -356,5 +448,64 @@ class RefurbedShippingService
                 'error' => $e->getMessage(),
             ]);
         }
+    }
+
+    protected function buildLabelAttributes(array $source): array
+    {
+        $attributes = [];
+        $invoiceNumber = $source['commercial_invoice_number'] ?? null;
+
+        if ($invoiceNumber) {
+            $attributes['commercial_invoice_number'] = $invoiceNumber;
+        }
+
+        return $attributes;
+    }
+
+    protected function shouldRetryWithCommercialInvoice(\Throwable $exception, array $currentAttributes): bool
+    {
+        if (! empty($currentAttributes['commercial_invoice_number'])) {
+            return false;
+        }
+
+        $message = strtolower($this->extractApiErrorMessage($exception));
+
+        return str_contains($message, 'commercial invoice') && str_contains($message, 'require');
+    }
+
+    protected function fetchCommercialInvoiceDetails(Order_model $order, RefurbedAPIController $refurbedApi): array
+    {
+        try {
+            $response = $refurbedApi->getOrderCommercialInvoice($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to fetch commercial invoice for label retry', [
+                'order_id' => $order->id,
+                'order_reference' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return [];
+        }
+
+        return array_filter([
+            'commercial_invoice_number' => data_get($response, 'commercial_invoice_number'),
+        ]);
+    }
+
+    protected function extractApiErrorMessage(\Throwable $exception): string
+    {
+        if ($exception instanceof RequestException && $exception->response) {
+            $payload = $exception->response->json();
+            if (is_array($payload) && isset($payload['message'])) {
+                return (string) $payload['message'];
+            }
+
+            $body = $exception->response->body();
+            if ($body !== '') {
+                return $body;
+            }
+        }
+
+        return $exception->getMessage();
     }
 }

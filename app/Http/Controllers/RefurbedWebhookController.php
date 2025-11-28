@@ -350,8 +350,15 @@ class RefurbedWebhookController extends Controller
             'reference_id' => $itemId,
         ]);
 
-        $orderItem->quantity = $itemData['quantity'] ?? 1;
-        $orderItem->price = $itemData['price'] ?? $itemData['unit_price'] ?? 0;
+        $orderItem->quantity = (int) ($itemData['quantity'] ?? 1);
+        if ($orderItem->quantity === 0) {
+            $orderItem->quantity = 1;
+        }
+
+        $price = $this->resolveOrderItemPrice($itemData);
+        if ($price !== null) {
+            $orderItem->price = $price;
+        }
         $orderItem->status = $this->mapOrderItemState($itemState);
 
         $orderItem->save();
@@ -414,5 +421,62 @@ class RefurbedWebhookController extends Controller
             'RETURNED' => 6,
             default => 1,
         };
+    }
+
+    protected function resolveOrderItemPrice(array $itemData): ?float
+    {
+        $candidates = [
+            'unit_price' => $itemData['unit_price'] ?? null,
+            'price' => $itemData['price'] ?? null,
+            'settlement_unit_price' => $itemData['settlement_unit_price'] ?? null,
+            'settlement_price' => $itemData['settlement_price'] ?? null,
+            'total_price' => $itemData['total_price'] ?? null,
+            'price_total' => $itemData['price_total'] ?? null,
+            'gross_price' => $itemData['gross_price'] ?? null,
+            'net_price' => $itemData['net_price'] ?? null,
+        ];
+
+        foreach ($candidates as $label => $value) {
+            $numeric = $this->normalizePriceValue($value);
+            if ($numeric === null) {
+                continue;
+            }
+
+            if (in_array($label, ['total_price', 'price_total'], true)) {
+                $quantity = (float) ($itemData['quantity'] ?? 0);
+                if ($quantity > 0) {
+                    return round($numeric / $quantity, 2);
+                }
+            }
+
+            return $numeric;
+        }
+
+        $quantity = (float) ($itemData['quantity'] ?? 0);
+        if ($quantity > 0) {
+            $total = $this->normalizePriceValue($itemData['total_price'] ?? null);
+            if ($total !== null) {
+                return round($total / $quantity, 2);
+            }
+        }
+
+        return null;
+    }
+
+    protected function normalizePriceValue($value): ?float
+    {
+        if (is_array($value)) {
+            if (isset($value['amount'])) {
+                $value = $value['amount'];
+            } elseif (isset($value['value'])) {
+                $value = $value['value'];
+            }
+        }
+
+        if ($value === null || $value === '') {
+            return null;
+        }
+
+        return is_numeric($value) ? (float) $value : null;
     }
 }

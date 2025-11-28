@@ -14,6 +14,9 @@ use Throwable;
 
 class RefurbedAPIController extends Controller
 {
+    public const ORDER_ITEM_STATE_ENDPOINT = 'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState';
+    public const ORDER_ITEM_SINGLE_STATE_ENDPOINT = 'refb.merchant.v1.OrderItemService/UpdateOrderItemState';
+
     private const MAX_BATCH_SIZE = 50;
     protected string $baseUrl;
 
@@ -129,6 +132,41 @@ class RefurbedAPIController extends Controller
         ]);
     }
 
+    public function uploadOrderCommercialInvoice(
+        string $orderId,
+        string $invoiceNumber,
+        string $binaryDocument,
+        ?int $chunkSize = null
+    ): array {
+        $chunkSize = $chunkSize && $chunkSize > 0
+            ? min($chunkSize, 1024 * 1024) // API limit per chunk
+            : 1024 * 1024;
+
+        $payload = [
+            [
+                'meta' => [
+                    'order_id' => $this->normalizeOrderId($orderId),
+                    'commercial_invoice_number' => $invoiceNumber,
+                ],
+            ],
+        ];
+
+        $length = strlen($binaryDocument);
+        $offset = 0;
+
+        while ($offset < $length) {
+            $chunk = substr($binaryDocument, $offset, $chunkSize);
+            if ($chunk === '') {
+                break;
+            }
+
+            $payload[] = ['data' => base64_encode($chunk)];
+            $offset += strlen($chunk);
+        }
+
+        return $this->post('refb.merchant.v1.OrderService/UploadOrderCommercialInvoice', $payload);
+    }
+
     public function acceptOrder(string $orderId): array
     {
         return $this->post('refb.merchant.v1.OrderService/AcceptOrder', ['id' => $orderId]);
@@ -186,7 +224,7 @@ class RefurbedAPIController extends Controller
 
     public function updateOrderItemState(string $orderItemId, string $state, array $attributes = []): array
     {
-        return $this->post('refb.merchant.v1.OrderItemService/UpdateOrderItemState', $this->cleanPayload(array_merge([
+        return $this->post(self::ORDER_ITEM_SINGLE_STATE_ENDPOINT, $this->cleanPayload(array_merge([
             'id' => $orderItemId,
             'state' => $state,
         ], $attributes)));
@@ -217,7 +255,7 @@ class RefurbedAPIController extends Controller
     public function batchUpdateOrderItemsState(array $stateUpdates, array $options = []): array
     {
         return $this->sendBatchedOrderItemUpdates(
-            'refb.merchant.v1.OrderItemService/BatchUpdateOrderItemsState',
+            self::ORDER_ITEM_STATE_ENDPOINT,
             'order_item_state_updates',
             $stateUpdates,
             $options
@@ -309,14 +347,21 @@ class RefurbedAPIController extends Controller
         ]));
     }
 
-    public function createShippingLabel(string $orderId, string $merchantAddressId, float $parcelWeight, ?string $carrier = null): array
-    {
-        return $this->post('refb.merchant.v1.OrderService/CreateShippingLabel', $this->cleanPayload([
+    public function createShippingLabel(
+        string $orderId,
+        string $merchantAddressId,
+        float $parcelWeight,
+        ?string $carrier = null,
+        array $attributes = []
+    ): array {
+        $payload = array_merge([
             'order_id' => $orderId,
             'merchant_address_id' => $merchantAddressId,
             'parcel_weight' => $parcelWeight,
             'carrier' => $carrier,
-        ]));
+        ], $attributes);
+
+        return $this->post('refb.merchant.v1.OrderService/CreateShippingLabel', $this->cleanPayload($payload));
     }
 
     public function listShippingLabels(string $orderId): array
@@ -454,6 +499,11 @@ class RefurbedAPIController extends Controller
         return $this->baseUrl . '/' . ltrim($path, '/');
     }
 
+    public function getEndpointUrl(string $path): string
+    {
+        return $this->buildUrl($path);
+    }
+
     protected function cleanPayload(array $payload): array
     {
         foreach ($payload as $key => $value) {
@@ -467,6 +517,11 @@ class RefurbedAPIController extends Controller
         }
 
         return $payload;
+    }
+
+    protected function normalizeOrderId(string $orderId): int|string
+    {
+        return is_numeric($orderId) ? (int) $orderId : $orderId;
     }
 
     protected function logError(string $message, array $context = []): void

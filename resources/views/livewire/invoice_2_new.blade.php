@@ -241,8 +241,16 @@ canvas {
                     <td colspan="3" style="text-align: right;"><strong>Amount Due:</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
+                @php
+                    $marketplaceLabel = optional($order->marketplace)->name;
+                    if (! $marketplaceLabel) {
+                        $marketplaceLabel = ((int) ($order->marketplace_id ?? 0) === 4)
+                            ? 'Refurbed'
+                            : 'Back Market';
+                    }
+                @endphp
                 <tr>
-                    <td colspan="3" style="text-align: right;"><strong>Back Market:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>{{ $marketplaceLabel }}:</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
                 <tr>
