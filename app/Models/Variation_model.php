@@ -95,6 +95,10 @@ class Variation_model extends Model
     }
     public function listings()
     {
+        return $this->hasMany(Listing_model::class, 'variation_id', 'id')->where('marketplace_id',1)->orderBy('country', 'asc')->orderBy('marketplace_id', 'asc');
+    }
+    public function all_listings()
+    {
         return $this->hasMany(Listing_model::class, 'variation_id', 'id')->orderBy('country', 'asc')->orderBy('marketplace_id', 'asc');
     }
     public function grade_id()
