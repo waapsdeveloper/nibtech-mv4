@@ -55,17 +55,17 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refurbed:update-stock')
-            ->everyThirtyMinutes()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
-        $schedule->command('refurbed:create-labels')
-            ->everyTenMinutes()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // $schedule->command('refurbed:update-stock')
+        //     ->everyThirtyMinutes()
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
+        // $schedule->command('refurbed:create-labels')
+        //     ->everyTenMinutes()
+        //     ->between('6:00', '02:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
         $schedule->command('functions:ten')
             ->everyTenMinutes()
             ->between('6:00', '02:00')
