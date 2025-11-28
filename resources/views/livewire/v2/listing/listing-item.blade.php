@@ -53,20 +53,17 @@
                     </a>
                 </div>
                 {{-- Marketplace Cards Row --}}
-                @if(!empty($marketplaceSummaries))
+                @php
+                    $allMarketplaces = $this->getAllMarketplaces();
+                @endphp
+                @if(!empty($allMarketplaces))
                     <div class="marketplace-cards-row mt-2 d-flex gap-2 flex-wrap">
-                        @php
-                            $marketplaceIds = array_keys($marketplaceSummaries);
-                            // Debug: Log marketplace IDs if needed
-                            // \Log::info('Marketplace IDs for variation ' . $variation->id, ['ids' => $marketplaceIds, 'summaries' => array_keys($marketplaceSummaries)]);
-                        @endphp
-                        @foreach($marketplaceIds as $marketplaceId)
+                        @foreach($allMarketplaces as $marketplaceId => $marketplaceData)
                             @php
-                                $marketplace = $marketplaces[$marketplaceId] ?? null;
-                                $marketplaceName = is_object($marketplace) 
-                                    ? ($marketplace->name ?? 'Marketplace ' . $marketplaceId)
-                                    : (is_array($marketplace) 
-                                        ? ($marketplace['name'] ?? 'Marketplace ' . $marketplaceId)
+                                $marketplaceName = is_object($marketplaceData) 
+                                    ? ($marketplaceData->name ?? 'Marketplace ' . $marketplaceId)
+                                    : (is_array($marketplaceData) 
+                                        ? ($marketplaceData['name'] ?? 'Marketplace ' . $marketplaceId)
                                         : 'Marketplace ' . $marketplaceId);
                                 $summary = $marketplaceSummaries[$marketplaceId] ?? [];
                             @endphp

@@ -539,21 +539,51 @@
                             
                                 // Use Livewire to call loadData for each component
                             if (typeof Livewire !== 'undefined') {
-                                // Try to find and call the component's loadData method
-                                Livewire.all().forEach(component => {
-                                    try {
-                                        // Check if this component matches our criteria
-                                        const data = component.__instance?.serverMemo?.data || {};
-                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
-                                            // Load data if not ready
-                                            if (!data.ready) {
+                                // Find component by wire:id or by matching properties
+                                const componentKey = 'marketplace-accordion-' + targetVariationId + '-' + marketplaceId;
+                                
+                                // Try multiple methods to find and call the component
+                                let found = false;
+                                
+                                // Method 1: Try to find by wire:id
+                                const wireElement = document.querySelector(`[wire\\:id*="${componentKey}"]`);
+                                if (wireElement) {
+                                    const wireId = wireElement.getAttribute('wire:id');
+                                    if (wireId) {
+                                        try {
+                                            const component = Livewire.find(wireId);
+                                            if (component && !component.get('ready')) {
                                                 component.call('loadData');
+                                                found = true;
                                             }
+                                        } catch(e) {
+                                            console.log('Error finding component by wire:id:', e);
                                         }
-                                    } catch(e) {
-                                        // Component might not be ready yet, ignore
                                     }
-                                });
+                                }
+                                
+                                // Method 2: Search all Livewire components
+                                if (!found) {
+                                    Livewire.all().forEach(component => {
+                                        try {
+                                            if (component && component.__instance) {
+                                                const props = component.__instance?.serverMemo?.dataProps || {};
+                                                const data = component.__instance?.serverMemo?.data || {};
+                                                
+                                                // Match by both props and data
+                                                if ((props.variationId == targetVariationId || data.variationId == targetVariationId) &&
+                                                    (props.marketplaceId == marketplaceId || data.marketplaceId == marketplaceId)) {
+                                                    if (!data.ready) {
+                                                        component.call('loadData');
+                                                        found = true;
+                                                    }
+                                                }
+                                            }
+                                        } catch(e) {
+                                            // Component might not be ready yet, ignore
+                                        }
+                                    });
+                                }
                             }
                         }
                     }
