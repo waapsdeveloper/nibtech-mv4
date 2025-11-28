@@ -549,21 +549,36 @@
                         
                         targetElement.addEventListener('shown.bs.collapse', onExpanded);
                         
-                        // Trigger Livewire method first to ensure loading starts
-                        const wireId = button.closest('[wire\\:id]')?.getAttribute('wire:id');
-                        if (wireId && typeof Livewire !== 'undefined') {
-                            try {
-                                const component = Livewire.find(wireId);
-                                if (component) {
-                                    // Call toggleAccordion to ensure loading is triggered
-                                    component.call('toggleAccordion');
+                        // Trigger Livewire toggleAccordion method to ensure loading starts
+                        // Try to find component and call toggleAccordion directly
+                        const targetId = button.getAttribute('data-bs-target');
+                        const accordionId = targetId.replace('#collapse_', '');
+                        const parts = accordionId.split('_');
+                        let componentFound = false;
+                        
+                        if (parts.length >= 2 && typeof Livewire !== 'undefined') {
+                            const marketplaceId = parts[0];
+                            const targetVariationId = parts[1];
+                            
+                            // Search for component by matching IDs
+                            Livewire.all().forEach(comp => {
+                                try {
+                                    if (comp && comp.__instance) {
+                                        const data = comp.__instance?.serverMemo?.data || {};
+                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                            // Found the component - call toggleAccordion
+                                            comp.call('toggleAccordion');
+                                            componentFound = true;
+                                        }
+                                    }
+                                } catch(e) {
+                                    // Continue searching
                                 }
-                            } catch(e) {
-                                // Fallback: just click the button
-                                button.click();
-                            }
-                        } else {
-                            // Fallback: click the button to expand it - this will trigger toggleAccordion and load data
+                            });
+                        }
+                        
+                        // If component not found or toggle didn't expand, click the button
+                        if (!componentFound) {
                             button.click();
                         }
                     } else {
