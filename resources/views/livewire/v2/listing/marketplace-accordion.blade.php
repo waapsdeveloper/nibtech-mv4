@@ -1,4 +1,4 @@
-<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}">
+<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}" data-variation-id="{{ $variationId }}">
     <h2 class="accordion-header" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
         <button 
             class="accordion-button {{ !$expanded ? 'collapsed' : '' }} p-2" 

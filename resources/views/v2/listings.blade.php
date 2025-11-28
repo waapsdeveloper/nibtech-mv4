@@ -538,52 +538,67 @@
                             const targetVariationId = parts[1];
                             
                                 // Use Livewire to call loadData for each component
-                            if (typeof Livewire !== 'undefined') {
-                                // Find component by wire:id or by matching properties
-                                const componentKey = 'marketplace-accordion-' + targetVariationId + '-' + marketplaceId;
-                                
-                                // Try multiple methods to find and call the component
-                                let found = false;
-                                
-                                // Method 1: Try to find by wire:id
-                                const wireElement = document.querySelector(`[wire\\:id*="${componentKey}"]`);
-                                if (wireElement) {
-                                    const wireId = wireElement.getAttribute('wire:id');
-                                    if (wireId) {
-                                        try {
-                                            const component = Livewire.find(wireId);
-                                            if (component && !component.get('ready')) {
-                                                component.call('loadData');
-                                                found = true;
-                                            }
-                                        } catch(e) {
-                                            console.log('Error finding component by wire:id:', e);
-                                        }
-                                    }
+                            // Dispatch a custom event that the component can listen to
+                            const loadEvent = new CustomEvent('load-marketplace-data', {
+                                detail: {
+                                    variationId: targetVariationId,
+                                    marketplaceId: marketplaceId
                                 }
-                                
-                                // Method 2: Search all Livewire components
-                                if (!found) {
-                                    Livewire.all().forEach(component => {
-                                        try {
-                                            if (component && component.__instance) {
-                                                const props = component.__instance?.serverMemo?.dataProps || {};
-                                                const data = component.__instance?.serverMemo?.data || {};
-                                                
-                                                // Match by both props and data
-                                                if ((props.variationId == targetVariationId || data.variationId == targetVariationId) &&
-                                                    (props.marketplaceId == marketplaceId || data.marketplaceId == marketplaceId)) {
-                                                    if (!data.ready) {
+                            });
+                            document.dispatchEvent(loadEvent);
+                            
+                            // Also try direct Livewire approach
+                            if (typeof Livewire !== 'undefined') {
+                                // Small delay to ensure DOM is ready
+                                setTimeout(() => {
+                                    // Find component by wire:id or by matching properties
+                                    const componentKey = 'marketplace-accordion-' + targetVariationId + '-' + marketplaceId;
+                                    
+                                    // Try to find by wire:id attribute
+                                    const wireElement = document.querySelector(`[wire\\:id*="${componentKey}"], [data-marketplace-id="${marketplaceId}"][data-variation-id="${targetVariationId}"]`);
+                                    if (wireElement) {
+                                        const wireId = wireElement.getAttribute('wire:id');
+                                        if (wireId) {
+                                            try {
+                                                const component = Livewire.find(wireId);
+                                                if (component) {
+                                                    const data = component.get('ready');
+                                                    if (!data) {
                                                         component.call('loadData');
-                                                        found = true;
                                                     }
                                                 }
+                                            } catch(e) {
+                                                // Fallback: search all components
+                                                Livewire.all().forEach(component => {
+                                                    try {
+                                                        if (component && component.__instance) {
+                                                            const data = component.__instance?.serverMemo?.data || {};
+                                                            if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId && !data.ready) {
+                                                                component.call('loadData');
+                                                            }
+                                                        }
+                                                    } catch(e2) {
+                                                        // Ignore errors
+                                                    }
+                                                });
                                             }
-                                        } catch(e) {
-                                            // Component might not be ready yet, ignore
                                         }
-                                    });
-                                }
+                                    } else {
+                                        // Fallback: search all components
+                                        Livewire.all().forEach(component => {
+                                            try {
+                                                if (component && component.__instance) {
+                                                    const data = component.__instance?.serverMemo?.data || {};
+                                                    if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId && !data.ready) {
+                                                        component.call('loadData');
+                                                    }
+                                                }
+                                            } catch(e) {
+                                                // Ignore errors
+                                            }
+                                        });
+                                    }
+                                }, 100);
                             }
                         }
                     }
