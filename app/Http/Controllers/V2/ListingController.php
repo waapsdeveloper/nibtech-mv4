@@ -165,11 +165,50 @@ class ListingController extends Controller
                 return $variations->get($id);
             })->filter()->values();
 
-            // Convert to array format for passing to components
-            $variationData = $orderedVariations->map(function($variation) {
+            // Calculate stats for all variations in batch
+            $variationData = $orderedVariations->map(function($variation) use ($exchangeData) {
+                // Calculate stats using service
+                $stats = $this->calculationService->calculateVariationStats($variation);
+                
+                // Calculate pricing info
+                $pricingInfo = $this->calculationService->calculatePricingInfo(
+                    $variation->listings ?? collect(),
+                    $exchangeData['exchange_rates'],
+                    $exchangeData['eur_gbp']
+                );
+                
+                // Calculate average cost
+                $averageCost = $this->calculationService->calculateAverageCost(
+                    $variation->available_stocks ?? collect()
+                );
+                
+                // Calculate total orders count
+                $totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($variation->id);
+                
+                // Get buybox listings
+                $buyboxListings = ($variation->listings ?? collect())
+                    ->where('buybox', 1)
+                    ->map(function($listing) {
+                        $countryId = is_object($listing->country_id) ? $listing->country_id->id : ($listing->country_id ?? null);
+                        return [
+                            'id' => $listing->id,
+                            'country_id' => $countryId,
+                            'reference_uuid_2' => $listing->reference_uuid_2 ?? '',
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+                
                 return [
                     'id' => $variation->id,
                     'variation_data' => $variation->toArray(),
+                    'calculated_stats' => [
+                        'stats' => $stats,
+                        'pricing_info' => $pricingInfo,
+                        'average_cost' => $averageCost,
+                        'total_orders_count' => $totalOrdersCount,
+                        'buybox_listings' => $buyboxListings,
+                    ],
                 ];
             })->toArray();
 

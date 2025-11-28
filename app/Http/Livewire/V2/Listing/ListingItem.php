@@ -76,30 +76,90 @@ class ListingItem extends Component
 
     /**
      * Initialize component from preloaded variation data
-     * Since the data is already loaded in renderListingItems, we just load it here with minimal queries
+     * Uses pre-calculated stats to avoid re-querying and re-calculating
      */
     private function initializeFromPreloadedData(array $data): void
     {
-        // Load variation with relationships (data already loaded in renderListingItems, this is fast)
-        $this->variation = Variation_model::with([
-            'listings',
-            'listings.country_id',
-            'listings.currency',
-            'listings.marketplace',
-            'product',
-            'available_stocks',
-            'pending_orders',
-            'storage_id',
-            'color_id',
-            'grade_id',
-        ])->find($this->variationId);
-        
-        if ($this->variation) {
-            // Calculate all stats immediately
-            $this->calculateStats();
-            $this->ready = true;
-            $this->detailsExpanded = false;
+        // Reconstruct Variation model from preloaded data array
+        $variationArray = $data['variation_data'] ?? [];
+        if (empty($variationArray)) {
+            return;
         }
+        
+        // Create model instance from array
+        $this->variation = Variation_model::make($variationArray);
+        $this->variation->exists = true; // Mark as existing to avoid save attempts
+        
+        // Set relationships from array data
+        if (isset($variationArray['product']) && is_array($variationArray['product'])) {
+            $product = \App\Models\Products_model::make($variationArray['product']);
+            $product->exists = true;
+            $this->variation->setRelation('product', $product);
+        }
+        if (isset($variationArray['storage_id']) && is_array($variationArray['storage_id'])) {
+            $storage = \App\Models\Storage_model::make($variationArray['storage_id']);
+            $storage->exists = true;
+            $this->variation->setRelation('storage_id', $storage);
+        }
+        if (isset($variationArray['color_id']) && is_array($variationArray['color_id'])) {
+            $color = \App\Models\Color_model::make($variationArray['color_id']);
+            $color->exists = true;
+            $this->variation->setRelation('color_id', $color);
+        }
+        if (isset($variationArray['grade_id']) && is_array($variationArray['grade_id'])) {
+            $grade = \App\Models\Grade_model::make($variationArray['grade_id']);
+            $grade->exists = true;
+            $this->variation->setRelation('grade_id', $grade);
+        }
+        
+        // Set listings relationship
+        if (isset($variationArray['listings']) && is_array($variationArray['listings'])) {
+            $listings = collect($variationArray['listings'])->map(function($listing) {
+                $listingModel = \App\Models\Listing_model::make($listing);
+                $listingModel->exists = true;
+                if (isset($listing['country_id']) && is_array($listing['country_id'])) {
+                    $country = \App\Models\Country_model::make($listing['country_id']);
+                    $country->exists = true;
+                    $listingModel->setRelation('country_id', $country);
+                }
+                return $listingModel;
+            });
+            $this->variation->setRelation('listings', $listings);
+        }
+        
+        // Set available_stocks and pending_orders
+        if (isset($variationArray['available_stocks']) && is_array($variationArray['available_stocks'])) {
+            $stocks = collect($variationArray['available_stocks'])->map(function($stock) {
+                $stockModel = \App\Models\Stock_model::make($stock);
+                $stockModel->exists = true;
+                return $stockModel;
+            });
+            $this->variation->setRelation('available_stocks', $stocks);
+        }
+        if (isset($variationArray['pending_orders']) && is_array($variationArray['pending_orders'])) {
+            $orders = collect($variationArray['pending_orders'])->map(function($order) {
+                $orderModel = \App\Models\Order_item_model::make($order);
+                $orderModel->exists = true;
+                return $orderModel;
+            });
+            $this->variation->setRelation('pending_orders', $orders);
+        }
+        
+        // Use pre-calculated stats if available
+        if (isset($data['calculated_stats'])) {
+            $calculated = $data['calculated_stats'];
+            $this->stats = $calculated['stats'] ?? [];
+            $this->pricingInfo = $calculated['pricing_info'] ?? [];
+            $this->averageCost = $calculated['average_cost'] ?? 0.0;
+            $this->totalOrdersCount = $calculated['total_orders_count'] ?? 0;
+            $this->buyboxListings = $calculated['buybox_listings'] ?? [];
+        } else {
+            // Fallback: calculate stats if not pre-calculated
+            $this->calculateStats();
+        }
+        
+        $this->ready = true;
+        $this->detailsExpanded = false;
     }
 
     /**
