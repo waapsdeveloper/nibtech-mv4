@@ -100,6 +100,13 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
+        $schedule->command('api-request:process')
+            ->everyFiveMinutes()
+            ->between('6:00', '02:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
     }
 
     /**
