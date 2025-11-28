@@ -51,6 +51,12 @@
     .pagination-container {
         margin-top: 20px;
     }
+    .pagination .page-link {
+        padding: 0.375rem 0.75rem;
+    }
+    #v2-page-input {
+        text-align: center;
+    }
 </style>
 @endsection
 
@@ -129,7 +135,14 @@
 
 <!-- Pagination -->
 <nav aria-label="Page navigation" class="pagination-container">
-    <ul id="v2-pagination" class="pagination justify-content-center"></ul>
+    <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+        <ul id="v2-pagination" class="pagination mb-0"></ul>
+        <div class="d-flex align-items-center gap-2">
+            <label for="v2-page-input" class="mb-0 small">Go to page:</label>
+            <input type="number" id="v2-page-input" class="form-control form-control-sm" style="width: 70px;" min="1" value="1">
+            <button class="btn btn-sm btn-primary" onclick="goToPage()">Go</button>
+        </div>
+    </div>
 </nav>
 
 @endsection
@@ -341,43 +354,138 @@
     }
 
     /**
-     * Update pagination
+     * Update pagination with smart page number display
      */
     function updatePaginationV2(data) {
+        // Store pagination data globally
+        lastPageData = data;
+
         const paginationContainer = document.getElementById('v2-pagination');
+        const pageInput = document.getElementById('v2-page-input');
         paginationContainer.innerHTML = '';
 
         if (data.last_page <= 1) {
+            if (pageInput) {
+                pageInput.value = 1;
+                pageInput.max = 1;
+            }
             return;
         }
 
+        // Update page input
+        if (pageInput) {
+            pageInput.value = data.current_page;
+            pageInput.max = data.last_page;
+        }
+
+        const currentPage = data.current_page;
+        const lastPage = data.last_page;
+        const pagesToShow = 5; // Show max 5 page numbers around current page
+
         // Previous button
         const prevLi = document.createElement('li');
-        prevLi.className = `page-item ${data.current_page === 1 ? 'disabled' : ''}`;
-        prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${data.current_page - 1}); return false;">Previous</a>`;
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${currentPage - 1}); return false;">‹ Previous</a>`;
         paginationContainer.appendChild(prevLi);
 
-        // Page numbers
-        for (let i = 1; i <= data.last_page; i++) {
-            if (i === 1 || i === data.last_page || (i >= data.current_page - 2 && i <= data.current_page + 2)) {
-                const li = document.createElement('li');
-                li.className = `page-item ${i === data.current_page ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${i}); return false;">${i}</a>`;
-                paginationContainer.appendChild(li);
-            } else if (i === data.current_page - 3 || i === data.current_page + 3) {
-                const li = document.createElement('li');
-                li.className = 'page-item disabled';
-                li.innerHTML = '<span class="page-link">...</span>';
-                paginationContainer.appendChild(li);
+        // Always show first page
+        if (currentPage > pagesToShow / 2 + 1) {
+            const firstLi = document.createElement('li');
+            firstLi.className = `page-item ${currentPage === 1 ? 'active' : ''}`;
+            firstLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(1); return false;">1</a>`;
+            paginationContainer.appendChild(firstLi);
+
+            if (currentPage > pagesToShow / 2 + 2) {
+                const ellipsisLi = document.createElement('li');
+                ellipsisLi.className = 'page-item disabled';
+                ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(ellipsisLi);
             }
+        }
+
+        // Calculate start and end page numbers to show
+        let startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+        let endPage = Math.min(lastPage, currentPage + Math.floor(pagesToShow / 2));
+
+        // Adjust if we're near the beginning
+        if (currentPage <= Math.floor(pagesToShow / 2)) {
+            endPage = Math.min(lastPage, pagesToShow);
+        }
+
+        // Adjust if we're near the end
+        if (currentPage > lastPage - Math.floor(pagesToShow / 2)) {
+            startPage = Math.max(1, lastPage - pagesToShow + 1);
+        }
+
+        // Show page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${i}); return false;">${i}</a>`;
+            paginationContainer.appendChild(li);
+        }
+
+        // Show last page if not already shown
+        if (endPage < lastPage) {
+            if (endPage < lastPage - 1) {
+                const ellipsisLi = document.createElement('li');
+                ellipsisLi.className = 'page-item disabled';
+                ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(ellipsisLi);
+            }
+
+            const lastLi = document.createElement('li');
+            lastLi.className = `page-item ${currentPage === lastPage ? 'active' : ''}`;
+            lastLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${lastPage}); return false;">${lastPage}</a>`;
+            paginationContainer.appendChild(lastLi);
         }
 
         // Next button
         const nextLi = document.createElement('li');
-        nextLi.className = `page-item ${data.current_page === data.last_page ? 'disabled' : ''}`;
-        nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${data.current_page + 1}); return false;">Next</a>`;
+        nextLi.className = `page-item ${currentPage === lastPage ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${currentPage + 1}); return false;">Next ›</a>`;
         paginationContainer.appendChild(nextLi);
     }
+
+    // Store last page globally for goToPage function
+    let lastPageData = null;
+
+    /**
+     * Go to specific page number
+     */
+    function goToPage() {
+        const pageInput = document.getElementById('v2-page-input');
+        if (!pageInput) return;
+
+        const page = parseInt(pageInput.value);
+        if (isNaN(page) || page < 1) {
+            alert('Please enter a valid page number');
+            pageInput.value = lastPageData?.current_page || 1;
+            return;
+        }
+
+        // Check if page exists
+        if (lastPageData && page > lastPageData.last_page) {
+            alert(`Page ${page} does not exist. Maximum page is ${lastPageData.last_page}`);
+            pageInput.value = lastPageData.last_page;
+            return;
+        }
+
+        fetchVariationsV2(page);
+    }
+
+    // Allow Enter key to submit page input
+    document.addEventListener('DOMContentLoaded', function() {
+        const pageInput = document.getElementById('v2-page-input');
+        if (pageInput) {
+            pageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToPage();
+                }
+            });
+        }
+    });
 
     // Event listeners
     document.getElementById('v2-sort').addEventListener('change', () => fetchVariationsV2(1));
