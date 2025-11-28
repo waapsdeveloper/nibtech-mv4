@@ -22,143 +22,10 @@
                         {{ $variation->product->model ?? '' }} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }}
                     </a>
                 </h5>
-                <div class="sales-info" id="sales_{{ $variation->id }}">Loading sales data...</div>
+                <div class="sales-info" id="sales_{{ $variation->id }}" data-variation-id="{{ $variation->id }}">
+                    <span class="text-muted small">Sales data will load when scrolled into view</span>
+                </div>
             </div>
-            
-            @if($ready && $variation)
-            <script>
-                (function() {
-                    // Load sales data when component is ready
-                    function loadSalesData() {
-                        if (typeof $ !== 'undefined' && $('#sales_{{ $variation->id }}').length) {
-                            $('#sales_{{ $variation->id }}').load("{{ url('listing/get_sales') }}/{{ $variation->id }}?csrf={{ csrf_token() }}");
-                        } else {
-                            // Retry if jQuery not ready yet
-                            setTimeout(loadSalesData, 100);
-                        }
-                    }
-                    
-                    // Try loading immediately
-                    if (document.readyState === 'loading') {
-                        document.addEventListener('DOMContentLoaded', loadSalesData);
-                    } else {
-                        loadSalesData();
-                    }
-                    
-                    // Auto-expand marketplace accordion and load marketplace data
-                    function autoExpandMarketplaces() {
-                        const variationId = {{ $variation->id }};
-                        const accordionId = '#marketplaceAccordion_' + variationId;
-                        
-                        // Wait for Livewire to finish rendering
-                        setTimeout(function() {
-                            // Expand the main marketplace accordion using Bootstrap
-                            const collapseElement = document.querySelector(accordionId);
-                            if (collapseElement) {
-                                if (!collapseElement.classList.contains('show')) {
-                                    // Use Bootstrap Collapse to expand
-                                    const bsCollapse = new bootstrap.Collapse(collapseElement, {
-                                        toggle: true
-                                    });
-                                    
-                                    // After main accordion expands, expand each marketplace one by one
-                                    collapseElement.addEventListener('shown.bs.collapse', function() {
-                                        setTimeout(function() {
-                                            expandMarketplacesSequentially(variationId);
-                                        }, 200);
-                                    }, { once: true });
-                                } else {
-                                    // Already expanded, just expand marketplaces
-                                    setTimeout(function() {
-                                        expandMarketplacesSequentially(variationId);
-                                    }, 200);
-                                }
-                            }
-                        }, 500);
-                    }
-                    
-                    // Expand marketplaces one by one sequentially
-                    function expandMarketplacesSequentially(variationId) {
-                        // Find all marketplace accordion buttons that are collapsed
-                        const marketplaceButtons = Array.from(
-                            document.querySelectorAll('#marketplaceAccordionInner_' + variationId + ' .accordion-button.collapsed')
-                        );
-                        
-                        if (marketplaceButtons.length === 0) {
-                            return; // All already expanded
-                        }
-                        
-                        let index = 0;
-                        const expandNext = function() {
-                            if (index >= marketplaceButtons.length) {
-                                return; // All done
-                            }
-                            
-                            const button = marketplaceButtons[index];
-                            const targetId = button.getAttribute('data-bs-target');
-                            
-                            if (targetId) {
-                                const targetElement = document.querySelector(targetId);
-                                if (targetElement && !targetElement.classList.contains('show')) {
-                                    // Click the button to trigger Livewire toggleAccordion and Bootstrap collapse
-                                    button.click();
-                                    
-                                    // Wait for this one to load before expanding next
-                                    // Check if Livewire is processing
-                                    const checkLoaded = setInterval(function() {
-                                        if (targetElement.classList.contains('show')) {
-                                            clearInterval(checkLoaded);
-                                            index++;
-                                            // Small delay before expanding next marketplace
-                                            setTimeout(expandNext, 300);
-                                        }
-                                    }, 100);
-                                    
-                                    // Timeout after 5 seconds to prevent infinite waiting
-                                    setTimeout(function() {
-                                        clearInterval(checkLoaded);
-                                        index++;
-                                        setTimeout(expandNext, 300);
-                                    }, 5000);
-                                } else {
-                                    // Already expanded, move to next
-                                    index++;
-                                    setTimeout(expandNext, 200);
-                                }
-                            } else {
-                                index++;
-                                setTimeout(expandNext, 200);
-                            }
-                        };
-                        
-                        // Start expanding after a small delay
-                        setTimeout(expandNext, 300);
-                    }
-                    
-                    // Trigger auto-expand after component is ready
-                    // Use a simple polling approach to check when the component is ready
-                    let checkCount = 0;
-                    const maxChecks = 20; // Check for up to 2 seconds (20 * 100ms)
-                    
-                    const checkAndExpand = function() {
-                        const accordionId = '#marketplaceAccordion_{{ $variation->id }}';
-                        const accordionElement = document.querySelector(accordionId);
-                        
-                        if (accordionElement || checkCount >= maxChecks) {
-                            if (accordionElement) {
-                                autoExpandMarketplaces();
-                            }
-                        } else {
-                            checkCount++;
-                            setTimeout(checkAndExpand, 100);
-                        }
-                    };
-                    
-                    // Start checking after a short delay
-                    setTimeout(checkAndExpand, 500);
-                })();
-            </script>
-            @endif
 
             {{-- Stock Controls --}}
             <div class="stock-controls ms-2">
@@ -210,7 +77,7 @@
 
 
         {{-- Marketplace Accordion Section --}}
-        <div class="card-body p-0 collapse multi_collapse {{ $detailsExpanded ? 'show' : '' }}" id="marketplaceAccordion_{{ $variation->id }}">
+        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}">
             <div class="accordion" id="marketplaceAccordionInner_{{ $variation->id }}">
                 @php
                     // Get all marketplaces from system

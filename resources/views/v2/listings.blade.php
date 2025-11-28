@@ -287,17 +287,8 @@
                 if (typeof Livewire !== 'undefined') {
                     Livewire.rescan();
                     
-                    // Load sales data for all variations after components are ready
-                    setTimeout(function() {
-                        // Get all variation IDs from the rendered HTML
-                        const salesElements = document.querySelectorAll('[id^="sales_"]');
-                        salesElements.forEach(function(element) {
-                            const variationId = element.id.replace('sales_', '');
-                            if (variationId && !element.innerHTML.includes('Average:')) {
-                                element.load("{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}");
-                            }
-                        });
-                    }, 500);
+                    // Initialize deferred sales data loading using Intersection Observer
+                    initializeDeferredSalesDataLoading();
                 }
             } else {
                 variationsContainer.innerHTML = 
@@ -366,6 +357,79 @@
             }
         });
     });
+
+    /**
+     * Initialize deferred sales data loading using Intersection Observer
+     * Sales data will only load when variation cards scroll into viewport
+     */
+    function initializeDeferredSalesDataLoading() {
+        // Track which variations have already loaded sales data
+        const loadedSalesData = new Set();
+        
+        // Create Intersection Observer
+        const salesObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const element = entry.target;
+                    const variationId = element.dataset.variationId || element.id.replace('sales_', '');
+                    
+                    // Skip if already loaded or loading
+                    if (!variationId || loadedSalesData.has(variationId) || element.innerHTML.includes('Average:')) {
+                        salesObserver.unobserve(element);
+                        return;
+                    }
+                    
+                    // Mark as loading
+                    element.innerHTML = '<span class="text-muted small">Loading sales data...</span>';
+                    
+                    // Load sales data
+                    if (typeof $ !== 'undefined' && $.fn.load) {
+                        const salesUrl = "{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}";
+                        $(element).load(salesUrl, function(response, status) {
+                            if (status === 'success') {
+                                loadedSalesData.add(variationId);
+                                salesObserver.unobserve(element);
+                            } else {
+                                element.innerHTML = '<span class="text-danger small">Failed to load sales data</span>';
+                            }
+                        });
+                    } else {
+                        // Fallback to fetch API if jQuery not available
+                        fetch("{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}")
+                            .then(response => response.text())
+                            .then(html => {
+                                element.innerHTML = html;
+                                loadedSalesData.add(variationId);
+                                salesObserver.unobserve(element);
+                            })
+                            .catch(error => {
+                                console.error('Error loading sales data:', error);
+                                element.innerHTML = '<span class="text-danger small">Failed to load sales data</span>';
+                            });
+                    }
+                }
+            });
+        }, {
+            // Load when element is 100px away from viewport
+            rootMargin: '100px'
+        });
+        
+        // Observe all sales info elements
+        setTimeout(function() {
+            const salesElements = document.querySelectorAll('[id^="sales_"][data-variation-id]');
+            salesElements.forEach(element => {
+                salesObserver.observe(element);
+            });
+        }, 500); // Wait for Livewire to finish rendering
+    }
+    
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeDeferredSalesDataLoading);
+    } else {
+        // Already loaded, initialize immediately
+        setTimeout(initializeDeferredSalesDataLoading, 500);
+    }
 
     // Export CSV
     document.getElementById('export-listings-btn')?.addEventListener('click', function() {
