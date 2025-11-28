@@ -34,11 +34,6 @@ class Testing extends Component
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
 
-        $testing = new Api_request_model();
-        $requests = $testing->push_testing();
-        // $this->remove_extra_variations();
-
-        // die;
         $requests = Api_request_model::whereNull('status')->limit(100)->get();
 
         $data['requests'] = $requests;

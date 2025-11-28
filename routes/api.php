@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiRequestController;
 use App\Http\Controllers\BMPROListingsController;
 use App\Http\Controllers\BMPROOrdersController;
+use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\RefurbedListingsController;
 use App\Http\Controllers\RefurbedWebhookController;
@@ -81,6 +82,9 @@ Route::group(['middleware' => ['internal.only']], function () {
 
     Route::get('/bmpro/orders/pending', [BMPROOrdersController::class, 'pending'])
         ->name('bmpro.orders.pending');
+
+    Route::get('/google/emails', [GoogleController::class, 'readEmails'])
+        ->name('google.emails.read');
 
 
 
