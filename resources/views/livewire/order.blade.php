@@ -521,9 +521,9 @@
                                 $items_count = count($items);
                                 $total_items += $items_count;
                                 $customer = $order->customer;
-                                // if ($orderAboveDispatched == false) {
-                                //     $orderAboveDispatched = $order->status === 3;
-                                // }
+                                if ($orderAboveDispatched == false) {
+                                    $orderAboveDispatched = $order->status === 3;
+                                }
                                 $isCurrentOrderDispatched = ($order->status == 3);
                             @endphp
 
