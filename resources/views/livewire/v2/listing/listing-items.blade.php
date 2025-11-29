@@ -2,7 +2,8 @@
     @foreach($variationData as $index => $variationItem)
         @php
             $variationId = $variationItem['id'] ?? null;
-            $preloadedVariationData = $variationItem['variation_data'] ?? null;
+            // Pass the entire variation item which includes both variation_data and calculated_stats
+            $preloadedVariationData = $variationItem ?? null;
         @endphp
         @livewire('v2.listing.listing-item', [
             'variationId' => $variationId,

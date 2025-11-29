@@ -109,28 +109,15 @@
 
 <!-- Variations Container -->
 <div id="v2-variations" class="variations-container">
-    <div class="loading-spinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2 text-muted">Loading variations...</p>
-    </div>
+    {{-- Initial content removed - will be filled by JavaScript --}}
 </div>
 
-<!-- Small side loader indicator -->
+<!-- Small side loader indicator - only one -->
 <div id="v2-variations-loader" class="text-center">
     <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
         <span class="visually-hidden">Loading...</span>
     </div>
-    <small class="d-block mt-1 text-muted">Loading items...</small>
-</div>
-
-<!-- Small side loader indicator -->
-<div id="v2-variations-loader" class="text-center">
-    <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
-        <span class="visually-hidden">Loading...</span>
-    </div>
-    <small class="d-block mt-1 text-muted">Loading items...</small>
+    <small class="d-block mt-1 text-muted">Loading...</small>
 </div>
 
 <!-- Pagination -->
@@ -265,15 +252,9 @@
         // Update URL in browser without reloading page
         window.history.pushState({}, '', window.location.pathname + (queryString ? '?' + queryString : ''));
 
-        // Show loading state
-        document.getElementById('v2-variations').innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 text-muted">Loading variations...</p>
-            </div>
-        `;
+        // Show only small side loader immediately (no big spinner)
+        showVariationsLoader();
+        document.getElementById('v2-variations').innerHTML = '';
 
         fetch(url, {
             method: 'GET',
@@ -307,14 +288,11 @@
     function displayVariationsLazyV2(variations) {
         const variationIds = variations.data.map(v => v.id);
         const variationsContainer = document.getElementById('v2-variations');
-        variationsContainer.innerHTML = '';
         
         document.getElementById('v2-page-info').textContent = 
             `From ${variations.from} To ${variations.to} Out Of ${variations.total}`;
 
-        // Show small side loader
-        showVariationsLoader();
-        
+        // Keep small side loader shown (already shown from fetchVariationsV2)
         // Render Livewire components from server
         fetch("{{ url('v2/listings/render_listing_items') }}", {
             method: 'POST',

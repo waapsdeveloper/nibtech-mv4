@@ -1,14 +1,6 @@
-<div class="card listing-item-card" @if(!$ready) wire:init="loadRow" @endif>
+<div class="card listing-item-card" @if(!$ready && !isset($preloadedVariationData)) wire:init="loadRow" @endif>
     @if (!$ready || $variation === null)
-        {{-- Minimal loading state - just show a small indicator --}}
-        <div class="card-header py-2">
-            <div class="d-flex align-items-center">
-                <div class="spinner-border spinner-border-sm text-primary me-2" style="width: 1rem; height: 1rem;" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <span class="text-muted small">Loading...</span>
-            </div>
-        </div>
+        {{-- Don't show individual loaders - data is preloaded, should be ready immediately --}}
     @else
         {{-- Variation Header --}}
         <div class="card-header py-2 d-flex justify-content-between align-items-start flex-wrap">
