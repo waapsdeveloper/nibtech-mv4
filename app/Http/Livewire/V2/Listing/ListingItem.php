@@ -87,28 +87,33 @@ class ListingItem extends Component
             return;
         }
         
-        // Create model instance from array
-        $this->variation = Variation_model::make($variationArray);
+        // Create model instance from array using forceFill to bypass mass assignment protection
+        $this->variation = new Variation_model();
+        $this->variation->forceFill($variationArray);
         $this->variation->exists = true; // Mark as existing to avoid save attempts
         
         // Set relationships from array data
         if (isset($variationArray['product']) && is_array($variationArray['product'])) {
-            $product = \App\Models\Products_model::make($variationArray['product']);
+            $product = new \App\Models\Products_model();
+            $product->forceFill($variationArray['product']);
             $product->exists = true;
             $this->variation->setRelation('product', $product);
         }
         if (isset($variationArray['storage_id']) && is_array($variationArray['storage_id'])) {
-            $storage = \App\Models\Storage_model::make($variationArray['storage_id']);
+            $storage = new \App\Models\Storage_model();
+            $storage->forceFill($variationArray['storage_id']);
             $storage->exists = true;
             $this->variation->setRelation('storage_id', $storage);
         }
         if (isset($variationArray['color_id']) && is_array($variationArray['color_id'])) {
-            $color = \App\Models\Color_model::make($variationArray['color_id']);
+            $color = new \App\Models\Color_model();
+            $color->forceFill($variationArray['color_id']);
             $color->exists = true;
             $this->variation->setRelation('color_id', $color);
         }
         if (isset($variationArray['grade_id']) && is_array($variationArray['grade_id'])) {
-            $grade = \App\Models\Grade_model::make($variationArray['grade_id']);
+            $grade = new \App\Models\Grade_model();
+            $grade->forceFill($variationArray['grade_id']);
             $grade->exists = true;
             $this->variation->setRelation('grade_id', $grade);
         }
@@ -116,10 +121,12 @@ class ListingItem extends Component
         // Set listings relationship
         if (isset($variationArray['listings']) && is_array($variationArray['listings'])) {
             $listings = collect($variationArray['listings'])->map(function($listing) {
-                $listingModel = \App\Models\Listing_model::make($listing);
+                $listingModel = new \App\Models\Listing_model();
+                $listingModel->forceFill($listing);
                 $listingModel->exists = true;
                 if (isset($listing['country_id']) && is_array($listing['country_id'])) {
-                    $country = \App\Models\Country_model::make($listing['country_id']);
+                    $country = new \App\Models\Country_model();
+                    $country->forceFill($listing['country_id']);
                     $country->exists = true;
                     $listingModel->setRelation('country_id', $country);
                 }
@@ -131,7 +138,8 @@ class ListingItem extends Component
         // Set available_stocks and pending_orders
         if (isset($variationArray['available_stocks']) && is_array($variationArray['available_stocks'])) {
             $stocks = collect($variationArray['available_stocks'])->map(function($stock) {
-                $stockModel = \App\Models\Stock_model::make($stock);
+                $stockModel = new \App\Models\Stock_model();
+                $stockModel->forceFill($stock);
                 $stockModel->exists = true;
                 return $stockModel;
             });
@@ -139,7 +147,8 @@ class ListingItem extends Component
         }
         if (isset($variationArray['pending_orders']) && is_array($variationArray['pending_orders'])) {
             $orders = collect($variationArray['pending_orders'])->map(function($order) {
-                $orderModel = \App\Models\Order_item_model::make($order);
+                $orderModel = new \App\Models\Order_item_model();
+                $orderModel->forceFill($order);
                 $orderModel->exists = true;
                 return $orderModel;
             });
