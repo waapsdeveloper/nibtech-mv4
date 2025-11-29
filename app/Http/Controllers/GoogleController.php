@@ -10,6 +10,7 @@ use Google_Service_Gmail_Message;
 use Illuminate\Http\Request;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class GoogleController extends Controller
 {
@@ -195,12 +196,71 @@ class GoogleController extends Controller
      */
     public function readEmails(Request $request)
     {
+        try {
+            $result = $this->fetchGmailMessages([
+                'labelIds' => $request->input('labelIds', ['INBOX']),
+                'maxResults' => $request->input('maxResults', 10),
+                'query' => $request->input('query'),
+                'pageToken' => $request->input('pageToken'),
+            ]);
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 400);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch Gmail messages (API)', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Unable to fetch Gmail messages.',
+            ], 500);
+        }
+
+        return response()->json($result);
+    }
+
+    public function showRefurbedInbox(Request $request)
+    {
+        $defaultQuery = 'subject:"refurbed inquiry" OR from:refurbed-merchant.zendesk.com';
+        $query = $request->input('query', $defaultQuery);
+        $labelIds = $request->input('labelIds', ['INBOX']);
+        $maxResults = (int) $request->input('maxResults', 25);
+
+        try {
+            $result = $this->fetchGmailMessages([
+                'labelIds' => $labelIds,
+                'maxResults' => $maxResults,
+                'query' => $query,
+                'pageToken' => $request->input('pageToken'),
+            ]);
+        } catch (RuntimeException $e) {
+            return redirect()->route('index')->with('error', $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Failed to render Refurbed Gmail inbox', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('index')->with('error', 'Unable to load Gmail inbox at this time.');
+        }
+
+        return view('google.refurbed_inbox', [
+            'messages' => $result['messages'],
+            'query' => $query,
+            'labelIds' => is_array($labelIds) ? $labelIds : array_filter([$labelIds]),
+            'maxResults' => $maxResults,
+            'nextPageToken' => $result['nextPageToken'],
+            'resultSizeEstimate' => $result['resultSizeEstimate'],
+            'pageToken' => $request->input('pageToken'),
+        ]);
+    }
+
+    protected function makeGmailService(): Google_Service_Gmail
+    {
         $googleToken = GoogleToken::first();
 
         if (! $googleToken) {
-            return response()->json([
-                'error' => 'Google account is not connected. Please authenticate first.',
-            ], 400);
+            throw new RuntimeException('Google account is not connected. Please authenticate first.');
         }
 
         $client = new Google_Client();
@@ -220,35 +280,46 @@ class GoogleController extends Controller
                     'error' => $newToken['error'],
                 ]);
 
-                return response()->json([
-                    'error' => 'Unable to refresh Google token. Please re-authenticate.',
-                ], 400);
+                throw new RuntimeException('Unable to refresh Google token. Please re-authenticate.');
             }
 
             $googleToken->update([
                 'access_token' => $newToken['access_token'],
             ]);
+
+            $client->setAccessToken($newToken);
         }
 
-        $service = new Google_Service_Gmail($client);
+        return new Google_Service_Gmail($client);
+    }
 
-        $labelIds = $request->input('labelIds', ['INBOX']);
+    protected function fetchGmailMessages(array $options = []): array
+    {
+        $service = $this->makeGmailService();
+
+        $labelIds = $options['labelIds'] ?? ['INBOX'];
         if (! is_array($labelIds)) {
             $labelIds = array_filter([$labelIds]);
         }
 
-        $maxResults = (int) $request->input('maxResults', 10);
+        $maxResults = (int) ($options['maxResults'] ?? 10);
         $maxResults = $maxResults > 0 ? min($maxResults, 100) : 10;
 
-        $query = $request->input('query');
-        $pageToken = $request->input('pageToken');
+        $query = $options['query'] ?? null;
+        $pageToken = $options['pageToken'] ?? null;
 
         $listParams = array_filter([
             'labelIds' => $labelIds,
             'maxResults' => $maxResults,
             'q' => $query,
             'pageToken' => $pageToken,
-        ]);
+        ], function ($value) {
+            if (is_array($value)) {
+                return count($value) > 0;
+            }
+
+            return $value !== null && $value !== '';
+        });
 
         try {
             $messagesResponse = $service->users_messages->listUsersMessages('me', $listParams);
@@ -258,9 +329,7 @@ class GoogleController extends Controller
                 'params' => $listParams,
             ]);
 
-            return response()->json([
-                'error' => 'Unable to fetch Gmail messages.',
-            ], 500);
+            throw new RuntimeException('Unable to fetch Gmail messages at this time.');
         }
 
         $messages = [];
@@ -296,10 +365,10 @@ class GoogleController extends Controller
             ];
         }
 
-        return response()->json([
+        return [
             'messages' => $messages,
             'nextPageToken' => $messagesResponse->getNextPageToken(),
             'resultSizeEstimate' => $messagesResponse->getResultSizeEstimate(),
-        ]);
+        ];
     }
 }
