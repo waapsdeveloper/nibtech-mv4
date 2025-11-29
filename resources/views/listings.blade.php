@@ -774,6 +774,12 @@
 
             var marketplaces = window.marketplaces || {};
             var fallbackId = null;
+            var explicitId = 1;
+
+            if (marketplaces.hasOwnProperty(explicitId)) {
+                window.defaultBackMarketId = explicitId;
+                return window.defaultBackMarketId;
+            }
 
             Object.keys(marketplaces).some(function(id) {
                 var marketplace = marketplaces[id] || {};
@@ -784,7 +790,11 @@
                     fallbackId = numericId;
                 }
 
-                if (marketplaceName.indexOf('BackMarket') !== -1 || marketplaceName.indexOf('backmarket') !== -1) {
+                if (
+                    marketplaceName.indexOf('back market') !== -1 ||
+                    marketplaceName.indexOf('backmarket') !== -1 ||
+                    marketplaceName.indexOf('back-market') !== -1
+                ) {
                     window.defaultBackMarketId = numericId;
                     return true;
                 }
