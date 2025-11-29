@@ -284,6 +284,10 @@
                         <input class="form-check-input" type="checkbox" id="no_invoice" name="no_invoice" value="1" @if (request('no_invoice') == "1") {{'checked'}} @endif>
                         <label class="form-check-label" for="no_invoice">Email Invoice</label>
                     </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="bypass_missing" name="bypass_missing" value="1" @if (request('bypass_missing') == "1") {{'checked'}} @endif>
+                        <label class="form-check-label" for="bypass_missing">Bypass Missing</label>
+                    </div>
                 </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 @if (Request::get('care') == 1)
@@ -521,7 +525,7 @@
                                 $items_count = count($items);
                                 $total_items += $items_count;
                                 $customer = $order->customer;
-                                if ($orderAboveDispatched == false) {
+                                if ($orderAboveDispatched == false && request('bypass_missing') == 1) {
                                     $orderAboveDispatched = $order->status === 3;
                                 }
                                 $isCurrentOrderDispatched = ($order->status == 3);
