@@ -3,8 +3,17 @@
     $items_count = $items->count();
     $customer = $order->customer;
     $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : '';
-    $careTicketIds = $items->pluck('care_id')->filter()->unique()->values()->all();
-    $shouldFlagTickets = count($careTicketIds) > 0;
+    $careTickets = $items->filter(function ($item) {
+        return ! empty($item->care_id);
+    })->map(function ($item) {
+        return [
+            'id' => $item->care_id,
+            'url' => conversation_url_for_order_item($item),
+        ];
+    })->filter(function ($ticket) {
+        return ! empty($ticket['url']);
+    })->unique('id')->values()->all();
+    $shouldFlagTickets = count($careTickets) > 0;
     $replacement_items = [];
     $rowItemIndex = 0;
     $testerIndex = $rowCounter['tester_start'] ? $rowCounter['tester_start'] - 1 : null;
@@ -164,15 +173,15 @@
                     <div class="mt-2 alert alert-warning py-1 px-2 mb-1">
                         <div class="d-flex align-items-center justify-content-between flex-wrap gap-1">
                             <span class="badge bg-warning text-dark text-uppercase">Check Tickets</span>
-                            <small class="text-muted">{{ count($careTicketIds) }} open {{ count($careTicketIds) === 1 ? 'conversation' : 'conversations' }}</small>
+                            <small class="text-muted">{{ count($careTickets) }} open {{ count($careTickets) === 1 ? 'conversation' : 'conversations' }}</small>
                         </div>
                         <div class="mt-1 d-flex flex-wrap gap-2">
-                            @foreach ($careTicketIds as $careId)
+                            @foreach ($careTickets as $ticket)
                                 <a
-                                    href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $careId }}"
+                                    href="{{ $ticket['url'] }}"
                                     target="_blank"
                                     class="small text-decoration-underline"
-                                >Ticket #{{ $careId }}</a>
+                                >Ticket #{{ $ticket['id'] }}</a>
                             @endforeach
                         </div>
                         <small class="text-muted d-block">Review marketplace ticket before dispatch.</small>
@@ -195,8 +204,9 @@
                 @endif
                 </a>
             @endif
-            @if ($item->care_id != null)
-                <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+            @php $conversationUrl = conversation_url_for_order_item($item); @endphp
+            @if ($conversationUrl)
+                <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
             @endif
             @if ($isRefurbed && $itemIndex === 0)
                 <div class="mt-1 small refurbed-support-hint">
@@ -602,8 +612,9 @@
                                 <strong>{{ $itm->variation->sku }}</strong>{{ ' - ' . (isset($itm->variation->product) ? $itm->variation->product->model : 'Model not defined') . ' - ' . (isset($itm->variation->storage) ? $storages[$itm->variation->storage] . ' - ' : null) . (isset($itm->variation->color) ? $colors[$itm->variation->color] . ' - ' : null) }} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                             @endif
 
-                            @if ($itm->care_id != null)
-                                <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                            @php $conversationUrl = conversation_url_for_order_item($itm); @endphp
+                            @if ($conversationUrl)
+                                <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-white">Conversation</strong></a>
                             @endif
                         </td>
                         <td>{{ $itm->quantity }}</td>

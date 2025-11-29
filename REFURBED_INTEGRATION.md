@@ -240,6 +240,46 @@ protected function schedule(Schedule $schedule)
 4. **Add monitoring** for sync failures
 5. **Consider adding** a separate BI data sync method (like `get_listingsBi()` for BackMarket) if Refurbed provides buybox/competitive data
 
+## Zendesk Ticket Auto-Linking
+
+### Overview
+
+Refurbed Zendesk notifications that arrive in the connected Gmail inbox are now parsed automatically. The system identifies Zendesk ticket URLs plus Refurbed order/order-line identifiers and links the detected ticket ID (`care_id`) to the matching Refurbed order item whenever there is a single confident target.
+
+### Configuration
+
+Configure the automation with the following environment variables (all optional):
+
+```env
+# Gmail search query used to pull Refurbed Zendesk alerts
+REFURBED_ZENDESK_QUERY="subject:\"refurbed inquiry\" OR from:refurbed-merchant.zendesk.com"
+
+# Comma separated Gmail label IDs to inspect (defaults to INBOX)
+REFURBED_ZENDESK_LABELS=INBOX,UNREAD
+
+# Maximum Gmail messages fetched per run (default 50)
+REFURBED_ZENDESK_MAX_RESULTS=75
+
+# Ignore emails older than this many minutes (default 1440 = 24h)
+REFURBED_ZENDESK_MAX_AGE_MINUTES=2880
+```
+
+Each setting is surfaced under `config/services.php` (`refurbed.gmail_ticket_*`) if you prefer static defaults.
+
+### Artisan Command
+
+Run the auto-linker manually with:
+
+```bash
+php artisan refurbed:link-tickets [--query=] [--label=INBOX] [--max-results=50] [--max-age-minutes=1440] [--force]
+```
+
+`--force` reprocesses Gmail messages even if they were already handled. The command prints a compact table showing which tickets were linked or skipped.
+
+### Scheduler
+
+`app/Console/Kernel.php` schedules `refurbed:link-tickets` every 10 minutes with overlap protection, so Zendesk ticket IDs continue to populate `care_id` fields without manual inbox triage. Watch `storage/logs/laravel.log` for the `Refurbed Zendesk auto-link summary` entry to audit each run.
+
 ## API Documentation Reference
 
 For detailed Refurbed API documentation, see:

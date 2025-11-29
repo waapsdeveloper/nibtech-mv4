@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\GoogleToken;
+use App\Models\Order_model;
+use App\Services\RefurbedZendeskMailboxService;
 use Exception;
 use Google_Client;
 use Google_Service_Gmail;
@@ -14,6 +16,14 @@ use RuntimeException;
 
 class GoogleController extends Controller
 {
+    private const REFURBED_MARKETPLACE_ID = 4;
+    protected RefurbedZendeskMailboxService $mailboxService;
+
+    public function __construct(RefurbedZendeskMailboxService $mailboxService)
+    {
+        $this->mailboxService = $mailboxService;
+    }
+
     public function redirectToGoogle()
     {
         $client = new Google_Client();
@@ -197,7 +207,7 @@ class GoogleController extends Controller
     public function readEmails(Request $request)
     {
         try {
-            $result = $this->fetchGmailMessages([
+            $result = $this->mailboxService->fetchMessages([
                 'labelIds' => $request->input('labelIds', ['INBOX']),
                 'maxResults' => $request->input('maxResults', 10),
                 'query' => $request->input('query'),
@@ -228,7 +238,7 @@ class GoogleController extends Controller
         $maxResults = (int) $request->input('maxResults', 25);
 
         try {
-            $result = $this->fetchGmailMessages([
+            $result = $this->mailboxService->fetchMessages([
                 'labelIds' => $labelIds,
                 'maxResults' => $maxResults,
                 'query' => $query,
@@ -255,194 +265,71 @@ class GoogleController extends Controller
         ]);
     }
 
-    protected function makeGmailService(): Google_Service_Gmail
+
+    public function attachRefurbedTicket(Request $request)
     {
-        $googleToken = GoogleToken::first();
+        $data = $request->validate([
+            'ticket_link' => ['required', 'url'],
+            'ticket_id' => ['nullable', 'string'],
+            'order_reference' => ['required', 'string'],
+            'order_item_reference' => ['nullable', 'string'],
+            'apply_to_all_items' => ['nullable', 'boolean'],
+        ]);
 
-        if (! $googleToken) {
-            throw new RuntimeException('Google account is not connected. Please authenticate first.');
+        $ticketId = $data['ticket_id'] ?: $this->mailboxService->parseRefurbedTicketId($data['ticket_link']);
+
+        if (! $ticketId) {
+            return redirect()->back()->with('error', 'Unable to detect the Zendesk ticket ID from the selected email.');
         }
 
-        $client = new Google_Client();
-        $client->setClientId(config('services.google.client_id'));
-        $client->setClientSecret(config('services.google.client_secret'));
-        $client->setRedirectUri(config('services.google.redirect_uri'));
-        $client->setAccessType('offline');
-        $client->setIncludeGrantedScopes(true);
-        $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
-        $client->setAccessToken($googleToken->access_token);
+        $orderReference = trim($data['order_reference']);
+        $order = Order_model::with('order_items')->where('reference_id', $orderReference)->first();
 
-        if ($client->isAccessTokenExpired()) {
-            $newToken = $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
+        if (! $order) {
+            return redirect()->back()->with('error', 'Order not found for reference ID ' . $orderReference . '.');
+        }
 
-            if (isset($newToken['error'])) {
-                Log::error('Failed to refresh access token while reading emails', [
-                    'error' => $newToken['error'],
-                ]);
+        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
+            return redirect()->back()->with('error', 'Selected order is not a Refurbed marketplace order.');
+        }
 
-                throw new RuntimeException('Unable to refresh Google token. Please re-authenticate.');
+        $orderItems = $order->order_items;
+
+        if ($orderItems->isEmpty()) {
+            return redirect()->back()->with('error', 'The Refurbed order does not have any order items yet.');
+        }
+
+        $orderItemReference = $data['order_item_reference'] ? trim($data['order_item_reference']) : null;
+        $applyToAll = (bool) $request->boolean('apply_to_all_items');
+
+        if (! $applyToAll && ! $orderItemReference && $orderItems->count() > 1) {
+            return redirect()->back()->with('error', 'Provide the Refurbed order item ID or enable "Apply to every order item".');
+        }
+
+        if ($orderItemReference) {
+            $itemsToUpdate = $orderItems->where('reference_id', $orderItemReference);
+
+            if ($itemsToUpdate->isEmpty()) {
+                return redirect()->back()->with('error', 'No order item matches the provided Refurbed order line ID.');
             }
-
-            $googleToken->update([
-                'access_token' => $newToken['access_token'],
-            ]);
-
-            $client->setAccessToken($newToken);
+        } elseif ($applyToAll) {
+            $itemsToUpdate = $orderItems;
+        } else {
+            $itemsToUpdate = $orderItems->take(1);
         }
 
-        return new Google_Service_Gmail($client);
+        $updatedCount = 0;
+
+        foreach ($itemsToUpdate as $item) {
+            $item->care_id = $ticketId;
+            $item->save();
+            $updatedCount++;
+        }
+
+        session()->put('success', 'Linked Refurbed ticket #' . $ticketId . ' to ' . $updatedCount . ' order item' . ($updatedCount === 1 ? '' : 's') . '.');
+        session()->put('copy', $data['ticket_link']);
+
+        return redirect()->back();
     }
 
-    protected function fetchGmailMessages(array $options = []): array
-    {
-        $service = $this->makeGmailService();
-
-        $labelIds = $options['labelIds'] ?? ['INBOX'];
-        if (! is_array($labelIds)) {
-            $labelIds = array_filter([$labelIds]);
-        }
-
-        $maxResults = (int) ($options['maxResults'] ?? 10);
-        $maxResults = $maxResults > 0 ? min($maxResults, 100) : 10;
-
-        $query = $options['query'] ?? null;
-        $pageToken = $options['pageToken'] ?? null;
-
-        $listParams = array_filter([
-            'labelIds' => $labelIds,
-            'maxResults' => $maxResults,
-            'q' => $query,
-            'pageToken' => $pageToken,
-        ], function ($value) {
-            if (is_array($value)) {
-                return count($value) > 0;
-            }
-
-            return $value !== null && $value !== '';
-        });
-
-        try {
-            $messagesResponse = $service->users_messages->listUsersMessages('me', $listParams);
-        } catch (Exception $e) {
-            Log::error('Failed to fetch Gmail messages', [
-                'error' => $e->getMessage(),
-                'params' => $listParams,
-            ]);
-
-            throw new RuntimeException('Unable to fetch Gmail messages at this time.');
-        }
-
-        $messages = [];
-
-        foreach ($messagesResponse->getMessages() ?? [] as $message) {
-            try {
-                $messageDetail = $service->users_messages->get('me', $message->getId(), [
-                    'format' => 'full',
-                    'metadataHeaders' => ['Subject', 'From', 'Date'],
-                ]);
-            } catch (Exception $e) {
-                Log::warning('Failed to load Gmail message detail', [
-                    'message_id' => $message->getId(),
-                    'error' => $e->getMessage(),
-                ]);
-                continue;
-            }
-
-            $headers = [];
-            $payloadHeaders = $messageDetail->getPayload()->getHeaders() ?? [];
-            foreach ($payloadHeaders as $header) {
-                $headers[$header->getName()] = $header->getValue();
-            }
-
-            $ticketLink = $this->extractRefurbedTicketLink($messageDetail->getPayload(), $messageDetail->getSnippet());
-
-            $messages[] = [
-                'id' => $message->getId(),
-                'threadId' => $messageDetail->getThreadId(),
-                'snippet' => $messageDetail->getSnippet(),
-                'subject' => $headers['Subject'] ?? null,
-                'from' => $headers['From'] ?? null,
-                'date' => $headers['Date'] ?? null,
-                'labelIds' => $messageDetail->getLabelIds(),
-                'ticketLink' => $ticketLink,
-            ];
-        }
-
-        return [
-            'messages' => $messages,
-            'nextPageToken' => $messagesResponse->getNextPageToken(),
-            'resultSizeEstimate' => $messagesResponse->getResultSizeEstimate(),
-        ];
-    }
-
-    protected function extractRefurbedTicketLink($payload, ?string $snippet = null): ?string
-    {
-        $link = $this->findZendeskLinkInText($snippet);
-
-        if ($link) {
-            return $link;
-        }
-
-        if ($payload === null) {
-            return null;
-        }
-
-        $link = $this->findZendeskLinkInBody($payload);
-
-        return $link;
-    }
-
-    protected function findZendeskLinkInBody($payload): ?string
-    {
-        if ($payload === null) {
-            return null;
-        }
-
-        $body = $payload->getBody();
-        if ($body && $body->getSize() > 0) {
-            $data = $body->getData();
-            if ($data) {
-                $decoded = base64_decode(strtr($data, '-_', '+/'));
-                $link = $this->findZendeskLinkInText($decoded);
-                if ($link) {
-                    return $link;
-                }
-            }
-        }
-
-        foreach ($payload->getParts() ?? [] as $part) {
-            $link = $this->findZendeskLinkInBody($part);
-            if ($link) {
-                return $link;
-            }
-        }
-
-        return null;
-    }
-
-    protected function findZendeskLinkInText(?string $text): ?string
-    {
-        if (! $text) {
-            return null;
-        }
-
-        if (preg_match('/(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
-            $url = $matches[0];
-            if (! preg_match('/^https?:\/\//i', $url)) {
-                $url = 'https://' . $matches[2];
-            }
-            return $url;
-        }
-
-        if (preg_match('/Link:\s*(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
-            $url = str_ireplace('Link:', '', $matches[0]);
-            $url = trim($url);
-            if (! preg_match('/^https?:\/\//i', $url)) {
-                $url = 'https://' . trim($matches[2]);
-            }
-            return $url;
-        }
-
-        return null;
-    }
 }

@@ -66,9 +66,9 @@
                                 <th style="width: 20%">Subject</th>
                                 <th style="width: 22%">From</th>
                                 <th style="width: 15%">Date</th>
-                                <th style="width: 18%">Refurbed Ticket</th>
+                                <th style="width: 22%">Refurbed Ticket</th>
                                 <th>Snippet</th>
-                                <th style="width: 10%">Action</th>
+                                <th style="width: 12%">Action</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -84,8 +84,30 @@
                                     <td>{{ $message['date'] ?? '-' }}</td>
                                     <td>
                                         @if(!empty($message['ticketLink']))
-                                            <a href="{{ $message['ticketLink'] }}" class="btn btn-sm btn-outline-success" target="_blank" rel="noopener">Open Ticket</a>
-                                            <div><small class="text-muted">{{ parse_url($message['ticketLink'], PHP_URL_PATH) }}</small></div>
+                                            <div class="d-flex flex-column gap-1">
+                                                <div class="d-flex flex-wrap gap-2">
+                                                    <a href="{{ $message['ticketLink'] }}" class="btn btn-sm btn-outline-success" target="_blank" rel="noopener">Open Ticket</a>
+                                                    @if (!empty($message['ticketId']))
+                                                        <button
+                                                            type="button"
+                                                            class="btn btn-sm btn-outline-primary attach-ticket-btn"
+                                                            data-ticket-link="{{ $message['ticketLink'] }}"
+                                                            data-ticket-id="{{ $message['ticketId'] }}"
+                                                            data-email-subject="{{ $message['subject'] ?? '' }}"
+                                                            data-email-from="{{ $message['from'] ?? '' }}"
+                                                            data-email-snippet="{{ $message['snippet'] ?? '' }}"
+                                                        >Attach ticket</button>
+                                                    @endif
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted">
+                                                        Ticket #{{ $message['ticketId'] ?? 'Unknown' }}
+                                                    </small>
+                                                </div>
+                                                <div>
+                                                    <small class="text-muted">{{ parse_url($message['ticketLink'], PHP_URL_PATH) }}</small>
+                                                </div>
+                                            </div>
                                         @else
                                             <span class="text-muted">Not detected</span>
                                         @endif
@@ -97,7 +119,7 @@
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="5" class="text-center p-4">No messages match your filters.</td>
+                                    <td colspan="6" class="text-center p-4">No messages match your filters.</td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -113,4 +135,119 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('modal')
+<div class="modal fade" id="attachTicketModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <form method="POST" action="{{ route('google.refurbed_inbox.attach_ticket') }}">
+                @csrf
+                <div class="modal-header">
+                    <h5 class="modal-title">Link Refurbed ticket to order item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <label class="form-label">Zendesk ticket URL</label>
+                            <input type="text" class="form-control" id="ticket_link_display" readonly>
+                            <input type="hidden" name="ticket_link" id="ticket_link_input">
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ticket ID</label>
+                            <input type="text" class="form-control" name="ticket_id" id="ticket_id_input" readonly>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Order reference ID <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" name="order_reference" id="order_reference_input" placeholder="e.g. 123456" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Refurbed order item ID</label>
+                            <input type="text" class="form-control" name="order_item_reference" id="order_item_reference_input" placeholder="Marketplace order line ID">
+                            <small class="text-muted">Required when the order contains multiple items unless you apply to every item.</small>
+                        </div>
+                        <div class="col-md-6 align-self-end">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" value="1" id="apply_to_all_items" name="apply_to_all_items">
+                                <label class="form-check-label" for="apply_to_all_items">
+                                    Apply to every order item in this order
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <label class="form-label">Email context</label>
+                            <textarea class="form-control" rows="3" id="ticket_context_preview" readonly placeholder="Email subject and snippet will appear here"></textarea>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Link ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function () {
+        const modalElement = document.getElementById('attachTicketModal');
+        if (!modalElement) {
+            return;
+        }
+
+        const modal = new bootstrap.Modal(modalElement);
+        const linkDisplay = document.getElementById('ticket_link_display');
+        const linkInput = document.getElementById('ticket_link_input');
+        const ticketIdInput = document.getElementById('ticket_id_input');
+        const orderReferenceInput = document.getElementById('order_reference_input');
+        const orderItemReferenceInput = document.getElementById('order_item_reference_input');
+        const contextPreview = document.getElementById('ticket_context_preview');
+        const applyAllCheckbox = document.getElementById('apply_to_all_items');
+
+        document.querySelectorAll('.attach-ticket-btn').forEach(function (button) {
+            button.addEventListener('click', function () {
+                const ticketLink = this.dataset.ticketLink || '';
+                const ticketId = this.dataset.ticketId || '';
+                const emailSubject = this.dataset.emailSubject || '';
+                const emailSnippet = this.dataset.emailSnippet || '';
+                const emailFrom = this.dataset.emailFrom || '';
+
+                linkDisplay.value = ticketLink;
+                linkInput.value = ticketLink;
+                ticketIdInput.value = ticketId;
+                orderReferenceInput.value = '';
+                orderItemReferenceInput.value = '';
+                applyAllCheckbox.checked = false;
+
+                const contextLines = [];
+                if (emailSubject) {
+                    contextLines.push('Subject: ' + emailSubject);
+                }
+                if (emailFrom) {
+                    contextLines.push('From: ' + emailFrom);
+                }
+                if (emailSnippet) {
+                    contextLines.push('Snippet: ' + emailSnippet);
+                }
+                contextPreview.value = contextLines.join('\n');
+
+                modal.show();
+            });
+        });
+
+        modalElement.addEventListener('hidden.bs.modal', function () {
+            linkDisplay.value = '';
+            linkInput.value = '';
+            ticketIdInput.value = '';
+            orderReferenceInput.value = '';
+            orderItemReferenceInput.value = '';
+            applyAllCheckbox.checked = false;
+            contextPreview.value = '';
+        });
+    });
+</script>
 @endsection

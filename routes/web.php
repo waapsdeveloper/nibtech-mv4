@@ -99,6 +99,7 @@ Route::get('index/refresh_7_days_progressive_chart', [Index::class,'refresh_7_da
 Route::get('index/get_required_restock', [Index::class,'get_required_restock'])->name('required_restock');
 Route::get('index/get_price_changes', [Index::class,'get_price_changes'])->name('dashboard_price_changes');
 Route::get('google/refurbed-inbox', [GoogleController::class, 'showRefurbedInbox'])->name('google.refurbed_inbox');
+Route::post('google/refurbed-inbox/attach-ticket', [GoogleController::class, 'attachRefurbedTicket'])->name('google.refurbed_inbox.attach_ticket');
 // Route::post('change', Change::class);
 Route::get('profile', Profile::class)->name('profile');
 Route::post('profile', Profile::class)->name('profile');

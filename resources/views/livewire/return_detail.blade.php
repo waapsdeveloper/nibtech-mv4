@@ -388,8 +388,9 @@
                                             @if ($item->variation ?? false)
                                                 <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Missing Grade" }} {{ $item->variation->sub_grade_id->name ?? "" }}</u></strong>
                                             @endif
-                                            @if ($item->care_id != null && $order->order_type_id == 3)
-                                                <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                            @php $conversationUrl = conversation_url_for_order_item($item); @endphp
+                                            @if ($conversationUrl && $order->order_type_id == 3)
+                                                <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                             @endif
                                             @if ($item->reference != '')
                                                 <br>
@@ -485,9 +486,10 @@
                                                     @if ($item->variation ?? false)
                                                         <strong>{{ $item->variation->sku }}</strong>{{ " - " . $item->variation->product->model . " - " . (isset($item->variation->storage_id)?$item->variation->storage_id->name . " - " : null) . (isset($item->variation->color_id)?$item->variation->color_id->name. " - ":null)}} <strong><u>{{ $item->variation->grade_id->name ?? "Not Given" }}</u></strong>
                                                     @endif
-                                                    @if ($item->care_id != null)
-                                                        <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
-                                                    @endif
+                                                        @php $conversationUrl = conversation_url_for_order_item($item); @endphp
+                                                        @if ($conversationUrl)
+                                                            <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                                        @endif
                                                 </td>
                                                 <td>{{ $item->quantity }}</td>
                                                 @if ($imei_order->status <= 3)

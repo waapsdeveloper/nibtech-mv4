@@ -54,6 +54,10 @@ class Kernel extends ConsoleKernel
             // ->withoutOverlapping()
             // ->onOneServer()
             // ->runInBackground();
+        $schedule->command('refurbed:link-tickets')
+            ->everyTenMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
         // $schedule->command('refurbed:update-stock')
         //     ->everyThirtyMinutes()
         //     ->withoutOverlapping()
