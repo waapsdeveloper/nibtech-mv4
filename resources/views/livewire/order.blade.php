@@ -597,7 +597,7 @@
                                         @endif
                                         @if ($order->delivery_note_url == null || $order->label_url == null)
                                             <a class="" href="{{url('order')}}/label/{{ $order->reference_id }}">
-                                            @if ($order->delivery_note_url == null && $order->marketplace_id != 4)
+                                            @if ($order->delivery_note_url == null && request('marketplace') != 4)
                                                 <strong class="text-danger">Missing Delivery Note</strong>
                                             @endif
                                             @if ($order->label_url == null)
