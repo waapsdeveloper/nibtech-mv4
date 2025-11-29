@@ -767,6 +767,48 @@
             });
         }
 
+        function getDefaultBackMarketId() {
+            if (window.defaultBackMarketId) {
+                return window.defaultBackMarketId;
+            }
+
+            var marketplaces = window.marketplaces || {};
+            var fallbackId = null;
+
+            Object.keys(marketplaces).some(function(id) {
+                var marketplace = marketplaces[id] || {};
+                var marketplaceName = (marketplace.name || '').toLowerCase();
+                var numericId = parseInt(id, 10);
+
+                if (fallbackId === null) {
+                    fallbackId = numericId;
+                }
+
+                if (marketplaceName.indexOf('back market') !== -1 || marketplaceName.indexOf('backmarket') !== -1) {
+                    window.defaultBackMarketId = numericId;
+                    return true;
+                }
+
+                return false;
+            });
+
+            if (! window.defaultBackMarketId && fallbackId !== null) {
+                window.defaultBackMarketId = fallbackId;
+            }
+
+            return window.defaultBackMarketId || null;
+        }
+
+        function bindHandlerEnterShortcut(variationId) {
+            var inputs = $('#all_min_handler_' + variationId + ', #all_handler_' + variationId);
+            inputs.off('keydown.backMarketDefault').on('keydown.backMarketDefault', function(e) {
+                if (e.key === 'Enter') {
+                    var defaultMarketplaceId = getDefaultBackMarketId();
+                    submitForm8(e, variationId, window.eur_listings[variationId] || [], defaultMarketplaceId);
+                }
+            });
+        }
+
         function submitForm4ForMarketplace(event, variationId, listings, marketplaceId) {
             event.preventDefault();
 
@@ -817,12 +859,20 @@
 
             // Add "All Marketplaces" option (no marketplace_id filter)
             dropdownMenu.append('<li><a class="dropdown-item" href="#" onclick="event.preventDefault(); submitForm8(event, ' + variationId + ', window.eur_listings[' + variationId + '] || []);">All Marketplaces</a></li>');
+            var defaultMarketplaceId = getDefaultBackMarketId();
+            if (defaultMarketplaceId && marketplaces[defaultMarketplaceId] && marketplaces[defaultMarketplaceId].name) {
+                var defaultName = marketplaces[defaultMarketplaceId].name + ' (Default)';
+                dropdownMenu.append('<li><a class="dropdown-item fw-bold" href="#" onclick="event.preventDefault(); submitForm8(event, ' + variationId + ', window.eur_listings[' + variationId + '] || [], ' + defaultMarketplaceId + ');">' + defaultName + '</a></li>');
+            }
             dropdownMenu.append('<li><hr class="dropdown-divider"></li>');
 
             // Add ALL marketplace options (not filtered by listings)
             Object.keys(marketplaces).forEach(function(marketplaceId) {
                 var marketplace = marketplaces[marketplaceId];
                 if (marketplace && marketplace.name) {
+                    if (defaultMarketplaceId && parseInt(marketplaceId, 10) === defaultMarketplaceId) {
+                        return;
+                    }
                     var marketplaceName = marketplace.name;
                     // Pass marketplace_id to submitForm8
                     dropdownMenu.append('<li><a class="dropdown-item" href="#" onclick="event.preventDefault(); submitForm8(event, ' + variationId + ', window.eur_listings[' + variationId + '] || [], ' + marketplaceId + ');">' + marketplaceName + '</a></li>');
@@ -1569,6 +1619,7 @@
                                 </div>
                             </div>
                         `);
+                        bindHandlerEnterShortcut(variation.id);
                                                         // <th width="120"><small><b>Target</b></small></th>
                                                         // <th width="80"><small><b>%</b></small></th>
                                                         // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
