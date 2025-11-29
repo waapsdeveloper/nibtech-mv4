@@ -51,6 +51,13 @@
     .pagination-container {
         margin-top: 20px;
     }
+    /* Increase width of Previous/Next buttons to prevent text wrapping */
+    .pagination .page-item:first-child .page-link,
+    .pagination .page-item:last-child .page-link {
+        min-width: 90px;
+        white-space: nowrap;
+        text-align: center;
+    }
     .pagination .page-link {
         padding: 0.375rem 0.75rem;
     }
