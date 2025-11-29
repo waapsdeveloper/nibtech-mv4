@@ -42,6 +42,7 @@ class RefurbedZendeskTicketLinkService
 
         $pageToken = null;
         $pageCount = 0;
+        $lastResultSizeEstimate = null;
 
         do {
             $result = $this->mailboxService->fetchMessages([
@@ -54,6 +55,7 @@ class RefurbedZendeskTicketLinkService
 
             $pageCount++;
             $messages = $result['messages'] ?? [];
+            $lastResultSizeEstimate = $result['resultSizeEstimate'] ?? null;
 
             foreach ($messages as $message) {
                 $stats['processed']++;
@@ -136,6 +138,10 @@ class RefurbedZendeskTicketLinkService
             $shouldContinue = $pageToken !== null && ($maxPages <= 0 || $pageCount < $maxPages);
         } while ($shouldContinue);
 
+        $stats['pages_processed'] = $pageCount;
+        $stats['result_size_estimate'] = $lastResultSizeEstimate;
+        $stats['max_results_per_page'] = $maxResults;
+
         Log::info('Refurbed Zendesk auto-link summary', [
             'processed' => $stats['processed'],
             'linked' => $stats['linked'],
@@ -145,6 +151,7 @@ class RefurbedZendeskTicketLinkService
             'labelIds' => $labelIds,
             'maxResults' => $maxResults,
             'pages_processed' => $pageCount,
+            'result_size_estimate' => $lastResultSizeEstimate,
         ]);
 
         return $stats;
