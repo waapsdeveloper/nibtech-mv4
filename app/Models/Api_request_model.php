@@ -26,7 +26,7 @@ class Api_request_model extends Model
 
 
 
-    public function push_testing(int $chunkSize = 100)
+    public function push_testing(int $chunkSize = 100, $request_filter = null)
     {
         unset($sub_grade);
         $return = [];
@@ -45,6 +45,9 @@ class Api_request_model extends Model
         $log_info = 'Add these products manually:'."\n";
 
         Api_request_model::whereNull('status')
+            ->when($request_filter, function ($query) use ($request_filter) {
+                return $query->where('request','like','%'.$request_filter.'%');
+            })
             ->orderBy('id')
             ->chunkById($chunkSize, function ($requests) use (&$return, &$imeis, &$log_info, &$log, $adminLookup, $storageLookup, $colorLookup, $gradeLookup, $storages, $colors, $grades, $admins) {
         foreach($requests as $request){
