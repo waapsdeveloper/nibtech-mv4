@@ -42,12 +42,21 @@ class RefurbedLinkZendeskTickets extends Command
         $stats = $this->linkService->autoLink($options);
 
         $this->info(sprintf(
-            'Processed %d email(s); linked %d ticket(s); skipped %d; ignored %d.',
+            'Processed %d email(s) across %d page(s); linked %d ticket(s); skipped %d; ignored %d.',
             $stats['processed'],
+            $stats['pages_processed'] ?? 1,
             $stats['linked'],
             $stats['skipped'],
             $stats['ignored'],
         ));
+
+        if (! empty($stats['result_size_estimate'])) {
+            $this->line(sprintf(
+                'Gmail result size estimate: %d (max %d per page).',
+                $stats['result_size_estimate'],
+                $stats['max_results_per_page'] ?? 50,
+            ));
+        }
 
         $details = $stats['details'] ?? [];
         if (! empty($details)) {
