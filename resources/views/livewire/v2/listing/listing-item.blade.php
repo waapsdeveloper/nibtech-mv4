@@ -130,16 +130,16 @@
             <div class="stats-section ms-2">
                 <div class="mb-1">
                     <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}&status=2" target="_blank">
-                        <small class="badge bg-warning">Pending: {{ $stats['pending_orders'] ?? 0 }}</small>
+                        <small class="fw-bold">Pending: {{ $stats['pending_orders'] ?? 0 }}</small>
                     </a>
                 </div>
                 <div class="mb-1">
                     <a class="text-decoration-none" href="{{ url('inventory') }}?product={{ $variation->product_id }}&storage={{ $variation->storage }}&color={{ $variation->color }}&grade[]={{ $variation->grade }}" target="_blank">
-                        <small class="badge bg-success">Available: {{ $stats['available_stocks'] ?? 0 }}</small>
+                        <small class="fw-bold">Available: {{ $stats['available_stocks'] ?? 0 }}</small>
                     </a>
                 </div>
                 <div>
-                    <small class="badge {{ ($stats['has_stock_issue'] ?? false) ? 'bg-danger' : 'bg-info' }}">
+                    <small class="fw-bold">
                         Diff: {{ $stats['stock_difference'] ?? 0 }}
                     </small>
                 </div>
