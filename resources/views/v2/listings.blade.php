@@ -57,6 +57,18 @@
     .pagination-container {
         margin-top: 20px;
     }
+    /* Marketplace accordion header styling - distinct from content area */
+    .marketplace-accordion .accordion-button {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .marketplace-accordion .accordion-button:not(.collapsed) {
+        background-color: #e9ecef !important;
+        box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+    }
+    .marketplace-accordion .accordion-button:hover {
+        background-color: #e9ecef !important;
+    }
     /* Increase width of Previous/Next buttons to prevent text wrapping */
     .pagination .page-item:first-child .page-link,
     .pagination .page-item:last-child .page-link {
