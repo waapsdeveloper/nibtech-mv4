@@ -337,7 +337,7 @@ class GoogleController extends Controller
         foreach ($messagesResponse->getMessages() ?? [] as $message) {
             try {
                 $messageDetail = $service->users_messages->get('me', $message->getId(), [
-                    'format' => 'metadata',
+                    'format' => 'full',
                     'metadataHeaders' => ['Subject', 'From', 'Date'],
                 ]);
             } catch (Exception $e) {
@@ -354,6 +354,8 @@ class GoogleController extends Controller
                 $headers[$header->getName()] = $header->getValue();
             }
 
+            $ticketLink = $this->extractRefurbedTicketLink($messageDetail->getPayload(), $messageDetail->getSnippet());
+
             $messages[] = [
                 'id' => $message->getId(),
                 'threadId' => $messageDetail->getThreadId(),
@@ -362,6 +364,7 @@ class GoogleController extends Controller
                 'from' => $headers['From'] ?? null,
                 'date' => $headers['Date'] ?? null,
                 'labelIds' => $messageDetail->getLabelIds(),
+                'ticketLink' => $ticketLink,
             ];
         }
 
@@ -370,5 +373,76 @@ class GoogleController extends Controller
             'nextPageToken' => $messagesResponse->getNextPageToken(),
             'resultSizeEstimate' => $messagesResponse->getResultSizeEstimate(),
         ];
+    }
+
+    protected function extractRefurbedTicketLink($payload, ?string $snippet = null): ?string
+    {
+        $link = $this->findZendeskLinkInText($snippet);
+
+        if ($link) {
+            return $link;
+        }
+
+        if ($payload === null) {
+            return null;
+        }
+
+        $link = $this->findZendeskLinkInBody($payload);
+
+        return $link;
+    }
+
+    protected function findZendeskLinkInBody($payload): ?string
+    {
+        if ($payload === null) {
+            return null;
+        }
+
+        $body = $payload->getBody();
+        if ($body && $body->getSize() > 0) {
+            $data = $body->getData();
+            if ($data) {
+                $decoded = base64_decode(strtr($data, '-_', '+/'));
+                $link = $this->findZendeskLinkInText($decoded);
+                if ($link) {
+                    return $link;
+                }
+            }
+        }
+
+        foreach ($payload->getParts() ?? [] as $part) {
+            $link = $this->findZendeskLinkInBody($part);
+            if ($link) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
+    protected function findZendeskLinkInText(?string $text): ?string
+    {
+        if (! $text) {
+            return null;
+        }
+
+        if (preg_match('/(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
+            $url = $matches[0];
+            if (! preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . $matches[2];
+            }
+            return $url;
+        }
+
+        if (preg_match('/Link:\s*(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
+            $url = str_ireplace('Link:', '', $matches[0]);
+            $url = trim($url);
+            if (! preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . trim($matches[2]);
+            }
+            return $url;
+        }
+
+        return null;
     }
 }
