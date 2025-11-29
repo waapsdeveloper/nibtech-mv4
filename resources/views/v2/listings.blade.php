@@ -252,7 +252,7 @@
         // Update URL in browser without reloading page
         window.history.pushState({}, '', window.location.pathname + (queryString ? '?' + queryString : ''));
 
-        // Show only small side loader immediately (no big spinner)
+        // Show only small side loader (no big spinner to reduce loader count)
         showVariationsLoader();
         document.getElementById('v2-variations').innerHTML = '';
 
