@@ -12,11 +12,7 @@
             <div class="d-flex justify-content-between align-items-center w-100 me-3">
                 <div class="flex-grow-1">
                     <strong>{{ $marketplaceName }}</strong>
-                    @if(!$ready)
-                        <span class="spinner-border spinner-border-sm ms-2" role="status" style="width: 1rem; height: 1rem;">
-                            <span class="visually-hidden">Loading...</span>
-                        </span>
-                    @elseif($ready && count($listings) > 0)
+                    @if($ready && count($listings) > 0)
                         <span class="badge bg-primary ms-2">{{ count($listings) }} listing(s)</span>
                     @endif
                 </div>
@@ -126,22 +122,20 @@
         data-marketplace-id="{{ $marketplaceId }}"
     >
         <script>
-            // Ensure loading fires when accordion starts showing
+            // Automatically trigger loading when accordion starts expanding
             (function() {
                 const collapseElement = document.getElementById('collapse_{{ $marketplaceId }}_{{ $variationId }}');
                 if (!collapseElement) return;
                 
                 const handleShow = function() {
-                    @if(!$ready)
-                        // Trigger loading immediately when accordion starts to show
-                        @this.call('loadData');
-                    @endif
+                    // Always call loadData when accordion starts showing - it will check if already loaded
+                    @this.call('loadData');
                 };
                 
                 // Listen for when accordion starts showing (not just when fully shown)
-                collapseElement.addEventListener('show.bs.collapse', handleShow);
+                collapseElement.addEventListener('show.bs.collapse', handleShow, { once: true });
                 
-                // Also trigger if already shown when script runs
+                // Also trigger if already shown when script runs (e.g., on page refresh with expanded accordions)
                 if (collapseElement.classList.contains('show')) {
                     setTimeout(handleShow, 50);
                 }
