@@ -1108,9 +1108,7 @@
                                     <img src="{{ asset('assets/img/flags/') }}/${countries[listing.country].code.toLowerCase()}.svg" height="15">
                                     ${countries[listing.country].code}
                                     </a>
-                                </td>
-                                <td>
-                                    <small>${marketplaceName}</small>
+                                    ${marketplaceName}
                                 </td>
                                 <td>
                                     <form class="form-inline" method="POST" id="change_limit_${listing.id}">
