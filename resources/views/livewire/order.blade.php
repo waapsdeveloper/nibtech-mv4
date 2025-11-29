@@ -820,10 +820,12 @@
                                     <td>
                                         <a href="javascript:void(0);" data-bs-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false"><i class="fe fe-more-vertical  tx-18"></i></a>
                                         <div class="dropdown-menu">
-                                            <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                             @if ((int) $order->marketplace_id === 4)
+                                            <a class="dropdown-item" href="{{ route('order.refurbed_refresh', ['order' => $order->id]) }}">Refresh Refurbed Order</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_sync_identifiers', ['id' => $order->id]) }}" onclick="return confirm('Push IMEI data to Refurbed for this order?');">Sync Refurbed IMEIs</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_resend_shipped', ['id' => $order->id]) }}" onclick="return confirm('Resend Refurbed SHIPPED request for this order?');">Resend Refurbed Shipped</a>
+                                            @else
+                                            <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                             @endif
                                             {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                             @if (session('user')->hasPermission('change_order_tracking'))

@@ -3160,7 +3160,6 @@ class Order extends Component
                         $variation = Variation_model::where('sku',$s)->first();
                         $item = Order_item_model::where(['order_id'=>$id, 'variation_id'=>$variation->id])->first();
                         if ($inde != 0) {
-
                             $new_item = new Order_item_model();
                             $new_item->order_id = $id;
                             $new_item->variation_id = $item->variation_id;
@@ -3336,6 +3335,86 @@ class Order extends Component
 
 
 
+    }
+
+    public function refreshRefurbedOrder($orderId)
+    {
+        $order = Order_model::find($orderId);
+
+        if (! $order) {
+            session()->put('error', 'Order not found.');
+            return redirect()->back();
+        }
+
+        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
+            session()->put('error', 'Only Refurbed orders support this action.');
+            return redirect()->back();
+        }
+
+        $referenceId = trim((string) $order->reference_id);
+
+        if ($referenceId === '') {
+            session()->put('error', 'Missing Refurbed reference ID.');
+            return redirect()->back();
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to initialize API for manual refresh', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Unable to initialize Refurbed API client.');
+            return redirect()->back();
+        }
+
+        try {
+            $orderResponse = $refurbedApi->getOrder($referenceId);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual refresh fetch failed', [
+                'order_id' => $order->id,
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Failed to fetch Refurbed order data.');
+            return redirect()->back();
+        }
+
+        $orderPayload = $orderResponse['order'] ?? $orderResponse ?? [];
+
+        if (! is_array($orderPayload) || empty($orderPayload)) {
+            session()->put('error', 'Refurbed API returned an empty response.');
+            return redirect()->back();
+        }
+
+        $orderPayload = $this->adaptRefurbedOrderPayload($orderPayload);
+
+        $orderItems = $this->extractRefurbedOrderItemsFromPayload($orderPayload);
+
+        if (! $orderItems) {
+            $orderItems = $this->fetchRefurbedOrderItemsPayload($refurbedApi, $referenceId);
+        }
+
+        try {
+            $orderModel = new Order_model();
+            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual refresh persist failed', [
+                'order_id' => $order->id,
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Failed to persist Refurbed order locally.');
+            return redirect()->back();
+        }
+
+        session()->put('success', "Refurbed order {$referenceId} refreshed.");
+
+        return redirect()->back();
     }
 
     public function resendRefurbedShipment($orderId)
@@ -3648,6 +3727,108 @@ class Order extends Component
         }
 
         return array_filter($links);
+    }
+
+    protected function extractRefurbedOrderItemsFromPayload(array $orderPayload): ?array
+    {
+        $items = $orderPayload['order_items'] ?? ($orderPayload['items'] ?? null);
+
+        return is_array($items) ? $items : null;
+    }
+
+    protected function fetchRefurbedOrderItemsPayload(RefurbedAPIController $refurbedApi, string $referenceId): ?array
+    {
+        try {
+            $itemsResponse = $refurbedApi->getAllOrderItems($referenceId);
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: unable to fetch order items during manual refresh', [
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $items = $itemsResponse['order_items'] ?? ($itemsResponse['items'] ?? null);
+
+        return is_array($items) ? $items : null;
+    }
+
+    protected function adaptRefurbedOrderPayload(array $orderData): array
+    {
+        if (! isset($orderData['order_number'])) {
+            $orderData['order_number'] = $orderData['id'] ?? null;
+        }
+
+        $orderData['currency'] = $orderData['settlement_currency_code']
+            ?? $orderData['currency']
+            ?? $orderData['currency_code']
+            ?? null;
+
+        $orderData['total_amount'] = $orderData['settlement_total_paid']
+            ?? $orderData['total_amount']
+            ?? $orderData['total_paid']
+            ?? $orderData['total_charged']
+            ?? null;
+
+        if (! isset($orderData['created_at']) && isset($orderData['released_at'])) {
+            $orderData['created_at'] = $orderData['released_at'];
+        }
+
+        if (! isset($orderData['updated_at']) && isset($orderData['released_at'])) {
+            $orderData['updated_at'] = $orderData['released_at'];
+        }
+
+        $shippingRaw = $orderData['shipping_address'] ?? null;
+        $billingRaw = $orderData['invoice_address'] ?? null;
+        $shippingLookup = is_array($shippingRaw) ? $shippingRaw : [];
+
+        if (! isset($orderData['country'])) {
+            $orderData['country'] = $shippingLookup['country_code']
+                ?? $shippingLookup['country']
+                ?? ($billingRaw['country_code'] ?? null);
+        }
+
+        if (! isset($orderData['billing_address']) && $billingRaw) {
+            $orderData['billing_address'] = $this->mapRefurbedAddressPayload($billingRaw);
+        }
+
+        if ($shippingRaw) {
+            $orderData['shipping_address'] = $this->mapRefurbedAddressPayload($shippingRaw);
+        }
+
+        if (! isset($orderData['customer'])) {
+            $orderData['customer'] = [
+                'email' => $orderData['customer_email'] ?? null,
+                'first_name' => $shippingLookup['first_name'] ?? $shippingLookup['given_name'] ?? null,
+                'last_name' => $shippingLookup['family_name'] ?? $shippingLookup['last_name'] ?? null,
+                'phone' => $shippingLookup['phone_number'] ?? $shippingLookup['phone'] ?? null,
+            ];
+        }
+
+        if (isset($orderData['items']) && ! isset($orderData['order_items'])) {
+            $orderData['order_items'] = $orderData['items'];
+        }
+
+        return $orderData;
+    }
+
+    protected function mapRefurbedAddressPayload(array $address): array
+    {
+        $streetLine = trim(($address['street_name'] ?? '') . ' ' . ($address['house_no'] ?? ''));
+
+        return [
+            'company' => $address['company'] ?? null,
+            'first_name' => $address['first_name'] ?? $address['given_name'] ?? null,
+            'last_name' => $address['last_name'] ?? $address['family_name'] ?? null,
+            'street' => $streetLine ?: ($address['street'] ?? ''),
+            'street2' => $address['street2'] ?? $address['street_line2'] ?? '',
+            'postal_code' => $address['postal_code'] ?? $address['post_code'] ?? '',
+            'country' => $address['country'] ?? $address['country_code'] ?? '',
+            'city' => $address['city'] ?? $address['town'] ?? '',
+            'phone' => $address['phone'] ?? $address['phone_number'] ?? '',
+            'email' => $address['email'] ?? null,
+        ];
     }
 
     protected function buildProxyDownloadUrl(?string $url): ?string

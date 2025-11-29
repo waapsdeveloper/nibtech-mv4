@@ -58,6 +58,13 @@ Added Refurbed marketplace listing synchronization to the `FunctionsThirty` comm
     - Response payload returns `updated`, `skipped`, and aggregate API batch info for quick auditing.
 - Ops can also trigger the same workflow from the CLI via `php artisan refurbed:ship-lines {order_id}` with the same optional flags (`--order-item-id=*`, `--tracking-number=`, `--carrier=`, `--force`). Useful for quick smoke-tests or shipping a stuck order without touching the UI.
 
+### Manual Order Refresh
+
+- The Orders Livewire view exposes a **Refresh Refurbed Order** option in the per-order actions menu whenever `marketplace_id === 4`.
+- Clicking the button calls `Order::refreshRefurbedOrder()` which fetches the latest payload via `RefurbedAPIController::getOrder()` and persists it with `Order_model::storeRefurbedOrderInDB()`.
+- The handler automatically fetches order items (if they are missing from the primary response) and mirrors the same normalization logic used by the artisan sync commands.
+- Use this whenever ops need to pull an up-to-date state/charges for a single ticket instead of running `php artisan refurbed:orders` manually.
+
 ## Configuration Required
 
 ### 1. Database Setup
