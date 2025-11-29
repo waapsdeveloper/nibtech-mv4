@@ -784,7 +784,7 @@
                     fallbackId = numericId;
                 }
 
-                if (marketplaceName.indexOf('back market') !== -1 || marketplaceName.indexOf('backmarket') !== -1) {
+                if (marketplaceName.indexOf('BackMarket') !== -1 || marketplaceName.indexOf('backmarket') !== -1) {
                     window.defaultBackMarketId = numericId;
                     return true;
                 }
