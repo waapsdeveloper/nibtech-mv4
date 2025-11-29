@@ -520,7 +520,8 @@
                         return button.classList.contains('collapsed');
                     });
                     
-                    // First, trigger data loading for ALL marketplace accordions simultaneously
+                    // First, trigger toggleAccordion for ALL marketplace accordions simultaneously
+                    // This is the same function that fires when clicking the button manually
                     if (typeof Livewire !== 'undefined') {
                         marketplaceButtons.forEach(button => {
                             const targetId = button.getAttribute('data-bs-target');
@@ -533,14 +534,14 @@
                                 const marketplaceId = parts[0];
                                 const targetVariationId = parts[1];
                                 
-                                // Find component and trigger data loading immediately
+                                // Find component and call toggleAccordion (same as manual click)
                                 Livewire.all().forEach(comp => {
                                     try {
                                         if (comp && comp.__instance) {
                                             const data = comp.__instance?.serverMemo?.data || {};
                                             if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
-                                                // Trigger data loading simultaneously for all
-                                                comp.call('loadData');
+                                                // Call toggleAccordion - this will trigger loadData if needed
+                                                comp.call('toggleAccordion');
                                             }
                                         }
                                     } catch(e) {
@@ -573,7 +574,7 @@
                             
                             targetElement.addEventListener('shown.bs.collapse', onExpanded);
                             
-                            // Just click the button to expand visually (data is already loading)
+                            // Click the button to expand visually (toggleAccordion already called)
                             button.click();
                         } else {
                             // If target not found, just continue to next
@@ -583,7 +584,7 @@
                         }
                     }
                     
-                    // Start expanding from the first one (data loading already started for all)
+                    // Start expanding from the first one (toggleAccordion already called for all)
                     if (marketplaceButtons.length > 0) {
                         expandNext(0);
                     }
