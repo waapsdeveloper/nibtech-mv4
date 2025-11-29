@@ -48,7 +48,7 @@
                         @endforelse
                     </div>
                     <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}" target="_blank" title="View all orders for this variation">
-                        <small class="badge bg-info">
+                        <small class="badge text-white" style="background-color: #003d82;">
                             Total Orders: {{ $totalOrdersCount ?? 0 }}
                         </small>
                     </a>
