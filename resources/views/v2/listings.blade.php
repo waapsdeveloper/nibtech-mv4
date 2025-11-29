@@ -330,6 +330,12 @@
                     
                     // Initialize deferred sales data loading using Intersection Observer
                     initializeDeferredSalesDataLoading();
+                    
+                    // Re-initialize marketplace auto-expansion after components are loaded
+                    setTimeout(() => {
+                        console.log('[Marketplace Auto-Expansion] Re-initializing after Livewire components loaded...');
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
                 }
             } else {
                 variationsContainer.innerHTML = 
