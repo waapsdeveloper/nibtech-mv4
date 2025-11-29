@@ -34,11 +34,6 @@ class Testing extends Component
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
 
-        $testing = new Api_request_model();
-        $requests = $testing->push_testing();
-        // $this->remove_extra_variations();
-
-        // die;
         $requests = Api_request_model::whereNull('status')->limit(100)->get();
 
         $data['requests'] = $requests;
@@ -47,6 +42,21 @@ class Testing extends Component
 
 
         return view('livewire.testing', $data); // Return the Blade view instance with data
+    }
+    public function filtered_testing_push($request_filter){
+        ini_set('max_execution_time', 1200);
+
+        $user_id = session('user_id');
+        if($user_id == NULL){
+            return redirect('index');
+        }
+
+        $model = new Api_request_model();
+        $model->push_testing(100, $request_filter);
+
+        session()->flash('message', 'Filtered testing push executed successfully');
+
+        return redirect()->back();
     }
     public function upload_excel(){
         request()->validate([

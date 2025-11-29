@@ -2,14 +2,15 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\GoogleToken;
+use Exception;
 use Google_Client;
 use Google_Service_Gmail;
 use Google_Service_Gmail_Message;
-use App\Models\GoogleToken;
-use Exception;
+use Illuminate\Http\Request;
 use Illuminate\Mail\Mailable;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class GoogleController extends Controller
 {
@@ -19,10 +20,10 @@ class GoogleController extends Controller
         $client->setClientId(config('services.google.client_id'));
         $client->setClientSecret(config('services.google.client_secret'));
         $client->setRedirectUri(config('services.google.redirect_uri'));
-        $client->setAccessType('offline'); // Request offline access to get a refresh token
-        $client->setIncludeGrantedScopes(true); // Ensure granted scopes are included
+        $client->setAccessType('offline');
+        $client->setIncludeGrantedScopes(true);
         $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
-        $client->setPrompt('consent'); // Force consent screen to get refresh token
+        $client->setPrompt('consent');
 
         return redirect($client->createAuthUrl());
     }
@@ -46,7 +47,7 @@ class GoogleController extends Controller
             $accessToken = $token['access_token'];
             $refreshToken = $token['refresh_token'] ?? null;
 
-            if (!$refreshToken) {
+            if (! $refreshToken) {
                 Log::error('Refresh token not received');
                 return redirect()->route('index')->with('error', 'Failed to receive refresh token from Google.');
             }
@@ -69,7 +70,7 @@ class GoogleController extends Controller
     {
         $googleToken = GoogleToken::first();
 
-        if (!$googleToken) {
+        if (! $googleToken) {
             return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
         }
 
@@ -88,7 +89,7 @@ class GoogleController extends Controller
             }
 
             $googleToken->update([
-                'access_token' => $newToken['access_token']
+                'access_token' => $newToken['access_token'],
             ]);
         }
 
@@ -96,8 +97,8 @@ class GoogleController extends Controller
 
         $boundary = uniqid(rand(), true);
         $rawMessageString = "From: no-reply@nibritaintech.com\r\n";
-        $rawMessageString .= "To: " . $recipientEmail . "\r\n";
-        $rawMessageString .= "Subject: " . $subject . "\r\n";
+        $rawMessageString .= "To: {$recipientEmail}\r\n";
+        $rawMessageString .= "Subject: {$subject}\r\n";
         $rawMessageString .= "MIME-Version: 1.0\r\n";
         $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n\r\n";
         $rawMessageString .= "--{$boundary}\r\n";
@@ -117,7 +118,7 @@ class GoogleController extends Controller
 
         $rawMessageString .= "--{$boundary}--";
 
-        $rawMessage = strtr(base64_encode($rawMessageString), array('+' => '-', '/' => '_'));
+        $rawMessage = strtr(base64_encode($rawMessageString), ['+' => '-', '/' => '_']);
         $message = new Google_Service_Gmail_Message();
         $message->setRaw($rawMessage);
 
@@ -125,83 +126,323 @@ class GoogleController extends Controller
     }
 
     public function sendEmailInvoice($recipientEmail, $subject, Mailable $mailable)
-{
-    $googleToken = GoogleToken::first();
+    {
+        $googleToken = GoogleToken::first();
 
-    if (!$googleToken) {
-        return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
+        if (! $googleToken) {
+            return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
+        }
+
+        $client = new Google_Client();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect_uri'));
+        $client->setAccessType('offline');
+        $client->setIncludeGrantedScopes(true);
+        $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
+        $client->setAccessToken($googleToken->access_token);
+
+        if ($client->isAccessTokenExpired()) {
+            $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
+            $googleToken->update([
+                'access_token' => $client->getAccessToken()['access_token'],
+            ]);
+        }
+
+        $service = new Google_Service_Gmail($client);
+        $rawAttachments = $mailable->build()->rawAttachments ?? [];
+        $pdfData = $rawAttachments[0]['data'] ?? null;
+        $fileName = $rawAttachments[0]['name'] ?? null;
+        $fileType = $rawAttachments[0]['options']['mime'] ?? null;
+
+        $message = new Google_Service_Gmail_Message();
+        $boundary = uniqid(rand(), true);
+        $rawMessageString = "From: no-reply@nibritaintech.com\r\n";
+        $rawMessageString .= "To: {$recipientEmail}\r\n";
+        $rawMessageString .= "Subject: {$subject}\r\n";
+        $rawMessageString .= "MIME-Version: 1.0\r\n";
+        $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n\r\n";
+        $rawMessageString .= "--{$boundary}\r\n";
+        $rawMessageString .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
+        $rawMessageString .= $mailable->render() . "\r\n\r\n";
+
+        if ($pdfData && $fileName && $fileType) {
+            $rawMessageString .= "--{$boundary}\r\n";
+            $rawMessageString .= "Content-Type: {$fileType}; name=\"{$fileName}\"\r\n";
+            $rawMessageString .= "Content-Transfer-Encoding: base64\r\n";
+            $rawMessageString .= "Content-Disposition: attachment; filename=\"{$fileName}\"\r\n\r\n";
+            $rawMessageString .= chunk_split(base64_encode($pdfData)) . "\r\n\r\n";
+        }
+
+        $rawMessageString .= "--{$boundary}--";
+        $rawMessage = strtr(base64_encode($rawMessageString), ['+' => '-', '/' => '_']);
+        $message->setRaw($rawMessage);
+
+        try {
+            $response = $service->users_messages->send('me', $message);
+
+            Log::info('Send Email Request Body', [
+                'recipientEmail' => $recipientEmail,
+                'subject' => $subject,
+            ]);
+            Log::info('Send Email Response', ['response' => $response]);
+        } catch (Exception $e) {
+            Log::error('Failed to send email', ['error' => $e->getMessage()]);
+        }
     }
 
-    $client = new Google_Client();
-    $client->setClientId(config('services.google.client_id'));
-    $client->setClientSecret(config('services.google.client_secret'));
-    $client->setRedirectUri(config('services.google.redirect_uri'));
-    $client->setAccessType('offline'); // Request offline access
-    $client->setIncludeGrantedScopes(true); // Ensure granted scopes are included
-    $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
+    /**
+     * Retrieve recent Gmail messages using the stored OAuth token.
+     */
+    public function readEmails(Request $request)
+    {
+        try {
+            $result = $this->fetchGmailMessages([
+                'labelIds' => $request->input('labelIds', ['INBOX']),
+                'maxResults' => $request->input('maxResults', 10),
+                'query' => $request->input('query'),
+                'pageToken' => $request->input('pageToken'),
+            ]);
+        } catch (RuntimeException $e) {
+            return response()->json([
+                'error' => $e->getMessage(),
+            ], 400);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch Gmail messages (API)', [
+                'error' => $e->getMessage(),
+            ]);
 
-    $client->setAccessToken($googleToken->access_token);
+            return response()->json([
+                'error' => 'Unable to fetch Gmail messages.',
+            ], 500);
+        }
 
-    if ($client->isAccessTokenExpired()) {
-        $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
-        $googleToken->update([
-            'access_token' => $client->getAccessToken()['access_token']
+        return response()->json($result);
+    }
+
+    public function showRefurbedInbox(Request $request)
+    {
+        $defaultQuery = 'subject:"refurbed inquiry" OR from:refurbed-merchant.zendesk.com';
+        $query = $request->input('query', $defaultQuery);
+        $labelIds = $request->input('labelIds', ['INBOX']);
+        $maxResults = (int) $request->input('maxResults', 25);
+
+        try {
+            $result = $this->fetchGmailMessages([
+                'labelIds' => $labelIds,
+                'maxResults' => $maxResults,
+                'query' => $query,
+                'pageToken' => $request->input('pageToken'),
+            ]);
+        } catch (RuntimeException $e) {
+            return redirect()->route('index')->with('error', $e->getMessage());
+        } catch (Exception $e) {
+            Log::error('Failed to render Refurbed Gmail inbox', [
+                'error' => $e->getMessage(),
+            ]);
+
+            return redirect()->route('index')->with('error', 'Unable to load Gmail inbox at this time.');
+        }
+
+        return view('google.refurbed_inbox', [
+            'messages' => $result['messages'],
+            'query' => $query,
+            'labelIds' => is_array($labelIds) ? $labelIds : array_filter([$labelIds]),
+            'maxResults' => $maxResults,
+            'nextPageToken' => $result['nextPageToken'],
+            'resultSizeEstimate' => $result['resultSizeEstimate'],
+            'pageToken' => $request->input('pageToken'),
         ]);
     }
 
-    $service = new Google_Service_Gmail($client);
-    if(isset($mailable->build()->rawAttachments[0])){
-    // Get the attachment from the mailable
-    $pdfData = $mailable->build()->rawAttachments[0]['data'];
-    $fileName = $mailable->build()->rawAttachments[0]['name'];
-    $fileType = $mailable->build()->rawAttachments[0]['options']['mime'];
+    protected function makeGmailService(): Google_Service_Gmail
+    {
+        $googleToken = GoogleToken::first();
+
+        if (! $googleToken) {
+            throw new RuntimeException('Google account is not connected. Please authenticate first.');
+        }
+
+        $client = new Google_Client();
+        $client->setClientId(config('services.google.client_id'));
+        $client->setClientSecret(config('services.google.client_secret'));
+        $client->setRedirectUri(config('services.google.redirect_uri'));
+        $client->setAccessType('offline');
+        $client->setIncludeGrantedScopes(true);
+        $client->addScope(Google_Service_Gmail::MAIL_GOOGLE_COM);
+        $client->setAccessToken($googleToken->access_token);
+
+        if ($client->isAccessTokenExpired()) {
+            $newToken = $client->fetchAccessTokenWithRefreshToken($googleToken->refresh_token);
+
+            if (isset($newToken['error'])) {
+                Log::error('Failed to refresh access token while reading emails', [
+                    'error' => $newToken['error'],
+                ]);
+
+                throw new RuntimeException('Unable to refresh Google token. Please re-authenticate.');
+            }
+
+            $googleToken->update([
+                'access_token' => $newToken['access_token'],
+            ]);
+
+            $client->setAccessToken($newToken);
+        }
+
+        return new Google_Service_Gmail($client);
     }
-    // Create a new message
-    $message = new Google_Service_Gmail_Message();
 
-    // Construct the email message
-    $boundary = uniqid(rand(), true);
-    $rawMessageString = "From: no-reply@nibritaintech.com\r\n";
-    $rawMessageString .= "To: {$recipientEmail}\r\n";
-    $rawMessageString .= "Subject: {$subject}\r\n";
-    $rawMessageString .= "MIME-Version: 1.0\r\n";
-    $rawMessageString .= "Content-Type: multipart/mixed; boundary=\"{$boundary}\"\r\n\r\n";
-    $rawMessageString .= "--{$boundary}\r\n";
-    $rawMessageString .= "Content-Type: text/html; charset=UTF-8\r\n\r\n";
-    $rawMessageString .= $mailable->render() . "\r\n\r\n";
-    $rawMessageString .= "--{$boundary}\r\n";
+    protected function fetchGmailMessages(array $options = []): array
+    {
+        $service = $this->makeGmailService();
 
-    if(isset($mailable->build()->rawAttachments[0])){
-    $rawMessageString .= "Content-Type: {$fileType}; name=\"{$fileName}\"\r\n";
-    $rawMessageString .= "Content-Transfer-Encoding: base64\r\n";
-    $rawMessageString .= "Content-Disposition: attachment; filename=\"{$fileName}\"\r\n\r\n";
-    $rawMessageString .= chunk_split(base64_encode($pdfData)) . "\r\n\r\n";
+        $labelIds = $options['labelIds'] ?? ['INBOX'];
+        if (! is_array($labelIds)) {
+            $labelIds = array_filter([$labelIds]);
+        }
+
+        $maxResults = (int) ($options['maxResults'] ?? 10);
+        $maxResults = $maxResults > 0 ? min($maxResults, 100) : 10;
+
+        $query = $options['query'] ?? null;
+        $pageToken = $options['pageToken'] ?? null;
+
+        $listParams = array_filter([
+            'labelIds' => $labelIds,
+            'maxResults' => $maxResults,
+            'q' => $query,
+            'pageToken' => $pageToken,
+        ], function ($value) {
+            if (is_array($value)) {
+                return count($value) > 0;
+            }
+
+            return $value !== null && $value !== '';
+        });
+
+        try {
+            $messagesResponse = $service->users_messages->listUsersMessages('me', $listParams);
+        } catch (Exception $e) {
+            Log::error('Failed to fetch Gmail messages', [
+                'error' => $e->getMessage(),
+                'params' => $listParams,
+            ]);
+
+            throw new RuntimeException('Unable to fetch Gmail messages at this time.');
+        }
+
+        $messages = [];
+
+        foreach ($messagesResponse->getMessages() ?? [] as $message) {
+            try {
+                $messageDetail = $service->users_messages->get('me', $message->getId(), [
+                    'format' => 'full',
+                    'metadataHeaders' => ['Subject', 'From', 'Date'],
+                ]);
+            } catch (Exception $e) {
+                Log::warning('Failed to load Gmail message detail', [
+                    'message_id' => $message->getId(),
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            $headers = [];
+            $payloadHeaders = $messageDetail->getPayload()->getHeaders() ?? [];
+            foreach ($payloadHeaders as $header) {
+                $headers[$header->getName()] = $header->getValue();
+            }
+
+            $ticketLink = $this->extractRefurbedTicketLink($messageDetail->getPayload(), $messageDetail->getSnippet());
+
+            $messages[] = [
+                'id' => $message->getId(),
+                'threadId' => $messageDetail->getThreadId(),
+                'snippet' => $messageDetail->getSnippet(),
+                'subject' => $headers['Subject'] ?? null,
+                'from' => $headers['From'] ?? null,
+                'date' => $headers['Date'] ?? null,
+                'labelIds' => $messageDetail->getLabelIds(),
+                'ticketLink' => $ticketLink,
+            ];
+        }
+
+        return [
+            'messages' => $messages,
+            'nextPageToken' => $messagesResponse->getNextPageToken(),
+            'resultSizeEstimate' => $messagesResponse->getResultSizeEstimate(),
+        ];
     }
-    $rawMessageString .= "--{$boundary}--";
 
-    // Encode the message
-    $rawMessage = strtr(base64_encode($rawMessageString), array('+' => '-', '/' => '_'));
+    protected function extractRefurbedTicketLink($payload, ?string $snippet = null): ?string
+    {
+        $link = $this->findZendeskLinkInText($snippet);
 
-    // Set the raw message
-    $message->setRaw($rawMessage);
+        if ($link) {
+            return $link;
+        }
 
-    // Send the message
-    // $service->users_messages->send('me', $message);
-    try {
-        $response = $service->users_messages->send('me', $message);
+        if ($payload === null) {
+            return null;
+        }
 
-        // Log the request and response
-        Log::info('Send Email Request Body', [
-            'recipientEmail' => $recipientEmail,
-            'subject' => $subject,
-            'body' => $mailable,
-        ]);
-        Log::info('Send Email Response', ['response' => $response]);
+        $link = $this->findZendeskLinkInBody($payload);
 
-    } catch (Exception $e) {
-        Log::error('Failed to send email', ['error' => $e->getMessage()]);
+        return $link;
     }
-}
 
+    protected function findZendeskLinkInBody($payload): ?string
+    {
+        if ($payload === null) {
+            return null;
+        }
 
+        $body = $payload->getBody();
+        if ($body && $body->getSize() > 0) {
+            $data = $body->getData();
+            if ($data) {
+                $decoded = base64_decode(strtr($data, '-_', '+/'));
+                $link = $this->findZendeskLinkInText($decoded);
+                if ($link) {
+                    return $link;
+                }
+            }
+        }
+
+        foreach ($payload->getParts() ?? [] as $part) {
+            $link = $this->findZendeskLinkInBody($part);
+            if ($link) {
+                return $link;
+            }
+        }
+
+        return null;
+    }
+
+    protected function findZendeskLinkInText(?string $text): ?string
+    {
+        if (! $text) {
+            return null;
+        }
+
+        if (preg_match('/(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
+            $url = $matches[0];
+            if (! preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . $matches[2];
+            }
+            return $url;
+        }
+
+        if (preg_match('/Link:\s*(https?:\/\/)?(refurbed-merchant\.zendesk\.com\/agent\/tickets\/\d+)/i', $text, $matches)) {
+            $url = str_ireplace('Link:', '', $matches[0]);
+            $url = trim($url);
+            if (! preg_match('/^https?:\/\//i', $url)) {
+                $url = 'https://' . trim($matches[2]);
+            }
+            return $url;
+        }
+
+        return null;
+    }
 }

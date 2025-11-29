@@ -1229,79 +1229,120 @@ class Order extends Component
             // dd($data['missing_stock']);
 
             if($data['order']->created_at >= now()->subDays(7) && $data['order']->created_at <= now()->subMinutes(15)){
-                $lower_products = array_map('strtolower', $data['products']->toArray());
-                $lower_storages = array_map('strtolower', $data['storages']->toArray());
-                $lower_colors = array_map('strtolower', $data['colors']->toArray());
-                // Group testings by model, storage, and color (parent), and then by IMEI (child)
-                $testings = Api_request_model::whereNull('status')
+                $buildLookup = static function ($options) {
+                    return collect($options)
+                        ->mapWithKeys(function ($name, $id) {
+                            return [strtolower($name) => $id];
+                        })
+                        ->all();
+                };
+
+                $productLookup = $buildLookup($data['products']);
+                $storageLookup = $buildLookup($data['storages']);
+                $colorLookup = $buildLookup($data['colors']);
+
+                $variationCache = [];
+
+                $requests = Api_request_model::whereNull('status')
                     ->where('request->BatchID', 'LIKE', '%'.$data['order']->reference_id.'%')
                     ->orderByDesc('id')
-                    ->get()
-                    ->map(function($item) use ($data, $lower_products, $lower_storages, $lower_colors) {
-                        $request = json_decode($item->request);
-                        $product = $request->ModelName ?? null;
-                        $storage = $request->Memory ?? null;
-                        $color = $request->Color ?? null;
+                    ->get();
 
+                $testingsCollection = $requests->map(function ($item) use ($productLookup, $storageLookup, $colorLookup, &$variationCache) {
+                    $request = json_decode($item->request);
+                    $product = $request->ModelName ?? null;
+                    $storage = $request->Memory ?? null;
+                    $color = $request->Color ?? null;
 
-                        $product_id = in_array(strtolower($product), $lower_products)
-                            ? array_search(strtolower($product), $lower_products)
-                            : null;
-                        $storage_id = in_array(strtolower($storage), $lower_storages)
-                            ? array_search(strtolower($storage), $lower_storages)
-                            : null;
-                        $color_id = in_array(strtolower($color), $lower_colors)
-                            ? array_search(strtolower($color), $lower_colors)
-                            : null;
-                        $grade_id = 9;
+                    $productId = $product ? ($productLookup[strtolower($product)] ?? null) : null;
+                    $storageId = $storage ? ($storageLookup[strtolower($storage)] ?? null) : null;
+                    $colorId = $color ? ($colorLookup[strtolower($color)] ?? null) : null;
 
-                        $variation_id = null;
-                        if ($product_id !== null && $storage_id !== null) {
-                            $variation = Variation_model::firstOrCreate([
-                                'product_id' => $product_id,
-                                'storage' => $storage_id,
-                                'color' => $color_id,
-                                'grade' => $grade_id,
-                            ]);
-                            $variation_id = $variation->id;
+                    $variationId = null;
+                    if ($productId !== null && $storageId !== null) {
+                        $cacheKey = implode(':', [
+                            $productId,
+                            $storageId,
+                            $colorId ?? 'null',
+                            9,
+                        ]);
+
+                        if (! isset($variationCache[$cacheKey])) {
+                            $variationCache[$cacheKey] = Variation_model::firstOrCreate([
+                                'product_id' => $productId,
+                                'storage' => $storageId,
+                                'color' => $colorId,
+                                'grade' => 9,
+                            ])->id;
                         }
 
-                        return [
-                            'imei' => $request->Imei ?? null,
-                            'serial_number' => $request->Serial ?? null,
-                            'variation_id' => $variation_id,
-                            'product' => $product,
-                            'storage' => $storage,
-                            'color' => $color,
-                        ];
-                    })
-                    ->groupBy(function($row) {
-                        // Group by variation_id
-                        return $row['variation_id'];
-                    })
-                    ->map(function($group) {
-                        // Remove duplicate IMEI/serial_number entries per variation
-                        $unique = [];
-                        return $group->filter(function($item) use (&$unique) {
+                        $variationId = $variationCache[$cacheKey];
+                    }
 
-                            if(Stock_model::where('imei',$item['imei'])->orWhere('imei',$item['imei'])->orWhere('serial_number',$item['serial_number'])->exists()){
-                                    return false;
-                                }
+                    return [
+                        'imei' => $request->Imei ?? null,
+                        'serial_number' => $request->Serial ?? null,
+                        'variation_id' => $variationId,
+                        'product' => $product,
+                        'storage' => $storage,
+                        'color' => $color,
+                    ];
+                })->filter(function ($row) {
+                    return $row['variation_id'] !== null && ($row['imei'] || $row['serial_number']);
+                });
+
+                $imeiCandidates = $testingsCollection->pluck('imei')->filter()->unique()->values()->all();
+                $serialCandidates = $testingsCollection->pluck('serial_number')->filter()->unique()->values()->all();
+
+                $existingImeis = [];
+                $existingSerials = [];
+
+                if ($testingsCollection->isNotEmpty() && (! empty($imeiCandidates) || ! empty($serialCandidates))) {
+                    Stock_model::query()
+                        ->select('imei', 'serial_number')
+                        ->where(function ($query) use ($imeiCandidates, $serialCandidates) {
+                            if (! empty($imeiCandidates)) {
+                                $query->whereIn('imei', $imeiCandidates);
+                            }
+                            if (! empty($serialCandidates)) {
+                                $method = empty($imeiCandidates) ? 'whereIn' : 'orWhereIn';
+                                $query->{$method}('serial_number', $serialCandidates);
+                            }
+                        })
+                        ->get()
+                        ->each(function ($stock) use (&$existingImeis, &$existingSerials) {
+                            if ($stock->imei) {
+                                $existingImeis[$stock->imei] = true;
+                            }
+                            if ($stock->serial_number) {
+                                $existingSerials[$stock->serial_number] = true;
+                            }
+                        });
+                }
+
+                $testings = $testingsCollection
+                    ->groupBy('variation_id')
+                    ->map(function ($group) use ($existingImeis, $existingSerials) {
+                        $unique = [];
+                        $existingPushTracker = [];
+
+                        return $group->filter(function ($item) use (&$unique, &$existingPushTracker, $existingImeis, $existingSerials) {
                             $key = ($item['imei'] ?? '') . '|' . ($item['serial_number'] ?? '');
-                            if (!$key || isset($unique[$key])) {
+                            if (! $key || isset($unique[$key])) {
                                 return false;
                             }
+
+                            $hasStock = ($item['imei'] && isset($existingImeis[$item['imei']])) || ($item['serial_number'] && isset($existingSerials[$item['serial_number']]));
+                            if ($hasStock && isset($existingPushTracker[$key])) {
+                                return false;
+                            }
+
+                            if ($hasStock) {
+                                $existingPushTracker[$key] = true;
+                            }
+
                             $unique[$key] = true;
                             return true;
-                        })->map(function($item) {
-                            return [
-                                'imei' => $item['imei'],
-                                'serial_number' => $item['serial_number'],
-                                'variation_id' => $item['variation_id'],
-                                'product' => $item['product'],
-                                'storage' => $item['storage'],
-                                'color' => $item['color'],
-                            ];
                         })->values();
                     });
 
@@ -3438,6 +3479,41 @@ class Order extends Component
                 'carrier' => $carrier,
             ],
         ]);
+    }
+
+    protected function syncRefurbedOrderItems(Order_model $order, RefurbedAPIController $refurbedApi, ?string $carrier = null): void
+    {
+        $trackingNumber = $order->tracking_number ? trim((string) $order->tracking_number) : null;
+        $normalizedCarrier = $carrier ? $this->normalizeRefurbedCarrier($carrier) : null;
+
+        $stateService = app(RefurbedOrderLineStateService::class);
+
+        try {
+            $stateService->shipOrderLines($order->reference_id, array_filter([
+                'tracking_number' => $trackingNumber,
+                'carrier' => $normalizedCarrier,
+                'force' => true,
+            ], fn ($value) => $value !== null && $value !== ''));
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to update order item states after dispatch', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        try {
+            app(RefurbedShippingService::class)->syncOrderItemIdentifiers($order, $refurbedApi, array_filter([
+                'tracking_number' => $trackingNumber,
+                'carrier' => $normalizedCarrier,
+            ], fn ($value) => $value !== null && $value !== ''));
+        } catch (\Throwable $e) {
+            Log::warning('Refurbed: Unable to sync identifier data after dispatch', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+        }
     }
 
     protected function ensureRefurbedLabelArtifacts(Order_model $order, RefurbedAPIController $refurbedApi, $dispatchResult = null): void

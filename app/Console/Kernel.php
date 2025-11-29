@@ -24,82 +24,85 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         $schedule->command('refresh:latest')
-            ->everyFiveMinutes()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->everyFiveMinutes();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
         $schedule->command('refresh:new')
-            ->everyTwoMinutes()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->everyTwoMinutes();
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
         $schedule->command('refresh:orders')
-            ->everyFiveMinutes()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->everyFiveMinutes();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
         $schedule->command('refurbed:new')
-            ->everyFiveMinutes()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->everyFiveMinutes();
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
         $schedule->command('refurbed:orders')
-            ->hourly()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
-
-        $schedule->command('refurbed:update-stock')
-            ->everyThirtyMinutes()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
-        $schedule->command('refurbed:create-labels')
-            ->everyTenMinutes()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->hourly();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
+        // $schedule->command('refurbed:update-stock')
+        //     ->everyThirtyMinutes()
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
+        // $schedule->command('refurbed:create-labels')
+        //     ->everyTenMinutes()
+        //     ->between('6:00', '02:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
         $schedule->command('functions:ten')
-            ->everyTenMinutes()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
-
+            ->everyTenMinutes();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
         $schedule->command('functions:thirty')
-            ->hourly()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->hourly();
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
         $schedule->command('backup:email')
             ->hourly()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->between('6:00', '02:00');
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
         $schedule->command('functions:daily')
-            ->everyFourHours()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
-
+            ->everyFourHours();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
         $schedule->command('fetch:exchange-rates')
             ->hourly()
-            ->between('6:00', '02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->between('6:00', '02:00');
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
 
+        $schedule->command('api-request:process')
+            ->everyFiveMinutes();
+            // ->between('6:00', '02:00')
+            // ->withoutOverlapping()
+            // ->onOneServer()
+            // ->runInBackground();
     }
 
     /**

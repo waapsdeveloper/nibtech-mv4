@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Jobs\SendApiRequestPayload;
 use Carbon\Carbon;
 use Google\Service\MyBusinessAccountManagement\Admin;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -25,7 +26,7 @@ class Api_request_model extends Model
 
 
 
-    public function push_testing()
+    public function push_testing(int $chunkSize = 100, $request_filter = null)
     {
         unset($sub_grade);
         $return = [];
@@ -40,11 +41,15 @@ class Api_request_model extends Model
         $grades = Grade_model::pluck('name','id')->toArray();
         $gradeLookup = self::buildLookup($grades);
 
-        $requests = Api_request_model::where('status', null)
-        // ->where('request', 'LIKE', '%10565%')
-        ->limit(600)->get();
-        // $requests = Api_request_model::orderBy('id','asc')->get();
+        $log = 0;
         $log_info = 'Add these products manually:'."\n";
+
+        Api_request_model::whereNull('status')
+            ->when($request_filter, function ($query) use ($request_filter) {
+                return $query->where('request','like','%'.$request_filter.'%');
+            })
+            ->orderBy('id')
+            ->chunkById($chunkSize, function ($requests) use (&$return, &$imeis, &$log_info, &$log, $adminLookup, $storageLookup, $colorLookup, $gradeLookup, $storages, $colors, $grades, $admins) {
         foreach($requests as $request){
             unset($sub_grade);
             $data = $request->request;
@@ -507,7 +512,8 @@ class Api_request_model extends Model
                 }
             }
         }
-        if(isset($log) && $log == 1){
+        });
+        if($log === 1){
             $log_info .= "Add these products manually:"."\n";
             Log::info($log_info);
         }
@@ -718,95 +724,44 @@ class Api_request_model extends Model
     }
 
     public function send_to_eg(){
-        $request = $this;
-        $datas = json_decode($request->request);
-        $stock = $this->stock;
-
-        // dd($datas, $stock, $request);
-            // if domain = sdpos.nibritaintech.com
-        if(config('app.url') == 'https://sdpos.nibritaintech.com'){
-
-            $curl = curl_init();
-
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://egpos.nibritaintech.com/api/request',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => json_encode($datas),
-                CURLOPT_HTTPHEADER => array(
-                'Accept: application/json',
-                'Content-Type: application/json',
-                'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
-                ),
-            ));
-
-            $response = curl_exec($curl);
-
-            curl_close($curl);
-            echo $response;
-
-
-            if($response){
-                echo "<pre>";
-                print_r($response);
-                echo "</pre>";
-                echo "<br><br><br>Hello<br><br><br>";
-            }
-
-            $request->status = 3;
-            $request->save();
-
+        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+            return;
         }
+
+        $payload = json_decode($this->request, true) ?? [];
+
+        if(empty($payload)){
+            return;
+        }
+
+        SendApiRequestPayload::dispatch(
+            'https://egpos.nibritaintech.com/api/request',
+            $payload,
+            '2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+        )->onQueue('api-requests');
+
+        $this->status = 3;
+        $this->save();
     }
+
     public function send_to_yk(){
-        $request = $this;
-        $datas = json_decode($request->request);
-        $stock = $this->stock;
-
-        // dd($datas, $stock, $request);
-            // if domain = sdpos.nibritaintech.com
-        if(config('app.url') == 'https://sdpos.nibritaintech.com'){
-
-            $curl = curl_init();
-
-            curl_setopt_array($curl, array(
-                CURLOPT_URL => 'https://ykpos.nibritaintech.com/api/request',
-                CURLOPT_RETURNTRANSFER => true,
-                CURLOPT_ENCODING => '',
-                CURLOPT_MAXREDIRS => 10,
-                CURLOPT_TIMEOUT => 0,
-                CURLOPT_FOLLOWLOCATION => true,
-                CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1,
-                CURLOPT_CUSTOMREQUEST => 'POST',
-                CURLOPT_POSTFIELDS => json_encode($datas),
-                CURLOPT_HTTPHEADER => array(
-                'Accept: application/json',
-                'Content-Type: application/json',
-                'Authorization: Bearer 2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
-                ),
-            ));
-
-            $response = curl_exec($curl);
-
-            curl_close($curl);
-            echo $response;
-
-
-            if($response){
-                echo "<pre>";
-                print_r($response);
-                echo "</pre>";
-                echo "<br><br><br>Hello<br><br><br>";
-            }
-
-            $request->status = 3;
-            $request->save();
-
+        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+            return;
         }
+
+        $payload = json_decode($this->request, true) ?? [];
+
+        if(empty($payload)){
+            return;
+        }
+
+        SendApiRequestPayload::dispatch(
+            'https://ykpos.nibritaintech.com/api/request',
+            $payload,
+            '2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+        )->onQueue('api-requests');
+
+        $this->status = 3;
+        $this->save();
     }
 }

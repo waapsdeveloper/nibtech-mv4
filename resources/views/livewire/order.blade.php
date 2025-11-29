@@ -507,6 +507,7 @@
                             $t = 0;
                             $ti = 0;
                             $previousOrderDispatched = false;
+                            $orderAboveDispatched = false;
                         @endphp
                         @foreach ($orders as $index => $order)
                             @php
@@ -520,7 +521,9 @@
                                 $items_count = count($items);
                                 $total_items += $items_count;
                                 $customer = $order->customer;
-                                $orderAboveDispatched = $previousOrderDispatched;
+                                // if ($orderAboveDispatched == false) {
+                                //     $orderAboveDispatched = $order->status === 3;
+                                // }
                                 $isCurrentOrderDispatched = ($order->status == 3);
                             @endphp
 
@@ -690,7 +693,9 @@
                                         @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                        @if (isset($stock) && $item->status == 2 && !session()->has('refresh') && $order->marketplace_id != 4)
+                                        @if (isset($stock) && $item->status == 2 && !session()->has('refresh'))
+                                            @if (request('marketplace') == 4)
+                                            @else
                                             @php
                                                 session()->put('refresh', true);
                                             @endphp
@@ -699,6 +704,7 @@
                                                     window.location.href = "{{url('order')}}/refresh/{{ $order->reference_id }}";
                                                 });
                                             </script>
+                                            @endif
                                         @endif
 
                                         @if ($item->status == 2)
