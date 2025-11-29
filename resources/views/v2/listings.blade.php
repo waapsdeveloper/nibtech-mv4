@@ -512,79 +512,82 @@
 
             // Listen for Bootstrap collapse show event
             parentAccordion.addEventListener('shown.bs.collapse', function() {
-                // Find all marketplace accordion buttons within this parent
-                const marketplaceButtons = Array.from(this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]')).filter(button => {
-                    // Only include collapsed buttons (not already expanded)
-                    return button.classList.contains('collapsed');
-                });
-                
-                // First, trigger data loading for ALL marketplace accordions simultaneously
-                if (typeof Livewire !== 'undefined') {
-                    marketplaceButtons.forEach(button => {
-                        const targetId = button.getAttribute('data-bs-target');
-                        if (!targetId) return;
-                        
-                        const accordionId = targetId.replace('#collapse_', '');
-                        const parts = accordionId.split('_');
-                        
-                        if (parts.length >= 2) {
-                            const marketplaceId = parts[0];
-                            const targetVariationId = parts[1];
-                            
-                            // Find component and trigger data loading immediately
-                            Livewire.all().forEach(comp => {
-                                try {
-                                    if (comp && comp.__instance) {
-                                        const data = comp.__instance?.serverMemo?.data || {};
-                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
-                                            // Trigger data loading simultaneously for all
-                                            comp.call('loadData');
-                                        }
-                                    }
-                                } catch(e) {
-                                    // Continue searching
-                                }
-                            });
-                        }
+                // Wait a short timeout before auto-expanding marketplace accordions
+                setTimeout(() => {
+                    // Find all marketplace accordion buttons within this parent
+                    const marketplaceButtons = Array.from(this.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]')).filter(button => {
+                        // Only include collapsed buttons (not already expanded)
+                        return button.classList.contains('collapsed');
                     });
-                }
-                
-                // Then expand child accordions one by one sequentially (for visual effect)
-                function expandNext(index) {
-                    if (index >= marketplaceButtons.length) {
-                        return; // All done
+                    
+                    // First, trigger data loading for ALL marketplace accordions simultaneously
+                    if (typeof Livewire !== 'undefined') {
+                        marketplaceButtons.forEach(button => {
+                            const targetId = button.getAttribute('data-bs-target');
+                            if (!targetId) return;
+                            
+                            const accordionId = targetId.replace('#collapse_', '');
+                            const parts = accordionId.split('_');
+                            
+                            if (parts.length >= 2) {
+                                const marketplaceId = parts[0];
+                                const targetVariationId = parts[1];
+                                
+                                // Find component and trigger data loading immediately
+                                Livewire.all().forEach(comp => {
+                                    try {
+                                        if (comp && comp.__instance) {
+                                            const data = comp.__instance?.serverMemo?.data || {};
+                                            if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                                // Trigger data loading simultaneously for all
+                                                comp.call('loadData');
+                                            }
+                                        }
+                                    } catch(e) {
+                                        // Continue searching
+                                    }
+                                });
+                            }
+                        });
                     }
                     
-                    const button = marketplaceButtons[index];
-                    const targetId = button.getAttribute('data-bs-target');
-                    const targetElement = targetId ? document.querySelector(targetId) : null;
-                    
-                    if (targetElement) {
-                        // Listen for when this accordion finishes expanding
-                        const onExpanded = () => {
-                            targetElement.removeEventListener('shown.bs.collapse', onExpanded);
-                            // Wait a bit then expand next one
+                    // Then expand child accordions one by one sequentially (for visual effect)
+                    function expandNext(index) {
+                        if (index >= marketplaceButtons.length) {
+                            return; // All done
+                        }
+                        
+                        const button = marketplaceButtons[index];
+                        const targetId = button.getAttribute('data-bs-target');
+                        const targetElement = targetId ? document.querySelector(targetId) : null;
+                        
+                        if (targetElement) {
+                            // Listen for when this accordion finishes expanding
+                            const onExpanded = () => {
+                                targetElement.removeEventListener('shown.bs.collapse', onExpanded);
+                                // Wait a bit then expand next one
+                                setTimeout(() => {
+                                    expandNext(index + 1);
+                                }, 100);
+                            };
+                            
+                            targetElement.addEventListener('shown.bs.collapse', onExpanded);
+                            
+                            // Just click the button to expand visually (data is already loading)
+                            button.click();
+                        } else {
+                            // If target not found, just continue to next
                             setTimeout(() => {
                                 expandNext(index + 1);
                             }, 100);
-                        };
-                        
-                        targetElement.addEventListener('shown.bs.collapse', onExpanded);
-                        
-                        // Just click the button to expand visually (data is already loading)
-                        button.click();
-                    } else {
-                        // If target not found, just continue to next
-                        setTimeout(() => {
-                            expandNext(index + 1);
-                        }, 100);
+                        }
                     }
-                }
-                
-                // Start expanding from the first one (data loading already started for all)
-                if (marketplaceButtons.length > 0) {
-                    expandNext(0);
-                }
+                    
+                    // Start expanding from the first one (data loading already started for all)
+                    if (marketplaceButtons.length > 0) {
+                        expandNext(0);
+                    }
+                }, 500); // 500ms delay before starting auto-expansion
             });
         });
     }
