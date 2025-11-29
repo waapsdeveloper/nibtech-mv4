@@ -606,8 +606,9 @@
                                             @endif
                                             </a>
                                         @endif
-                                        @if ($item->care_id != null)
-                                            <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $item->care_id }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
+                                        @php $conversationUrl = conversation_url_for_order_item($item); @endphp
+                                        @if ($conversationUrl)
+                                            <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-danger">Conversation</strong></a>
                                         @endif
                                         <br>
                                         {{$order->reference}}
@@ -1042,8 +1043,9 @@
                                                         <strong>{{ $itm->variation->sku }}</strong>{{ " - " . (isset($itm->variation->product)?$itm->variation->product->model: 'Model not defined') . " - " . (isset($itm->variation->storage)?$storages[$itm->variation->storage] . " - " : null) . (isset($itm->variation->color)?$colors[$itm->variation->color]. " - ":null)}} <strong><u>{{ $grades[$itm->variation->grade] }}</u></strong>
                                                     @endif
 
-                                                    @if ($itm->care_id != null)
-                                                        <a class="" href="https://backmarket.fr/bo-seller/customer-care/help-requests/{{ $itm->care_id }}" target="_blank"><strong class="text-white">Conversation</strong></a>
+                                                    @php $conversationUrl = conversation_url_for_order_item($itm); @endphp
+                                                    @if ($conversationUrl)
+                                                        <a class="" href="{{ $conversationUrl }}" target="_blank"><strong class="text-white">Conversation</strong></a>
                                                     @endif
                                                 </td>
                                                 <td>{{ $itm->quantity }}</td>
