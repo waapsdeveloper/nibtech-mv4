@@ -28,21 +28,27 @@
         text-align: center;
         padding: 20px;
     }
-    /* Small side loader for variations loading */
+    /* Centered loader for variations loading */
     #v2-variations-loader {
         position: fixed;
         top: 50%;
-        right: 20px;
-        transform: translateY(-50%);
+        left: 50%;
+        transform: translate(-50%, -50%);
         z-index: 1050;
         background: white;
-        padding: 10px 15px;
-        border-radius: 5px;
-        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
         display: none;
+        text-align: center;
     }
     #v2-variations-loader.show {
         display: block;
+    }
+    #v2-variations-loader .spinner-border {
+        width: 2rem;
+        height: 2rem;
+        border-width: 0.25em;
     }
     
     .variations-container {
@@ -119,12 +125,12 @@
     {{-- Initial content removed - will be filled by JavaScript --}}
 </div>
 
-<!-- Small side loader indicator - only one -->
-<div id="v2-variations-loader" class="text-center">
-    <div class="spinner-border spinner-border-sm text-primary" role="status" style="width: 1.5rem; height: 1.5rem;">
+<!-- Centered loader indicator -->
+<div id="v2-variations-loader">
+    <div class="spinner-border text-primary" role="status">
         <span class="visually-hidden">Loading...</span>
     </div>
-    <small class="d-block mt-1 text-muted">Loading...</small>
+    <p class="mt-3 mb-0 fw-bold text-muted">Loading variations...</p>
 </div>
 
 <!-- Pagination -->
