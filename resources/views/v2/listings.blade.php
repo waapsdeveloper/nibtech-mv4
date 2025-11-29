@@ -500,18 +500,169 @@
      * When parent accordion expands, automatically expand all child marketplace accordions
      */
     function initializeMarketplaceAutoExpansion() {
+        console.log('[Marketplace Auto-Expansion] ===== INITIALIZATION FUNCTION CALLED =====');
+        
         // Find all parent marketplace accordions
         const parentAccordions = document.querySelectorAll('.multi_collapse[data-variation-id]');
+        console.log(`[Marketplace Auto-Expansion] Found ${parentAccordions.length} parent accordion(s)`);
         
-        parentAccordions.forEach(parentAccordion => {
+        if (parentAccordions.length === 0) {
+            console.warn('[Marketplace Auto-Expansion] WARNING: No parent accordions found with selector .multi_collapse[data-variation-id]');
+            // Try alternative selector
+            const altAccordions = document.querySelectorAll('[id^="marketplaceAccordion_"]');
+            console.log(`[Marketplace Auto-Expansion] Found ${altAccordions.length} accordions with alternative selector`);
+        }
+        
+        parentAccordions.forEach((parentAccordion, idx) => {
             // Skip if already initialized
             if (parentAccordion.dataset.expansionInitialized === 'true') {
+                console.log(`[Marketplace Auto-Expansion] Parent accordion ${idx + 1} already initialized, skipping...`);
                 return;
             }
             parentAccordion.dataset.expansionInitialized = 'true';
+            
+            const variationId = parentAccordion.dataset.variationId;
+            console.log(`[Marketplace Auto-Expansion] Setting up listener ${idx + 1} for variation ${variationId}`);
+            
+            // Also add direct listener on toggle button
+            const toggleButton = document.querySelector(`button[data-bs-target="#marketplaceAccordion_${variationId}"]`);
+            if (toggleButton) {
+                console.log(`[Marketplace Auto-Expansion] Found toggle button for variation ${variationId}`);
+                toggleButton.addEventListener('click', function(e) {
+                    console.log(`[Marketplace Auto-Expansion] ===== TOGGLE BUTTON CLICKED for variation ${variationId} =====`);
+                    // Wait for accordion to expand
+                    setTimeout(() => {
+                        if (parentAccordion.classList.contains('show')) {
+                            console.log(`[Marketplace Auto-Expansion] Parent is now shown, triggering expansion...`);
+                            triggerMarketplaceExpansion(parentAccordion, variationId);
+                        }
+                    }, 600);
+                });
+            } else {
+                console.warn(`[Marketplace Auto-Expansion] Toggle button NOT found for variation ${variationId}`);
+            }
 
             // Listen for Bootstrap collapse show event
             parentAccordion.addEventListener('shown.bs.collapse', function() {
+                console.log(`[Marketplace Auto-Expansion] ===== EVENT 'shown.bs.collapse' FIRED for variation ${variationId} =====`);
+                triggerMarketplaceExpansion(this, variationId);
+            });
+            
+            // Also listen for 'show' event
+            parentAccordion.addEventListener('show.bs.collapse', function() {
+                console.log(`[Marketplace Auto-Expansion] Event 'show.bs.collapse' fired for variation ${variationId}`);
+            });
+        });
+        
+        console.log('[Marketplace Auto-Expansion] ===== INITIALIZATION COMPLETE =====');
+    }
+    
+    /**
+     * Helper function to trigger marketplace expansion
+     */
+    function triggerMarketplaceExpansion(parentAccordionElement, variationId) {
+        console.log(`[Marketplace Auto-Expansion] ===== TRIGGERING EXPANSION for variation ${variationId} =====`);
+        
+        // Wait a short timeout before auto-expanding marketplace accordions
+        setTimeout(() => {
+            console.log('[Marketplace Auto-Expansion] Starting marketplace expansion...');
+            
+            // Find all marketplace accordion buttons within this parent
+            const marketplaceButtons = Array.from(parentAccordionElement.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]')).filter(button => {
+                // Only include collapsed buttons (not already expanded)
+                return button.classList.contains('collapsed');
+            });
+            
+            console.log(`[Marketplace Auto-Expansion] Found ${marketplaceButtons.length} collapsed marketplace accordions`);
+            
+            // Expand child accordions one by one sequentially and call toggleAccordion for each
+            function expandNext(index) {
+                if (index >= marketplaceButtons.length) {
+                    console.log('[Marketplace Auto-Expansion] All marketplace accordions expanded');
+                    return; // All done
+                }
+                
+                const button = marketplaceButtons[index];
+                const targetId = button.getAttribute('data-bs-target');
+                const targetElement = targetId ? document.querySelector(targetId) : null;
+                
+                console.log(`[Marketplace Auto-Expansion] Expanding marketplace ${index + 1}/${marketplaceButtons.length}: ${targetId}`);
+                
+                if (targetElement && typeof Livewire !== 'undefined') {
+                    const accordionId = targetId.replace('#collapse_', '');
+                    const parts = accordionId.split('_');
+                    
+                    if (parts.length >= 2) {
+                        const marketplaceId = parts[0];
+                        const targetVariationId = parts[1];
+                        
+                        console.log(`[Marketplace Auto-Expansion] Looking for component: variationId=${targetVariationId}, marketplaceId=${marketplaceId}`);
+                        
+                        // Find component and call toggleAccordion for this specific marketplace
+                        let componentFound = false;
+                        Livewire.all().forEach(comp => {
+                            try {
+                                if (comp && comp.__instance) {
+                                    const data = comp.__instance?.serverMemo?.data || {};
+                                    if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                        console.log(`[Marketplace Auto-Expansion] Component found, calling toggleAccordion()...`);
+                                        componentFound = true;
+                                        // Call toggleAccordion - same function that fires on manual click
+                                        comp.call('toggleAccordion').then(() => {
+                                            console.log(`[Marketplace Auto-Expansion] toggleAccordion() completed for marketplace ${marketplaceId}`);
+                                        }).catch(err => {
+                                            console.error(`[Marketplace Auto-Expansion] Error calling toggleAccordion for marketplace ${marketplaceId}:`, err);
+                                        });
+                                    }
+                                }
+                            } catch(e) {
+                                console.error(`[Marketplace Auto-Expansion] Error processing component:`, e);
+                            }
+                        });
+                        
+                        if (!componentFound) {
+                            console.warn(`[Marketplace Auto-Expansion] Component not found for variationId=${targetVariationId}, marketplaceId=${marketplaceId}`);
+                        }
+                    } else {
+                        console.warn(`[Marketplace Auto-Expansion] Invalid accordion ID format: ${accordionId}`);
+                    }
+                    
+                    // Listen for when this accordion finishes expanding
+                    const onExpanded = () => {
+                        console.log(`[Marketplace Auto-Expansion] Marketplace ${index + 1} expanded, moving to next...`);
+                        targetElement.removeEventListener('shown.bs.collapse', onExpanded);
+                        // Wait a bit then expand next one
+                        setTimeout(() => {
+                            expandNext(index + 1);
+                        }, 100);
+                    };
+                    
+                    targetElement.addEventListener('shown.bs.collapse', onExpanded);
+                    
+                    // Click the button to expand visually (toggleAccordion called above)
+                    console.log(`[Marketplace Auto-Expansion] Clicking button to expand visually...`);
+                    button.click();
+                } else {
+                    console.warn(`[Marketplace Auto-Expansion] Target element not found or Livewire not available for ${targetId}`);
+                    // If target not found, just continue to next
+                    setTimeout(() => {
+                        expandNext(index + 1);
+                    }, 100);
+                }
+            }
+            
+            // Start expanding from the first one
+            if (marketplaceButtons.length > 0) {
+                expandNext(0);
+            } else {
+                console.log('[Marketplace Auto-Expansion] No marketplace accordions to expand');
+            }
+        }, 500); // 500ms delay before starting auto-expansion
+    }
+    
+    // OLD CODE REMOVED - Keeping the event listener setup:
+    parentAccordion.addEventListener('shown.bs.collapse', function() {
+        console.log(`[Marketplace Auto-Expansion] Event 'shown.bs.collapse' fired for variation ${variationId}`);
                 console.log('[Marketplace Auto-Expansion] Parent accordion expanded, starting auto-expansion in 500ms...');
                 
                 // Wait a short timeout before auto-expanding marketplace accordions
