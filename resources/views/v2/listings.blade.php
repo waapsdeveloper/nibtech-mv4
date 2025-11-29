@@ -912,5 +912,93 @@
             }
         });
     }
+
+    /**
+     * Show variation history modal
+     */
+    function show_variation_history(variationId, variationName) {
+        const modal = new bootstrap.Modal(document.getElementById('variationHistoryModal'));
+        modal.show();
+
+        document.getElementById('variation_name').textContent = variationName;
+        document.getElementById('variationHistoryTable').innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+        
+        fetch(`{{ url('listing/get_variation_history') }}/${variationId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let historyTable = '';
+            if (data.listed_stock_verifications && data.listed_stock_verifications.length > 0) {
+                data.listed_stock_verifications.forEach(function(item) {
+                    const date = new Date(item.created_at);
+                    const formattedDate = date.toLocaleString('en-GB', { 
+                        timeZone: 'Europe/London', 
+                        hour12: true 
+                    });
+                    historyTable += `
+                        <tr>
+                            <td>${item.process_ref || ''}</td>
+                            <td>${item.pending_orders || 0}</td>
+                            <td>${item.qty_from || 0}</td>
+                            <td>${item.qty_change || 0}</td>
+                            <td>${item.qty_to || 0}</td>
+                            <td>${item.admin || ''}</td>
+                            <td>${formattedDate}</td>
+                        </tr>`;
+                });
+            } else {
+                historyTable = '<tr><td colspan="7" class="text-center text-muted">No history found</td></tr>';
+            }
+            document.getElementById('variationHistoryTable').innerHTML = historyTable;
+        })
+        .catch(error => {
+            console.error('Error loading variation history:', error);
+            document.getElementById('variationHistoryTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading history. Please try again.</td></tr>';
+        });
+    }
 </script>
+
+<!-- Variation History Modal -->
+<div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="variationHistoryModalLabel">
+                    &nbsp; History - <span id="variation_name"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Process Ref</th>
+                                <th>Pending Orders</th>
+                                <th>Qty From</th>
+                                <th>Qty Change</th>
+                                <th>Qty To</th>
+                                <th>Admin</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="variationHistoryTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection
