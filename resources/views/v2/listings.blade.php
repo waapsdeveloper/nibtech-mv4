@@ -666,21 +666,61 @@
         }, 500); // 500ms delay before starting auto-expansion
     }
 
+    // Use event delegation to catch button clicks even if elements are added dynamically
+    document.addEventListener('click', function(e) {
+        // Check if clicked element is a marketplace toggle button
+        const button = e.target.closest('button[data-bs-target^="#marketplaceAccordion_"]');
+        if (button) {
+            const targetId = button.getAttribute('data-bs-target');
+            const variationId = targetId ? targetId.replace('#marketplaceAccordion_', '') : null;
+            
+            if (variationId) {
+                console.log(`[Marketplace Auto-Expansion] ===== TOGGLE BUTTON CLICKED (via delegation) for variation ${variationId} =====`);
+                
+                // Wait for accordion to actually expand
+                setTimeout(() => {
+                    const parentAccordion = document.querySelector(targetId);
+                    if (parentAccordion && parentAccordion.classList.contains('show')) {
+                        console.log(`[Marketplace Auto-Expansion] Parent accordion is now shown, triggering expansion...`);
+                        triggerMarketplaceExpansion(parentAccordion, variationId);
+                    }
+                }, 600);
+            }
+        }
+    });
+    
     // Initialize on DOM ready and after Livewire updates
     function initMarketplaceExpansion() {
-        setTimeout(initializeMarketplaceAutoExpansion, 300);
+        console.log('[Marketplace Auto-Expansion] ===== INIT FUNCTION CALLED =====');
+        setTimeout(() => {
+            console.log('[Marketplace Auto-Expansion] Calling initializeMarketplaceAutoExpansion after timeout...');
+            initializeMarketplaceAutoExpansion();
+        }, 300);
     }
 
+    console.log('[Marketplace Auto-Expansion] Script loaded, document readyState:', document.readyState);
+    
     if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initMarketplaceExpansion);
+        console.log('[Marketplace Auto-Expansion] Document still loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Marketplace Auto-Expansion] DOMContentLoaded fired');
+            initMarketplaceExpansion();
+        });
     } else {
+        console.log('[Marketplace Auto-Expansion] Document already ready, calling initMarketplaceExpansion immediately');
         initMarketplaceExpansion();
     }
 
     // Re-initialize after Livewire updates
     if (typeof Livewire !== 'undefined') {
-        document.addEventListener('livewire:load', initMarketplaceExpansion);
-        document.addEventListener('livewire:update', initMarketplaceExpansion);
+        document.addEventListener('livewire:load', () => {
+            console.log('[Marketplace Auto-Expansion] livewire:load event fired');
+            setTimeout(initMarketplaceExpansion, 500);
+        });
+        document.addEventListener('livewire:update', () => {
+            console.log('[Marketplace Auto-Expansion] livewire:update event fired');
+            setTimeout(initMarketplaceExpansion, 500);
+        });
     }
 
     /**
