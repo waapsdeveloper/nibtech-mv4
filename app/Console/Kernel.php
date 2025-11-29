@@ -25,7 +25,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refresh:latest')
             ->everyFiveMinutes()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -38,7 +38,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refresh:orders')
             ->everyFiveMinutes()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -50,7 +50,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('refurbed:orders')
             ->hourly()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -68,7 +68,7 @@ class Kernel extends ConsoleKernel
         //     ->runInBackground();
         $schedule->command('functions:ten')
             ->everyTenMinutes()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -88,7 +88,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('functions:daily')
             ->everyFourHours()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -102,7 +102,7 @@ class Kernel extends ConsoleKernel
 
         $schedule->command('api-request:process')
             ->everyFiveMinutes()
-            ->between('6:00', '02:00')
+            // ->between('6:00', '02:00')
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
