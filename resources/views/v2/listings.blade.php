@@ -520,39 +520,7 @@
                         return button.classList.contains('collapsed');
                     });
                     
-                    // First, trigger toggleAccordion for ALL marketplace accordions simultaneously
-                    // This is the same function that fires when clicking the button manually
-                    if (typeof Livewire !== 'undefined') {
-                        marketplaceButtons.forEach(button => {
-                            const targetId = button.getAttribute('data-bs-target');
-                            if (!targetId) return;
-                            
-                            const accordionId = targetId.replace('#collapse_', '');
-                            const parts = accordionId.split('_');
-                            
-                            if (parts.length >= 2) {
-                                const marketplaceId = parts[0];
-                                const targetVariationId = parts[1];
-                                
-                                // Find component and call toggleAccordion (same as manual click)
-                                Livewire.all().forEach(comp => {
-                                    try {
-                                        if (comp && comp.__instance) {
-                                            const data = comp.__instance?.serverMemo?.data || {};
-                                            if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
-                                                // Call toggleAccordion - this will trigger loadData if needed
-                                                comp.call('toggleAccordion');
-                                            }
-                                        }
-                                    } catch(e) {
-                                        // Continue searching
-                                    }
-                                });
-                            }
-                        });
-                    }
-                    
-                    // Then expand child accordions one by one sequentially (for visual effect)
+                    // Expand child accordions one by one sequentially and call toggleAccordion for each
                     function expandNext(index) {
                         if (index >= marketplaceButtons.length) {
                             return; // All done
@@ -562,7 +530,30 @@
                         const targetId = button.getAttribute('data-bs-target');
                         const targetElement = targetId ? document.querySelector(targetId) : null;
                         
-                        if (targetElement) {
+                        if (targetElement && typeof Livewire !== 'undefined') {
+                            const accordionId = targetId.replace('#collapse_', '');
+                            const parts = accordionId.split('_');
+                            
+                            if (parts.length >= 2) {
+                                const marketplaceId = parts[0];
+                                const targetVariationId = parts[1];
+                                
+                                // Find component and call toggleAccordion for this specific marketplace
+                                Livewire.all().forEach(comp => {
+                                    try {
+                                        if (comp && comp.__instance) {
+                                            const data = comp.__instance?.serverMemo?.data || {};
+                                            if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                                // Call toggleAccordion - same function that fires on manual click
+                                                comp.call('toggleAccordion');
+                                            }
+                                        }
+                                    } catch(e) {
+                                        // Continue searching
+                                    }
+                                });
+                            }
+                            
                             // Listen for when this accordion finishes expanding
                             const onExpanded = () => {
                                 targetElement.removeEventListener('shown.bs.collapse', onExpanded);
@@ -574,7 +565,7 @@
                             
                             targetElement.addEventListener('shown.bs.collapse', onExpanded);
                             
-                            // Click the button to expand visually (toggleAccordion already called)
+                            // Click the button to expand visually (toggleAccordion called above)
                             button.click();
                         } else {
                             // If target not found, just continue to next
@@ -584,7 +575,7 @@
                         }
                     }
                     
-                    // Start expanding from the first one (toggleAccordion already called for all)
+                    // Start expanding from the first one
                     if (marketplaceButtons.length > 0) {
                         expandNext(0);
                     }
