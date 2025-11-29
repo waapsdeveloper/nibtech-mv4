@@ -518,7 +518,38 @@
                     return button.classList.contains('collapsed');
                 });
                 
-                // Expand child accordions one by one sequentially
+                // First, trigger data loading for ALL marketplace accordions simultaneously
+                if (typeof Livewire !== 'undefined') {
+                    marketplaceButtons.forEach(button => {
+                        const targetId = button.getAttribute('data-bs-target');
+                        if (!targetId) return;
+                        
+                        const accordionId = targetId.replace('#collapse_', '');
+                        const parts = accordionId.split('_');
+                        
+                        if (parts.length >= 2) {
+                            const marketplaceId = parts[0];
+                            const targetVariationId = parts[1];
+                            
+                            // Find component and trigger data loading immediately
+                            Livewire.all().forEach(comp => {
+                                try {
+                                    if (comp && comp.__instance) {
+                                        const data = comp.__instance?.serverMemo?.data || {};
+                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                            // Trigger data loading simultaneously for all
+                                            comp.call('loadData');
+                                        }
+                                    }
+                                } catch(e) {
+                                    // Continue searching
+                                }
+                            });
+                        }
+                    });
+                }
+                
+                // Then expand child accordions one by one sequentially (for visual effect)
                 function expandNext(index) {
                     if (index >= marketplaceButtons.length) {
                         return; // All done
@@ -540,38 +571,8 @@
                         
                         targetElement.addEventListener('shown.bs.collapse', onExpanded);
                         
-                        // Trigger Livewire toggleAccordion method to ensure loading starts
-                        // Try to find component and call toggleAccordion directly
-                        const targetId = button.getAttribute('data-bs-target');
-                        const accordionId = targetId.replace('#collapse_', '');
-                        const parts = accordionId.split('_');
-                        let componentFound = false;
-                        
-                        if (parts.length >= 2 && typeof Livewire !== 'undefined') {
-                            const marketplaceId = parts[0];
-                            const targetVariationId = parts[1];
-                            
-                            // Search for component by matching IDs
-                            Livewire.all().forEach(comp => {
-                                try {
-                                    if (comp && comp.__instance) {
-                                        const data = comp.__instance?.serverMemo?.data || {};
-                                        if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
-                                            // Found the component - call toggleAccordion
-                                            comp.call('toggleAccordion');
-                                            componentFound = true;
-                                        }
-                                    }
-                                } catch(e) {
-                                    // Continue searching
-                                }
-                            });
-                        }
-                        
-                        // If component not found or toggle didn't expand, click the button
-                        if (!componentFound) {
-                            button.click();
-                        }
+                        // Just click the button to expand visually (data is already loading)
+                        button.click();
                     } else {
                         // If target not found, just continue to next
                         setTimeout(() => {
@@ -580,7 +581,7 @@
                     }
                 }
                 
-                // Start expanding from the first one
+                // Start expanding from the first one (data loading already started for all)
                 if (marketplaceButtons.length > 0) {
                     expandNext(0);
                 }
