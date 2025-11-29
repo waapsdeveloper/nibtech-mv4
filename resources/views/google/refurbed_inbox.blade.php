@@ -63,9 +63,10 @@
                     <table class="table table-striped table-hover mb-0">
                         <thead>
                             <tr>
-                                <th style="width: 22%">Subject</th>
-                                <th style="width: 25%">From</th>
-                                <th style="width: 18%">Date</th>
+                                <th style="width: 20%">Subject</th>
+                                <th style="width: 22%">From</th>
+                                <th style="width: 15%">Date</th>
+                                <th style="width: 18%">Refurbed Ticket</th>
                                 <th>Snippet</th>
                                 <th style="width: 10%">Action</th>
                             </tr>
@@ -81,6 +82,14 @@
                                     </td>
                                     <td>{{ $message['from'] ?? 'Unknown Sender' }}</td>
                                     <td>{{ $message['date'] ?? '-' }}</td>
+                                    <td>
+                                        @if(!empty($message['ticketLink']))
+                                            <a href="{{ $message['ticketLink'] }}" class="btn btn-sm btn-outline-success" target="_blank" rel="noopener">Open Ticket</a>
+                                            <div><small class="text-muted">{{ parse_url($message['ticketLink'], PHP_URL_PATH) }}</small></div>
+                                        @else
+                                            <span class="text-muted">Not detected</span>
+                                        @endif
+                                    </td>
                                     <td>{{ \Illuminate\Support\Str::limit($message['snippet'] ?? '', 200) }}</td>
                                     <td>
                                         <a href="{{ $gmailUrl }}" target="_blank" rel="noopener" class="btn btn-sm btn-outline-primary">View</a>
