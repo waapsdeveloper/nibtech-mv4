@@ -269,7 +269,12 @@ class ListingItem extends Component
             return [];
         }
 
-        return $this->variation->listings
+        // Ensure listings is a collection (it might be an array from preloaded data)
+        $listings = is_array($this->variation->listings) 
+            ? collect($this->variation->listings)
+            : $this->variation->listings;
+
+        return $listings
             ->pluck('marketplace_id')
             ->unique()
             ->filter()
