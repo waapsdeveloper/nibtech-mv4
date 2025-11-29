@@ -819,6 +819,32 @@
             });
         }
 
+        function bindPriceEnterShortcut(variationId) {
+            var inputs = $('#all_min_price_' + variationId + ', #all_price_' + variationId);
+            inputs.off('keydown.backMarketPriceDefault').on('keydown.backMarketPriceDefault', function(e) {
+                if (e.key === 'Enter') {
+                    var defaultMarketplaceId = getDefaultBackMarketId();
+                    submitForm4(e, variationId, window.eur_listings[variationId] || [], defaultMarketplaceId);
+                }
+            });
+        }
+
+        function bindListingPriceEnterShortcut(listingId) {
+            $('#min_price_' + listingId).off('keydown.backMarketMinPrice').on('keydown.backMarketMinPrice', function(e) {
+                if (e.key === 'Enter') {
+                    var defaultMarketplaceId = getDefaultBackMarketId();
+                    submitForm2(e, listingId, defaultMarketplaceId);
+                }
+            });
+
+            $('#price_' + listingId).off('keydown.backMarketPrice').on('keydown.backMarketPrice', function(e) {
+                if (e.key === 'Enter') {
+                    var defaultMarketplaceId = getDefaultBackMarketId();
+                    submitForm3(e, listingId, defaultMarketplaceId);
+                }
+            });
+        }
+
         function submitForm4ForMarketplace(event, variationId, listings, marketplaceId) {
             event.preventDefault();
 
@@ -1474,6 +1500,8 @@
                                 });
                             });
 
+                            bindListingPriceEnterShortcut(listing.id);
+
 
                         });
 
@@ -1630,6 +1658,7 @@
                             </div>
                         `);
                         bindHandlerEnterShortcut(variation.id);
+                        bindPriceEnterShortcut(variation.id);
                                                         // <th width="120"><small><b>Target</b></small></th>
                                                         // <th width="80"><small><b>%</b></small></th>
                                                         // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
