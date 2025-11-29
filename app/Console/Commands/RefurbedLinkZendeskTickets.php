@@ -12,6 +12,7 @@ class RefurbedLinkZendeskTickets extends Command
         {--label=* : One or more Gmail label IDs to filter}
         {--max-results= : Maximum number of Gmail messages to fetch}
         {--max-age-minutes= : Ignore emails older than this many minutes}
+        {--max-pages= : Maximum Gmail pages to scan (0 = all)}
         {--force : Process messages even if they were handled before}';
 
     protected $description = 'Automatically attach Refurbed Zendesk tickets to their corresponding order items.';
@@ -28,6 +29,7 @@ class RefurbedLinkZendeskTickets extends Command
             'labelIds' => $this->labelsOption(),
             'maxResults' => $this->option('max-results') !== null ? (int) $this->option('max-results') : null,
             'max_age_minutes' => $this->option('max-age-minutes') !== null ? (int) $this->option('max-age-minutes') : null,
+            'max_pages' => $this->option('max-pages') !== null ? (int) $this->option('max-pages') : null,
             'force' => (bool) $this->option('force'),
         ], function ($value) {
             if (is_array($value)) {

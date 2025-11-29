@@ -269,6 +269,9 @@ REFURBED_ZENDESK_MAX_RESULTS=75
 
 # Ignore emails older than this many minutes (default 1440 = 24h)
 REFURBED_ZENDESK_MAX_AGE_MINUTES=2880
+
+# Maximum Gmail pages to walk (0 = all available pages)
+REFURBED_ZENDESK_MAX_PAGES=0
 ```
 
 Each setting is surfaced under `config/services.php` (`refurbed.gmail_ticket_*`) if you prefer static defaults.
@@ -278,10 +281,10 @@ Each setting is surfaced under `config/services.php` (`refurbed.gmail_ticket_*`)
 Run the auto-linker manually with:
 
 ```bash
-php artisan refurbed:link-tickets [--query=] [--label=INBOX] [--max-results=50] [--max-age-minutes=1440] [--force]
+php artisan refurbed:link-tickets [--query=] [--label=INBOX] [--max-results=50] [--max-age-minutes=1440] [--max-pages=0] [--force]
 ```
 
-`--force` reprocesses Gmail messages even if they were already handled. The command prints a compact table showing which tickets were linked or skipped.
+`--force` reprocesses Gmail messages even if they were already handled. Set `--max-pages=0` (default) to keep following every Gmail page until no `nextPageToken` remains, or provide a positive number to cap the pagination depth. The command prints a compact table showing which tickets were linked or skipped.
 
 ### Scheduler
 

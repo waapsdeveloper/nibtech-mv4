@@ -29,14 +29,8 @@ class RefurbedZendeskTicketLinkService
         $labelIds = $options['labelIds'] ?? $this->defaultLabelIds();
         $maxResults = (int) ($options['maxResults'] ?? $this->defaultMaxResults());
         $maxAgeMinutes = (int) ($options['max_age_minutes'] ?? $this->defaultMaxAgeMinutes());
+        $maxPages = (int) ($options['max_pages'] ?? $this->defaultMaxPages());
         $force = (bool) ($options['force'] ?? false);
-
-        $result = $this->mailboxService->fetchMessages([
-            'labelIds' => $labelIds,
-            'maxResults' => $maxResults,
-            'query' => $query,
-            'include_body' => true,
-        ]);
 
         $stats = [
             'processed' => 0,
@@ -46,82 +40,101 @@ class RefurbedZendeskTicketLinkService
             'details' => [],
         ];
 
-        foreach ($result['messages'] as $message) {
-            $stats['processed']++;
-            $messageId = $message['id'];
+        $pageToken = null;
+        $pageCount = 0;
 
-            if (! $force && $this->hasProcessedMessage($messageId)) {
-                $stats['ignored']++;
-                continue;
-            }
+        do {
+            $result = $this->mailboxService->fetchMessages([
+                'labelIds' => $labelIds,
+                'maxResults' => $maxResults,
+                'query' => $query,
+                'pageToken' => $pageToken,
+                'include_body' => true,
+            ]);
 
-            $messageAge = $this->minutesSince($message['date'] ?? null);
-            if ($maxAgeMinutes > 0 && $messageAge !== null && $messageAge > $maxAgeMinutes) {
-                $this->markProcessedMessage($messageId, 'expired');
-                $stats['skipped']++;
-                continue;
-            }
+            $pageCount++;
+            $messages = $result['messages'] ?? [];
 
-            $ticketId = $message['ticketId'] ?? null;
-            if (! $ticketId) {
-                $this->markProcessedMessage($messageId, 'no_ticket');
-                $stats['skipped']++;
-                continue;
-            }
+            foreach ($messages as $message) {
+                $stats['processed']++;
+                $messageId = $message['id'];
 
-            $orderReference = $this->detectOrderReference($message);
-            if (! $orderReference) {
-                $this->markProcessedMessage($messageId, 'no_order_reference');
-                $stats['skipped']++;
-                continue;
-            }
+                if (! $force && $this->hasProcessedMessage($messageId)) {
+                    $stats['ignored']++;
+                    continue;
+                }
 
-            $order = Order_model::with('order_items')
-                ->where('reference_id', $orderReference)
-                ->where('marketplace_id', self::REFURBED_MARKETPLACE_ID)
-                ->first();
+                $messageAge = $this->minutesSince($message['date'] ?? null);
+                if ($maxAgeMinutes > 0 && $messageAge !== null && $messageAge > $maxAgeMinutes) {
+                    $this->markProcessedMessage($messageId, 'expired');
+                    $stats['skipped']++;
+                    continue;
+                }
 
-            if (! $order) {
-                $this->markProcessedMessage($messageId, 'order_not_found', [
-                    'order_reference' => $orderReference,
-                ]);
+                $ticketId = $message['ticketId'] ?? null;
+                if (! $ticketId) {
+                    $this->markProcessedMessage($messageId, 'no_ticket');
+                    $stats['skipped']++;
+                    continue;
+                }
+
+                $orderReference = $this->detectOrderReference($message);
+                if (! $orderReference) {
+                    $this->markProcessedMessage($messageId, 'no_order_reference');
+                    $stats['skipped']++;
+                    continue;
+                }
+
+                $order = Order_model::with('order_items')
+                    ->where('reference_id', $orderReference)
+                    ->where('marketplace_id', self::REFURBED_MARKETPLACE_ID)
+                    ->first();
+
+                if (! $order) {
+                    $this->markProcessedMessage($messageId, 'order_not_found', [
+                        'order_reference' => $orderReference,
+                    ]);
+                    $stats['details'][] = [
+                        'message_id' => $messageId,
+                        'ticket_id' => $ticketId,
+                        'order_reference' => $orderReference,
+                        'status' => 'order_not_found',
+                    ];
+                    $stats['skipped']++;
+                    continue;
+                }
+
+                $orderItemReference = $this->detectOrderItemReference($message);
+                $updated = $this->linkTicketToOrderItems($order, $orderItemReference, $ticketId);
+
                 $stats['details'][] = [
                     'message_id' => $messageId,
                     'ticket_id' => $ticketId,
                     'order_reference' => $orderReference,
-                    'status' => 'order_not_found',
-                ];
-                $stats['skipped']++;
-                continue;
-            }
-
-            $orderItemReference = $this->detectOrderItemReference($message);
-            $updated = $this->linkTicketToOrderItems($order, $orderItemReference, $ticketId);
-
-            $stats['details'][] = [
-                'message_id' => $messageId,
-                'ticket_id' => $ticketId,
-                'order_reference' => $orderReference,
-                'order_item_reference' => $orderItemReference,
-                'status' => $updated > 0 ? 'linked' : 'no_target',
-                'updated' => $updated,
-            ];
-
-            if ($updated > 0) {
-                $stats['linked'] += $updated;
-                $this->markProcessedMessage($messageId, 'linked', [
-                    'order_reference' => $orderReference,
                     'order_item_reference' => $orderItemReference,
+                    'status' => $updated > 0 ? 'linked' : 'no_target',
                     'updated' => $updated,
-                ]);
-            } else {
-                $this->markProcessedMessage($messageId, 'no_target', [
-                    'order_reference' => $orderReference,
-                    'order_item_reference' => $orderItemReference,
-                ]);
-                $stats['skipped']++;
+                ];
+
+                if ($updated > 0) {
+                    $stats['linked'] += $updated;
+                    $this->markProcessedMessage($messageId, 'linked', [
+                        'order_reference' => $orderReference,
+                        'order_item_reference' => $orderItemReference,
+                        'updated' => $updated,
+                    ]);
+                } else {
+                    $this->markProcessedMessage($messageId, 'no_target', [
+                        'order_reference' => $orderReference,
+                        'order_item_reference' => $orderItemReference,
+                    ]);
+                    $stats['skipped']++;
+                }
             }
-        }
+
+            $pageToken = $result['nextPageToken'] ?? null;
+            $shouldContinue = $pageToken !== null && ($maxPages <= 0 || $pageCount < $maxPages);
+        } while ($shouldContinue);
 
         Log::info('Refurbed Zendesk auto-link summary', [
             'processed' => $stats['processed'],
@@ -130,6 +143,8 @@ class RefurbedZendeskTicketLinkService
             'ignored' => $stats['ignored'],
             'query' => $query,
             'labelIds' => $labelIds,
+            'maxResults' => $maxResults,
+            'pages_processed' => $pageCount,
         ]);
 
         return $stats;
@@ -305,6 +320,11 @@ class RefurbedZendeskTicketLinkService
     protected function defaultMaxAgeMinutes(): int
     {
         return (int) config('services.refurbed.gmail_ticket_max_age_minutes', 1440);
+    }
+
+    protected function defaultMaxPages(): int
+    {
+        return (int) config('services.refurbed.gmail_ticket_max_pages', 0);
     }
 
     protected function orderReferencePatterns(): array
