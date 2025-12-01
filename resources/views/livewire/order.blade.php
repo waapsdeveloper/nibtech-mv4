@@ -623,7 +623,7 @@
                                                     Open Label PDF
                                                 </a>
                                                 @endif
-                                                @if ((int) $order->marketplace_id === 4)
+                                                @if ((int) request('marketplace') === 4)
                                                 <a href="{{ route('order.refurbed_reprint_label', ['order' => $order->id]) }}" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
                                                     Recreate Refurbed Label
                                                 </a>
