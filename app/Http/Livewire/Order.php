@@ -3456,7 +3456,7 @@ class Order extends Component
 
         $metadata = $this->extractRefurbedLabelMetadataFromResponse($labelsResponse);
         $downloadUrl = $metadata['download_url'] ?? null;
-        $trackingNumber = $metadata['tracking_number'] ?? null;
+        $trackingNumber = isset($metadata['tracking_number']) ? trim((string) $metadata['tracking_number']) : null;
 
         if (! $downloadUrl) {
             session()->put('error', 'Refurbed did not return a printable label.');
@@ -3465,7 +3465,13 @@ class Order extends Component
 
         $order->label_url = $downloadUrl;
         if ($trackingNumber) {
-            $order->tracking_number = $trackingNumber;
+            $existingTracking = $order->tracking_number ? trim((string) $order->tracking_number) : null;
+            $newLooksValid = $this->looksLikeDhlTrackingNumber($trackingNumber);
+            $existingLooksValid = $this->looksLikeDhlTrackingNumber($existingTracking);
+
+            if (! $existingTracking || ($newLooksValid && ! $existingLooksValid)) {
+                $order->tracking_number = $trackingNumber;
+            }
         }
         $order->save();
 
@@ -3837,12 +3843,45 @@ class Order extends Component
 
         $trackingNumber = data_get($labelData, 'tracking_number')
             ?? data_get($labelData, 'label.tracking_number')
-            ?? data_get($labelData, 'tracking_data.tracking_number');
+            ?? data_get($labelData, 'tracking_data.tracking_number')
+            ?? data_get($labelData, 'label.tracking_data.tracking_number')
+            ?? data_get($labelData, 'tracking_data.parcel_tracking_number')
+            ?? data_get($labelData, 'label.tracking_data.parcel_tracking_number')
+            ?? data_get($labelData, 'tracking_data.parcel_tracking_numbers.0')
+            ?? data_get($labelData, 'label.tracking_data.parcel_tracking_numbers.0')
+            ?? data_get($labelData, 'parcel_tracking_number')
+            ?? data_get($labelData, 'parcel_tracking_numbers.0')
+            ?? data_get($labelData, 'tracking_codes.0');
 
         return [
             'download_url' => $downloadUrl ? trim((string) $downloadUrl) : null,
             'tracking_number' => $trackingNumber ? trim((string) $trackingNumber) : null,
         ];
+    }
+
+    protected function looksLikeDhlTrackingNumber(?string $tracking): bool
+    {
+        if (! $tracking) {
+            return false;
+        }
+
+        $tracking = trim((string) $tracking);
+
+        if ($tracking === '') {
+            return false;
+        }
+
+        if (preg_match('/^JD\d{18}$/i', $tracking)) {
+            return true;
+        }
+
+        if (preg_match('/^[A-Z]{2}\d{9}[A-Z]{2}$/i', $tracking)) {
+            return true;
+        }
+
+        $hasLetters = preg_match('/[A-Z]/i', $tracking) === 1;
+
+        return $hasLetters && strlen($tracking) >= 12;
     }
 
     protected function adaptRefurbedOrderPayload(array $orderData): array
