@@ -616,6 +616,13 @@
                                         @endif
                                         <br>
                                         {{$order->reference}}
+                                        @if (!empty($order->label_url))
+                                            <div class="mt-2">
+                                                <a href="{{ $order->label_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
+                                                    Open Label PDF
+                                                </a>
+                                            </div>
+                                        @endif
                                     </td>
                                     <td>
                                         {{ $item->quantity }}
