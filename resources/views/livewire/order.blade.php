@@ -616,11 +616,18 @@
                                         @endif
                                         <br>
                                         {{$order->reference}}
-                                        @if (!empty($order->label_url))
-                                            <div class="mt-2">
+                                        @if (!empty($order->label_url) || (int) $order->marketplace_id === 4)
+                                            <div class="mt-2 d-flex flex-wrap gap-2">
+                                                @if (!empty($order->label_url))
                                                 <a href="{{ $order->label_url }}" target="_blank" rel="noopener" class="btn btn-outline-primary btn-sm">
                                                     Open Label PDF
                                                 </a>
+                                                @endif
+                                                @if ((int) $order->marketplace_id === 4)
+                                                <a href="{{ route('order.refurbed_reprint_label', ['order' => $order->id]) }}" target="_blank" rel="noopener" class="btn btn-outline-warning btn-sm">
+                                                    Recreate Refurbed Label
+                                                </a>
+                                                @endif
                                             </div>
                                         @endif
                                     </td>
