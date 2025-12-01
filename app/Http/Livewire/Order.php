@@ -314,9 +314,9 @@ class Order extends Component
                         }
                         // echo $item->variation_id . ' - ' . $difference_variations[$item->variation_id] . '<br>';
                         $difference_variations[$item->variation_id] -= 1;
-                        continue;
-                    }
-                }
+                        try {
+                            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+                        } catch (\Throwable $e) {
             }
             // dd($ids, $difference_variations, $orders_clone);
             $orders = $orders->whereNotIn('orders.id', $ids);
@@ -324,21 +324,11 @@ class Order extends Component
         }
 
         if(request('bulk_invoice') && request('bulk_invoice') == 1){
-            $order_ids = [];
-            ini_set('max_execution_time', 300);
-            $data['orders2'] = $orders
-            ->get();
-            foreach($data['orders2'] as $order){
-                if(!in_array($order->reference_id,$order_ids)){
-                    $order_ids[] = $order->reference_id;
-                }else{
-                    continue;
-                }
-                $data2 = [
-                    'order' => $order,
-                    'customer' => $order->customer,
-                    'orderItems' => $order->order_items,
-                ];
+
+                        $labelMetadata = $this->extractRefurbedLabelMetadataFromResponse($labelsResponse);
+
+                        $downloadUrl = $labelMetadata['download_url'] ?? null;
+                        $trackingNumber = $labelMetadata['tracking_number'] ?? null;
 
                 Mail::mailer('no-reply')->to($order->customer->email)->send(new InvoiceMail($data2));
                 sleep(2);
@@ -3417,6 +3407,72 @@ class Order extends Component
         return redirect()->back();
     }
 
+    public function reprintRefurbedLabel($orderId)
+    {
+        $order = Order_model::find($orderId);
+
+        if (! $order) {
+            session()->put('error', 'Order not found.');
+            return redirect()->back();
+        }
+
+        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
+            session()->put('error', 'Only Refurbed orders support this action.');
+            return redirect()->back();
+        }
+
+        if (! $order->reference_id) {
+            session()->put('error', 'Missing Refurbed reference ID.');
+            return redirect()->back();
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to initialize API for label reprint', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Unable to initialize Refurbed API client.');
+            return redirect()->back();
+        }
+
+        try {
+            $labelsResponse = $refurbedApi->listShippingLabels($order->reference_id);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: label reprint fetch failed', [
+                'order_id' => $order->id,
+                'reference_id' => $order->reference_id,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Failed to fetch Refurbed label.');
+            return redirect()->back();
+        }
+
+        $metadata = $this->extractRefurbedLabelMetadataFromResponse($labelsResponse);
+        $downloadUrl = $metadata['download_url'] ?? null;
+        $trackingNumber = $metadata['tracking_number'] ?? null;
+
+        if (! $downloadUrl) {
+            session()->put('error', 'Refurbed did not return a printable label.');
+            return redirect()->back();
+        }
+
+        $order->label_url = $downloadUrl;
+        if ($trackingNumber) {
+            $order->tracking_number = $trackingNumber;
+        }
+        $order->save();
+
+        $proxyUrl = $this->buildProxyDownloadUrl($downloadUrl) ?? $downloadUrl;
+
+        session()->put('success', 'Refurbed shipping label refreshed.');
+
+        return redirect($proxyUrl);
+    }
+
     public function resendRefurbedShipment($orderId)
     {
         $order = Order_model::find($orderId);
@@ -3752,6 +3808,38 @@ class Order extends Component
         $items = $itemsResponse['order_items'] ?? ($itemsResponse['items'] ?? null);
 
         return is_array($items) ? $items : null;
+    }
+
+    protected function extractRefurbedLabelMetadataFromResponse($labelsResponse): array
+    {
+        if (! is_array($labelsResponse)) {
+            return ['download_url' => null, 'tracking_number' => null];
+        }
+
+        $labelData = data_get($labelsResponse, 'shipping_labels.0')
+            ?? data_get($labelsResponse, 'labels.0')
+            ?? data_get($labelsResponse, 'label')
+            ?? data_get($labelsResponse, 'shipping_label')
+            ?? $labelsResponse;
+
+        $downloadUrl = data_get($labelData, 'download_url')
+            ?? data_get($labelData, 'label.download_url')
+            ?? data_get($labelData, 'label.content_url')
+            ?? data_get($labelData, 'label_printer_url')
+            ?? data_get($labelData, 'normal_printer_urls.top_left')
+            ?? data_get($labelData, 'normal_printer_urls.top_right')
+            ?? data_get($labelData, 'normal_printer_urls.bottom_left')
+            ?? data_get($labelData, 'normal_printer_urls.bottom_right')
+            ?? data_get($labelData, 'label.url');
+
+        $trackingNumber = data_get($labelData, 'tracking_number')
+            ?? data_get($labelData, 'label.tracking_number')
+            ?? data_get($labelData, 'tracking_data.tracking_number');
+
+        return [
+            'download_url' => $downloadUrl ? trim((string) $downloadUrl) : null,
+            'tracking_number' => $trackingNumber ? trim((string) $trackingNumber) : null,
+        ];
     }
 
     protected function adaptRefurbedOrderPayload(array $orderData): array

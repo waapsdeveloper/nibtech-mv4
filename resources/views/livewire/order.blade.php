@@ -824,6 +824,7 @@
                                             <a class="dropdown-item" href="{{ route('order.refurbed_refresh', ['order' => $order->id]) }}">Refresh Refurbed Order</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_sync_identifiers', ['id' => $order->id]) }}" onclick="return confirm('Push IMEI data to Refurbed for this order?');">Sync Refurbed IMEIs</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_resend_shipped', ['id' => $order->id]) }}" onclick="return confirm('Resend Refurbed SHIPPED request for this order?');">Resend Refurbed Shipped</a>
+                                            <a class="dropdown-item" href="{{ route('order.refurbed_reprint_label', ['order' => $order->id]) }}" target="_blank" rel="noopener">Reprint Refurbed Label</a>
                                             @else
                                             <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
                                             @endif

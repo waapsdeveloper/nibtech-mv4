@@ -65,6 +65,12 @@ Added Refurbed marketplace listing synchronization to the `FunctionsThirty` comm
 - The handler automatically fetches order items (if they are missing from the primary response) and mirrors the same normalization logic used by the artisan sync commands.
 - Use this whenever ops need to pull an up-to-date state/charges for a single ticket instead of running `php artisan refurbed:orders` manually.
 
+### Label Reprints
+
+- Refurbed label URLs expire after roughly one hour. The Orders dropdown now includes **Reprint Refurbed Label** (only for `marketplace_id === 4`).
+- Clicking it calls `Order::reprintRefurbedLabel()`, which requests `OrderService/ListShippingLabels`, stores the freshest `download_url`/tracking number back onto the order, and immediately streams the proxied PDF in a new tab.
+- Use this whenever an op needs to reprint or regenerate a label link without re-dispatching the order. No additional inputs are required—Refurbed returns the latest tokenized URL automatically.
+
 ## Configuration Required
 
 ### 1. Database Setup
