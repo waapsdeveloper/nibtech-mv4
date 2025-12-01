@@ -600,7 +600,14 @@
                                             <strong>{{ $variation->sku }}</strong> - {{$variation->product->model ?? "Model not defined"}} - {{(isset($variation->storage)?$storages[$variation->storage] . " - " : null) . (isset($variation->color)?$colors[$variation->color]. " - ":null)}} <strong><u>{{ $grades[$variation->grade] ?? "Issue wih Grade" }}</u></strong>
                                         @endif
                                         @if ($order->delivery_note_url == null || $order->label_url == null)
-                                            <a class="" href="{{url('order')}}/label/{{ $order->reference_id }}">
+                                            <a class="" href="
+                                            @if (request('marketplace') == 4)
+                                                {{ route('order.refurbed_reprint_label', ['order' => $order->id]) }}
+                                            @else
+                                                {{ url('order')}}/label/{{ $order->reference_id }}
+                                            @endif
+
+                                            ">
                                             @if ($order->delivery_note_url == null && request('marketplace') != 4)
                                                 <strong class="text-danger">Missing Delivery Note</strong>
                                             @endif
