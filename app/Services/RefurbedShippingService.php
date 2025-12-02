@@ -315,6 +315,13 @@ class RefurbedShippingService
             ?? data_get($labelResponse, 'tracking_number')
             ?? data_get($labelResponse, 'shipping_label.tracking_number')
             ?? data_get($labelResponse, 'shipping_label.tracking_data.tracking_number')
+            ?? data_get($labelResponse, 'label.tracking_data.tracking_number')
+            ?? data_get($labelResponse, 'tracking_data.tracking_number')
+            ?? data_get($labelResponse, 'tracking_data.parcel_tracking_number')
+            ?? data_get($labelResponse, 'tracking_data.parcel_tracking_numbers.0')
+            ?? data_get($labelResponse, 'parcel_tracking_number')
+            ?? data_get($labelResponse, 'parcel_tracking_numbers.0')
+            ?? data_get($labelResponse, 'tracking_codes.0')
             ?? data_get($labelResponse, 'labels.0.tracking_number');
     }
 
