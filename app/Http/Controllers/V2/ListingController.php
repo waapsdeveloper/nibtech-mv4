@@ -8,6 +8,7 @@ use App\Services\V2\ListingDataService;
 use App\Services\V2\ListingQueryService;
 use App\Services\V2\ListingCalculationService;
 use App\Models\Process_model;
+use App\Models\Variation_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -136,13 +137,98 @@ class ListingController extends Controller
                 ]);
             }
 
+            // Get exchange rate data first (needed for calculations)
+            $exchangeData = $this->calculationService->getExchangeRateData();
+
+            // Load all variations with basic data in one batch query (much faster than individual loads)
+            $variations = Variation_model::with([
+                'product',
+                'storage_id',
+                'color_id',
+                'grade_id',
+                'listings' => function($q) {
+                    $q->select('id', 'variation_id', 'country', 'marketplace_id', 'buybox', 'reference_uuid_2');
+                },
+                'listings.country_id' => function($q) {
+                    $q->select('id', 'code', 'market_url', 'market_code');
+                },
+                'available_stocks' => function($q) {
+                    $q->select('id', 'variation_id', 'status');
+                },
+                'pending_orders' => function($q) {
+                    $q->select('id', 'variation_id');
+                },
+            ])
+            ->whereIn('id', $variationIds)
+            ->get()
+            ->keyBy('id');
+
+            // Preserve order from variationIds array
+            $orderedVariations = collect($variationIds)->map(function($id) use ($variations) {
+                return $variations->get($id);
+            })->filter()->values();
+
+            // Calculate stats for all variations in batch
+            $variationData = $orderedVariations->map(function($variation) use ($exchangeData) {
+                // Calculate stats using service
+                $stats = $this->calculationService->calculateVariationStats($variation);
+                
+                // Calculate pricing info
+                $pricingInfo = $this->calculationService->calculatePricingInfo(
+                    $variation->listings ?? collect(),
+                    $exchangeData['exchange_rates'],
+                    $exchangeData['eur_gbp']
+                );
+                
+                // Calculate average cost
+                $averageCost = $this->calculationService->calculateAverageCost(
+                    $variation->available_stocks ?? collect()
+                );
+                
+                // Calculate total orders count
+                $totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($variation->id);
+                
+                // Get buybox listings
+                $buyboxListings = ($variation->listings ?? collect())
+                    ->where('buybox', 1)
+                    ->map(function($listing) {
+                        $countryId = is_object($listing->country_id) ? $listing->country_id->id : ($listing->country_id ?? null);
+                        return [
+                            'id' => $listing->id,
+                            'country_id' => $countryId,
+                            'reference_uuid_2' => $listing->reference_uuid_2 ?? '',
+                        ];
+                    })
+                    ->values()
+                    ->toArray();
+                
+                // Calculate marketplace summaries
+                $marketplaceSummaries = $this->calculationService->calculateMarketplaceSummaries(
+                    $variation->id,
+                    $variation->listings ?? collect()
+                );
+                
+                return [
+                    'id' => $variation->id,
+                    'variation_data' => $variation->toArray(),
+                    'calculated_stats' => [
+                        'stats' => $stats,
+                        'pricing_info' => $pricingInfo,
+                        'average_cost' => $averageCost,
+                        'total_orders_count' => $totalOrdersCount,
+                        'buybox_listings' => $buyboxListings,
+                        'marketplace_summaries' => $marketplaceSummaries,
+                    ],
+                ];
+            })->toArray();
+
             // Get reference data
             $referenceData = $this->dataService->getReferenceData();
-            $exchangeData = $this->calculationService->getExchangeRateData();
+            // Exchange data already loaded above, reuse it
 
             // Mount Livewire component
             $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
-                'variationIds' => $variationIds,
+                'variationData' => $variationData, // Pass pre-loaded variation data
                 'storages' => $referenceData['storages'],
                 'colors' => $referenceData['colors'],
                 'grades' => $referenceData['grades'],
