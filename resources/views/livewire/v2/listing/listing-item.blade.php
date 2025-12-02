@@ -24,7 +24,11 @@
                     </a>
                 </h5>
                 <div class="sales-info" id="sales_{{ $variation->id }}" data-variation-id="{{ $variation->id }}">
-                    <span class="text-muted small">Sales data will load when scrolled into view</span>
+                    @if(isset($salesData) && $salesData)
+                        {!! $salesData !!}
+                    @else
+                        <span class="text-muted small">Sales data will load when scrolled into view</span>
+                    @endif
                 </div>
                 {{-- Buybox Info --}}
                 <div class="buybox-info mt-1 d-flex gap-2 align-items-center flex-wrap">

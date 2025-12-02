@@ -4,6 +4,7 @@ namespace App\Services\V2;
 
 use App\Models\Variation_model;
 use App\Models\ExchangeRate;
+use App\Models\Order_item_model;
 use Illuminate\Support\Collection;
 
 class ListingCalculationService
@@ -201,6 +202,161 @@ class ListingCalculationService
             'eur_gbp' => $eurGbp,
             'exchange_rates' => $exchangeRates,
         ];
+    }
+
+    /**
+     * Calculate sales data for a variation (matching get_sales format)
+     * Returns formatted HTML string with sales averages
+     */
+    public function calculateSalesData(int $variationId): string
+    {
+        $today = $this->getTodayAverage($variationId);
+        $yesterday = $this->getYesterdayAverage($variationId);
+        $last7Days = $this->getLastWeekAverage($variationId);
+        $last14Days = $this->get2WeekAverage($variationId);
+        $last30Days = $this->get30DaysAverage($variationId);
+
+        return "Avg: " . $today . " - " . $yesterday . "<br>" . $last7Days . " - " . $last14Days . " - " . $last30Days;
+    }
+
+    /**
+     * Get today's average price and count
+     */
+    private function getTodayAverage(int $variationId): string
+    {
+        $orderItems = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->whereBetween('created_at', [now()->startOfDay(), now()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', 1);
+            })
+            ->with('order.currency_id')
+            ->get();
+
+        $avgPrice = $orderItems->map(function($item) {
+            if ($item->order->currency != 4) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        })->avg();
+
+        $count = $orderItems->count();
+        $formatted = $avgPrice ? number_format($avgPrice, 2) : '0.00';
+
+        return "Today: €" . $formatted . " (" . $count . ")";
+    }
+
+    /**
+     * Get yesterday's average price and count
+     */
+    private function getYesterdayAverage(int $variationId): string
+    {
+        $orderItems = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', 1);
+            })
+            ->with('order.currency_id')
+            ->get();
+
+        $avgPrice = $orderItems->map(function($item) {
+            if ($item->order->currency != 4) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        })->avg();
+
+        $count = $orderItems->count();
+        $formatted = $avgPrice ? number_format($avgPrice, 2) : '0.00';
+
+        return "Yesterday: €" . $formatted . " (" . $count . ")";
+    }
+
+    /**
+     * Get last 7 days average price and count
+     */
+    private function getLastWeekAverage(int $variationId): string
+    {
+        $orderItems = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', 1);
+            })
+            ->with('order.currency_id')
+            ->get();
+
+        $avgPrice = $orderItems->map(function($item) {
+            if ($item->order->currency != 4) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        })->avg();
+
+        $count = $orderItems->count();
+        $formatted = $avgPrice ? number_format($avgPrice, 2) : '0.00';
+
+        return "7 days: €" . $formatted . " (" . $count . ")";
+    }
+
+    /**
+     * Get last 14 days average price and count
+     */
+    private function get2WeekAverage(int $variationId): string
+    {
+        $orderItems = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', 1);
+            })
+            ->with('order.currency_id')
+            ->get();
+
+        $avgPrice = $orderItems->map(function($item) {
+            if ($item->order->currency != 4) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        })->avg();
+
+        $count = $orderItems->count();
+        $formatted = $avgPrice ? number_format($avgPrice, 2) : '0.00';
+
+        return "14 days: €" . $formatted . " (" . $count . ")";
+    }
+
+    /**
+     * Get last 30 days average price and count
+     */
+    private function get30DaysAverage(int $variationId): string
+    {
+        $orderItems = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) {
+                $q->whereBetween('created_at', [now()->subDays(30)->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', 1);
+            })
+            ->with('order.currency_id')
+            ->get();
+
+        $avgPrice = $orderItems->map(function($item) {
+            if ($item->order->currency != 4) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        })->avg();
+
+        $count = $orderItems->count();
+        $formatted = $avgPrice ? number_format($avgPrice, 2) : '0.00';
+
+        return "30 days: €" . $formatted . " (" . $count . ")";
     }
 }
 

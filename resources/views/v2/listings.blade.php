@@ -308,22 +308,106 @@
     }
 
     /**
-     * Display variations using incremental lazy-loaded Livewire components
-     * Loads first few items immediately, then lazy loads the rest as user scrolls
+     * Cache service for frontend - uses localStorage for persistence
+     */
+    const VariationCache = {
+        PREFIX: 'v2_variation_',
+        TTL: 5 * 60 * 1000, // 5 minutes in milliseconds
+        
+        /**
+         * Store variation data in localStorage
+         */
+        set(variationId, data) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(item));
+            } catch (e) {
+                console.warn('Failed to cache variation data:', e);
+            }
+        },
+        
+        /**
+         * Get variation data from localStorage
+         */
+        get(variationId) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = localStorage.getItem(key);
+                if (!item) return null;
+                
+                const parsed = JSON.parse(item);
+                const age = Date.now() - parsed.timestamp;
+                
+                // Check if cache is expired
+                if (age > this.TTL) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                
+                return parsed.data;
+            } catch (e) {
+                console.warn('Failed to get cached variation data:', e);
+                return null;
+            }
+        },
+        
+        /**
+         * Store multiple variations
+         */
+        setMultiple(variations) {
+            variations.forEach(v => {
+                if (v && v.id) {
+                    this.set(v.id, v);
+                }
+            });
+        },
+        
+        /**
+         * Clear all cached variations
+         */
+        clear() {
+            try {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith(this.PREFIX)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } catch (e) {
+                console.warn('Failed to clear cache:', e);
+            }
+        }
+    };
+
+    /**
+     * Display variations - render one at a time using cached data
+     * Data is preloaded and cached, items render progressively for better UX
      */
     function displayVariationsLazyV2(variations) {
-        const variationIds = variations.data.map(v => v.id);
         const variationsContainer = document.getElementById('v2-variations');
         
         document.getElementById('v2-page-info').textContent = 
             `From ${variations.from} To ${variations.to} Out Of ${variations.total}`;
 
-        // Configuration: Load first N items immediately, then lazy load the rest
-        const IMMEDIATE_LOAD_COUNT = 3; // Load first 3 items immediately
-        const BATCH_SIZE = 2; // Load 2 items at a time when scrolling
+        const variationData = variations.data; // Preloaded data with calculated stats
+        
+        if (variationData.length === 0) {
+            variationsContainer.innerHTML = '<p class="text-center text-muted">No variations found.</p>';
+            hideVariationsLoader();
+            return;
+        }
+        
+        // Cache all preloaded data in localStorage for instant access
+        VariationCache.setMultiple(variationData);
         
         // Create placeholders for all items
         variationsContainer.innerHTML = '';
+        const variationIds = variationData.map(v => v.id);
+        
         variationIds.forEach((id, index) => {
             const placeholder = document.createElement('div');
             placeholder.id = `variation-placeholder-${id}`;
@@ -340,29 +424,78 @@
             `;
             variationsContainer.appendChild(placeholder);
         });
-
-        // Load first few items immediately
-        const immediateIds = variationIds.slice(0, IMMEDIATE_LOAD_COUNT);
-        const remainingIds = variationIds.slice(IMMEDIATE_LOAD_COUNT);
         
-        // Load immediate items
-        loadVariationBatch(immediateIds, 0).then(() => {
-            hideVariationsLoader();
-            
-            // Initialize lazy loading for remaining items
-            if (remainingIds.length > 0) {
-                initializeLazyLoading(remainingIds, BATCH_SIZE);
+        // Render items one at a time (using cached data on server side)
+        // This allows progressive rendering - top items appear first
+        hideVariationsLoader();
+        
+        let renderedCount = 0;
+        const renderNext = (index) => {
+            if (index >= variationIds.length) {
+                // All items rendered
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.rescan();
+                    initializeDeferredSalesDataLoading();
+                    setTimeout(() => {
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
+                }
+                return;
             }
             
-            // Initialize deferred sales data loading
-            initializeDeferredSalesDataLoading();
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
             
-            // Re-initialize marketplace auto-expansion
-            setTimeout(() => {
-                console.log('[Marketplace Auto-Expansion] Re-initializing after Livewire components loaded...');
-                initializeMarketplaceAutoExpansion();
-            }, 500);
-        });
+            if (!placeholder) {
+                renderNext(index + 1);
+                return;
+            }
+            
+            // Render one item at a time (server uses cache, so it's fast)
+            fetch("{{ url('v2/listings/render_listing_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    variation_id: id, // Single ID - render one at a time
+                    process_id: window.v2ReferenceData.processId,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html && placeholder) {
+                    placeholder.outerHTML = data.html;
+                    renderedCount++;
+                    
+                    // Rescan Livewire after each item (for progressive initialization)
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.rescan();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(`Error rendering variation ${id}:`, error);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="card listing-item-card">
+                            <div class="card-header py-2">
+                                <p class="text-center text-danger mb-0">Error loading variation</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .finally(() => {
+                // Render next item immediately (no delay for better perceived performance)
+                renderNext(index + 1);
+            });
+        };
+        
+        // Start rendering from first item
+        renderNext(0);
     }
 
     /**
