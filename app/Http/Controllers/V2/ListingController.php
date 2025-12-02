@@ -130,6 +130,12 @@ class ListingController extends Controller
     {
         try {
             $variationIds = $request->input('variation_ids', []);
+            $singleId = $request->input('variation_id', null);
+
+            // Support both single ID and array of IDs
+            if ($singleId) {
+                $variationIds = [$singleId];
+            }
 
             if (empty($variationIds)) {
                 return response()->json([
@@ -226,20 +232,40 @@ class ListingController extends Controller
             $referenceData = $this->dataService->getReferenceData();
             // Exchange data already loaded above, reuse it
 
-            // Mount Livewire component
-            $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
-                'variationData' => $variationData, // Pass pre-loaded variation data
-                'storages' => $referenceData['storages'],
-                'colors' => $referenceData['colors'],
-                'grades' => $referenceData['grades'],
-                'exchangeRates' => $exchangeData['exchange_rates'],
-                'eurGbp' => $exchangeData['eur_gbp'],
-                'currencies' => $referenceData['currencies'],
-                'currencySign' => $referenceData['currency_sign'],
-                'countries' => $referenceData['countries'],
-                'marketplaces' => $referenceData['marketplaces'],
-                'processId' => $request->input('process_id'),
-            ]);
+            // If single ID, render single item component directly (faster)
+            if ($singleId && count($variationData) === 1) {
+                $variationItem = $variationData[0];
+                $component = \Livewire\Livewire::mount('v2.listing.listing-item', [
+                    'variationId' => $variationItem['id'],
+                    'rowNumber' => 1,
+                    'preloadedVariationData' => $variationItem,
+                    'storages' => $referenceData['storages'],
+                    'colors' => $referenceData['colors'],
+                    'grades' => $referenceData['grades'],
+                    'exchangeRates' => $exchangeData['exchange_rates'],
+                    'eurGbp' => $exchangeData['eur_gbp'],
+                    'currencies' => $referenceData['currencies'],
+                    'currencySign' => $referenceData['currency_sign'],
+                    'countries' => $referenceData['countries'],
+                    'marketplaces' => $referenceData['marketplaces'],
+                    'processId' => $request->input('process_id'),
+                ]);
+            } else {
+                // Multiple items - use listing-items component
+                $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
+                    'variationData' => $variationData, // Pass pre-loaded variation data
+                    'storages' => $referenceData['storages'],
+                    'colors' => $referenceData['colors'],
+                    'grades' => $referenceData['grades'],
+                    'exchangeRates' => $exchangeData['exchange_rates'],
+                    'eurGbp' => $exchangeData['eur_gbp'],
+                    'currencies' => $referenceData['currencies'],
+                    'currencySign' => $referenceData['currency_sign'],
+                    'countries' => $referenceData['countries'],
+                    'marketplaces' => $referenceData['marketplaces'],
+                    'processId' => $request->input('process_id'),
+                ]);
+            }
 
             $html = $component->html();
 

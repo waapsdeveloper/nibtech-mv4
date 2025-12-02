@@ -97,16 +97,26 @@
                 <a href="javascript:void(0)" class="btn btn-sm btn-link" id="variation_history_{{ $variation->id }}" onClick="show_variation_history({{ $variation->id }}, '{{ $variation->sku }} {{ $variation->product->model ?? '' }} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }}')" title="View History">
                     <i class="fas fa-history"></i>
                 </a>
-                <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#marketplaceAccordion_{{ $variation->id }}" aria-expanded="false" aria-controls="marketplaceAccordion_{{ $variation->id }}" title="Toggle Marketplaces">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
+                @php
+                    $marketplaceIds = $this->getMarketplaceIds();
+                    $hasMarketplaceListings = count($marketplaceIds) > 0;
+                @endphp
+                @if($hasMarketplaceListings)
+                    <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#marketplaceAccordion_{{ $variation->id }}" aria-expanded="true" aria-controls="marketplaceAccordion_{{ $variation->id }}" title="Toggle Marketplaces">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                @endif
             </div>
         </div>
 
-
-        {{-- Marketplace Accordion Section --}}
-        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}" 
-             data-variation-id="{{ $variation->id }}">
+        @php
+            $marketplaceIds = $this->getMarketplaceIds();
+            $hasMarketplaceListings = count($marketplaceIds) > 0;
+        @endphp
+        @if($hasMarketplaceListings)
+            {{-- Marketplace Accordion Section --}}
+            <div class="card-body p-0 show" id="marketplaceAccordion_{{ $variation->id }}" 
+                 data-variation-id="{{ $variation->id }}">
             <div class="accordion marketplace-accordion" id="marketplaceAccordionInner_{{ $variation->id }}">
                 @php
                     // Get all marketplaces from system
@@ -115,26 +125,36 @@
                     $marketplaceIds = $this->getMarketplaceIds();
                 @endphp
                 
-                @foreach($allMarketplaces as $mpId => $marketplaceData)
-                    @php
-                        $hasListings = in_array($mpId, $marketplaceIds);
-                        $marketplaceName = $marketplaceData['name'] ?? 'Marketplace ' . $mpId;
-                    @endphp
-                    
-                    @livewire('v2.listing.marketplace-accordion', [
-                        'variationId' => $variation->id,
-                        'marketplaceId' => $mpId,
-                        'marketplaceName' => $marketplaceName,
-                        'exchangeRates' => $exchangeRates,
-                        'eurGbp' => $eurGbp,
-                        'currencies' => $currencies,
-                        'currencySign' => $currencySign,
-                        'countries' => $countries,
-                        'marketplaces' => $marketplaces,
-                    ], key('marketplace-accordion-' . $variation->id . '-' . $mpId))
-                @endforeach
+                @if(count($marketplaceIds) > 0)
+                    @foreach($allMarketplaces as $mpId => $marketplaceData)
+                        @php
+                            // Only show marketplaces that have listings
+                            $hasListings = in_array($mpId, $marketplaceIds);
+                            $marketplaceName = $marketplaceData['name'] ?? 'Marketplace ' . $mpId;
+                        @endphp
+                        
+                        @if($hasListings)
+                            @livewire('v2.listing.marketplace-accordion', [
+                                'variationId' => $variation->id,
+                                'marketplaceId' => $mpId,
+                                'marketplaceName' => $marketplaceName,
+                                'exchangeRates' => $exchangeRates,
+                                'eurGbp' => $eurGbp,
+                                'currencies' => $currencies,
+                                'currencySign' => $currencySign,
+                                'countries' => $countries,
+                                'marketplaces' => $marketplaces,
+                            ], key('marketplace-accordion-' . $variation->id . '-' . $mpId))
+                        @endif
+                    @endforeach
+                @else
+                    <div class="p-3 text-center text-muted">
+                        <small>No marketplace listings available</small>
+                    </div>
+                @endif
             </div>
         </div>
+        @endif
     @endif
 </div>
 
