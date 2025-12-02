@@ -230,10 +230,11 @@ class ListingController extends Controller
 
             // Get reference data
             $referenceData = $this->dataService->getReferenceData();
-            // Exchange data already loaded above, reuse it
-
-            // If single ID, render single item component directly (faster)
-            if ($singleId && count($variationData) === 1) {
+            
+            // Render Livewire components server-side but with preloaded data (faster than full load)
+            // This is still faster because data is pre-calculated and passed directly
+            if (count($variationData) === 1) {
+                // Single item - render directly
                 $variationItem = $variationData[0];
                 $component = \Livewire\Livewire::mount('v2.listing.listing-item', [
                     'variationId' => $variationItem['id'],
@@ -253,7 +254,7 @@ class ListingController extends Controller
             } else {
                 // Multiple items - use listing-items component
                 $component = \Livewire\Livewire::mount('v2.listing.listing-items', [
-                    'variationData' => $variationData, // Pass pre-loaded variation data
+                    'variationData' => $variationData,
                     'storages' => $referenceData['storages'],
                     'colors' => $referenceData['colors'],
                     'grades' => $referenceData['grades'],

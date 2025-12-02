@@ -366,14 +366,38 @@
     }
 
     /**
-     * Load a batch of variations
+     * Load a batch of variations - load one at a time for faster perceived performance
+     * Top items appear immediately while others load in sequence
      */
     function loadVariationBatch(variationIds, startIndex = 0) {
         if (variationIds.length === 0) {
             return Promise.resolve();
         }
 
-        const promises = variationIds.map((id, batchIndex) => {
+        // Load items one at a time for better perceived performance
+        // First item appears immediately, others follow
+        const loadItem = (index) => {
+            if (index >= variationIds.length) {
+                // All items loaded, initialize Livewire features
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.rescan();
+                    initializeDeferredSalesDataLoading();
+                    setTimeout(() => {
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
+                }
+                return Promise.resolve();
+            }
+
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            
+            if (!placeholder) {
+                // Skip if placeholder not found, continue with next
+                return loadItem(index + 1);
+            }
+
+            // Load single item
             return fetch("{{ url('v2/listings/render_listing_items') }}", {
                 method: 'POST',
                 headers: {
@@ -388,19 +412,20 @@
             })
             .then(response => response.json())
             .then(data => {
-                const placeholder = document.getElementById(`variation-placeholder-${id}`);
-                if (placeholder && data.html) {
+                if (data.html && placeholder) {
+                    // Replace placeholder with rendered HTML
                     placeholder.outerHTML = data.html;
                     
-                    // Rescan for Livewire components after each item loads
+                    // Rescan for this single component
                     if (typeof Livewire !== 'undefined') {
                         Livewire.rescan();
                     }
+                } else {
+                    throw new Error('No HTML returned from server');
                 }
             })
             .catch(error => {
                 console.error(`Error loading variation ${id}:`, error);
-                const placeholder = document.getElementById(`variation-placeholder-${id}`);
                 if (placeholder) {
                     placeholder.innerHTML = `
                         <div class="card listing-item-card">
@@ -410,10 +435,15 @@
                         </div>
                     `;
                 }
+            })
+            .then(() => {
+                // Load next item immediately after current one is done
+                return loadItem(index + 1);
             });
-        });
+        };
 
-        return Promise.all(promises);
+        // Start loading from first item
+        return loadItem(0);
     }
 
     /**
