@@ -174,6 +174,23 @@ Need a quick sanity check without writing code? Hit `GET /api/bmpro/listings/tes
 
 Looking for orders instead? Call `GET /api/bmpro/orders/pending` (supports `currency`, `marketplace_id`, `fulfillment_status`, `financial_status`, `per_page`, `page`, and `auto_paginate=false`). The endpoint defaults to `fulfillment_status=pending`, aggregates across pages when `auto_paginate` is true, and returns the raw BMPRO orders payload alongside the applied filters/options so ops can troubleshoot quickly.
 
+### Order ingestion & sync
+
+Use the artisan command to persist Back Market Pro orders locally:
+
+```
+php artisan bmpro:orders --currency=EUR --currency=GBP
+```
+
+By default the command fetches pending orders for both the EUR (marketplace_id 2) and GBP (marketplace_id 3) accounts, auto-paginates through the API, and upserts the payload into the shared `orders` / `order_items` tables. Override behaviour with:
+
+- `--currency=` / `--marketplace=` to target a single account.
+- `--fulfillment=` / `--financial=` to filter BMPRO states.
+- `--page-size=` / `--page=` plus `--no-auto-paginate` for manual pagination/testing.
+- `--env=dev` to hit the sellers-dev base URL.
+
+The scheduler now runs `bmpro:orders` every ten minutes with `withoutOverlapping()`/`runInBackground()` guards, so no extra cron entries are required beyond the standard `schedule:run` invocation.
+
 Refer to the controller's docblocks for more available helpers (offers, shipping profiles, shipping labels, etc.). When adding new marketplace flows, prefer extending the controller so we keep all Refurbed wiring in a single place.
 
 ### Quick link for active listings
