@@ -28,11 +28,59 @@
         text-align: center;
         padding: 20px;
     }
+    /* Centered loader for variations loading */
+    #v2-variations-loader {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 1050;
+        background: white;
+        padding: 20px 30px;
+        border-radius: 8px;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        display: none;
+        text-align: center;
+    }
+    #v2-variations-loader.show {
+        display: block;
+    }
+    #v2-variations-loader .spinner-border {
+        width: 2rem;
+        height: 2rem;
+        border-width: 0.25em;
+    }
+    
     .variations-container {
         min-height: 200px;
     }
     .pagination-container {
         margin-top: 20px;
+    }
+    /* Marketplace accordion header styling - distinct from content area */
+    .marketplace-accordion .accordion-button {
+        background-color: #f8f9fa !important;
+        border-bottom: 1px solid #dee2e6;
+    }
+    .marketplace-accordion .accordion-button:not(.collapsed) {
+        background-color: #e9ecef !important;
+        box-shadow: inset 0 -1px 0 rgba(0,0,0,.125);
+    }
+    .marketplace-accordion .accordion-button:hover {
+        background-color: #e9ecef !important;
+    }
+    /* Increase width of Previous/Next buttons to prevent text wrapping */
+    .pagination .page-item:first-child .page-link,
+    .pagination .page-item:last-child .page-link {
+        min-width: 90px;
+        white-space: nowrap;
+        text-align: center;
+    }
+    .pagination .page-link {
+        padding: 0.375rem 0.75rem;
+    }
+    #v2-page-input {
+        text-align: center;
     }
 </style>
 @endsection
@@ -86,17 +134,27 @@
 
 <!-- Variations Container -->
 <div id="v2-variations" class="variations-container">
-    <div class="loading-spinner">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading...</span>
-        </div>
-        <p class="mt-2 text-muted">Loading variations...</p>
+    {{-- Initial content removed - will be filled by JavaScript --}}
+</div>
+
+<!-- Centered loader indicator -->
+<div id="v2-variations-loader">
+    <div class="spinner-border text-primary" role="status">
+        <span class="visually-hidden">Loading...</span>
     </div>
+    <p class="mt-3 mb-0 fw-bold text-muted">Loading variations...</p>
 </div>
 
 <!-- Pagination -->
 <nav aria-label="Page navigation" class="pagination-container">
-    <ul id="v2-pagination" class="pagination justify-content-center"></ul>
+    <div class="d-flex justify-content-center align-items-center gap-3 flex-wrap">
+        <ul id="v2-pagination" class="pagination mb-0"></ul>
+        <div class="d-flex align-items-center gap-2">
+            <label for="v2-page-input" class="mb-0 small">Go to page:</label>
+            <input type="number" id="v2-page-input" class="form-control form-control-sm" style="width: 70px;" min="1" value="1">
+            <button class="btn btn-sm btn-primary" onclick="goToPage()">Go</button>
+        </div>
+    </div>
 </nav>
 
 @endsection
@@ -219,15 +277,9 @@
         // Update URL in browser without reloading page
         window.history.pushState({}, '', window.location.pathname + (queryString ? '?' + queryString : ''));
 
-        // Show loading state
-        document.getElementById('v2-variations').innerHTML = `
-            <div class="loading-spinner">
-                <div class="spinner-border text-primary" role="status">
-                    <span class="visually-hidden">Loading...</span>
-                </div>
-                <p class="mt-2 text-muted">Loading variations...</p>
-            </div>
-        `;
+        // Show only small side loader (no big spinner to reduce loader count)
+        showVariationsLoader();
+        document.getElementById('v2-variations').innerHTML = '';
 
         fetch(url, {
             method: 'GET',
@@ -256,87 +308,454 @@
     }
 
     /**
-     * Display variations using lazy-loaded Livewire components
+     * Cache service for frontend - uses localStorage for persistence
+     */
+    const VariationCache = {
+        PREFIX: 'v2_variation_',
+        TTL: 5 * 60 * 1000, // 5 minutes in milliseconds
+        
+        /**
+         * Store variation data in localStorage
+         */
+        set(variationId, data) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(item));
+            } catch (e) {
+                console.warn('Failed to cache variation data:', e);
+            }
+        },
+        
+        /**
+         * Get variation data from localStorage
+         */
+        get(variationId) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = localStorage.getItem(key);
+                if (!item) return null;
+                
+                const parsed = JSON.parse(item);
+                const age = Date.now() - parsed.timestamp;
+                
+                // Check if cache is expired
+                if (age > this.TTL) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                
+                return parsed.data;
+            } catch (e) {
+                console.warn('Failed to get cached variation data:', e);
+                return null;
+            }
+        },
+        
+        /**
+         * Store multiple variations
+         */
+        setMultiple(variations) {
+            variations.forEach(v => {
+                if (v && v.id) {
+                    this.set(v.id, v);
+                }
+            });
+        },
+        
+        /**
+         * Clear all cached variations
+         */
+        clear() {
+            try {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith(this.PREFIX)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } catch (e) {
+                console.warn('Failed to clear cache:', e);
+            }
+        }
+    };
+
+    /**
+     * Display variations - render one at a time using cached data
+     * Data is preloaded and cached, items render progressively for better UX
      */
     function displayVariationsLazyV2(variations) {
-        const variationIds = variations.data.map(v => v.id);
         const variationsContainer = document.getElementById('v2-variations');
-        variationsContainer.innerHTML = '';
         
         document.getElementById('v2-page-info').textContent = 
             `From ${variations.from} To ${variations.to} Out Of ${variations.total}`;
 
-        // Render Livewire components from server
-        fetch("{{ url('v2/listings/render_listing_items') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify({
-                variation_ids: variationIds,
-                process_id: window.v2ReferenceData.processId,
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
-            if (data.html) {
-                variationsContainer.innerHTML = data.html;
-                // Rescan for Livewire components
+        const variationData = variations.data; // Preloaded data with calculated stats
+        
+        if (variationData.length === 0) {
+            variationsContainer.innerHTML = '<p class="text-center text-muted">No variations found.</p>';
+            hideVariationsLoader();
+            return;
+        }
+        
+        // Cache all preloaded data in localStorage for instant access
+        VariationCache.setMultiple(variationData);
+        
+        // Create placeholders for all items
+        variationsContainer.innerHTML = '';
+        const variationIds = variationData.map(v => v.id);
+        
+        variationIds.forEach((id, index) => {
+            const placeholder = document.createElement('div');
+            placeholder.id = `variation-placeholder-${id}`;
+            placeholder.className = 'variation-placeholder';
+            placeholder.innerHTML = `
+                <div class="card listing-item-card">
+                    <div class="card-header py-2">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" style="width: 1rem; height: 1rem;" role="status"></div>
+                            <span class="text-muted small">Loading variation ${index + 1}...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            variationsContainer.appendChild(placeholder);
+        });
+        
+        // Render items one at a time (using cached data on server side)
+        // This allows progressive rendering - top items appear first
+        hideVariationsLoader();
+        
+        let renderedCount = 0;
+        const renderNext = (index) => {
+            if (index >= variationIds.length) {
+                // All items rendered
                 if (typeof Livewire !== 'undefined') {
                     Livewire.rescan();
+                    initializeDeferredSalesDataLoading();
+                    setTimeout(() => {
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
                 }
-            } else {
-                variationsContainer.innerHTML = 
-                    '<p class="text-center text-danger">Error rendering components.</p>';
+                return;
             }
-        })
-        .catch(error => {
-            console.error('Error rendering listing items:', error);
-            variationsContainer.innerHTML = 
-                '<p class="text-center text-danger">Error rendering components. Please refresh the page.</p>';
+            
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            
+            if (!placeholder) {
+                renderNext(index + 1);
+                return;
+            }
+            
+            // Render one item at a time (server uses cache, so it's fast)
+            fetch("{{ url('v2/listings/render_listing_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    variation_id: id, // Single ID - render one at a time
+                    process_id: window.v2ReferenceData.processId,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html && placeholder) {
+                    placeholder.outerHTML = data.html;
+                    renderedCount++;
+                    
+                    // Rescan Livewire after each item (for progressive initialization)
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.rescan();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(`Error rendering variation ${id}:`, error);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="card listing-item-card">
+                            <div class="card-header py-2">
+                                <p class="text-center text-danger mb-0">Error loading variation</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .finally(() => {
+                // Render next item immediately (no delay for better perceived performance)
+                renderNext(index + 1);
+            });
+        };
+        
+        // Start rendering from first item
+        renderNext(0);
+    }
+
+    /**
+     * Load a batch of variations - load one at a time for faster perceived performance
+     * Top items appear immediately while others load in sequence
+     */
+    function loadVariationBatch(variationIds, startIndex = 0) {
+        if (variationIds.length === 0) {
+            return Promise.resolve();
+        }
+
+        // Load items one at a time for better perceived performance
+        // First item appears immediately, others follow
+        const loadItem = (index) => {
+            if (index >= variationIds.length) {
+                // All items loaded, initialize Livewire features
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.rescan();
+                    initializeDeferredSalesDataLoading();
+                    setTimeout(() => {
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
+                }
+                return Promise.resolve();
+            }
+
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            
+            if (!placeholder) {
+                // Skip if placeholder not found, continue with next
+                return loadItem(index + 1);
+            }
+
+            // Load single item
+            return fetch("{{ url('v2/listings/render_listing_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    variation_id: id,
+                    process_id: window.v2ReferenceData.processId,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html && placeholder) {
+                    // Replace placeholder with rendered HTML
+                    placeholder.outerHTML = data.html;
+                    
+                    // Rescan for this single component
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.rescan();
+                    }
+                } else {
+                    throw new Error('No HTML returned from server');
+                }
+            })
+            .catch(error => {
+                console.error(`Error loading variation ${id}:`, error);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="card listing-item-card">
+                            <div class="card-header py-2">
+                                <p class="text-center text-danger mb-0">Error loading variation</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .then(() => {
+                // Load next item immediately after current one is done
+                return loadItem(index + 1);
+            });
+        };
+
+        // Start loading from first item
+        return loadItem(0);
+    }
+
+    /**
+     * Initialize lazy loading for remaining variations using Intersection Observer
+     */
+    function initializeLazyLoading(remainingIds, batchSize = 2) {
+        if (remainingIds.length === 0) return;
+
+        let loadedCount = 0;
+        let loadingBatch = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !loadingBatch && loadedCount < remainingIds.length) {
+                    loadingBatch = true;
+                    
+                    // Load next batch
+                    const batch = remainingIds.slice(loadedCount, loadedCount + batchSize);
+                    loadedCount += batch.length;
+                    
+                    loadVariationBatch(batch).then(() => {
+                        loadingBatch = false;
+                        
+                        // Re-initialize observer for next batch if more items remain
+                        if (loadedCount < remainingIds.length) {
+                            // Observer will automatically trigger for next visible placeholder
+                        }
+                    });
+                    
+                    // Stop observing this placeholder as it's being loaded
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            rootMargin: '200px' // Start loading 200px before item comes into view
+        });
+
+        // Observe all remaining placeholders
+        remainingIds.forEach(id => {
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            if (placeholder) {
+                observer.observe(placeholder);
+            }
         });
     }
 
     /**
-     * Update pagination
+     * Update pagination with smart page number display
      */
     function updatePaginationV2(data) {
+        // Store pagination data globally
+        lastPageData = data;
+
         const paginationContainer = document.getElementById('v2-pagination');
+        const pageInput = document.getElementById('v2-page-input');
         paginationContainer.innerHTML = '';
 
         if (data.last_page <= 1) {
+            if (pageInput) {
+                pageInput.value = 1;
+                pageInput.max = 1;
+            }
             return;
         }
 
+        // Update page input
+        if (pageInput) {
+            pageInput.value = data.current_page;
+            pageInput.max = data.last_page;
+        }
+
+        const currentPage = data.current_page;
+        const lastPage = data.last_page;
+        const pagesToShow = 5; // Show max 5 page numbers around current page
+
         // Previous button
         const prevLi = document.createElement('li');
-        prevLi.className = `page-item ${data.current_page === 1 ? 'disabled' : ''}`;
-        prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${data.current_page - 1}); return false;">Previous</a>`;
+        prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+        prevLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${currentPage - 1}); return false;">‹ Previous</a>`;
         paginationContainer.appendChild(prevLi);
 
-        // Page numbers
-        for (let i = 1; i <= data.last_page; i++) {
-            if (i === 1 || i === data.last_page || (i >= data.current_page - 2 && i <= data.current_page + 2)) {
-                const li = document.createElement('li');
-                li.className = `page-item ${i === data.current_page ? 'active' : ''}`;
-                li.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${i}); return false;">${i}</a>`;
-                paginationContainer.appendChild(li);
-            } else if (i === data.current_page - 3 || i === data.current_page + 3) {
-                const li = document.createElement('li');
-                li.className = 'page-item disabled';
-                li.innerHTML = '<span class="page-link">...</span>';
-                paginationContainer.appendChild(li);
+        // Always show first page
+        if (currentPage > pagesToShow / 2 + 1) {
+            const firstLi = document.createElement('li');
+            firstLi.className = `page-item ${currentPage === 1 ? 'active' : ''}`;
+            firstLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(1); return false;">1</a>`;
+            paginationContainer.appendChild(firstLi);
+
+            if (currentPage > pagesToShow / 2 + 2) {
+                const ellipsisLi = document.createElement('li');
+                ellipsisLi.className = 'page-item disabled';
+                ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(ellipsisLi);
             }
+        }
+
+        // Calculate start and end page numbers to show
+        let startPage = Math.max(1, currentPage - Math.floor(pagesToShow / 2));
+        let endPage = Math.min(lastPage, currentPage + Math.floor(pagesToShow / 2));
+
+        // Adjust if we're near the beginning
+        if (currentPage <= Math.floor(pagesToShow / 2)) {
+            endPage = Math.min(lastPage, pagesToShow);
+        }
+
+        // Adjust if we're near the end
+        if (currentPage > lastPage - Math.floor(pagesToShow / 2)) {
+            startPage = Math.max(1, lastPage - pagesToShow + 1);
+        }
+
+        // Show page numbers
+        for (let i = startPage; i <= endPage; i++) {
+            const li = document.createElement('li');
+            li.className = `page-item ${i === currentPage ? 'active' : ''}`;
+            li.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${i}); return false;">${i}</a>`;
+            paginationContainer.appendChild(li);
+        }
+
+        // Show last page if not already shown
+        if (endPage < lastPage) {
+            if (endPage < lastPage - 1) {
+                const ellipsisLi = document.createElement('li');
+                ellipsisLi.className = 'page-item disabled';
+                ellipsisLi.innerHTML = '<span class="page-link">...</span>';
+                paginationContainer.appendChild(ellipsisLi);
+            }
+
+            const lastLi = document.createElement('li');
+            lastLi.className = `page-item ${currentPage === lastPage ? 'active' : ''}`;
+            lastLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${lastPage}); return false;">${lastPage}</a>`;
+            paginationContainer.appendChild(lastLi);
         }
 
         // Next button
         const nextLi = document.createElement('li');
-        nextLi.className = `page-item ${data.current_page === data.last_page ? 'disabled' : ''}`;
-        nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${data.current_page + 1}); return false;">Next</a>`;
+        nextLi.className = `page-item ${currentPage === lastPage ? 'disabled' : ''}`;
+        nextLi.innerHTML = `<a class="page-link" href="#" onclick="fetchVariationsV2(${currentPage + 1}); return false;">Next ›</a>`;
         paginationContainer.appendChild(nextLi);
     }
+
+    // Store last page globally for goToPage function
+    let lastPageData = null;
+
+    /**
+     * Go to specific page number
+     */
+    function goToPage() {
+        const pageInput = document.getElementById('v2-page-input');
+        if (!pageInput) return;
+
+        const page = parseInt(pageInput.value);
+        if (isNaN(page) || page < 1) {
+            alert('Please enter a valid page number');
+            pageInput.value = lastPageData?.current_page || 1;
+            return;
+        }
+
+        // Check if page exists
+        if (lastPageData && page > lastPageData.last_page) {
+            alert(`Page ${page} does not exist. Maximum page is ${lastPageData.last_page}`);
+            pageInput.value = lastPageData.last_page;
+            return;
+        }
+
+        fetchVariationsV2(page);
+    }
+
+    // Allow Enter key to submit page input
+    document.addEventListener('DOMContentLoaded', function() {
+        const pageInput = document.getElementById('v2-page-input');
+        if (pageInput) {
+            pageInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    goToPage();
+                }
+            });
+        }
+    });
 
     // Event listeners
     document.getElementById('v2-sort').addEventListener('change', () => fetchVariationsV2(1));
@@ -355,6 +774,314 @@
         });
     });
 
+    /**
+     * Initialize marketplace accordion auto-expansion
+     * When parent accordion expands, automatically expand all child marketplace accordions
+     */
+    function initializeMarketplaceAutoExpansion() {
+        console.log('[Marketplace Auto-Expansion] ===== INITIALIZATION FUNCTION CALLED =====');
+        
+        // Find all parent marketplace accordions
+        const parentAccordions = document.querySelectorAll('.multi_collapse[data-variation-id]');
+        console.log(`[Marketplace Auto-Expansion] Found ${parentAccordions.length} parent accordion(s)`);
+        
+        if (parentAccordions.length === 0) {
+            console.warn('[Marketplace Auto-Expansion] WARNING: No parent accordions found with selector .multi_collapse[data-variation-id]');
+            // Try alternative selector
+            const altAccordions = document.querySelectorAll('[id^="marketplaceAccordion_"]');
+            console.log(`[Marketplace Auto-Expansion] Found ${altAccordions.length} accordions with alternative selector`);
+        }
+        
+        parentAccordions.forEach((parentAccordion, idx) => {
+            // Skip if already initialized
+            if (parentAccordion.dataset.expansionInitialized === 'true') {
+                console.log(`[Marketplace Auto-Expansion] Parent accordion ${idx + 1} already initialized, skipping...`);
+                return;
+            }
+            parentAccordion.dataset.expansionInitialized = 'true';
+            
+            const variationId = parentAccordion.dataset.variationId;
+            console.log(`[Marketplace Auto-Expansion] Setting up listener ${idx + 1} for variation ${variationId}`);
+            
+            // Also add direct listener on toggle button
+            const toggleButton = document.querySelector(`button[data-bs-target="#marketplaceAccordion_${variationId}"]`);
+            if (toggleButton) {
+                console.log(`[Marketplace Auto-Expansion] Found toggle button for variation ${variationId}`);
+                toggleButton.addEventListener('click', function(e) {
+                    console.log(`[Marketplace Auto-Expansion] ===== TOGGLE BUTTON CLICKED for variation ${variationId} =====`);
+                    // Wait for accordion to expand
+                    setTimeout(() => {
+                        if (parentAccordion.classList.contains('show')) {
+                            console.log(`[Marketplace Auto-Expansion] Parent is now shown, triggering expansion...`);
+                            triggerMarketplaceExpansion(parentAccordion, variationId);
+                        }
+                    }, 600);
+                });
+            } else {
+                console.warn(`[Marketplace Auto-Expansion] Toggle button NOT found for variation ${variationId}`);
+            }
+
+            // Listen for Bootstrap collapse show event
+            parentAccordion.addEventListener('shown.bs.collapse', function() {
+                console.log(`[Marketplace Auto-Expansion] ===== EVENT 'shown.bs.collapse' FIRED for variation ${variationId} =====`);
+                triggerMarketplaceExpansion(this, variationId);
+            });
+            
+            // Also listen for 'show' event
+            parentAccordion.addEventListener('show.bs.collapse', function() {
+                console.log(`[Marketplace Auto-Expansion] Event 'show.bs.collapse' fired for variation ${variationId}`);
+            });
+        });
+        
+        console.log('[Marketplace Auto-Expansion] ===== INITIALIZATION COMPLETE =====');
+    }
+    
+    /**
+     * Helper function to trigger marketplace expansion
+     */
+    function triggerMarketplaceExpansion(parentAccordionElement, variationId) {
+        console.log(`[Marketplace Auto-Expansion] ===== TRIGGERING EXPANSION for variation ${variationId} =====`);
+        
+        // Wait a short timeout before auto-expanding marketplace accordions
+        setTimeout(() => {
+            console.log('[Marketplace Auto-Expansion] Starting marketplace expansion...');
+            
+            // Find all marketplace accordion buttons within this parent
+            const marketplaceButtons = Array.from(parentAccordionElement.querySelectorAll('.accordion-button[data-bs-target^="#collapse_"]')).filter(button => {
+                // Only include collapsed buttons (not already expanded)
+                return button.classList.contains('collapsed');
+            });
+            
+            console.log(`[Marketplace Auto-Expansion] Found ${marketplaceButtons.length} collapsed marketplace accordions`);
+            
+            // Expand child accordions one by one sequentially and call toggleAccordion for each
+            function expandNext(index) {
+                if (index >= marketplaceButtons.length) {
+                    console.log('[Marketplace Auto-Expansion] All marketplace accordions expanded');
+                    return; // All done
+                }
+                
+                const button = marketplaceButtons[index];
+                const targetId = button.getAttribute('data-bs-target');
+                const targetElement = targetId ? document.querySelector(targetId) : null;
+                
+                console.log(`[Marketplace Auto-Expansion] Expanding marketplace ${index + 1}/${marketplaceButtons.length}: ${targetId}`);
+                
+                if (targetElement && typeof Livewire !== 'undefined') {
+                    const accordionId = targetId.replace('#collapse_', '');
+                    const parts = accordionId.split('_');
+                    
+                    if (parts.length >= 2) {
+                        const marketplaceId = parts[0];
+                        const targetVariationId = parts[1];
+                        
+                        console.log(`[Marketplace Auto-Expansion] Looking for component: variationId=${targetVariationId}, marketplaceId=${marketplaceId}`);
+                        
+                        // Find component and call toggleAccordion for this specific marketplace
+                        let componentFound = false;
+                        Livewire.all().forEach(comp => {
+                            try {
+                                if (comp && comp.__instance) {
+                                    const data = comp.__instance?.serverMemo?.data || {};
+                                    if (data.variationId == targetVariationId && data.marketplaceId == marketplaceId) {
+                                        console.log(`[Marketplace Auto-Expansion] Component found, calling toggleAccordion()...`);
+                                        componentFound = true;
+                                        // Call toggleAccordion - same function that fires on manual click
+                                        comp.call('toggleAccordion').then(() => {
+                                            console.log(`[Marketplace Auto-Expansion] toggleAccordion() completed for marketplace ${marketplaceId}`);
+                                        }).catch(err => {
+                                            console.error(`[Marketplace Auto-Expansion] Error calling toggleAccordion for marketplace ${marketplaceId}:`, err);
+                                        });
+                                    }
+                                }
+                            } catch(e) {
+                                console.error(`[Marketplace Auto-Expansion] Error processing component:`, e);
+                            }
+                        });
+                        
+                        if (!componentFound) {
+                            console.warn(`[Marketplace Auto-Expansion] Component not found for variationId=${targetVariationId}, marketplaceId=${marketplaceId}`);
+                        }
+                    } else {
+                        console.warn(`[Marketplace Auto-Expansion] Invalid accordion ID format: ${accordionId}`);
+                    }
+                    
+                    // Listen for when this accordion finishes expanding
+                    const onExpanded = () => {
+                        console.log(`[Marketplace Auto-Expansion] Marketplace ${index + 1} expanded, moving to next...`);
+                        targetElement.removeEventListener('shown.bs.collapse', onExpanded);
+                        // Wait a bit then expand next one
+                        setTimeout(() => {
+                            expandNext(index + 1);
+                        }, 100);
+                    };
+                    
+                    targetElement.addEventListener('shown.bs.collapse', onExpanded);
+                    
+                    // Click the button to expand visually (toggleAccordion called above)
+                    console.log(`[Marketplace Auto-Expansion] Clicking button to expand visually...`);
+                    button.click();
+                } else {
+                    console.warn(`[Marketplace Auto-Expansion] Target element not found or Livewire not available for ${targetId}`);
+                    // If target not found, just continue to next
+                    setTimeout(() => {
+                        expandNext(index + 1);
+                    }, 100);
+                }
+            }
+            
+            // Start expanding from the first one
+            if (marketplaceButtons.length > 0) {
+                expandNext(0);
+            } else {
+                console.log('[Marketplace Auto-Expansion] No marketplace accordions to expand');
+            }
+        }, 500); // 500ms delay before starting auto-expansion
+    }
+
+    // Use event delegation to catch button clicks even if elements are added dynamically
+    document.addEventListener('click', function(e) {
+        // Check if clicked element is a marketplace toggle button
+        const button = e.target.closest('button[data-bs-target^="#marketplaceAccordion_"]');
+        if (button) {
+            const targetId = button.getAttribute('data-bs-target');
+            const variationId = targetId ? targetId.replace('#marketplaceAccordion_', '') : null;
+            // Update chevron icon based on expanded state
+            const accordion = document.getElementById('marketplaceAccordion_' + variationId);
+            const chevron = button.querySelector('i.fas');
+            if (accordion && chevron) {
+                accordion.addEventListener('shown.bs.collapse', function() {
+                    chevron.classList.remove('fa-chevron-down');
+                    chevron.classList.add('fa-chevron-up');
+                });
+                accordion.addEventListener('hidden.bs.collapse', function() {
+                    chevron.classList.remove('fa-chevron-up');
+                    chevron.classList.add('fa-chevron-down');
+                });
+            }
+            
+            if (variationId) {
+                console.log(`[Marketplace Auto-Expansion] ===== TOGGLE BUTTON CLICKED (via delegation) for variation ${variationId} =====`);
+                
+                // Wait for accordion to actually expand
+                setTimeout(() => {
+                    const parentAccordion = document.querySelector(targetId);
+                    if (parentAccordion && parentAccordion.classList.contains('show')) {
+                        console.log(`[Marketplace Auto-Expansion] Parent accordion is now shown, triggering expansion...`);
+                        triggerMarketplaceExpansion(parentAccordion, variationId);
+                    }
+                }, 600);
+            }
+        }
+    });
+    
+    // Initialize on DOM ready and after Livewire updates
+    function initMarketplaceExpansion() {
+        console.log('[Marketplace Auto-Expansion] ===== INIT FUNCTION CALLED =====');
+        setTimeout(() => {
+            console.log('[Marketplace Auto-Expansion] Calling initializeMarketplaceAutoExpansion after timeout...');
+            initializeMarketplaceAutoExpansion();
+        }, 300);
+    }
+
+    console.log('[Marketplace Auto-Expansion] Script loaded, document readyState:', document.readyState);
+    
+    if (document.readyState === 'loading') {
+        console.log('[Marketplace Auto-Expansion] Document still loading, waiting for DOMContentLoaded...');
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('[Marketplace Auto-Expansion] DOMContentLoaded fired');
+            initMarketplaceExpansion();
+        });
+    } else {
+        console.log('[Marketplace Auto-Expansion] Document already ready, calling initMarketplaceExpansion immediately');
+        initMarketplaceExpansion();
+    }
+
+    // Re-initialize after Livewire updates
+    if (typeof Livewire !== 'undefined') {
+        document.addEventListener('livewire:load', () => {
+            console.log('[Marketplace Auto-Expansion] livewire:load event fired');
+            setTimeout(initMarketplaceExpansion, 500);
+        });
+        document.addEventListener('livewire:update', () => {
+            console.log('[Marketplace Auto-Expansion] livewire:update event fired');
+            setTimeout(initMarketplaceExpansion, 500);
+        });
+    }
+
+    /**
+     * Initialize deferred sales data loading using Intersection Observer
+     * Sales data will only load when variation cards scroll into viewport
+     */
+    function initializeDeferredSalesDataLoading() {
+        // Track which variations have already loaded sales data
+        const loadedSalesData = new Set();
+        
+        // Create Intersection Observer
+        const salesObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    const element = entry.target;
+                    const variationId = element.dataset.variationId || element.id.replace('sales_', '');
+                    
+                    // Skip if already loaded or loading
+                    if (!variationId || loadedSalesData.has(variationId) || element.innerHTML.includes('Average:')) {
+                        salesObserver.unobserve(element);
+                        return;
+                    }
+                    
+                    // Mark as loading
+                    element.innerHTML = '<span class="text-muted small">Loading sales data...</span>';
+                    
+                    // Load sales data
+                    if (typeof $ !== 'undefined' && $.fn.load) {
+                        const salesUrl = "{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}";
+                        $(element).load(salesUrl, function(response, status) {
+                            if (status === 'success') {
+                                loadedSalesData.add(variationId);
+                                salesObserver.unobserve(element);
+                            } else {
+                                element.innerHTML = '<span class="text-danger small">Failed to load sales data</span>';
+                            }
+                        });
+                    } else {
+                        // Fallback to fetch API if jQuery not available
+                        fetch("{{ url('listing/get_sales') }}/" + variationId + "?csrf={{ csrf_token() }}")
+                            .then(response => response.text())
+                            .then(html => {
+                                element.innerHTML = html;
+                                loadedSalesData.add(variationId);
+                                salesObserver.unobserve(element);
+                            })
+                            .catch(error => {
+                                console.error('Error loading sales data:', error);
+                                element.innerHTML = '<span class="text-danger small">Failed to load sales data</span>';
+                            });
+                    }
+                }
+            });
+        }, {
+            // Load when element is 100px away from viewport
+            rootMargin: '100px'
+        });
+        
+        // Observe all sales info elements
+        setTimeout(function() {
+            const salesElements = document.querySelectorAll('[id^="sales_"][data-variation-id]');
+            salesElements.forEach(element => {
+                salesObserver.observe(element);
+            });
+        }, 500); // Wait for Livewire to finish rendering
+    }
+    
+    // Initialize on page load
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', initializeDeferredSalesDataLoading);
+    } else {
+        // Already loaded, initialize immediately
+        setTimeout(initializeDeferredSalesDataLoading, 500);
+    }
+
     // Export CSV
     document.getElementById('export-listings-btn')?.addEventListener('click', function() {
         const params = buildListingFiltersV2();
@@ -362,9 +1089,319 @@
         window.location.href = "{{ url('listing/export') }}?" + queryString;
     });
 
+    /**
+     * Show small side loader when variations are loading
+     */
+    function showVariationsLoader() {
+        const loader = document.getElementById('v2-variations-loader');
+        if (loader) {
+            loader.classList.add('show');
+        }
+    }
+    
+    /**
+     * Hide small side loader when variations are loaded
+     */
+    function hideVariationsLoader() {
+        const loader = document.getElementById('v2-variations-loader');
+        if (loader) {
+            loader.classList.remove('show');
+        }
+    }
+
     // Initial load
     document.addEventListener('DOMContentLoaded', function() {
         fetchVariationsV2({{ Request::get('page', 1) }});
     });
+
+
+    /**
+     * Submit handler changes for marketplace-specific listings
+     */
+    function submitForm8Marketplace(event, variationId, marketplaceId) {
+        event.preventDefault();
+        var form = $('#change_all_handler_' + variationId + '_' + marketplaceId);
+        var min_price = $('#all_min_handler_' + variationId + '_' + marketplaceId).val();
+        var price = $('#all_handler_' + variationId + '_' + marketplaceId).val();
+
+        if (!min_price && !price) {
+            alert('Please enter at least one handler value');
+            return;
+        }
+
+        // Get listings for this marketplace from the Livewire component
+        // We'll need to get the listing IDs from the DOM or make an AJAX call
+        var listingIds = [];
+        $('#collapse_' + marketplaceId + '_' + variationId + ' .listing-table tbody tr').each(function() {
+            var formId = $(this).find('form[id^="change_limit_"]').attr('id');
+            if (formId) {
+                var listingId = formId.replace('change_limit_', '');
+                listingIds.push(listingId);
+            }
+        });
+
+        if (listingIds.length === 0) {
+            alert('No listings found for this marketplace');
+            return;
+        }
+
+        var updateCount = 0;
+        var totalCount = listingIds.length;
+
+        listingIds.forEach(function(listingId) {
+            if (min_price > 0) {
+                $('#min_price_limit_' + listingId).val(min_price);
+            }
+            if (price > 0) {
+                $('#price_limit_' + listingId).val(price);
+            }
+            
+            // Submit the form for this listing
+            submitForm5Marketplace(event, listingId, marketplaceId, function() {
+                updateCount++;
+                if (updateCount === totalCount) {
+                    // Reload the marketplace data
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                    }
+                    alert('Handlers updated successfully');
+                }
+            });
+        });
+    }
+
+    /**
+     * Submit price changes for marketplace-specific listings
+     */
+    function submitForm4Marketplace(event, variationId, marketplaceId) {
+        event.preventDefault();
+        var form = $('#change_all_price_' + variationId + '_' + marketplaceId);
+        var min_price = $('#all_min_price_' + variationId + '_' + marketplaceId).val();
+        var price = $('#all_price_' + variationId + '_' + marketplaceId).val();
+
+        if (!min_price && !price) {
+            alert('Please enter at least one price value');
+            return;
+        }
+
+        // Get listings for this marketplace from the DOM
+        var listingIds = [];
+        $('#collapse_' + marketplaceId + '_' + variationId + ' .listing-table tbody tr').each(function() {
+            var formId = $(this).find('form[id^="change_min_price_"]').attr('id');
+            if (formId) {
+                var listingId = formId.replace('change_min_price_', '');
+                listingIds.push(listingId);
+            }
+        });
+
+        if (listingIds.length === 0) {
+            alert('No listings found for this marketplace');
+            return;
+        }
+
+        var updateCount = 0;
+        var totalCount = listingIds.length;
+
+        listingIds.forEach(function(listingId) {
+            if (min_price > 0) {
+                $('#min_price_' + listingId).val(min_price);
+                submitForm2Marketplace(event, listingId, 'min_price', function() {
+                    updateCount++;
+                    if (updateCount === totalCount) {
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                        }
+                        alert('Prices updated successfully');
+                    }
+                });
+            }
+            if (price > 0) {
+                $('#price_' + listingId).val(price);
+                submitForm3Marketplace(event, listingId, 'price', function() {
+                    updateCount++;
+                    if (updateCount === totalCount) {
+                        if (typeof Livewire !== 'undefined') {
+                            Livewire.emit('refresh-marketplace', variationId, marketplaceId);
+                        }
+                        alert('Prices updated successfully');
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating min price limit (handler)
+     */
+    function submitForm5Marketplace(event, listingId, marketplaceId, callback) {
+        event.preventDefault();
+        var form = $('#change_limit_' + listingId);
+        var actionUrl = "{{ url('listing/update_limit') }}/" + listingId;
+        var formData = form.serialize();
+        if (marketplaceId) {
+            formData += '&marketplace_id=' + marketplaceId;
+        }
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: formData,
+            success: function(data) {
+                $('#min_price_limit_' + listingId).addClass('bg-green');
+                $('#price_limit_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating min price
+     */
+    function submitForm2Marketplace(event, listingId, field, callback) {
+        event.preventDefault();
+        var form = $('#change_min_price_' + listingId);
+        var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            success: function(data) {
+                $('#min_price_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
+
+    /**
+     * Submit form for updating price
+     */
+    function submitForm3Marketplace(event, listingId, field, callback) {
+        event.preventDefault();
+        var form = $('#change_price_' + listingId);
+        var actionUrl = "{{ url('listing/update_price') }}/" + listingId;
+
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            success: function(data) {
+                $('#price_' + listingId).addClass('bg-green');
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                alert("Error: " + textStatus + " - " + errorThrown);
+                if (callback && typeof callback === 'function') {
+                    callback();
+                }
+            }
+        });
+    }
+
+    /**
+     * Show variation history modal
+     */
+    function show_variation_history(variationId, variationName) {
+        const modal = new bootstrap.Modal(document.getElementById('variationHistoryModal'));
+        modal.show();
+
+        document.getElementById('variation_name').textContent = variationName;
+        document.getElementById('variationHistoryTable').innerHTML = '<tr><td colspan="7" class="text-center">Loading...</td></tr>';
+        
+        fetch(`{{ url('listing/get_variation_history') }}/${variationId}`, {
+            method: 'GET',
+            headers: {
+                'X-Requested-With': 'XMLHttpRequest',
+                'Accept': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            let historyTable = '';
+            if (data.listed_stock_verifications && data.listed_stock_verifications.length > 0) {
+                data.listed_stock_verifications.forEach(function(item) {
+                    const date = new Date(item.created_at);
+                    const formattedDate = date.toLocaleString('en-GB', { 
+                        timeZone: 'Europe/London', 
+                        hour12: true 
+                    });
+                    historyTable += `
+                        <tr>
+                            <td>${item.process_ref || ''}</td>
+                            <td>${item.pending_orders || 0}</td>
+                            <td>${item.qty_from || 0}</td>
+                            <td>${item.qty_change || 0}</td>
+                            <td>${item.qty_to || 0}</td>
+                            <td>${item.admin || ''}</td>
+                            <td>${formattedDate}</td>
+                        </tr>`;
+                });
+            } else {
+                historyTable = '<tr><td colspan="7" class="text-center text-muted">No history found</td></tr>';
+            }
+            document.getElementById('variationHistoryTable').innerHTML = historyTable;
+        })
+        .catch(error => {
+            console.error('Error loading variation history:', error);
+            document.getElementById('variationHistoryTable').innerHTML = '<tr><td colspan="7" class="text-center text-danger">Error loading history. Please try again.</td></tr>';
+        });
+    }
 </script>
+
+<!-- Variation History Modal -->
+<div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="variationHistoryModalLabel">
+                    &nbsp; History - <span id="variation_name"></span>
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Process Ref</th>
+                                <th>Pending Orders</th>
+                                <th>Qty From</th>
+                                <th>Qty Change</th>
+                                <th>Qty To</th>
+                                <th>Admin</th>
+                                <th>Date</th>
+                            </tr>
+                        </thead>
+                        <tbody id="variationHistoryTable">
+                            <tr>
+                                <td colspan="7" class="text-center text-muted">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
 @endsection

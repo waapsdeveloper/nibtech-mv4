@@ -6,7 +6,7 @@ use Livewire\Component;
 
 class ListingItems extends Component
 {
-    public array $variationIds = [];
+    public array $variationData = []; // Array of ['id' => int, 'variation_data' => array|null]
     
     // Reference data
     public array $storages = [];
@@ -21,7 +21,7 @@ class ListingItems extends Component
     public ?string $processId = null;
 
     public function mount(
-        array $variationIds,
+        array $variationData,
         array $storages,
         array $colors,
         array $grades,
@@ -33,7 +33,7 @@ class ListingItems extends Component
         array $marketplaces,
         ?string $processId = null
     ): void {
-        $this->variationIds = $variationIds;
+        $this->variationData = $variationData;
         $this->storages = $storages;
         $this->colors = $colors;
         $this->grades = $grades;

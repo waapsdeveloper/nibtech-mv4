@@ -1,7 +1,7 @@
-<div class="accordion-item">
-    <h2 class="accordion-header" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
+<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}" data-variation-id="{{ $variationId }}" wire:init="loadData">
+    <h2 class="accordion-header mb-0" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
         <button 
-            class="accordion-button {{ !$expanded ? 'collapsed' : '' }}" 
+            class="accordion-button {{ !$expanded ? 'collapsed' : '' }} py-1 px-2" 
             type="button" 
             data-bs-toggle="collapse" 
             data-bs-target="#collapse_{{ $marketplaceId }}_{{ $variationId }}" 
@@ -9,7 +9,7 @@
             aria-controls="collapse_{{ $marketplaceId }}_{{ $variationId }}"
             wire:click="toggleAccordion"
         >
-            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+            <div class="d-flex justify-content-between align-items-center w-100">
                 <div class="flex-grow-1">
                     <strong>{{ $marketplaceName }}</strong>
                     @if($ready && count($listings) > 0)
@@ -17,31 +17,121 @@
                     @endif
                 </div>
                 @if($ready)
-                    <div class="order-summary d-flex gap-1 align-items-center flex-wrap">
-                        @if($orderSummary['today_count'] > 0)
-                            <span class="badge bg-info" title="Today's orders">Today: €{{ number_format($orderSummary['today_total'], 2) }} ({{ $orderSummary['today_count'] }})</span>
-                        @endif
-                        @if($orderSummary['last_7_days_count'] > 0)
-                            <span class="badge bg-secondary" title="Last 7 days orders">7d: €{{ number_format($orderSummary['last_7_days_total'], 2) }} ({{ $orderSummary['last_7_days_count'] }})</span>
-                        @endif
-                        @if($orderSummary['last_30_days_count'] > 0)
-                            <span class="badge bg-warning" title="Last 30 days orders">30d: €{{ number_format($orderSummary['last_30_days_total'], 2) }} ({{ $orderSummary['last_30_days_count'] }})</span>
-                        @endif
-                        @if($orderSummary['pending_count'] > 0)
-                            <span class="badge bg-danger" title="Pending orders">Pending: {{ $orderSummary['pending_count'] }}</span>
-                        @endif
+                    <div class="order-summary ms-2">
+                        <span class="fw-bold" title="Yesterday's orders">Yesterday: €{{ number_format($orderSummary['yesterday_total'] ?? 0, 2) }} ({{ $orderSummary['yesterday_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 7 days orders">7 days: €{{ number_format($orderSummary['last_7_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_7_days_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 14 days orders">14 days: €{{ number_format($orderSummary['last_14_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_14_days_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 30 days orders">30 days: €{{ number_format($orderSummary['last_30_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_30_days_count'] ?? 0 }})</span>
                     </div>
                 @endif
             </div>
         </button>
     </h2>
+    
+    {{-- Bulk Actions Section - Always Visible --}}
+    @if($ready && count($listings) > 0)
+        <div class="marketplace-bulk-actions p-2 border-top bg-light">
+            <div class="row g-2">
+                {{-- Change All € Handlers --}}
+                <div class="col-md-3">
+                    <label class="small fw-bold mb-1 d-block text-muted">Change All € Handlers</label>
+                    <form class="d-flex flex-column gap-1" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
+                        @csrf
+                        <div class="d-flex gap-1 align-items-end">
+                            <div class="flex-grow-1">
+                                <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_handler" step="0.01" value="" placeholder="Min Handler">
+                            </div>
+                            <div class="flex-grow-1">
+                                <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_handler" step="0.01" value="" placeholder="Handler">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-primary" onclick="submitForm8Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
+                                Change
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                {{-- Change All € Prices --}}
+                <div class="col-md-3">
+                    <label class="small fw-bold mb-1 d-block text-muted">Change All € Prices</label>
+                    <form class="d-flex flex-column gap-1" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
+                        @csrf
+                        <div class="d-flex gap-1 align-items-end">
+                            <div class="flex-grow-1">
+                                <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="" placeholder="Min Price">
+                            </div>
+                            <div class="flex-grow-1">
+                                <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="" placeholder="Price">
+                            </div>
+                            <button type="button" class="btn btn-sm btn-success" onclick="submitForm4Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
+                                Push
+                            </button>
+                        </div>
+                    </form>
+                </div>
+                
+                {{-- Without Buybox --}}
+                <div class="col-md-6">
+                    <div class="without-buybox-section">
+                        <h6 class="fw-bold mb-2">Without Buybox</h6>
+                        @php
+                            $withoutBuyboxListings = collect($listings)->filter(fn($listing) => ($listing['buybox'] ?? 0) != 1);
+                        @endphp
+                        <div class="d-flex flex-wrap gap-1">
+                            @forelse($withoutBuyboxListings as $listing)
+                                @php
+                                    $countryId = $listing['country_id'] ?? null;
+                                    $country = $countryId ? ($countries[$countryId] ?? null) : null;
+                                    $countryCode = is_object($country) ? $country->code : ($country['code'] ?? '');
+                                    $marketUrl = is_object($country) ? $country->market_url : ($country['market_url'] ?? '');
+                                    $marketCode = is_object($country) ? $country->market_code : ($country['market_code'] ?? '');
+                                    $referenceUuid2 = $listing['reference_uuid_2'] ?? '';
+                                @endphp
+                                <a href="https://www.backmarket.{{ $marketUrl }}/{{ $marketCode }}/p/gb/{{ $referenceUuid2 }}" target="_blank" class="btn btn-sm btn-link text-danger border border-danger p-1">
+                                    <img src="{{ asset('assets/img/flags/') }}/{{ strtolower($countryCode) }}.svg" height="10">
+                                    {{ $countryCode }}
+                                </a>
+                            @empty
+                                <span class="text-muted small">All listings have buybox or no listings.</span>
+                            @endforelse
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
     <div 
         id="collapse_{{ $marketplaceId }}_{{ $variationId }}" 
         class="accordion-collapse collapse {{ $expanded ? 'show' : '' }}" 
         aria-labelledby="heading_{{ $marketplaceId }}_{{ $variationId }}"
-        data-bs-parent="#marketplaceAccordionInner_{{ $variationId }}"
+        {{-- Removed data-bs-parent to allow multiple accordions open at once --}}
         wire:ignore.self
+        data-variation-id="{{ $variationId }}"
+        data-marketplace-id="{{ $marketplaceId }}"
     >
+        <script>
+            // Automatically trigger loading when accordion starts expanding
+            (function() {
+                const collapseElement = document.getElementById('collapse_{{ $marketplaceId }}_{{ $variationId }}');
+                if (!collapseElement) return;
+                
+                const handleShow = function() {
+                    // Always call loadData when accordion starts showing - it will check if already loaded
+                    @this.call('loadData');
+                };
+                
+                // Listen for when accordion starts showing (not just when fully shown)
+                collapseElement.addEventListener('show.bs.collapse', handleShow, { once: true });
+                
+                // Also trigger if already shown when script runs (e.g., on page refresh with expanded accordions)
+                if (collapseElement.classList.contains('show')) {
+                    setTimeout(handleShow, 50);
+                }
+            })();
+        </script>
         <div class="accordion-body p-2">
             @if(!$ready)
                 <div class="text-center py-3">

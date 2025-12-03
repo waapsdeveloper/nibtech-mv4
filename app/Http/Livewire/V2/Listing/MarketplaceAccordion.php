@@ -43,10 +43,26 @@ class MarketplaceAccordion extends Component
         'yesterday_total' => 0.0,
         'last_7_days_count' => 0,
         'last_7_days_total' => 0.0,
+        'last_14_days_count' => 0,
+        'last_14_days_total' => 0.0,
         'last_30_days_count' => 0,
         'last_30_days_total' => 0.0,
         'pending_count' => 0,
     ];
+
+    // Marketplace header metrics
+    public array $headerMetrics = [
+        'changes_count' => 0,
+        'handlers_active' => 0,
+        'handlers_inactive' => 0,
+        'prices_min' => 0.0,
+        'prices_max' => 0.0,
+        'prices_avg' => 0.0,
+        'buybox_count' => 0,
+        'buybox_without_count' => 0,
+    ];
+    
+    public bool $showHeaderDetails = false; // Toggle for second row
 
     // Reference data
     public array $exchangeRates = [];
@@ -83,6 +99,10 @@ class MarketplaceAccordion extends Component
         $this->currencySign = $currencySign;
         $this->countries = $countries;
         $this->marketplaces = $marketplaces;
+        
+        // Auto-load data and expand when component mounts
+        $this->expanded = true;
+        $this->loadMarketplaceData();
     }
 
     /**
@@ -205,8 +225,67 @@ class MarketplaceAccordion extends Component
             // Calculate order summary for this marketplace
             $this->calculateOrderSummary();
 
+            // Calculate header metrics
+            $this->calculateHeaderMetrics();
+
             $this->ready = true;
         }
+    }
+
+    /**
+     * Calculate header metrics (changes, handlers, prices, buybox)
+     */
+    private function calculateHeaderMetrics(): void
+    {
+        if (empty($this->listings)) {
+            return;
+        }
+
+        // Changes: Count listings updated in last 24 hours
+        $this->headerMetrics['changes_count'] = collect($this->listings)->filter(function($listing) {
+            if (!isset($listing['updated_at'])) {
+                return false;
+            }
+            $updatedAt = \Carbon\Carbon::parse($listing['updated_at']);
+            return $updatedAt->isAfter(now()->subDay());
+        })->count();
+
+        // Handlers: Count active (status 1) vs inactive (status 2)
+        $this->headerMetrics['handlers_active'] = collect($this->listings)->filter(function($listing) {
+            return ($listing['handler_status'] ?? 1) == 1;
+        })->count();
+        
+        $this->headerMetrics['handlers_inactive'] = collect($this->listings)->filter(function($listing) {
+            return ($listing['handler_status'] ?? 1) == 2;
+        })->count();
+
+        // Prices: Calculate min, max, average
+        $prices = collect($this->listings)->pluck('price')->filter(function($price) {
+            return $price > 0;
+        });
+        
+        if ($prices->isNotEmpty()) {
+            $this->headerMetrics['prices_min'] = round($prices->min(), 2);
+            $this->headerMetrics['prices_max'] = round($prices->max(), 2);
+            $this->headerMetrics['prices_avg'] = round($prices->avg(), 2);
+        }
+
+        // Buybox: Count with buybox (1) vs without (0)
+        $this->headerMetrics['buybox_count'] = collect($this->listings)->filter(function($listing) {
+            return ($listing['buybox'] ?? 0) == 1;
+        })->count();
+        
+        $this->headerMetrics['buybox_without_count'] = collect($this->listings)->filter(function($listing) {
+            return ($listing['buybox'] ?? 0) != 1;
+        })->count();
+    }
+
+    /**
+     * Toggle header details row
+     */
+    public function toggleHeaderDetails(): void
+    {
+        $this->showHeaderDetails = !$this->showHeaderDetails;
     }
 
     /**
@@ -249,6 +328,18 @@ class MarketplaceAccordion extends Component
 
         $this->orderSummary['last_7_days_count'] = $last7DaysOrders->count();
         $this->orderSummary['last_7_days_total'] = $last7DaysOrders->sum('price');
+
+        // Last 14 days orders
+        $last14DaysOrders = Order_item_model::where('variation_id', $this->variationId)
+            ->whereHas('order', function($q) {
+                $q->where('marketplace_id', $this->marketplaceId)
+                  ->where('order_type_id', 3)
+                  ->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->yesterday()->endOfDay()]);
+            })
+            ->get();
+
+        $this->orderSummary['last_14_days_count'] = $last14DaysOrders->count();
+        $this->orderSummary['last_14_days_total'] = $last14DaysOrders->sum('price');
 
         // Last 30 days orders
         $last30DaysOrders = Order_item_model::where('variation_id', $this->variationId)
@@ -332,6 +423,17 @@ class MarketplaceAccordion extends Component
         $this->expanded = !$this->expanded;
         
         if ($this->expanded && !$this->ready) {
+            $this->loadMarketplaceData();
+        }
+    }
+    
+    /**
+     * Load marketplace data (public method that can be called from JavaScript)
+     * This is separate from toggleAccordion to allow simultaneous loading
+     */
+    public function loadData(): void
+    {
+        if (!$this->ready) {
             $this->loadMarketplaceData();
         }
     }

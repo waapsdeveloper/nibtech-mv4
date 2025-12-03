@@ -18,12 +18,20 @@ class ListingQueryService
     {
         list($productSearch, $storageSearch) = $this->resolveProductAndStorageSearch($request->input('product_name'));
 
-        // Minimal eager loading for initial list - only essential relationships
+        // Eager load ALL relationships like original listing page for faster performance
+        // This matches the original approach which loads everything in one query
         $query = Variation_model::with([
-            'product:id,model,brand,category',
-            'storage_id:id,name',
-            'color_id:id,name,code',
-            'grade_id:id,name',
+            'listings',
+            'listings.country_id',
+            'listings.currency',
+            'listings.marketplace',
+            'product',
+            'available_stocks',
+            'pending_orders',
+            'pending_bm_orders',
+            'storage_id',
+            'color_id',
+            'grade_id',
         ]);
 
         // Apply filters
