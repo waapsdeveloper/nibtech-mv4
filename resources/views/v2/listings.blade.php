@@ -308,57 +308,318 @@
     }
 
     /**
-     * Display variations using lazy-loaded Livewire components
+     * Cache service for frontend - uses localStorage for persistence
+     */
+    const VariationCache = {
+        PREFIX: 'v2_variation_',
+        TTL: 5 * 60 * 1000, // 5 minutes in milliseconds
+        
+        /**
+         * Store variation data in localStorage
+         */
+        set(variationId, data) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = {
+                    data: data,
+                    timestamp: Date.now()
+                };
+                localStorage.setItem(key, JSON.stringify(item));
+            } catch (e) {
+                console.warn('Failed to cache variation data:', e);
+            }
+        },
+        
+        /**
+         * Get variation data from localStorage
+         */
+        get(variationId) {
+            try {
+                const key = this.PREFIX + variationId;
+                const item = localStorage.getItem(key);
+                if (!item) return null;
+                
+                const parsed = JSON.parse(item);
+                const age = Date.now() - parsed.timestamp;
+                
+                // Check if cache is expired
+                if (age > this.TTL) {
+                    localStorage.removeItem(key);
+                    return null;
+                }
+                
+                return parsed.data;
+            } catch (e) {
+                console.warn('Failed to get cached variation data:', e);
+                return null;
+            }
+        },
+        
+        /**
+         * Store multiple variations
+         */
+        setMultiple(variations) {
+            variations.forEach(v => {
+                if (v && v.id) {
+                    this.set(v.id, v);
+                }
+            });
+        },
+        
+        /**
+         * Clear all cached variations
+         */
+        clear() {
+            try {
+                const keys = Object.keys(localStorage);
+                keys.forEach(key => {
+                    if (key.startsWith(this.PREFIX)) {
+                        localStorage.removeItem(key);
+                    }
+                });
+            } catch (e) {
+                console.warn('Failed to clear cache:', e);
+            }
+        }
+    };
+
+    /**
+     * Display variations - render one at a time using cached data
+     * Data is preloaded and cached, items render progressively for better UX
      */
     function displayVariationsLazyV2(variations) {
-        const variationIds = variations.data.map(v => v.id);
         const variationsContainer = document.getElementById('v2-variations');
         
         document.getElementById('v2-page-info').textContent = 
             `From ${variations.from} To ${variations.to} Out Of ${variations.total}`;
 
-        // Keep small side loader shown (already shown from fetchVariationsV2)
-        // Render Livewire components from server
-        fetch("{{ url('v2/listings/render_listing_items') }}", {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': "{{ csrf_token() }}",
-                'X-Requested-With': 'XMLHttpRequest',
-            },
-            body: JSON.stringify({
-                variation_ids: variationIds,
-                process_id: window.v2ReferenceData.processId,
-            })
-        })
-        .then(response => response.json())
-        .then(data => {
+        const variationData = variations.data; // Preloaded data with calculated stats
+        
+        if (variationData.length === 0) {
+            variationsContainer.innerHTML = '<p class="text-center text-muted">No variations found.</p>';
             hideVariationsLoader();
-            if (data.html) {
-                variationsContainer.innerHTML = data.html;
-                // Rescan for Livewire components
+            return;
+        }
+        
+        // Cache all preloaded data in localStorage for instant access
+        VariationCache.setMultiple(variationData);
+        
+        // Create placeholders for all items
+        variationsContainer.innerHTML = '';
+        const variationIds = variationData.map(v => v.id);
+        
+        variationIds.forEach((id, index) => {
+            const placeholder = document.createElement('div');
+            placeholder.id = `variation-placeholder-${id}`;
+            placeholder.className = 'variation-placeholder';
+            placeholder.innerHTML = `
+                <div class="card listing-item-card">
+                    <div class="card-header py-2">
+                        <div class="d-flex align-items-center">
+                            <div class="spinner-border spinner-border-sm text-primary me-2" style="width: 1rem; height: 1rem;" role="status"></div>
+                            <span class="text-muted small">Loading variation ${index + 1}...</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+            variationsContainer.appendChild(placeholder);
+        });
+        
+        // Render items one at a time (using cached data on server side)
+        // This allows progressive rendering - top items appear first
+        hideVariationsLoader();
+        
+        let renderedCount = 0;
+        const renderNext = (index) => {
+            if (index >= variationIds.length) {
+                // All items rendered
                 if (typeof Livewire !== 'undefined') {
                     Livewire.rescan();
-                    
-                    // Initialize deferred sales data loading using Intersection Observer
                     initializeDeferredSalesDataLoading();
-                    
-                    // Re-initialize marketplace auto-expansion after components are loaded
                     setTimeout(() => {
-                        console.log('[Marketplace Auto-Expansion] Re-initializing after Livewire components loaded...');
                         initializeMarketplaceAutoExpansion();
                     }, 500);
                 }
-            } else {
-                variationsContainer.innerHTML = 
-                    '<p class="text-center text-danger">Error rendering components.</p>';
+                return;
             }
-        })
-        .catch(error => {
-            hideVariationsLoader();
-            console.error('Error rendering listing items:', error);
-            variationsContainer.innerHTML = 
-                '<p class="text-center text-danger">Error rendering components. Please refresh the page.</p>';
+            
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            
+            if (!placeholder) {
+                renderNext(index + 1);
+                return;
+            }
+            
+            // Render one item at a time (server uses cache, so it's fast)
+            fetch("{{ url('v2/listings/render_listing_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    variation_id: id, // Single ID - render one at a time
+                    process_id: window.v2ReferenceData.processId,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html && placeholder) {
+                    placeholder.outerHTML = data.html;
+                    renderedCount++;
+                    
+                    // Rescan Livewire after each item (for progressive initialization)
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.rescan();
+                    }
+                }
+            })
+            .catch(error => {
+                console.error(`Error rendering variation ${id}:`, error);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="card listing-item-card">
+                            <div class="card-header py-2">
+                                <p class="text-center text-danger mb-0">Error loading variation</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .finally(() => {
+                // Render next item immediately (no delay for better perceived performance)
+                renderNext(index + 1);
+            });
+        };
+        
+        // Start rendering from first item
+        renderNext(0);
+    }
+
+    /**
+     * Load a batch of variations - load one at a time for faster perceived performance
+     * Top items appear immediately while others load in sequence
+     */
+    function loadVariationBatch(variationIds, startIndex = 0) {
+        if (variationIds.length === 0) {
+            return Promise.resolve();
+        }
+
+        // Load items one at a time for better perceived performance
+        // First item appears immediately, others follow
+        const loadItem = (index) => {
+            if (index >= variationIds.length) {
+                // All items loaded, initialize Livewire features
+                if (typeof Livewire !== 'undefined') {
+                    Livewire.rescan();
+                    initializeDeferredSalesDataLoading();
+                    setTimeout(() => {
+                        initializeMarketplaceAutoExpansion();
+                    }, 500);
+                }
+                return Promise.resolve();
+            }
+
+            const id = variationIds[index];
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            
+            if (!placeholder) {
+                // Skip if placeholder not found, continue with next
+                return loadItem(index + 1);
+            }
+
+            // Load single item
+            return fetch("{{ url('v2/listings/render_listing_items') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': "{{ csrf_token() }}",
+                    'X-Requested-With': 'XMLHttpRequest',
+                },
+                body: JSON.stringify({
+                    variation_id: id,
+                    process_id: window.v2ReferenceData.processId,
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.html && placeholder) {
+                    // Replace placeholder with rendered HTML
+                    placeholder.outerHTML = data.html;
+                    
+                    // Rescan for this single component
+                    if (typeof Livewire !== 'undefined') {
+                        Livewire.rescan();
+                    }
+                } else {
+                    throw new Error('No HTML returned from server');
+                }
+            })
+            .catch(error => {
+                console.error(`Error loading variation ${id}:`, error);
+                if (placeholder) {
+                    placeholder.innerHTML = `
+                        <div class="card listing-item-card">
+                            <div class="card-header py-2">
+                                <p class="text-center text-danger mb-0">Error loading variation</p>
+                            </div>
+                        </div>
+                    `;
+                }
+            })
+            .then(() => {
+                // Load next item immediately after current one is done
+                return loadItem(index + 1);
+            });
+        };
+
+        // Start loading from first item
+        return loadItem(0);
+    }
+
+    /**
+     * Initialize lazy loading for remaining variations using Intersection Observer
+     */
+    function initializeLazyLoading(remainingIds, batchSize = 2) {
+        if (remainingIds.length === 0) return;
+
+        let loadedCount = 0;
+        let loadingBatch = false;
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting && !loadingBatch && loadedCount < remainingIds.length) {
+                    loadingBatch = true;
+                    
+                    // Load next batch
+                    const batch = remainingIds.slice(loadedCount, loadedCount + batchSize);
+                    loadedCount += batch.length;
+                    
+                    loadVariationBatch(batch).then(() => {
+                        loadingBatch = false;
+                        
+                        // Re-initialize observer for next batch if more items remain
+                        if (loadedCount < remainingIds.length) {
+                            // Observer will automatically trigger for next visible placeholder
+                        }
+                    });
+                    
+                    // Stop observing this placeholder as it's being loaded
+                    observer.unobserve(entry.target);
+                }
+            });
+        }, {
+            rootMargin: '200px' // Start loading 200px before item comes into view
+        });
+
+        // Observe all remaining placeholders
+        remainingIds.forEach(id => {
+            const placeholder = document.getElementById(`variation-placeholder-${id}`);
+            if (placeholder) {
+                observer.observe(placeholder);
+            }
         });
     }
 
@@ -685,6 +946,19 @@
         if (button) {
             const targetId = button.getAttribute('data-bs-target');
             const variationId = targetId ? targetId.replace('#marketplaceAccordion_', '') : null;
+            // Update chevron icon based on expanded state
+            const accordion = document.getElementById('marketplaceAccordion_' + variationId);
+            const chevron = button.querySelector('i.fas');
+            if (accordion && chevron) {
+                accordion.addEventListener('shown.bs.collapse', function() {
+                    chevron.classList.remove('fa-chevron-down');
+                    chevron.classList.add('fa-chevron-up');
+                });
+                accordion.addEventListener('hidden.bs.collapse', function() {
+                    chevron.classList.remove('fa-chevron-up');
+                    chevron.classList.add('fa-chevron-down');
+                });
+            }
             
             if (variationId) {
                 console.log(`[Marketplace Auto-Expansion] ===== TOGGLE BUTTON CLICKED (via delegation) for variation ${variationId} =====`);

@@ -21,6 +21,7 @@ class ListingItem extends Component
     public int $totalOrdersCount = 0;
     public array $buyboxListings = [];
     public array $marketplaceSummaries = []; // Marketplace ID => summary data
+    public ?string $salesData = null; // Preloaded sales data HTML
 
     // Reference data (passed from parent)
     public array $storages = [];
@@ -164,6 +165,7 @@ class ListingItem extends Component
             $this->totalOrdersCount = $calculated['total_orders_count'] ?? 0;
             $this->buyboxListings = $calculated['buybox_listings'] ?? [];
             $this->marketplaceSummaries = $calculated['marketplace_summaries'] ?? [];
+            $this->salesData = $calculated['sales_data'] ?? null; // Preloaded sales data
         } else {
             // Fallback: calculate stats if not pre-calculated
             $this->calculateStats();

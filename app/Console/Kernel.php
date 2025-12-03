@@ -2,11 +2,23 @@
 
 namespace App\Console;
 
+use App\Console\Commands\BMProSyncOrders;
+use App\Console\Commands\SupportSyncCommand;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
 class Kernel extends ConsoleKernel
 {
+    /**
+     * The Artisan commands provided by your application.
+     *
+     * @var array
+     */
+    protected $commands = [
+        SupportSyncCommand::class,
+        BMProSyncOrders::class,
+    ];
+
     /**
      * Define the application's command schedule.
      *
@@ -107,6 +119,16 @@ class Kernel extends ConsoleKernel
             // ->withoutOverlapping()
             // ->onOneServer()
             // ->runInBackground();
+
+        $schedule->command('support:sync')
+            ->everyTenMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
+
+        $schedule->command('bmpro:orders')
+            ->everyTenMinutes()
+            ->withoutOverlapping()
+            ->runInBackground();
     }
 
     /**

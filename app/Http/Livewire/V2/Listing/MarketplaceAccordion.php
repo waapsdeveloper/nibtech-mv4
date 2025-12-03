@@ -43,6 +43,8 @@ class MarketplaceAccordion extends Component
         'yesterday_total' => 0.0,
         'last_7_days_count' => 0,
         'last_7_days_total' => 0.0,
+        'last_14_days_count' => 0,
+        'last_14_days_total' => 0.0,
         'last_30_days_count' => 0,
         'last_30_days_total' => 0.0,
         'pending_count' => 0,
@@ -97,6 +99,10 @@ class MarketplaceAccordion extends Component
         $this->currencySign = $currencySign;
         $this->countries = $countries;
         $this->marketplaces = $marketplaces;
+        
+        // Auto-load data and expand when component mounts
+        $this->expanded = true;
+        $this->loadMarketplaceData();
     }
 
     /**
@@ -322,6 +328,18 @@ class MarketplaceAccordion extends Component
 
         $this->orderSummary['last_7_days_count'] = $last7DaysOrders->count();
         $this->orderSummary['last_7_days_total'] = $last7DaysOrders->sum('price');
+
+        // Last 14 days orders
+        $last14DaysOrders = Order_item_model::where('variation_id', $this->variationId)
+            ->whereHas('order', function($q) {
+                $q->where('marketplace_id', $this->marketplaceId)
+                  ->where('order_type_id', 3)
+                  ->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->yesterday()->endOfDay()]);
+            })
+            ->get();
+
+        $this->orderSummary['last_14_days_count'] = $last14DaysOrders->count();
+        $this->orderSummary['last_14_days_total'] = $last14DaysOrders->sum('price');
 
         // Last 30 days orders
         $last30DaysOrders = Order_item_model::where('variation_id', $this->variationId)

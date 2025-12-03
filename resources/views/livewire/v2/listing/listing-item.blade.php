@@ -24,10 +24,14 @@
                     </a>
                 </h5>
                 <div class="sales-info" id="sales_{{ $variation->id }}" data-variation-id="{{ $variation->id }}">
-                    <span class="text-muted small">Sales data will load when scrolled into view</span>
+                    @if(isset($salesData) && $salesData)
+                        {!! $salesData !!}
+                    @else
+                        <span class="text-muted small">Sales data will load when scrolled into view</span>
+                    @endif
                 </div>
-                {{-- Buybox and Total Orders Info --}}
-                <div class="buybox-orders-info mt-1 d-flex gap-2 align-items-center flex-wrap">
+                {{-- Buybox Info --}}
+                <div class="buybox-info mt-1 d-flex gap-2 align-items-center flex-wrap">
                     <div class="d-flex align-items-center flex-wrap gap-1">
                         <span class="small fw-bold me-1">Buybox:</span>
                         @forelse($buyboxListings as $listing)
@@ -47,65 +51,7 @@
                             <span class="text-muted small">No buybox listings</span>
                         @endforelse
                     </div>
-                    <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}" target="_blank" title="View all orders for this variation">
-                        <small class="badge text-white" style="background-color: #003d82;">
-                            Total Orders: {{ $totalOrdersCount ?? 0 }}
-                        </small>
-                    </a>
                 </div>
-                {{-- Marketplace Cards Row --}}
-                @php
-                    $allMarketplaces = $this->getAllMarketplaces();
-                @endphp
-                @if(!empty($allMarketplaces))
-                    <div class="marketplace-cards-row mt-2 d-flex gap-2 flex-wrap">
-                        @foreach($allMarketplaces as $marketplaceId => $marketplaceData)
-                            @php
-                                $marketplaceName = is_object($marketplaceData) 
-                                    ? ($marketplaceData->name ?? 'Marketplace ' . $marketplaceId)
-                                    : (is_array($marketplaceData) 
-                                        ? ($marketplaceData['name'] ?? 'Marketplace ' . $marketplaceId)
-                                        : 'Marketplace ' . $marketplaceId);
-                                $summary = $marketplaceSummaries[$marketplaceId] ?? [];
-                            @endphp
-                            <div class="card marketplace-card border shadow-sm" style="min-width: 180px; max-width: 200px; flex: 1 1 auto;">
-                                <div class="card-body p-2">
-                                    <div class="d-flex align-items-center mb-2 border-bottom pb-1">
-                                        <div class="marketplace-avatar me-2" style="width: 28px; height: 28px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 11px; color: white;">
-                                            {{ strtoupper(substr($marketplaceName, 0, 2)) }}
-                                        </div>
-                                        <h6 class="mb-0 small fw-bold text-truncate" style="flex: 1; font-size: 12px;">{{ $marketplaceName }}</h6>
-                                    </div>
-                                    <div class="sales-summary">
-                                        @if(($summary['today_count'] ?? 0) > 0)
-                                            <span class="badge bg-info mb-1 d-block" style="font-size: 10px;" title="Today's orders">
-                                                Today: €{{ number_format($summary['today_total'] ?? 0, 2) }} ({{ $summary['today_count'] ?? 0 }})
-                                            </span>
-                                        @endif
-                                        @if(($summary['last_7_days_count'] ?? 0) > 0)
-                                            <span class="badge bg-secondary mb-1 d-block" style="font-size: 10px;" title="Last 7 days orders">
-                                                7d: €{{ number_format($summary['last_7_days_total'] ?? 0, 2) }} ({{ $summary['last_7_days_count'] ?? 0 }})
-                                            </span>
-                                        @endif
-                                        @if(($summary['last_30_days_count'] ?? 0) > 0)
-                                            <span class="badge bg-warning mb-1 d-block" style="font-size: 10px;" title="Last 30 days orders">
-                                                30d: €{{ number_format($summary['last_30_days_total'] ?? 0, 2) }} ({{ $summary['last_30_days_count'] ?? 0 }})
-                                            </span>
-                                        @endif
-                                        @if(($summary['pending_count'] ?? 0) > 0)
-                                            <span class="badge bg-danger mb-1 d-block" style="font-size: 10px;" title="Pending orders">
-                                                Pending: {{ $summary['pending_count'] ?? 0 }}
-                                            </span>
-                                        @endif
-                                        @if(($summary['today_count'] ?? 0) == 0 && ($summary['last_7_days_count'] ?? 0) == 0 && ($summary['last_30_days_count'] ?? 0) == 0 && ($summary['pending_count'] ?? 0) == 0)
-                                            <span class="text-muted small">No orders</span>
-                                        @endif
-                                    </div>
-                                </div>
-                            </div>
-                        @endforeach
-                    </div>
-                @endif
             </div>
 
             {{-- Stock Controls --}}
@@ -127,21 +73,26 @@
             </div>
 
             {{-- Stats Section --}}
-            <div class="stats-section ms-2">
-                <div class="mb-1">
+            <div class="stats-section ms-2 text-end">
+                <div class="mb-2">
                     <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}&status=2" target="_blank">
-                        <small class="fw-bold">Pending: {{ $stats['pending_orders'] ?? 0 }}</small>
+                        <div class="fw-bold" style="font-size: 14px;">Pending: {{ $stats['pending_orders'] ?? 0 }}</div>
                     </a>
                 </div>
-                <div class="mb-1">
+                <div class="mb-2">
                     <a class="text-decoration-none" href="{{ url('inventory') }}?product={{ $variation->product_id }}&storage={{ $variation->storage }}&color={{ $variation->color }}&grade[]={{ $variation->grade }}" target="_blank">
-                        <small class="fw-bold">Available: {{ $stats['available_stocks'] ?? 0 }}</small>
+                        <div class="fw-bold" style="font-size: 14px;">Available: {{ $stats['available_stocks'] ?? 0 }}</div>
                     </a>
+                </div>
+                <div class="mb-2">
+                    <div class="fw-bold" style="font-size: 14px;">
+                        Diff: {{ $stats['stock_difference'] ?? 0 }}
+                    </div>
                 </div>
                 <div>
-                    <small class="fw-bold">
-                        Diff: {{ $stats['stock_difference'] ?? 0 }}
-                    </small>
+                    <a class="text-decoration-none" href="{{ url('order') }}?sku={{ $variation->sku }}" target="_blank" title="View all orders for this variation">
+                        <div class="fw-bold" style="font-size: 14px;">Total Orders: {{ $totalOrdersCount ?? 0 }}</div>
+                    </a>
                 </div>
             </div>
 
@@ -150,16 +101,26 @@
                 <a href="javascript:void(0)" class="btn btn-sm btn-link" id="variation_history_{{ $variation->id }}" onClick="show_variation_history({{ $variation->id }}, '{{ $variation->sku }} {{ $variation->product->model ?? '' }} {{ $storages[$variation->storage] ?? '' }} {{ $colors[$variation->color] ?? '' }} {{ $grades[$variation->grade] ?? '' }}')" title="View History">
                     <i class="fas fa-history"></i>
                 </a>
-                <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#marketplaceAccordion_{{ $variation->id }}" aria-expanded="false" aria-controls="marketplaceAccordion_{{ $variation->id }}" title="Toggle Marketplaces">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
+                @php
+                    $marketplaceIds = $this->getMarketplaceIds();
+                    $hasMarketplaceListings = count($marketplaceIds) > 0;
+                @endphp
+                @if($hasMarketplaceListings)
+                    <button class="btn btn-sm btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#marketplaceAccordion_{{ $variation->id }}" aria-expanded="true" aria-controls="marketplaceAccordion_{{ $variation->id }}" title="Toggle Marketplaces">
+                        <i class="fas fa-chevron-up"></i>
+                    </button>
+                @endif
             </div>
         </div>
 
-
-        {{-- Marketplace Accordion Section --}}
-        <div class="card-body p-0 collapse multi_collapse" id="marketplaceAccordion_{{ $variation->id }}" 
-             data-variation-id="{{ $variation->id }}">
+        @php
+            $marketplaceIds = $this->getMarketplaceIds();
+            $hasMarketplaceListings = count($marketplaceIds) > 0;
+        @endphp
+        @if($hasMarketplaceListings)
+            {{-- Marketplace Accordion Section --}}
+            <div class="card-body p-0 show" id="marketplaceAccordion_{{ $variation->id }}" 
+                 data-variation-id="{{ $variation->id }}">
             <div class="accordion marketplace-accordion" id="marketplaceAccordionInner_{{ $variation->id }}">
                 @php
                     // Get all marketplaces from system
@@ -168,26 +129,36 @@
                     $marketplaceIds = $this->getMarketplaceIds();
                 @endphp
                 
-                @foreach($allMarketplaces as $mpId => $marketplaceData)
-                    @php
-                        $hasListings = in_array($mpId, $marketplaceIds);
-                        $marketplaceName = $marketplaceData['name'] ?? 'Marketplace ' . $mpId;
-                    @endphp
-                    
-                    @livewire('v2.listing.marketplace-accordion', [
-                        'variationId' => $variation->id,
-                        'marketplaceId' => $mpId,
-                        'marketplaceName' => $marketplaceName,
-                        'exchangeRates' => $exchangeRates,
-                        'eurGbp' => $eurGbp,
-                        'currencies' => $currencies,
-                        'currencySign' => $currencySign,
-                        'countries' => $countries,
-                        'marketplaces' => $marketplaces,
-                    ], key('marketplace-accordion-' . $variation->id . '-' . $mpId))
-                @endforeach
+                @if(count($marketplaceIds) > 0)
+                    @foreach($allMarketplaces as $mpId => $marketplaceData)
+                        @php
+                            // Only show marketplaces that have listings
+                            $hasListings = in_array($mpId, $marketplaceIds);
+                            $marketplaceName = $marketplaceData['name'] ?? 'Marketplace ' . $mpId;
+                        @endphp
+                        
+                        @if($hasListings)
+                            @livewire('v2.listing.marketplace-accordion', [
+                                'variationId' => $variation->id,
+                                'marketplaceId' => $mpId,
+                                'marketplaceName' => $marketplaceName,
+                                'exchangeRates' => $exchangeRates,
+                                'eurGbp' => $eurGbp,
+                                'currencies' => $currencies,
+                                'currencySign' => $currencySign,
+                                'countries' => $countries,
+                                'marketplaces' => $marketplaces,
+                            ], key('marketplace-accordion-' . $variation->id . '-' . $mpId))
+                        @endif
+                    @endforeach
+                @else
+                    <div class="p-3 text-center text-muted">
+                        <small>No marketplace listings available</small>
+                    </div>
+                @endif
             </div>
         </div>
+        @endif
     @endif
 </div>
 

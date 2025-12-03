@@ -33,6 +33,11 @@ class Order_model extends Model
 
     public const REFURBED_STOCK_SYNCED_REFERENCE = 'REFURBED_STOCK_SYNCED';
 
+    private const BMPRO_MARKETPLACE_BY_CURRENCY = [
+        'EUR' => 2,
+        'GBP' => 3,
+    ];
+
     public function transactions()
     {
         return $this->hasMany(Account_transaction_model::class, 'order_id', 'id');
@@ -419,6 +424,297 @@ class Order_model extends Model
         $this->syncBackMarketStockForRefurbedOrder($order, $legacyOrder);
 
         $this->maybeAutoCreateRefurbedLabel($order);
+
+        return $order->fresh(['order_items', 'customer']);
+    }
+
+    protected function extractBmproOrderItems(array $orderData): array
+    {
+        $candidates = ['items', 'order_items', 'order_lines', 'lines'];
+
+        foreach ($candidates as $key) {
+            $value = $orderData[$key] ?? null;
+            if (is_array($value)) {
+                return $value;
+            }
+        }
+
+        return [];
+    }
+
+    protected function buildLegacyBmproOrderObject(
+        array $orderData,
+        ?array $orderItems,
+        string $orderNumber,
+        string $currencyCode,
+        array $country_codes
+    ): object {
+        $orderObj = new \stdClass();
+        $orderObj->order_id = $orderNumber;
+        $orderObj->currency = $currencyCode;
+        $orderObj->price = $this->extractNumeric(
+            $orderData['total_price']
+            ?? data_get($orderData, 'financials.total_paid')
+            ?? data_get($orderData, 'order_value.amount')
+            ?? data_get($orderData, 'totals.grand_total')
+            ?? 0
+        ) ?? 0;
+        $orderObj->delivery_note = data_get($orderData, 'documents.invoice');
+        $orderObj->payment_method = $orderData['payment_method'] ?? data_get($orderData, 'financials.payment_method');
+        $orderObj->tracking_number = data_get($orderData, 'tracking.number') ?? $orderData['tracking_number'] ?? null;
+        $orderObj->date_creation = $orderData['created_at'] ?? $orderData['order_date'] ?? now()->toDateTimeString();
+        $orderObj->date_modification = $orderData['updated_at'] ?? $orderObj->date_creation;
+        $orderObj->date_shipping = $orderData['shipped_at'] ?? null;
+        $orderObj->customer_email = $orderData['customer']['email'] ?? $orderData['buyer']['email'] ?? null;
+        $orderObj->state = $orderData['fulfillment_status'] ?? $orderData['state'] ?? null;
+
+        $billingSource = $this->normalizeBmproAddress(
+            $orderData['billing_address']
+            ?? $orderData['invoice_address']
+            ?? $orderData['customer']
+            ?? []
+        );
+
+        $shippingSource = $this->normalizeBmproAddress(
+            $orderData['shipping_address']
+            ?? $orderData['delivery_address']
+            ?? $orderData['shipping']
+            ?? $billingSource
+        );
+
+        $orderObj->billing_address = (object) $this->buildLegacyAddressArray($billingSource, $country_codes, $orderObj->customer_email);
+        $orderObj->shipping_address = (object) $this->buildLegacyAddressArray($shippingSource, $country_codes, $orderObj->customer_email);
+
+        $orderObj->orderlines = [];
+        foreach ($orderItems ?? [] as $itemPayload) {
+            $line = $this->buildLegacyBmproOrderLine($itemPayload, $orderObj->state);
+            if ($line) {
+                $orderObj->orderlines[] = (object) $line;
+            }
+        }
+
+        return $orderObj;
+    }
+
+    protected function normalizeBmproAddress($source): array
+    {
+        if (is_object($source)) {
+            $source = json_decode(json_encode($source), true) ?? [];
+        }
+
+        if (! is_array($source)) {
+            return [];
+        }
+
+        $line1 = trim(($source['street'] ?? $source['street1'] ?? $source['address_line1'] ?? $source['address1'] ?? '') . ' ' . ($source['house_number'] ?? ''));
+        $street2 = $source['street2'] ?? $source['address_line2'] ?? $source['address2'] ?? '';
+
+        return [
+            'company' => $source['company'] ?? $source['business_name'] ?? 'BM Pro Customer',
+            'first_name' => $source['first_name'] ?? $source['given_name'] ?? ($source['name'] ?? 'Buyer'),
+            'last_name' => $source['last_name'] ?? $source['family_name'] ?? ($source['surname'] ?? 'Customer'),
+            'street' => $line1 ?: ($source['street'] ?? ''),
+            'street2' => $street2,
+            'postal_code' => $source['postal_code'] ?? $source['zip'] ?? $source['postcode'] ?? '',
+            'country' => strtoupper($source['country'] ?? $source['country_code'] ?? 'GB'),
+            'city' => $source['city'] ?? $source['town'] ?? '',
+            'phone' => $source['phone'] ?? $source['phone_number'] ?? $source['mobile'] ?? '',
+            'email' => $source['email'] ?? null,
+        ];
+    }
+
+    protected function buildLegacyBmproOrderLine($itemPayload, $fallbackState = null): ?array
+    {
+        $item = $this->normalizeRefurbedPayload($itemPayload);
+
+        $referenceId = $item['id']
+            ?? $item['order_line_id']
+            ?? $item['order_item_id']
+            ?? $item['line_id']
+            ?? (string) Str::uuid();
+
+        $sku = $item['sku'] ?? $item['seller_sku'] ?? $item['merchant_sku'] ?? null;
+        $listingId = $item['listing_id'] ?? $item['listingId'] ?? null;
+
+        $quantity = (int) ($item['quantity'] ?? $item['qty'] ?? 1);
+        if ($quantity <= 0) {
+            $quantity = 1;
+        }
+
+        $price = $this->resolveRefurbedItemPrice($item);
+        if ($price === null) {
+            $price = $this->extractNumeric($item['unit_price'] ?? $item['line_price'] ?? null);
+        }
+
+        $state = $item['fulfillment_status'] ?? $item['state'] ?? $fallbackState ?? 'PENDING';
+
+        return [
+            'id' => $referenceId,
+            'listing_id' => $listingId,
+            'sku' => $sku,
+            'quantity' => $quantity,
+            'price' => $price ?? 0,
+            'state' => $this->mapBmproOrderItemState($state),
+            'imei' => $item['imei'] ?? null,
+            'serial_number' => $item['serial_number'] ?? $item['serial'] ?? null,
+            'title' => $item['title'] ?? $item['product_title'] ?? null,
+        ];
+    }
+
+    protected function mapBmproOrderState(?string $state): int
+    {
+        $state = strtoupper(trim((string) $state));
+
+        return match ($state) {
+            'READY_TO_SHIP', 'PROCESSING', 'ACCEPTED', 'ACKNOWLEDGED' => 2,
+            'FULFILLED', 'SHIPPED', 'DELIVERED', 'COMPLETED' => 3,
+            'CANCELLED', 'VOID' => 4,
+            'RETURNED', 'REFUNDED' => 6,
+            default => 1,
+        };
+    }
+
+    protected function mapBmproOrderItemState(?string $state): int
+    {
+        $state = strtoupper(trim((string) $state));
+
+        return match ($state) {
+            'READY_TO_SHIP', 'PROCESSING', 'ACCEPTED', 'ACKNOWLEDGED' => 2,
+            'FULFILLED', 'SHIPPED', 'DELIVERED', 'COMPLETED' => 3,
+            'CANCELLED', 'VOID' => 5,
+            'RETURNED', 'REFUNDED' => 6,
+            default => 1,
+        };
+    }
+
+    protected function resolveBmproMarketplaceId(?string $currencyCode, ?int $marketplaceId): int
+    {
+        if ($marketplaceId) {
+            return $marketplaceId;
+        }
+
+        $currencyCode = strtoupper($currencyCode ?? 'EUR');
+
+        return self::BMPRO_MARKETPLACE_BY_CURRENCY[$currencyCode]
+            ?? self::BMPRO_MARKETPLACE_BY_CURRENCY['EUR'];
+    }
+    public function storeBMProOrderInDB(
+        $orderPayload,
+        ?array $orderItems = null,
+        array $currency_codes = [],
+        array $country_codes = [],
+        ?int $marketplaceId = null,
+        ?string $currencyHint = null
+    ): ?self {
+        $orderData = $this->normalizeRefurbedPayload($orderPayload);
+
+        $orderNumber = $orderData['id']
+            ?? $orderData['order_number']
+            ?? $orderData['reference']
+            ?? $orderData['external_reference']
+            ?? null;
+
+        if (! $orderNumber) {
+            Log::warning('BMPRO order missing identifier', ['payload' => $orderData]);
+            return null;
+        }
+
+        if ($orderItems === null) {
+            $orderItems = $this->extractBmproOrderItems($orderData);
+        }
+
+        if (empty($currency_codes)) {
+            $currency_codes = Currency_model::pluck('id', 'code')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        if (empty($country_codes)) {
+            $country_codes = Country_model::pluck('id', 'code')
+                ->map(fn ($id) => (int) $id)
+                ->toArray();
+        }
+
+        $currencyCode = strtoupper(
+            $orderData['currency']
+            ?? data_get($orderData, 'financials.currency')
+            ?? data_get($orderData, 'order_value.currency')
+            ?? $currencyHint
+            ?? 'EUR'
+        );
+
+        $currencyId = $this->resolveCurrencyIdForOrder($currencyCode, $currency_codes, null);
+        $marketplaceId = $this->resolveBmproMarketplaceId($currencyCode, $marketplaceId);
+
+        $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
+        $order->marketplace_id = $marketplaceId;
+        $order->currency = $currencyId ?? $order->currency;
+        $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
+        if (! $order->reference) {
+            $order->reference = $orderData['reference']
+                ?? $orderData['external_reference']
+                ?? $orderData['id']
+                ?? null;
+        }
+
+        $order->price = $this->extractNumeric(
+            $orderData['total_price']
+            ?? data_get($orderData, 'financials.total_paid')
+            ?? data_get($orderData, 'financials.total_amount')
+            ?? data_get($orderData, 'order_value.amount')
+            ?? data_get($orderData, 'totals.grand_total')
+            ?? $order->price
+        );
+
+        if (! empty($orderData['tracking_number']) && empty($order->tracking_number)) {
+            $order->tracking_number = $orderData['tracking_number'];
+        }
+
+        $createdAt = $orderData['created_at']
+            ?? $orderData['order_date']
+            ?? $orderData['placed_at']
+            ?? null;
+        if ($createdAt) {
+            $order->created_at = Carbon::parse($createdAt)->format('Y-m-d H:i:s');
+        }
+
+        $updatedAt = $orderData['updated_at']
+            ?? $orderData['modified_at']
+            ?? $createdAt;
+        if ($updatedAt) {
+            $order->updated_at = Carbon::parse($updatedAt)->format('Y-m-d H:i:s');
+        }
+
+        $order->save();
+
+        $legacyOrder = $this->buildLegacyBmproOrderObject(
+            $orderData,
+            $orderItems,
+            $orderNumber,
+            $currencyCode,
+            $country_codes
+        );
+
+        $customerModel = new Customer_model();
+        $customerId = $customerModel->updateCustomerInDB(
+            $legacyOrder,
+            false,
+            $currency_codes,
+            $country_codes,
+            $order->id,
+            $legacyOrder->customer_email ?? null,
+            'BMPRO'
+        );
+
+        if ($customerId) {
+            $order->customer_id = $customerId;
+            $order->save();
+        }
+
+        if (! empty($legacyOrder->orderlines)) {
+            $orderItemModel = new Order_item_model();
+            $orderItemModel->updateOrderItemsInDB($legacyOrder);
+        }
 
         return $order->fresh(['order_items', 'customer']);
     }

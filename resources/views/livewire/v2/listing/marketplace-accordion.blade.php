@@ -1,7 +1,7 @@
-<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}" data-variation-id="{{ $variationId }}">
-    <h2 class="accordion-header" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
+<div class="accordion-item" data-marketplace-id="{{ $marketplaceId }}" data-variation-id="{{ $variationId }}" wire:init="loadData">
+    <h2 class="accordion-header mb-0" id="heading_{{ $marketplaceId }}_{{ $variationId }}">
         <button 
-            class="accordion-button {{ !$expanded ? 'collapsed' : '' }} p-2" 
+            class="accordion-button {{ !$expanded ? 'collapsed' : '' }} py-1 px-2" 
             type="button" 
             data-bs-toggle="collapse" 
             data-bs-target="#collapse_{{ $marketplaceId }}_{{ $variationId }}" 
@@ -9,7 +9,7 @@
             aria-controls="collapse_{{ $marketplaceId }}_{{ $variationId }}"
             wire:click="toggleAccordion"
         >
-            <div class="d-flex justify-content-between align-items-center w-100 me-3">
+            <div class="d-flex justify-content-between align-items-center w-100">
                 <div class="flex-grow-1">
                     <strong>{{ $marketplaceName }}</strong>
                     @if($ready && count($listings) > 0)
@@ -17,19 +17,14 @@
                     @endif
                 </div>
                 @if($ready)
-                    <div class="order-summary d-flex gap-1 align-items-center flex-wrap">
-                        @if($orderSummary['today_count'] > 0)
-                            <span class="badge bg-info" title="Today's orders">Today: €{{ number_format($orderSummary['today_total'], 2) }} ({{ $orderSummary['today_count'] }})</span>
-                        @endif
-                        @if($orderSummary['last_7_days_count'] > 0)
-                            <span class="badge bg-secondary" title="Last 7 days orders">7d: €{{ number_format($orderSummary['last_7_days_total'], 2) }} ({{ $orderSummary['last_7_days_count'] }})</span>
-                        @endif
-                        @if($orderSummary['last_30_days_count'] > 0)
-                            <span class="badge bg-warning" title="Last 30 days orders">30d: €{{ number_format($orderSummary['last_30_days_total'], 2) }} ({{ $orderSummary['last_30_days_count'] }})</span>
-                        @endif
-                        @if($orderSummary['pending_count'] > 0)
-                            <span class="badge bg-danger" title="Pending orders">Pending: {{ $orderSummary['pending_count'] }}</span>
-                        @endif
+                    <div class="order-summary ms-2">
+                        <span class="fw-bold" title="Yesterday's orders">Yesterday: €{{ number_format($orderSummary['yesterday_total'] ?? 0, 2) }} ({{ $orderSummary['yesterday_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 7 days orders">7 days: €{{ number_format($orderSummary['last_7_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_7_days_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 14 days orders">14 days: €{{ number_format($orderSummary['last_14_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_14_days_count'] ?? 0 }})</span>
+                        <span class="fw-bold"> - </span>
+                        <span class="fw-bold" title="Last 30 days orders">30 days: €{{ number_format($orderSummary['last_30_days_total'] ?? 0, 2) }} ({{ $orderSummary['last_30_days_count'] ?? 0 }})</span>
                     </div>
                 @endif
             </div>
@@ -38,21 +33,19 @@
     
     {{-- Bulk Actions Section - Always Visible --}}
     @if($ready && count($listings) > 0)
-        <div class="marketplace-bulk-actions p-3 border-top bg-light">
-            <div class="row g-3">
+        <div class="marketplace-bulk-actions p-2 border-top bg-light">
+            <div class="row g-2">
                 {{-- Change All € Handlers --}}
-                <div class="col-md-4">
-                    <label class="small fw-bold mb-2 d-block text-muted">Change All € Handlers</label>
-                    <form class="d-flex flex-column gap-2" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
+                <div class="col-md-3">
+                    <label class="small fw-bold mb-1 d-block text-muted">Change All € Handlers</label>
+                    <form class="d-flex flex-column gap-1" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
                         @csrf
-                        <div class="d-flex gap-2 align-items-end">
+                        <div class="d-flex gap-1 align-items-end">
                             <div class="flex-grow-1">
-                                <label class="form-label small mb-1">Min Handler</label>
-                                <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_handler" step="0.01" value="" placeholder="0.00">
+                                <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_handler" step="0.01" value="" placeholder="Min Handler">
                             </div>
                             <div class="flex-grow-1">
-                                <label class="form-label small mb-1">Handler</label>
-                                <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_handler" step="0.01" value="" placeholder="0.00">
+                                <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_handler" step="0.01" value="" placeholder="Handler">
                             </div>
                             <button type="button" class="btn btn-sm btn-primary" onclick="submitForm8Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
                                 Change
@@ -62,18 +55,16 @@
                 </div>
                 
                 {{-- Change All € Prices --}}
-                <div class="col-md-4">
-                    <label class="small fw-bold mb-2 d-block text-muted">Change All € Prices</label>
-                    <form class="d-flex flex-column gap-2" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
+                <div class="col-md-3">
+                    <label class="small fw-bold mb-1 d-block text-muted">Change All € Prices</label>
+                    <form class="d-flex flex-column gap-1" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
                         @csrf
-                        <div class="d-flex gap-2 align-items-end">
+                        <div class="d-flex gap-1 align-items-end">
                             <div class="flex-grow-1">
-                                <label class="form-label small mb-1">Min Price</label>
-                                <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="" placeholder="0.00">
+                                <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="" placeholder="Min Price">
                             </div>
                             <div class="flex-grow-1">
-                                <label class="form-label small mb-1">Price</label>
-                                <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="" placeholder="0.00">
+                                <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="" placeholder="Price">
                             </div>
                             <button type="button" class="btn btn-sm btn-success" onclick="submitForm4Marketplace(event, {{ $variationId }}, {{ $marketplaceId }})">
                                 Push
@@ -83,7 +74,7 @@
                 </div>
                 
                 {{-- Without Buybox --}}
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="without-buybox-section">
                         <h6 class="fw-bold mb-2">Without Buybox</h6>
                         @php

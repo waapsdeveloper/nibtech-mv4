@@ -866,7 +866,7 @@
                                             @if ($order->status >= 3)
                                             <a class="dropdown-item" href="{{ url('order') }}/recheck/{{ $order->reference_id }}/true?marketplace={{ $order->marketplace_id }}" target="_blank">Invoice</a>
                                             @endif
-                                            @if ($order->status == 6)
+                                            @if (in_array($order->status, [4,5,6]))
                                             <a class="dropdown-item" href="{{url('order')}}/export_refund_invoice/{{ $order->id }}" target="_blank">Refund Invoice</a>
                                             @endif
                                             @if (request('packing') == '1')
