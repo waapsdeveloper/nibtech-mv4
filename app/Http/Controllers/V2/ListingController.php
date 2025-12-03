@@ -10,6 +10,13 @@ use App\Services\V2\ListingCalculationService;
 use App\Services\V2\ListingCacheService;
 use App\Models\Process_model;
 use App\Models\Variation_model;
+use App\Models\Color_model;
+use App\Models\Country_model;
+use App\Models\Currency_model;
+use App\Models\ExchangeRate;
+use App\Models\Grade_model;
+use App\Models\Marketplace_model;
+use App\Models\Storage_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -41,35 +48,36 @@ class ListingController extends Controller
         $data['title_page'] = "Listings V2";
         session()->put('page_title', $data['title_page']);
 
-        // Handle process_id if provided
-        if (request('process_id') != null) {
-            $process = Process_model::where('id', request('process_id'))
-                ->where('process_type_id', 22)
-                ->first();
-            
-            if ($process != null) {
+        if(request('process_id') != null){
+            $process = Process_model::where('id', request('process_id'))->where('process_type_id', 22)->first();
+            if($process != null){
                 $data['process_id'] = $process->id;
-                $data['title_page'] = "Listings V2 - Topup - " . $process->reference_id;
-            } else {
+                $data['title_page'] = "Listings V2 - Topup - ".$process->reference_id;
+            }else{
                 $data['process_id'] = null;
             }
-        } else {
+        }else{
             $data['process_id'] = null;
         }
-        
         session()->put('page_title', $data['title_page']);
-
-        // Get reference data using service
-        $referenceData = $this->dataService->getReferenceData();
-        
-        // Get exchange rate data using calculation service
-        $exchangeData = $this->calculationService->getExchangeRateData();
-
-        // Merge all data
-        $data = array_merge($data, $referenceData, $exchangeData);
         $data['bm'] = new BackMarketAPIController();
+        $data['storages'] = session('dropdown_data')['storages'];
+        $data['colors'] = session('dropdown_data')['colors'];
+        $data['grades'] = Grade_model::where('id',"<",6)->pluck('name','id')->toArray();
+        $data['eur_gbp'] = ExchangeRate::where('target_currency','GBP')->first()->rate;
+        $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
+        $data['currencies'] = Currency_model::pluck('code','id');
+        $data['currency_sign'] = Currency_model::pluck('sign','id');
+        $countries = Country_model::all();
+        foreach($countries as $country){
+            $data['countries'][$country->id] = $country;
+        }
+        $marketplaces = Marketplace_model::all();
+        foreach($marketplaces as $marketplace){
+            $data['marketplaces'][$marketplace->id] = $marketplace;
+        }
 
-        return view('v2.listings')->with($data);
+        return view('v2.listing.listing')->with($data);
     }
 
     /**
