@@ -115,6 +115,27 @@
         background: #fff7ed;
     }
 
+    .translation-controls button {
+        white-space: nowrap;
+    }
+
+    .message-translation {
+        background: #eef2ff;
+        border-radius: 0.75rem;
+        border: 1px dashed #c7d2fe;
+        padding: 0.65rem 0.85rem;
+        font-size: 0.9rem;
+        color: #1e1b4b;
+    }
+
+    .message-translation .translation-label {
+        font-size: 0.75rem;
+        font-weight: 600;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        color: #4338ca;
+    }
+
     .support-meta-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
