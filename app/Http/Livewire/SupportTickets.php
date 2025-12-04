@@ -34,6 +34,7 @@ class SupportTickets extends Component
     public $replySubject = '';
     public $replyBody = '';
     public $replyRecipient = '';
+    public $replyRecipientEmail = '';
     public $replyStatus = null;
     public $replyError = null;
     protected ?int $replyFormThreadId = null;
@@ -100,6 +101,7 @@ class SupportTickets extends Component
         $this->replySubject = '';
         $this->replyBody = '';
         $this->replyRecipient = '';
+        $this->replyRecipientEmail = '';
         $this->replyStatus = null;
         $this->replyError = null;
         $this->replyFormThreadId = null;
@@ -397,7 +399,7 @@ class SupportTickets extends Component
             return;
         }
 
-        $recipient = $thread->reply_email ?? $thread->buyer_email;
+        $recipient = $this->replyRecipientEmail ?: ($thread->reply_email ?? $thread->buyer_email);
 
         if (! $recipient) {
             $this->replyError = 'This ticket does not have a valid recipient email.';
@@ -472,7 +474,8 @@ class SupportTickets extends Component
         }
 
         $this->replyFormThreadId = $thread->id;
-        $this->replyRecipient = $thread->reply_email ?? $thread->buyer_email ?? '';
+        $this->replyRecipientEmail = $thread->reply_email ?? $thread->buyer_email ?? '';
+        $this->replyRecipient = $thread->reply_mailbox_header ?? $this->replyRecipientEmail;
         $this->replySubject = $this->defaultReplySubject($thread);
         $this->replyBody = '';
         $this->replyStatus = null;

@@ -94,6 +94,30 @@ class SupportThread extends Model
         return filter_var($this->buyer_email, FILTER_VALIDATE_EMAIL) ? $this->buyer_email : null;
     }
 
+    public function getReplyMailboxHeaderAttribute(): ?string
+    {
+        $header = data_get($this->metadata, 'reply_to_header');
+        $header = is_string($header) ? trim($header) : null;
+
+        if ($header) {
+            return $header;
+        }
+
+        $email = $this->reply_email;
+        if (! $email) {
+            return null;
+        }
+
+        $name = 'Customer';
+        if ($this->marketplace_source === 'refurbed_mail') {
+            $name = 'Refurbed Supplier';
+        } elseif ($this->buyer_name) {
+            $name = $this->buyer_name;
+        }
+
+        return sprintf('%s <%s>', $name, $email);
+    }
+
     public function getPortalUrlAttribute(): ?string
     {
         $metadata = $this->metadata ?? [];

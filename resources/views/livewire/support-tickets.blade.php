@@ -220,8 +220,8 @@
                     @endif
                     <div class="mb-3">
                         <label class="form-label">To</label>
-                        <input type="email" class="form-control" value="{{ $replyRecipient ?: 'No recipient available' }}" disabled>
-                        @if (! $replyRecipient)
+                        <input type="text" class="form-control" value="{{ $replyRecipient ?: 'No recipient available' }}" disabled>
+                        @if (! $replyRecipientEmail)
                             <small class="text-danger">Recipient email missing for this ticket.</small>
                         @endif
                     </div>
@@ -241,7 +241,7 @@
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
                         <small class="text-muted">Replies are logged here and emailed instantly.</small>
-                        <button type="button" class="btn btn-primary" wire:click="sendReply" wire:loading.attr="disabled" wire:target="sendReply" @if (! $replyRecipient) disabled @endif>
+                        <button type="button" class="btn btn-primary" wire:click="sendReply" wire:loading.attr="disabled" wire:target="sendReply" @if (! $replyRecipientEmail) disabled @endif>
                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendReply"></span>
                             Send via Gmail
                         </button>
