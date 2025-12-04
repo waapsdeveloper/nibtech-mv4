@@ -1,5 +1,7 @@
 {{-- Support Tickets Workspace --}}
 
+@extends('layouts.app')
+
 @php
     use Illuminate\Support\Str;
 @endphp
@@ -140,6 +142,8 @@
     }
 </style>
 @endsection
+
+@section('content')
 
 <div class="support-shell">
     <div class="support-panel mb-3">
@@ -365,3 +369,5 @@
         </div>
     </div>
 </div>
+
+@endsection
