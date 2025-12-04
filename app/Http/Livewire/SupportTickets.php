@@ -43,6 +43,8 @@ class SupportTickets extends Component
     public $orderActionStatus = null;
     public $orderActionError = null;
     public $orderActionPayload = null;
+    public $ticketActionStatus = null;
+    public $ticketActionError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -116,6 +118,8 @@ class SupportTickets extends Component
         $this->orderActionStatus = null;
         $this->orderActionError = null;
         $this->orderActionPayload = null;
+        $this->ticketActionStatus = null;
+        $this->ticketActionError = null;
         $this->resetPage();
     }
 
@@ -129,6 +133,8 @@ class SupportTickets extends Component
         $this->orderActionStatus = null;
         $this->orderActionError = null;
         $this->orderActionPayload = null;
+        $this->ticketActionStatus = null;
+        $this->ticketActionError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
     }
@@ -225,12 +231,16 @@ class SupportTickets extends Component
             $this->selectedThreadId = null;
             $this->replyFormThreadId = null;
             $this->hydrateOrderContext(null);
+            $this->ticketActionStatus = null;
+            $this->ticketActionError = null;
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
             $this->hydrateReplyDefaults($threads->first());
             $this->orderActionStatus = null;
             $this->orderActionError = null;
             $this->orderActionPayload = null;
+            $this->ticketActionStatus = null;
+            $this->ticketActionError = null;
             $this->hydrateOrderContext($threads->first());
         }
 
@@ -393,6 +403,44 @@ class SupportTickets extends Component
         $text = trim(implode('', $segments));
 
         return $text === '' ? null : $text;
+    }
+
+    public function markThreadSolved(): void
+    {
+        $this->ticketActionStatus = null;
+        $this->ticketActionError = null;
+
+        if (! $this->selectedThreadId) {
+            $this->ticketActionError = 'Select a thread before marking as solved.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->ticketActionError = 'Thread not found.';
+
+            return;
+        }
+
+        if (strcasecmp((string) $thread->status, 'solved') === 0) {
+            $this->ticketActionStatus = 'Ticket is already marked as solved.';
+
+            return;
+        }
+
+        $thread->status = 'solved';
+        $thread->last_external_activity_at = now();
+
+        if (! $thread->assigned_to && session('user_id')) {
+            $thread->assigned_to = session('user_id');
+        }
+
+        $thread->save();
+
+        $this->ticketActionStatus = 'Ticket marked as solved.';
+        $this->emitSelf('supportThreadsUpdated');
     }
 
     public function cancelMarketplaceOrder(): void
