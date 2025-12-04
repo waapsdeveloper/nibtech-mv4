@@ -72,6 +72,11 @@ class SupportThread extends Model
 
     public function getReplyEmailAttribute(): ?string
     {
+        $mailboxEmail = data_get($this->metadata, 'mailbox_email');
+        if ($mailboxEmail && filter_var($mailboxEmail, FILTER_VALIDATE_EMAIL)) {
+            return $mailboxEmail;
+        }
+
         $messages = $this->relationLoaded('messages')
             ? $this->messages
             : $this->messages()->latest('sent_at')->take(5)->get();
