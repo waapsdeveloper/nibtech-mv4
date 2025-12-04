@@ -51,6 +51,7 @@ use App\Http\Livewire\Stock_room;
 use App\Http\Livewire\Storage;
 use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
+use App\Http\Livewire\SupportTickets;
 use Illuminate\Http\Request;
 
 /*
@@ -158,6 +159,7 @@ Route::get('report-lw', \App\Http\Livewire\ReportLw::class)->name('view_report_l
 
 Route::get('bm_invoice', BMInvoice::class)->name('view_bm_invoice_report');
 Route::get('bm_invoice/detail/{process_id}', [BMInvoice::class, 'invoice_detail'])->name('view_bm_invoice_detail_report');
+Route::get('support', SupportTickets::class)->name('support_tickets');
 
 Route::get('return', SalesReturn::class)->name('view_return');
 Route::get('add_return', [SalesReturn::class,'add_return'])->name('add_return');
