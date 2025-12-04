@@ -208,6 +208,7 @@
                     @forelse ($selectedThread->messages as $message)
                         @php
                             $activeTranslation = $messageTranslations[$message->id]['text'] ?? null;
+                            $showFullEmail = isset($expandedMessages[$message->id]);
                         @endphp
                         <div class="message {{ $message->is_internal_note ? 'message-note' : ($message->direction === 'outbound' ? 'outbound' : 'inbound') }}">
                             <div class="d-flex justify-content-between align-items-center mb-2">
@@ -215,6 +216,9 @@
                                 <div class="text-muted small">{{ optional($message->sent_at)->format('d M Y H:i') ?? 'n/a' }}</div>
                             </div>
                             <div class="d-flex justify-content-end flex-wrap gap-2 mb-2 translation-controls">
+                                <button type="button" class="btn btn-sm btn-outline-dark" wire:click="toggleFullMessage({{ $message->id }})">
+                                    {{ $showFullEmail ? 'Hide full email' : 'View full email' }}
+                                </button>
                                 @if (! $activeTranslation)
                                     <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="translateMessage({{ $message->id }})" wire:loading.attr="disabled" wire:target="translateMessage({{ $message->id }})">
                                         <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="translateMessage({{ $message->id }})"></span>
@@ -227,7 +231,11 @@
                                 @endif
                             </div>
                             <div class="message-body">
-                                @if ($message->clean_body_html !== '')
+                                @if ($showFullEmail && $message->body_html)
+                                    {!! $message->body_html !!}
+                                @elseif ($showFullEmail)
+                                    {!! nl2br(e($message->body_text ?? '')) !!}
+                                @elseif ($message->clean_body_html !== '')
                                     {!! $message->clean_body_html !!}
                                 @elseif ($message->body_html)
                                     {!! $message->body_html !!}
@@ -239,6 +247,20 @@
                                 <div class="message-translation mt-2">
                                     <div class="translation-label mb-1">English translation</div>
                                     <div>{!! nl2br(e($activeTranslation)) !!}</div>
+                                </div>
+                            @endif
+                            @if (! empty($message->detected_links))
+                                <div class="email-links mt-2">
+                                    <div class="translation-label mb-1 text-uppercase">Links in this email</div>
+                                    <ul class="mb-0 ps-3">
+                                        @foreach ($message->detected_links as $link)
+                                            <li>
+                                                <a href="{{ $link['url'] }}" target="_blank" rel="noopener">
+                                                    {{ $link['label'] }}
+                                                </a>
+                                            </li>
+                                        @endforeach
+                                    </ul>
                                 </div>
                             @endif
                             @if (!empty($message->attachments))
