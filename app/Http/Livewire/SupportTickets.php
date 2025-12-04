@@ -675,6 +675,7 @@ class SupportTickets extends Component
         try {
             $payload = $this->buildInvoicePayload($order);
             $this->sendInvoiceMail($customer->email, $payload, $isRefund);
+            $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -763,6 +764,39 @@ class SupportTickets extends Component
                 throw new \RuntimeException('All mailers failed to send invoice.');
             }
         }
+    }
+
+    protected function logInvoiceThreadEntry(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund): void
+    {
+        $author = Admin_model::find(session('user_id'));
+        $authorName = $author ? trim($author->first_name . ' ' . $author->last_name) : 'Nib Support';
+        $authorEmail = $author->email ?? config('mail.from.address', 'no-reply@nibritaintech.com');
+        $label = $isRefund ? 'Refund invoice' : 'Invoice';
+        $orderLabel = $order->reference_id ?? ('#' . $order->id);
+        $body = sprintf('%s emailed to %s for order %s.', $label, $recipient, $orderLabel);
+
+        SupportMessage::create([
+            'support_thread_id' => $thread->id,
+            'direction' => 'internal',
+            'author_name' => $authorName,
+            'author_email' => $authorEmail,
+            'body_text' => $body,
+            'body_html' => e($body),
+            'sent_at' => now(),
+            'is_internal_note' => true,
+            'metadata' => [
+                'source' => 'support_portal',
+                'invoice_action' => $isRefund ? 'refund' : 'order',
+            ],
+        ]);
+
+        $thread->last_external_activity_at = now();
+        if (! $thread->assigned_to && session('user_id')) {
+            $thread->assigned_to = session('user_id');
+        }
+        $thread->save();
+
+        $this->emitSelf('supportThreadsUpdated');
     }
 
     protected function defaultReplySubject(SupportThread $thread): string
