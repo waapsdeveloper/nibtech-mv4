@@ -45,6 +45,7 @@ class ListingController extends Controller
      */
     public function index()
     {
+        \Log::info('V2 ListingController index called');
         $data['title_page'] = "Listings V2";
         session()->put('page_title', $data['title_page']);
 
@@ -85,6 +86,7 @@ class ListingController extends Controller
      */
     public function getVariations(Request $request)
     {
+        \Log::info('V2 ListingController getVariations called', ['request' => $request->all()]);
         try {
             // Increase execution time limit for this operation
             set_time_limit(120);
@@ -168,9 +170,9 @@ class ListingController extends Controller
                 ];
             })->toArray();
 
-            // Cache all variation data for quick access when rendering items one at a time
-            $pageKey = $this->cacheService->generatePageKey($request->all());
-            $this->cacheService->cacheVariationData($variationData, $pageKey);
+            // TEMPORARILY DISABLED: Cache all variation data for quick access when rendering items one at a time
+            // $pageKey = $this->cacheService->generatePageKey($request->all());
+            // $this->cacheService->cacheVariationData($variationData, $pageKey);
 
             return response()->json([
                 'data' => $variationData,
@@ -202,6 +204,7 @@ class ListingController extends Controller
      */
     public function renderListingItems(Request $request)
     {
+        \Log::info('V2 ListingController renderListingItems called', ['variation_ids' => $request->input('variation_ids', [])]);
         try {
             $variationIds = $request->input('variation_ids', []);
             $singleId = $request->input('variation_id', null);
@@ -217,20 +220,20 @@ class ListingController extends Controller
                 ]);
             }
 
-            // Try to get cached data first (much faster - no DB queries)
-            $cachedData = $this->cacheService->getCachedVariations($variationIds);
+            // TEMPORARILY DISABLED: Try to get cached data first (much faster - no DB queries)
+            // $cachedData = $this->cacheService->getCachedVariations($variationIds);
             $variationData = [];
-            $missingIds = [];
+            $missingIds = $variationIds; // Load all from DB (cache disabled for testing)
 
-            // Check which items are cached and which need to be loaded
-            foreach ($variationIds as $id) {
-                $cached = collect($cachedData)->firstWhere('id', $id);
-                if ($cached) {
-                    $variationData[] = $cached;
-                } else {
-                    $missingIds[] = $id;
-                }
-            }
+            // TEMPORARILY DISABLED: Check which items are cached and which need to be loaded
+            // foreach ($variationIds as $id) {
+            //     $cached = collect($cachedData)->firstWhere('id', $id);
+            //     if ($cached) {
+            //         $variationData[] = $cached;
+            //     } else {
+            //         $missingIds[] = $id;
+            //     }
+            // }
 
             // If some items are missing from cache, load them from DB
             if (!empty($missingIds)) {
@@ -323,11 +326,11 @@ class ListingController extends Controller
                     ];
                 })->filter()->values()->toArray();
 
-                // Cache the newly loaded data
-                if (!empty($missingData)) {
-                    $pageKey = $this->cacheService->generatePageKey($request->all());
-                    $this->cacheService->cacheVariationData($missingData, $pageKey);
-                }
+                // TEMPORARILY DISABLED: Cache the newly loaded data
+                // if (!empty($missingData)) {
+                //     $pageKey = $this->cacheService->generatePageKey($request->all());
+                //     $this->cacheService->cacheVariationData($missingData, $pageKey);
+                // }
 
                 // Merge cached and newly loaded data
                 $variationData = array_merge($variationData, $missingData);
@@ -361,7 +364,7 @@ class ListingController extends Controller
                 $component = \Livewire\Livewire::mount('v2.listing.listing-item', [
                     'variationId' => $variationItem['id'],
                     'rowNumber' => $index + 1,
-                    'preloadedVariationData' => $variationItem,
+                    'preloadedVariationData' => null, // TEMPORARILY DISABLED: Set to null to force fresh calculation
                     'storages' => $referenceData['storages'],
                     'colors' => $referenceData['colors'],
                     'grades' => $referenceData['grades'],
@@ -388,6 +391,26 @@ class ListingController extends Controller
                 'html' => '<p class="text-center text-danger">Error rendering components: ' . 
                     htmlspecialchars($e->getMessage()) . ' Please refresh the page.</p>',
                 'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Clear listing cache (preloaded variation data)
+     */
+    public function clearCache()
+    {
+        try {
+            $this->cacheService->clearAllCaches();
+            return response()->json([
+                'success' => true,
+                'message' => 'Listing cache cleared successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error clearing listing cache: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error clearing cache: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -1,7 +1,7 @@
 {{-- This Blade template generates a JavaScript template function for variation cards --}}
 <script>
     window.renderVariationCard = function(variation, data) {
-        const { colors, storages, grades, countries, marketplaces, eurToGbp, m_min_price, m_price, withoutBuybox, state, listedStock, process_id } = data;
+        const { colors, storages, grades, countries, marketplaces, eurToGbp, m_min_price, m_price, withoutBuybox, state, listedStock, process_id, listingsTable, stocksTable, exchangeRates, currencies, currencySign } = data;
         
         return `
             <div class="card">
@@ -52,9 +52,7 @@
                         <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
                     </div>
 
-                    <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
-                        <i class="fas fa-chevron-down"></i>
-                    </button>
+                    {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
                 </div>
                 <div class="d-flex justify-content-between">
                     <div class="pt-3">
@@ -67,44 +65,7 @@
                         </h6>
                     </div>
                 </div>
-                <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
-                    <div class="col-md-auto">
-                        <div class="table-responsive">
-                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th><small><b>No</b></small></th>
-                                        <th><small><b>IMEI/Serial</b></small></th>
-                                        <th><small><b>Cost</b> (<b id="average_cost_${variation.id}"></b>)</small></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="stocks_${variation.id}">
-                                    ${data.stocksTable || ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                    <div class="col-md">
-                        <div class="table-responsive">
-                            <table class="table table-hover mb-0 text-md-nowrap">
-                                <thead>
-                                    <tr>
-                                        <th width="80"><small><b>Country</b></small></th>
-                                        <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
-                                        <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
-                                        <th width="80"><small><b>BuyBox</b></small></th>
-                                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variation.id}"></b>)</small></th>
-                                        <th width="120"><small><b>Price</b></small></th>
-                                        <th><small><b>Date</b></small></th>
-                                    </tr>
-                                </thead>
-                                <tbody id="listings_${variation.id}">
-                                    ${data.listingsTable || ''}
-                                </tbody>
-                            </table>
-                        </div>
-                    </div>
-                </div>
+                {{-- Details section removed - tables now shown in marketplace toggle sections --}}
                 {{-- Marketplace Bars Section - Card Footer --}}
                 ${(() => {
                     if (!marketplaces || Object.keys(marketplaces).length === 0) {
@@ -243,21 +204,19 @@
                         // Format order summary
                         const orderSummary = `7 days: €${(summary.last_7_days_total || 0).toFixed(2)} (${summary.last_7_days_count || 0}) - 14 days: €${(summary.last_14_days_total || 0).toFixed(2)} (${summary.last_14_days_count || 0}) - 30 days: €${(summary.last_30_days_total || 0).toFixed(2)} (${summary.last_30_days_count || 0})`;
                         
-                        // Generate toggle content HTML using the helper function if available, otherwise inline
-                        const toggleContent = (window.renderMarketplaceToggleContent) 
-                            ? window.renderMarketplaceToggleContent(variation.id, marketplaceId, marketplaceName, {
-                                marketplaceListings: marketplaceListings,
-                                summary: summary
-                            })
-                            : `
+                        // Count listings for this marketplace
+                        const listingCount = marketplaceListings.length;
+                        const marketplaceNameWithCount = `${marketplaceName} (${listingCount} ${listingCount === 1 ? 'listing' : 'listings'})`;
+                        
+                        // Generate toggle content with lazy loading - show loader initially
+                        const toggleContent = `
                             <div class="marketplace-toggle-content collapse" id="marketplace_toggle_${variation.id}_${marketplaceId}">
-                                <div class="p-3 bg-light border-top">
-                                    <div class="row">
-                                        <div class="col-12">
-                                            <h6 class="fw-bold mb-3">Marketplace Details</h6>
-                                            <p class="text-muted small">This is a test view for marketplace <strong>${marketplaceName}</strong> (ID: ${marketplaceId}) of variation ${variation.id}.</p>
-                                            <p class="text-muted small">Additional content can be added here based on requirements.</p>
+                                <div class="p-3 bg-light border-top marketplace-tables-container" data-loaded="false">
+                                    <div class="text-center p-4">
+                                        <div class="spinner-border text-primary" role="status">
+                                            <span class="visually-hidden">Loading...</span>
                                         </div>
+                                        <p class="mt-2 text-muted small">Click to load tables...</p>
                                     </div>
                                 </div>
                             </div>
@@ -267,10 +226,21 @@
                             <div class="marketplace-bar-wrapper border-bottom">
                                 <div class="p-2">
                                     <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div class="fw-bold">${marketplaceName}</div>
+                                        <div class="fw-bold">${marketplaceNameWithCount}</div>
                                         <div class="d-flex align-items-center gap-2">
                                             <div>${buyboxFlags}</div>
-                                            <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_${variation.id}_${marketplaceId}" aria-expanded="false" aria-controls="marketplace_toggle_${variation.id}_${marketplaceId}" style="min-width: 24px;" onclick="this.querySelector('i').classList.toggle('fa-chevron-down'); this.querySelector('i').classList.toggle('fa-chevron-up');">
+                                            <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_${variation.id}_${marketplaceId}" aria-expanded="false" aria-controls="marketplace_toggle_${variation.id}_${marketplaceId}" style="min-width: 24px;" onclick="
+                                                const icon = this.querySelector('i');
+                                                icon.classList.toggle('fa-chevron-down');
+                                                icon.classList.toggle('fa-chevron-up');
+                                                const toggleEl = document.getElementById('marketplace_toggle_${variation.id}_${marketplaceId}');
+                                                if (toggleEl && toggleEl.classList.contains('show')) {
+                                                    // Toggle is opening - load tables if not already loaded
+                                                    if (window.loadMarketplaceTables) {
+                                                        window.loadMarketplaceTables(${variation.id}, ${marketplaceId}, ${eurToGbp}, ${m_min_price}, ${m_price});
+                                                    }
+                                                }
+                                            ">
                                                 <i class="fas fa-chevron-down"></i>
                                             </button>
                                         </div>

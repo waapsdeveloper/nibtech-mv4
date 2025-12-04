@@ -189,6 +189,7 @@
     {{-- Include variation card template function --}}
     @include('v2.listing.partials.variation-card-template')
     @include('v2.listing.partials.marketplace-bar-toggle')
+    @include('v2.listing.partials.marketplace-tables')
     
     <script>
         function moveToNextInput(currentInput, prefix, moveUp = false) {
@@ -1228,8 +1229,8 @@
                 // Convert params object to a query string
                 let queryString = $.param(params);
 
-                // Append query string to the URL
-                let url = "{{ url('listing/get_variations') }}" + '?' + queryString;
+                // Append query string to the URL - Using V2 route
+                let url = "{{ url('v2/listings/get_variations') }}" + '?' + queryString;
 
                 $.ajax({
                     url: url,
@@ -1309,9 +1310,17 @@
 
 
             function displayVariations(variations) {
-                let variation_ids = variations.data.map(variation => variation.id);
+                let variation_ids = variations.data.map(variation => variation.id || variation.variation_data?.id);
                 let countries = {!! json_encode($countries) !!}; // Make countries available in this scope
                 let marketplaces = {!! json_encode($marketplaces) !!}; // Make marketplaces available in this scope
+                
+                // Make data globally available for marketplace tables
+                window.countries = countries;
+                window.marketplaces = marketplaces;
+                window.exchange_rates = {!! json_encode($exchange_rates) !!};
+                window.currencies = {!! json_encode($currencies) !!};
+                window.currency_sign = {!! json_encode($currency_sign) !!};
+                window.variationData = {}; // Store variation data for lazy loading
 
                 let variationsContainer = $('#variations'); // The container where data will be displayed
                 variationsContainer.empty(); // Clear any existing content
@@ -1320,21 +1329,31 @@
                 // Check if there's data
                 if (variations.data.length > 0) {
                     variations.data.forEach(function(variation) {
+                        // Handle V2 format: {id, variation_data: {...}, calculated_stats: {...}}
+                        // Extract the actual variation data if it's in V2 format
+                        let actualVariation = variation.variation_data || variation;
+                        let variationId = variation.id || actualVariation.id;
+                        
+                        // Store variation data for lazy loading
+                        window.variationData[variationId] = variation;
 
-                        // load("{{ url('listing/get_competitors')}}/${variation.id}");
+                        // load("{{ url('listing/get_competitors')}}/${variationId}");
                         // let withBuybox = '';
                         let withoutBuybox = '';
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];
-                        let listedStock = fetchUpdatedQuantity(variation.id);
-                        let m_min_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.min_price));
-                        let m_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.price));
+                        let listedStock = fetchUpdatedQuantity(variationId);
+                        
+                        // Handle listings - V2 format has listings in variation_data.listings
+                        let listings = actualVariation.listings || [];
+                        let m_min_price = listings.length > 0 ? Math.min(...listings.filter(listing => listing.country === 73).map(listing => listing.min_price)) : 0;
+                        let m_price = listings.length > 0 ? Math.min(...listings.filter(listing => listing.country === 73).map(listing => listing.price)) : 0;
                         let exchange_rates = {!! json_encode($exchange_rates) !!};
                         let currencies = {!! json_encode($currencies) !!};
                         let currency_sign = {!! json_encode($currency_sign) !!};
 
-                        switch (variation.state) {
+                        switch (actualVariation.state) {
                             case 0:
                                 state = 'Missing price or comment';
                                 break;
@@ -1354,12 +1373,12 @@
                                 state = 'Unknown';
                         }
 
-                        getStocks(variation.id);
+                        getStocks(variationId);
                         // $('#open_all_variations').on('click', function() {
-                        //     getVariationDetails(variation.id, eurToGbp, m_min_price, m_price, 1)
+                        //     getVariationDetails(variationId, eurToGbp, m_min_price, m_price, 1)
                         // });
-                        variation.listings.forEach(function(listing) {
-                            let best_price = $('#best_price_'+variation.id).text().replace('€', '');
+                        listings.forEach(function(listing) {
+                            let best_price = $('#best_price_'+variationId).text().replace('€', '');
                             let exchange_rates_2 = exchange_rates;
                             let currencies_2 = currencies;
                             let currency_sign_2 = currency_sign;
@@ -1380,8 +1399,8 @@
                                 pm_append_title = 'Break Even: '+currency_sign_2[listing.currency_id]+(parseFloat(best_price)*parseFloat(rates)).toFixed(2);
 
                             }else{
-                                window.eur_listings[variation.id] = window.eur_listings[variation.id] || [];
-                                window.eur_listings[variation.id].push(listing);
+                                window.eur_listings[variationId] = window.eur_listings[variationId] || [];
+                                window.eur_listings[variationId].push(listing);
 
                             }
                             let name = listing.name;
@@ -1527,22 +1546,44 @@
                             process_id: "{{ $process_id ?? '' }}",
                             listingsTable: listingsTable,
                             stocksTable: stocksTable,
+                            exchangeRates: exchange_rates,
+                            currencies: currencies,
+                            currencySign: currency_sign,
                             marketplace_summaries: (variation.calculated_stats && variation.calculated_stats.marketplace_summaries) || variation.marketplace_summaries || {},
                             buybox_listings: (variation.calculated_stats && variation.calculated_stats.buybox_listings) || variation.buybox_listings || []
                         };
                         
-                        const cardHtml = window.renderVariationCard(variation, templateData);
+                        const cardHtml = window.renderVariationCard(actualVariation, templateData);
                         variationsContainer.append(cardHtml);
-                        bindHandlerEnterShortcut(variation.id);
-                        bindPriceEnterShortcut(variation.id);
+                        bindHandlerEnterShortcut(variationId);
+                        bindPriceEnterShortcut(variationId);
+                        
+                        // Bind collapse event listeners for marketplace toggles to load tables on first open
+                        $(document).ready(function() {
+                            $('[id^="marketplace_toggle_' + variationId + '_"]').on('show.bs.collapse', function() {
+                                const toggleId = $(this).attr('id');
+                                const marketplaceId = toggleId.split('_').pop();
+                                const container = $(this).find('.marketplace-tables-container');
+                                
+                                if (container.data('loaded') !== true && window.loadMarketplaceTables) {
+                                    window.loadMarketplaceTables(
+                                        variationId,
+                                        parseInt(marketplaceId),
+                                        eurToGbp,
+                                        m_min_price,
+                                        m_price
+                                    );
+                                }
+                            });
+                        });
                                                         // <th width="120"><small><b>Target</b></small></th>
                                                         // <th width="80"><small><b>%</b></small></th>
                                                         // <th title="Buybox Winner Price"><small><b>Winner</b></small></th>
 
-                        $("#change_qty_"+variation.id).submit(function(e) {
-                            submitForm(e, variation.id);
+                        $("#change_qty_"+variationId).submit(function(e) {
+                            submitForm(e, variationId);
                         });
-                        $('#sales_'+variation.id).load("{{ url('listing/get_sales') . '/'}}"+variation.id+"?csrf={{ csrf_token() }}");
+                        $('#sales_'+variationId).load("{{ url('listing/get_sales') . '/'}}"+variationId+"?csrf={{ csrf_token() }}");
 
                         $(document).ready(function() {
 

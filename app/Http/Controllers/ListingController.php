@@ -559,7 +559,10 @@ class ListingController extends Controller
     }
     public function get_today_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
@@ -568,14 +571,20 @@ class ListingController extends Controller
             return $item->price;
         })->avg();
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->startOfDay(), now()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->count();
 
         return "Today: €".number_format($order_items,2)." (".$order_items_count.")";
     }
     public function get_yesterday_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
@@ -584,14 +593,20 @@ class ListingController extends Controller
             return $item->price;
         })->avg();
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->count();
 
         return "Yesterday: €".number_format($order_items,2)." (".$order_items_count.")";
     }
     public function get_last_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
@@ -600,14 +615,20 @@ class ListingController extends Controller
             return $item->price;
         })->avg();
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->count();
 
         return "7 days: €".number_format($order_items,2)." (".$order_items_count.")";
     }
     public function get_2_week_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
@@ -616,14 +637,20 @@ class ListingController extends Controller
             return $item->price;
         })->avg();
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(14)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->count();
 
         return "14 days: €".number_format($order_items,2)." (".$order_items_count.")";
     }
     public function get_30_days_average($id){
         $order_items = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(30)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->with('order.currency_id')->get()->map(function($item) {
             if($item->order->currency != 4) {
             $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()->rate ?? 1;
@@ -632,7 +659,10 @@ class ListingController extends Controller
             return $item->price;
         })->avg();
         $order_items_count = Order_item_model::where('variation_id',$id)->whereHas('order', function($q){
-            $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])->where('order_type_id',3)->where('marketplace_id',1);
+            $q->whereBetween('created_at', [now()->subDays(30)->startOfDay(), now()->yesterday()->endOfDay()])->where('order_type_id',3)
+              ->where(function($query) {
+                  $query->whereNull('marketplace_id')->orWhere('marketplace_id', 1);
+              });
         })->count();
 
         return "30 days: €".number_format($order_items,2)." (".$order_items_count.")";
