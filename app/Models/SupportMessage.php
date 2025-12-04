@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Str;
 
 class SupportMessage extends Model
 {
@@ -227,7 +228,7 @@ class SupportMessage extends Model
             return null;
         }
 
-        if (! str_starts_with($clean, ['http://', 'https://'])) {
+        if (! Str::startsWith($clean, ['http://', 'https://'])) {
             $clean = 'https://' . ltrim($clean, '/');
         }
 
