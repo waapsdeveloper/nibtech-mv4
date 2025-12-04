@@ -198,6 +198,111 @@
                     </div>
                 </div>
 
+                @php
+                    $order = $selectedThread->order;
+                    $orderItems = $order?->order_items ?? collect();
+                    $orderValue = $order && isset($order->price) ? number_format((float) $order->price, 2) : null;
+                    $orderCurrency = $order?->currency ?? null;
+                    $customer = $order?->customer;
+                    $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : null;
+                    $marketplaceReference = $selectedThread->order_reference
+                        ?? ($order->reference_id ?? $order->reference ?? null);
+                @endphp
+
+                <div class="support-order-panel mt-3">
+                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                        <div>
+                            <h6 class="mb-1">Order information</h6>
+                            <small class="text-muted">Internal order data synced with marketplace.</small>
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            @if ($marketplaceOrderUrl)
+                                <a href="{{ $marketplaceOrderUrl }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
+                                    View in marketplace
+                                </a>
+                            @endif
+                            <button type="button" class="btn btn-outline-danger btn-sm" wire:click="cancelMarketplaceOrder" wire:loading.attr="disabled" wire:target="cancelMarketplaceOrder" @if (! $canCancelOrder) disabled @endif>
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="cancelMarketplaceOrder"></span>
+                                Cancel marketplace order
+                            </button>
+                        </div>
+                    </div>
+
+                    @if ($orderActionError)
+                        <div class="alert alert-danger py-2 px-3 mt-3 mb-0">{{ $orderActionError }}</div>
+                    @endif
+                    @if ($orderActionStatus)
+                        <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $orderActionStatus }}</div>
+                    @endif
+
+                    <div class="support-order-meta mt-3">
+                        <div class="meta-pill">
+                            <div class="text-muted small">Internal order</div>
+                            <div class="fw-semibold">{{ $order ? '#' . $order->id : 'n/a' }}</div>
+                        </div>
+                        <div class="meta-pill">
+                            <div class="text-muted small">Marketplace reference</div>
+                            <div class="fw-semibold">{{ $marketplaceReference ?? 'n/a' }}</div>
+                        </div>
+                        <div class="meta-pill">
+                            <div class="text-muted small">Items</div>
+                            <div class="fw-semibold">{{ $orderItems->count() }}</div>
+                        </div>
+                        <div class="meta-pill">
+                            <div class="text-muted small">Order value</div>
+                            <div class="fw-semibold">{{ $orderValue ? $orderValue . ' ' . ($orderCurrency ?? '') : 'n/a' }}</div>
+                        </div>
+                        <div class="meta-pill">
+                            <div class="text-muted small">Customer</div>
+                            <div class="fw-semibold">{{ $customerName ?: ($selectedThread->buyer_name ?? 'n/a') }}</div>
+                        </div>
+                        <div class="meta-pill">
+                            <div class="text-muted small">Status</div>
+                            <div class="fw-semibold">{{ optional($order)->status ?? 'n/a' }}</div>
+                        </div>
+                    </div>
+
+                    @if ($order)
+                        @if ($orderItems->count() > 0)
+                            <div class="table-responsive mt-3">
+                                <table class="table table-sm align-middle mb-0">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th scope="col">Line</th>
+                                            <th scope="col">SKU / Item</th>
+                                            <th scope="col" class="text-center">Qty</th>
+                                            <th scope="col" class="text-end">Price</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach ($orderItems as $item)
+                                            <tr>
+                                                <td>{{ $item->reference_id ?? ('#' . $item->id) }}</td>
+                                                <td>
+                                                    <div class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</div>
+                                                    <small class="text-muted">{{ $item->status ?? 'pending' }}</small>
+                                                </td>
+                                                <td class="text-center">{{ $item->quantity ?? 1 }}</td>
+                                                <td class="text-end">
+                                                    @if ($item->price !== null)
+                                                        {{ number_format((float) $item->price, 2) }} {{ $item->currency ?? $orderCurrency ?? '' }}
+                                                    @else
+                                                        n/a
+                                                    @endif
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                            </div>
+                        @else
+                            <div class="text-muted small mt-3">No order items captured for this order.</div>
+                        @endif
+                    @else
+                        <div class="text-muted small mt-3">No internal order is linked to this ticket yet.</div>
+                    @endif
+                </div>
+
                 <div class="mt-3 d-flex flex-wrap gap-2">
                     @foreach ($selectedThread->tags as $tag)
                         <span class="tag-chip" style="color: {{ $tag->color ?? '#2563eb' }}">{{ $tag->name }}</span>
