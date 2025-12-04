@@ -72,6 +72,10 @@ class MarketplaceOrderActionService
                 $client = app(RefurbedAPIController::class);
                 $payload = $client->cancelOrder($reference, $reason);
 
+                if (! ($payload['success'] ?? false)) {
+                    return $this->failure($payload['message'] ?? 'Refurbed API rejected the cancellation.', $payload);
+                }
+
                 return $this->success('Refurbed order cancelled on marketplace.', $payload);
             }
 

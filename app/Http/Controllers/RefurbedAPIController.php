@@ -174,10 +174,48 @@ class RefurbedAPIController extends Controller
 
     public function cancelOrder(string $orderId, ?string $reason = null): array
     {
-        return $this->post('refb.merchant.v1.OrderService/CancelOrder', $this->cleanPayload([
-            'id' => $this->normalizeOrderId($orderId),
-            'reason' => $reason,
-        ]));
+        $orderId = (string) $this->normalizeOrderId($orderId);
+
+        $itemsResponse = $this->getAllOrderItems($orderId);
+        $orderItems = $itemsResponse['order_items'] ?? [];
+
+        $updates = [];
+
+        foreach ($orderItems as $item) {
+            $itemId = $item['id']
+                ?? $item['order_item_id']
+                ?? $item['order_line_id']
+                ?? null;
+
+            if (! $itemId) {
+                continue;
+            }
+
+            $payload = [
+                'id' => (string) $itemId,
+                'state' => 'CANCELLED',
+            ];
+
+            $updates[] = $payload;
+        }
+
+        if ($updates === []) {
+            return [
+                'success' => false,
+                'message' => 'No Refurbed order lines were found to cancel.',
+                'order_id' => $orderId,
+            ];
+        }
+
+        $result = $this->batchUpdateOrderItemsState($updates);
+
+        return [
+            'success' => true,
+            'message' => 'Refurbed order lines cancelled.',
+            'order_id' => $orderId,
+            'updated' => $result['total'] ?? count($updates),
+            'raw_response' => $result,
+        ];
     }
 
     public function listOrderItems(string $orderId, array $filter = [], array $pagination = [], array $sort = []): array
