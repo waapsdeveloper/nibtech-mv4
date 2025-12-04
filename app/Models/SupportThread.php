@@ -8,6 +8,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+use App\Models\Admin_model;
+use App\Models\Marketplace_model;
 use App\Models\Order_model;
 use App\Models\SupportMessage;
 use App\Models\SupportTag;
@@ -54,5 +56,15 @@ class SupportThread extends Model
     public function order(): BelongsTo
     {
         return $this->belongsTo(Order_model::class, 'order_id');
+    }
+
+    public function marketplace(): BelongsTo
+    {
+        return $this->belongsTo(Marketplace_model::class, 'marketplace_id');
+    }
+
+    public function assignee(): BelongsTo
+    {
+        return $this->belongsTo(Admin_model::class, 'assigned_to');
     }
 }

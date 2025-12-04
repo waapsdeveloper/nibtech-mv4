@@ -82,6 +82,10 @@
                                         <span class="side-menu__label">Sales Returns</span></a>
 								</li>
                                 @endif
+                                <li class="slide">
+                                <a class="side-menu__item" href="{{ url('support') }}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24"><path d="M12 2a7 7 0 0 0-7 7v2a5 5 0 0 0 5 5h1v3a1 1 0 0 0 1.447.894l4-2A1 1 0 0 0 17 17v-1.382c1.161-.414 2-1.523 2-2.618V9a7 7 0 0 0-7-7zm-5 7a5 5 0 0 1 10 0v4c0 .552-.448 1-1 1h-1a1 1 0 0 0-1 1v1.382l-2 .894V15a1 1 0 0 0-1-1h-2a3 3 0 0 1-3-3z"/></svg>
+                                    <span class="side-menu__label">Support</span></a>
+                            </li>
                                 @if($user->hasPermission('view_wholesale'))
 								<li class="slide">
 									<a class="side-menu__item" href="{{url('wholesale').'?status=2'}}"><svg xmlns="http://www.w3.org/2000/svg"  class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24"><path d="M10 3H4a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4a1 1 0 0 0-1-1zM9 9H5V5h4v4zm11 4h-6a1 1 0 0 0-1 1v6a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1zm-1 6h-4v-4h4v4zM17 3c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4zm0 6c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2zM7 13c-2.206 0-4 1.794-4 4s1.794 4 4 4 4-1.794 4-4-1.794-4-4-4zm0 6c-1.103 0-2-.897-2-2s.897-2 2-2 2 .897 2 2-.897 2-2 2z"/></svg>
