@@ -143,6 +143,9 @@
 
         <div class="support-panel">
             @if ($selectedThread)
+                @php
+                    $isThreadSolved = strtolower($selectedThread->status ?? '') === 'solved';
+                @endphp
                 <div class="support-detail-header">
                     <div>
                         <h4 class="mb-1">{{ $selectedThread->order_reference ?? $selectedThread->external_thread_id }}</h4>
@@ -170,8 +173,19 @@
                                 Reply via email
                             </a>
                         @endif
+                        <button type="button" class="btn btn-sm btn-success" wire:click="markThreadSolved" wire:loading.attr="disabled" wire:target="markThreadSolved" @if ($isThreadSolved) disabled @endif>
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="markThreadSolved"></span>
+                            {{ $isThreadSolved ? 'Solved' : 'Mark as solved' }}
+                        </button>
                     </div>
                 </div>
+
+                @if ($ticketActionError)
+                    <div class="alert alert-danger mt-3">{{ $ticketActionError }}</div>
+                @endif
+                @if ($ticketActionStatus)
+                    <div class="alert alert-success mt-3">{{ $ticketActionStatus }}</div>
+                @endif
 
                 <div class="support-meta-grid">
                     <div class="meta-pill">
