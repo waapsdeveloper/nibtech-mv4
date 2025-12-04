@@ -7,8 +7,10 @@ use App\Models\Marketplace_model;
 use App\Models\SupportMessage;
 use App\Models\SupportTag;
 use App\Models\SupportThread;
+use App\Services\Support\SupportEmailSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -29,6 +31,12 @@ class SupportTickets extends Component
     public $sortDirection = 'desc';
     public array $messageTranslations = [];
     public array $expandedMessages = [];
+    public $replySubject = '';
+    public $replyBody = '';
+    public $replyRecipient = '';
+    public $replyStatus = null;
+    public $replyError = null;
+    protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -89,6 +97,12 @@ class SupportTickets extends Component
         $this->selectedThreadId = null;
         $this->messageTranslations = [];
         $this->expandedMessages = [];
+        $this->replySubject = '';
+        $this->replyBody = '';
+        $this->replyRecipient = '';
+        $this->replyStatus = null;
+        $this->replyError = null;
+        $this->replyFormThreadId = null;
         $this->resetPage();
     }
 
@@ -97,6 +111,9 @@ class SupportTickets extends Component
         $this->selectedThreadId = $threadId;
         $this->messageTranslations = [];
         $this->expandedMessages = [];
+        $this->replyStatus = null;
+        $this->replyError = null;
+        $this->hydrateReplyDefaults();
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -189,8 +206,10 @@ class SupportTickets extends Component
 
         if ($threads->count() === 0) {
             $this->selectedThreadId = null;
+            $this->replyFormThreadId = null;
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
+            $this->hydrateReplyDefaults($threads->first());
         }
 
         return view('livewire.support-tickets', [
@@ -352,5 +371,127 @@ class SupportTickets extends Component
         $text = trim(implode('', $segments));
 
         return $text === '' ? null : $text;
+    }
+
+    public function sendReply(): void
+    {
+        $this->replyStatus = null;
+        $this->replyError = null;
+
+        if (! $this->selectedThreadId) {
+            $this->replyError = 'Select a thread before replying.';
+
+            return;
+        }
+
+        $this->validate([
+            'replySubject' => ['nullable', 'string', 'max:255'],
+            'replyBody' => ['required', 'string', 'min:3'],
+        ]);
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->replyError = 'Thread not found.';
+
+            return;
+        }
+
+        $recipient = $thread->reply_email ?? $thread->buyer_email;
+
+        if (! $recipient) {
+            $this->replyError = 'This ticket does not have a valid recipient email.';
+
+            return;
+        }
+
+        $subject = $this->replySubject ?: $this->defaultReplySubject($thread);
+        $body = trim($this->replyBody ?? '');
+
+        if ($body === '') {
+            $this->replyError = 'Message body cannot be empty.';
+
+            return;
+        }
+
+        try {
+            app(SupportEmailSender::class)->sendHtml($recipient, $subject, $this->formatReplyHtml($body));
+        } catch (\Throwable $exception) {
+            Log::error('Support reply failed', [
+                'thread_id' => $thread->id,
+                'recipient' => $recipient,
+                'error' => $exception->getMessage(),
+            ]);
+            $this->replyError = $exception->getMessage();
+
+            return;
+        }
+
+        $author = Admin_model::find(session('user_id'));
+        $authorName = $author ? trim($author->first_name . ' ' . $author->last_name) : 'Nib Support';
+        $authorEmail = config('mail.from.address', 'no-reply@nibritaintech.com');
+
+        SupportMessage::create([
+            'support_thread_id' => $thread->id,
+            'direction' => 'outbound',
+            'author_name' => $authorName,
+            'author_email' => $authorEmail,
+            'body_text' => $body,
+            'body_html' => $this->formatReplyHtml($body),
+            'sent_at' => now(),
+            'is_internal_note' => false,
+            'metadata' => [
+                'source' => 'support_portal',
+            ],
+        ]);
+
+        $thread->last_external_activity_at = now();
+        if (! $thread->assigned_to && session('user_id')) {
+            $thread->assigned_to = session('user_id');
+        }
+        $thread->save();
+
+        $this->replyBody = '';
+        $this->replyStatus = 'Reply sent via Gmail.';
+        $this->messageTranslations = [];
+        $this->expandedMessages = [];
+        $this->replyFormThreadId = $thread->id;
+        $this->emitSelf('supportThreadsUpdated');
+    }
+
+    protected function hydrateReplyDefaults(?SupportThread $thread = null): void
+    {
+        $thread = $thread ?: $this->selectedThread;
+
+        if (! $thread) {
+            return;
+        }
+
+        if ($this->replyFormThreadId === $thread->id) {
+            return;
+        }
+
+        $this->replyFormThreadId = $thread->id;
+        $this->replyRecipient = $thread->reply_email ?? $thread->buyer_email ?? '';
+        $this->replySubject = $this->defaultReplySubject($thread);
+        $this->replyBody = '';
+        $this->replyStatus = null;
+        $this->replyError = null;
+    }
+
+    protected function defaultReplySubject(SupportThread $thread): string
+    {
+        $base = $thread->order_reference
+            ?: ($thread->external_thread_id ? ltrim($thread->external_thread_id, '#') : 'Support Ticket');
+
+        return 'Re: ' . trim($base);
+    }
+
+    protected function formatReplyHtml(string $body): string
+    {
+        $escaped = e($body);
+        $withBreaks = nl2br($escaped);
+
+        return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4;">' . $withBreaks . '</div>';
     }
 }
