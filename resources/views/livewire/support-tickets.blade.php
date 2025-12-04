@@ -242,11 +242,37 @@
                         </div>
                     </div>
 
+                    @if ($order)
+                        @php
+                            $customerEmail = $customer?->email;
+                            $canSendInvoice = $customerEmail !== null && $customerEmail !== '';
+                        @endphp
+                        <div class="d-flex flex-wrap gap-2 mt-2">
+                            <button type="button" class="btn btn-outline-success btn-sm" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendOrderInvoice"></span>
+                                Send invoice
+                            </button>
+                            <button type="button" class="btn btn-outline-info btn-sm" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendRefundInvoice"></span>
+                                Send refund invoice
+                            </button>
+                        </div>
+                        @if (! $canSendInvoice)
+                            <small class="text-danger d-block mt-1">Customer email missing for invoice delivery.</small>
+                        @endif
+                    @endif
+
                     @if ($orderActionError)
                         <div class="alert alert-danger py-2 px-3 mt-3 mb-0">{{ $orderActionError }}</div>
                     @endif
                     @if ($orderActionStatus)
                         <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $orderActionStatus }}</div>
+                    @endif
+                    @if ($invoiceActionError)
+                        <div class="alert alert-danger py-2 px-3 mt-3 mb-0">{{ $invoiceActionError }}</div>
+                    @endif
+                    @if ($invoiceActionStatus)
+                        <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $invoiceActionStatus }}</div>
                     @endif
 
                     @if ($orderActionPayload)

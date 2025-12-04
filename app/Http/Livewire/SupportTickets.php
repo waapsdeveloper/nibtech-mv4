@@ -2,8 +2,12 @@
 
 namespace App\Http\Livewire;
 
+use App\Mail\InvoiceMail;
+use App\Mail\RefundInvoiceMail;
 use App\Models\Admin_model;
 use App\Models\Marketplace_model;
+use App\Models\Order_item_model;
+use App\Models\Order_model;
 use App\Models\SupportMessage;
 use App\Models\SupportTag;
 use App\Models\SupportThread;
@@ -12,6 +16,7 @@ use App\Services\Support\SupportEmailSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -45,6 +50,8 @@ class SupportTickets extends Component
     public $orderActionPayload = null;
     public $ticketActionStatus = null;
     public $ticketActionError = null;
+    public $invoiceActionStatus = null;
+    public $invoiceActionError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -120,6 +127,8 @@ class SupportTickets extends Component
         $this->orderActionPayload = null;
         $this->ticketActionStatus = null;
         $this->ticketActionError = null;
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
         $this->resetPage();
     }
 
@@ -135,6 +144,8 @@ class SupportTickets extends Component
         $this->orderActionPayload = null;
         $this->ticketActionStatus = null;
         $this->ticketActionError = null;
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
     }
@@ -233,6 +244,8 @@ class SupportTickets extends Component
             $this->hydrateOrderContext(null);
             $this->ticketActionStatus = null;
             $this->ticketActionError = null;
+            $this->invoiceActionStatus = null;
+            $this->invoiceActionError = null;
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
             $this->hydrateReplyDefaults($threads->first());
@@ -241,6 +254,8 @@ class SupportTickets extends Component
             $this->orderActionPayload = null;
             $this->ticketActionStatus = null;
             $this->ticketActionError = null;
+            $this->invoiceActionStatus = null;
+            $this->invoiceActionError = null;
             $this->hydrateOrderContext($threads->first());
         }
 
@@ -601,6 +616,8 @@ class SupportTickets extends Component
             $this->orderActionStatus = null;
             $this->orderActionError = null;
             $this->orderActionPayload = null;
+            $this->invoiceActionStatus = null;
+            $this->invoiceActionError = null;
 
             return;
         }
@@ -608,6 +625,144 @@ class SupportTickets extends Component
         $service = app(MarketplaceOrderActionService::class);
         $this->marketplaceOrderUrl = $service->buildMarketplaceOrderUrl($thread);
         $this->canCancelOrder = $service->supportsCancellation($thread);
+    }
+
+    public function sendOrderInvoice(): void
+    {
+        $this->dispatchInvoice(false);
+    }
+
+    public function sendRefundInvoice(): void
+    {
+        $this->dispatchInvoice(true);
+    }
+
+    protected function dispatchInvoice(bool $isRefund): void
+    {
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
+
+        if (! $this->selectedThreadId) {
+            $this->invoiceActionError = 'Select a thread before sending invoices.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->invoiceActionError = 'Thread not found.';
+
+            return;
+        }
+
+        $order = $thread->order;
+
+        if (! $order) {
+            $this->invoiceActionError = 'No internal order is linked to this ticket.';
+
+            return;
+        }
+
+        $customer = $order->customer;
+
+        if (! $customer || ! $customer->email) {
+            $this->invoiceActionError = 'This order is missing a customer email address.';
+
+            return;
+        }
+
+        try {
+            $payload = $this->buildInvoicePayload($order);
+            $this->sendInvoiceMail($customer->email, $payload, $isRefund);
+        } catch (\Throwable $exception) {
+            $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
+            Log::error('Support invoice dispatch failed', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'refund' => $isRefund,
+                'error' => $exception->getMessage(),
+            ]);
+
+            return;
+        }
+
+        $this->invoiceActionStatus = ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ') . $customer->email . '.';
+    }
+
+    protected function buildInvoicePayload(Order_model $order): array
+    {
+        $order->loadMissing([
+            'customer',
+            'order_items.variation.product',
+            'order_items.variation.storage_id',
+            'order_items.variation.color_id',
+            'order_items.stock',
+            'exchange_items',
+            'admin',
+            'currency_id',
+            'marketplace',
+        ]);
+
+        return [
+            'order' => $order,
+            'customer' => $order->customer,
+            'orderItems' => $this->resolveInvoiceOrderItems($order->id),
+        ];
+    }
+
+    protected function resolveInvoiceOrderItems(int $orderId)
+    {
+        $query = Order_item_model::with([
+            'variation.product',
+            'variation.storage_id',
+            'variation.color_id',
+            'stock',
+            'replacement',
+        ])->where('order_id', $orderId);
+
+        $count = (clone $query)->count();
+
+        if ($count > 1) {
+            $query->whereHas('stock', function ($stockQuery) {
+                $stockQuery->where(function ($inner) {
+                    $inner->where('status', 2)->orWhereNull('status');
+                });
+            });
+        }
+
+        return $query->get();
+    }
+
+    protected function sendInvoiceMail(string $recipient, array $data, bool $isRefund): void
+    {
+        $mailableFactory = function () use ($data, $isRefund) {
+            return $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+        };
+
+        try {
+            Mail::to($recipient)->queue($mailableFactory());
+        } catch (\Throwable $primary) {
+            Log::warning('Primary invoice mailer failed', [
+                'recipient' => $recipient,
+                'order_id' => data_get($data, 'order.id'),
+                'refund' => $isRefund,
+                'error' => $primary->getMessage(),
+            ]);
+
+            try {
+                Mail::mailer('smtp_secondary')->to($recipient)->queue($mailableFactory());
+            } catch (\Throwable $secondary) {
+                Log::error('Secondary invoice mailer failed', [
+                    'recipient' => $recipient,
+                    'order_id' => data_get($data, 'order.id'),
+                    'refund' => $isRefund,
+                    'error' => $secondary->getMessage(),
+                ]);
+
+                throw new \RuntimeException('All mailers failed to send invoice.');
+            }
+        }
     }
 
     protected function defaultReplySubject(SupportThread $thread): string
