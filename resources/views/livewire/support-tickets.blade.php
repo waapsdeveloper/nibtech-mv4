@@ -235,6 +235,21 @@
                         <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $orderActionStatus }}</div>
                     @endif
 
+                    @if ($orderActionPayload)
+                        @php
+                            $payloadJson = is_string($orderActionPayload)
+                                ? $orderActionPayload
+                                : json_encode($orderActionPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                        @endphp
+                        <div class="support-order-payload mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <span class="fw-semibold">API response</span>
+                                <small class="text-muted">Last cancellation attempt</small>
+                            </div>
+                            <pre class="mb-0">{{ $payloadJson }}</pre>
+                        </div>
+                    @endif
+
                     <div class="support-order-meta mt-3">
                         <div class="meta-pill">
                             <div class="text-muted small">Internal order</div>

@@ -42,6 +42,7 @@ class SupportTickets extends Component
     public $canCancelOrder = false;
     public $orderActionStatus = null;
     public $orderActionError = null;
+    public $orderActionPayload = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -114,6 +115,7 @@ class SupportTickets extends Component
         $this->canCancelOrder = false;
         $this->orderActionStatus = null;
         $this->orderActionError = null;
+        $this->orderActionPayload = null;
         $this->resetPage();
     }
 
@@ -126,6 +128,7 @@ class SupportTickets extends Component
         $this->replyError = null;
         $this->orderActionStatus = null;
         $this->orderActionError = null;
+        $this->orderActionPayload = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
     }
@@ -227,6 +230,7 @@ class SupportTickets extends Component
             $this->hydrateReplyDefaults($threads->first());
             $this->orderActionStatus = null;
             $this->orderActionError = null;
+            $this->orderActionPayload = null;
             $this->hydrateOrderContext($threads->first());
         }
 
@@ -395,6 +399,7 @@ class SupportTickets extends Component
     {
         $this->orderActionStatus = null;
         $this->orderActionError = null;
+        $this->orderActionPayload = null;
 
         if (! $this->selectedThreadId) {
             $this->orderActionError = 'Select a thread before cancelling an order.';
@@ -422,11 +427,13 @@ class SupportTickets extends Component
 
         if (! ($result['success'] ?? false)) {
             $this->orderActionError = $result['message'] ?? 'Marketplace rejected the cancellation.';
+            $this->orderActionPayload = $result;
 
             return;
         }
 
         $this->orderActionStatus = $result['message'] ?? 'Marketplace cancellation triggered.';
+        $this->orderActionPayload = $result;
     }
 
     public function sendReply(): void
@@ -545,6 +552,7 @@ class SupportTickets extends Component
             $this->canCancelOrder = false;
             $this->orderActionStatus = null;
             $this->orderActionError = null;
+            $this->orderActionPayload = null;
 
             return;
         }

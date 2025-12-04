@@ -200,6 +200,23 @@
         border-color: #e5e7eb;
     }
 
+    .support-order-payload {
+        border: 1px solid #cbd5f5;
+        border-radius: 0.75rem;
+        background: #eef2ff;
+        padding: 0.75rem 1rem;
+    }
+
+    .support-order-payload pre {
+        background: #1e293b;
+        color: #f8fafc;
+        border-radius: 0.5rem;
+        padding: 0.75rem;
+        font-size: 0.8rem;
+        max-height: 220px;
+        overflow: auto;
+    }
+
     @media (max-width: 1100px) {
         .support-grid {
             grid-template-columns: 1fr;
