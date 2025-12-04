@@ -123,9 +123,12 @@
                         @if ($thread->messages->first())
                             <div class="mt-1 text-truncate small">
                                 @php
-                                    $previewSource = $thread->messages->first()->body_text ?? $thread->messages->first()->body_html ?? '';
+                                    $previewMessage = $thread->messages->first();
+                                    $previewSource = $previewMessage->clean_body_html !== ''
+                                        ? strip_tags($previewMessage->clean_body_html)
+                                        : ($previewMessage->body_text ?? strip_tags($previewMessage->body_html ?? ''));
                                 @endphp
-                                {{ Str::limit(strip_tags($previewSource), 120) }}
+                                {{ Str::limit($previewSource, 120) }}
                             </div>
                         @endif
                     </button>
@@ -145,11 +148,22 @@
                         <h4 class="mb-1">{{ $selectedThread->order_reference ?? $selectedThread->external_thread_id }}</h4>
                         <p class="text-muted mb-0">{{ $selectedThread->buyer_name ?? 'Unknown buyer' }} · {{ $selectedThread->buyer_email ?? 'No email' }}</p>
                     </div>
-                    <div class="text-end">
-                        <span class="badge bg-dark text-uppercase">{{ $selectedThread->status ?? 'open' }}</span>
-                        <span class="badge bg-primary text-uppercase">{{ $selectedThread->priority ?? 'normal' }}</span>
-                        @if ($selectedThread->change_of_mind)
-                            <span class="badge bg-warning text-dark">Change of mind</span>
+                    <div class="text-end d-flex flex-column align-items-end gap-2">
+                        <div>
+                            <span class="badge bg-dark text-uppercase">{{ $selectedThread->status ?? 'open' }}</span>
+                            <span class="badge bg-primary text-uppercase">{{ $selectedThread->priority ?? 'normal' }}</span>
+                            @if ($selectedThread->change_of_mind)
+                                <span class="badge bg-warning text-dark">Change of mind</span>
+                            @endif
+                        </div>
+                        @if ($selectedThread->reply_email)
+                            @php
+                                $mailtoSubject = rawurlencode('Re: ' . ($selectedThread->order_reference ?? $selectedThread->external_thread_id));
+                                $mailtoBody = rawurlencode("Hi,\n\n");
+                            @endphp
+                            <a href="mailto:{{ $selectedThread->reply_email }}?subject={{ $mailtoSubject }}&body={{ $mailtoBody }}" class="btn btn-sm btn-outline-primary">
+                                Reply via email
+                            </a>
                         @endif
                     </div>
                 </div>
@@ -193,7 +207,9 @@
                                 <div class="text-muted small">{{ optional($message->sent_at)->format('d M Y H:i') ?? 'n/a' }}</div>
                             </div>
                             <div class="message-body">
-                                @if ($message->body_html)
+                                @if ($message->clean_body_html !== '')
+                                    {!! $message->clean_body_html !!}
+                                @elseif ($message->body_html)
                                     {!! $message->body_html !!}
                                 @else
                                     {!! nl2br(e($message->body_text ?? '')) !!}
