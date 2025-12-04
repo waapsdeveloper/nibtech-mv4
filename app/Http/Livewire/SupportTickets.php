@@ -28,6 +28,7 @@ class SupportTickets extends Component
     public $sortField = 'last_external_activity_at';
     public $sortDirection = 'desc';
     public array $messageTranslations = [];
+    public array $expandedMessages = [];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -87,6 +88,7 @@ class SupportTickets extends Component
         $this->perPage = 25;
         $this->selectedThreadId = null;
         $this->messageTranslations = [];
+        $this->expandedMessages = [];
         $this->resetPage();
     }
 
@@ -94,6 +96,7 @@ class SupportTickets extends Component
     {
         $this->selectedThreadId = $threadId;
         $this->messageTranslations = [];
+        $this->expandedMessages = [];
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -169,6 +172,15 @@ class SupportTickets extends Component
     public function clearTranslation(int $messageId): void
     {
         unset($this->messageTranslations[$messageId]);
+    }
+
+    public function toggleFullMessage(int $messageId): void
+    {
+        if (isset($this->expandedMessages[$messageId])) {
+            unset($this->expandedMessages[$messageId]);
+        } else {
+            $this->expandedMessages[$messageId] = true;
+        }
     }
 
     public function render()

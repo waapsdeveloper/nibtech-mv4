@@ -136,6 +136,28 @@
         color: #4338ca;
     }
 
+    .email-links {
+        background: #fff;
+        border-radius: 0.75rem;
+        border: 1px solid #e5e7eb;
+        padding: 0.6rem 0.85rem;
+    }
+
+    .email-links ul {
+        list-style: disc;
+        color: #1f2937;
+    }
+
+    .email-links a {
+        font-weight: 600;
+        color: #2563eb;
+        text-decoration: none;
+    }
+
+    .email-links a:hover {
+        text-decoration: underline;
+    }
+
     .support-meta-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
