@@ -179,7 +179,8 @@ class RefurbedAPIController extends Controller
         $itemsResponse = $this->getAllOrderItems($orderId);
         $orderItems = $itemsResponse['order_items'] ?? [];
 
-        $updates = [];
+        $responses = [];
+        $updated = 0;
 
         foreach ($orderItems as $item) {
             $itemId = $item['id']
@@ -191,15 +192,19 @@ class RefurbedAPIController extends Controller
                 continue;
             }
 
-            $payload = [
-                'id' => (string) $itemId,
-                'state' => 'CANCELLED',
+            $payload = array_filter([
+                'cancellation_reason' => $reason,
+            ], fn ($value) => $value !== null && $value !== '');
+
+            $responses[] = [
+                'order_item_id' => (string) $itemId,
+                'response' => $this->updateOrderItemState((string) $itemId, 'CANCELLED', $payload),
             ];
 
-            $updates[] = $payload;
+            $updated++;
         }
 
-        if ($updates === []) {
+        if ($updated === 0) {
             return [
                 'success' => false,
                 'message' => 'No Refurbed order lines were found to cancel.',
@@ -207,14 +212,12 @@ class RefurbedAPIController extends Controller
             ];
         }
 
-        $result = $this->batchUpdateOrderItemsState($updates);
-
         return [
             'success' => true,
             'message' => 'Refurbed order lines cancelled.',
             'order_id' => $orderId,
-            'updated' => $result['total'] ?? count($updates),
-            'raw_response' => $result,
+            'updated' => $updated,
+            'raw_response' => $responses,
         ];
     }
 
