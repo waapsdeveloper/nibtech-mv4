@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Collection;
 
 use App\Models\Admin_model;
 use App\Models\Marketplace_model;
@@ -66,5 +67,24 @@ class SupportThread extends Model
     public function assignee(): BelongsTo
     {
         return $this->belongsTo(Admin_model::class, 'assigned_to');
+    }
+
+    public function getReplyEmailAttribute(): ?string
+    {
+        $messages = $this->relationLoaded('messages')
+            ? $this->messages
+            : $this->messages()->latest('sent_at')->take(5)->get();
+
+        if ($messages instanceof Collection) {
+            $inbound = $messages
+                ->filter(fn ($message) => $message->direction === 'inbound' && filter_var($message->author_email, FILTER_VALIDATE_EMAIL))
+                ->last();
+
+            if ($inbound) {
+                return $inbound->author_email;
+            }
+        }
+
+        return filter_var($this->buyer_email, FILTER_VALIDATE_EMAIL) ? $this->buyer_email : null;
     }
 }
