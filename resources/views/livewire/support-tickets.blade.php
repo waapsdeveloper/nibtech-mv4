@@ -156,6 +156,11 @@
                                 <span class="badge bg-warning text-dark">Change of mind</span>
                             @endif
                         </div>
+                        @if ($selectedThread->portal_url)
+                            <a href="{{ $selectedThread->portal_url }}" class="btn btn-sm btn-primary" target="_blank" rel="noopener">
+                                View in support portal
+                            </a>
+                        @endif
                         @if ($selectedThread->reply_email)
                             @php
                                 $mailtoSubject = rawurlencode('Re: ' . ($selectedThread->order_reference ?? $selectedThread->external_thread_id));
