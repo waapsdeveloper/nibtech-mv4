@@ -87,6 +87,7 @@ class RefurbedZendeskMailboxService
                 'snippet' => $messageDetail->getSnippet(),
                 'subject' => $headers['Subject'] ?? null,
                 'from' => $headers['From'] ?? null,
+                'replyTo' => $headers['Reply-To'] ?? null,
                 'date' => $headers['Date'] ?? null,
                 'labelIds' => $messageDetail->getLabelIds(),
                 'ticketLink' => $ticketLink,
