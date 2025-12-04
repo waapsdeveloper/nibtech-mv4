@@ -7,6 +7,7 @@ use App\Models\Marketplace_model;
 use App\Models\SupportMessage;
 use App\Models\SupportTag;
 use App\Models\SupportThread;
+use App\Services\Support\MarketplaceOrderActionService;
 use App\Services\Support\SupportEmailSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Http;
@@ -37,6 +38,10 @@ class SupportTickets extends Component
     public $replyRecipientEmail = '';
     public $replyStatus = null;
     public $replyError = null;
+    public $marketplaceOrderUrl = null;
+    public $canCancelOrder = false;
+    public $orderActionStatus = null;
+    public $orderActionError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -105,6 +110,10 @@ class SupportTickets extends Component
         $this->replyStatus = null;
         $this->replyError = null;
         $this->replyFormThreadId = null;
+        $this->marketplaceOrderUrl = null;
+        $this->canCancelOrder = false;
+        $this->orderActionStatus = null;
+        $this->orderActionError = null;
         $this->resetPage();
     }
 
@@ -115,7 +124,10 @@ class SupportTickets extends Component
         $this->expandedMessages = [];
         $this->replyStatus = null;
         $this->replyError = null;
+        $this->orderActionStatus = null;
+        $this->orderActionError = null;
         $this->hydrateReplyDefaults();
+        $this->hydrateOrderContext();
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -209,9 +221,13 @@ class SupportTickets extends Component
         if ($threads->count() === 0) {
             $this->selectedThreadId = null;
             $this->replyFormThreadId = null;
+            $this->hydrateOrderContext(null);
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
             $this->hydrateReplyDefaults($threads->first());
+            $this->orderActionStatus = null;
+            $this->orderActionError = null;
+            $this->hydrateOrderContext($threads->first());
         }
 
         return view('livewire.support-tickets', [
@@ -279,7 +295,7 @@ class SupportTickets extends Component
             },
             'tags',
             'order.customer',
-            'order.order_items',
+            'order.order_items.variation',
             'marketplace',
             'assignee',
         ])->find($this->selectedThreadId);
@@ -373,6 +389,44 @@ class SupportTickets extends Component
         $text = trim(implode('', $segments));
 
         return $text === '' ? null : $text;
+    }
+
+    public function cancelMarketplaceOrder(): void
+    {
+        $this->orderActionStatus = null;
+        $this->orderActionError = null;
+
+        if (! $this->selectedThreadId) {
+            $this->orderActionError = 'Select a thread before cancelling an order.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->orderActionError = 'Thread not found.';
+
+            return;
+        }
+
+        $service = app(MarketplaceOrderActionService::class);
+
+        if (! $service->supportsCancellation($thread)) {
+            $this->orderActionError = 'Marketplace cancellation is not available for this ticket.';
+
+            return;
+        }
+
+        $result = $service->cancelOrder($thread);
+
+        if (! ($result['success'] ?? false)) {
+            $this->orderActionError = $result['message'] ?? 'Marketplace rejected the cancellation.';
+
+            return;
+        }
+
+        $this->orderActionStatus = $result['message'] ?? 'Marketplace cancellation triggered.';
     }
 
     public function sendReply(): void
@@ -480,6 +534,24 @@ class SupportTickets extends Component
         $this->replyBody = '';
         $this->replyStatus = null;
         $this->replyError = null;
+    }
+
+    protected function hydrateOrderContext(?SupportThread $thread = null): void
+    {
+        $thread = $thread ?: $this->selectedThread;
+
+        if (! $thread) {
+            $this->marketplaceOrderUrl = null;
+            $this->canCancelOrder = false;
+            $this->orderActionStatus = null;
+            $this->orderActionError = null;
+
+            return;
+        }
+
+        $service = app(MarketplaceOrderActionService::class);
+        $this->marketplaceOrderUrl = $service->buildMarketplaceOrderUrl($thread);
+        $this->canCancelOrder = $service->supportsCancellation($thread);
     }
 
     protected function defaultReplySubject(SupportThread $thread): string

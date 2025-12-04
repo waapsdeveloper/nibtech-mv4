@@ -172,6 +172,14 @@ class RefurbedAPIController extends Controller
         return $this->post('refb.merchant.v1.OrderService/AcceptOrder', ['id' => $orderId]);
     }
 
+    public function cancelOrder(string $orderId, ?string $reason = null): array
+    {
+        return $this->post('refb.merchant.v1.OrderService/CancelOrder', $this->cleanPayload([
+            'id' => $this->normalizeOrderId($orderId),
+            'reason' => $reason,
+        ]));
+    }
+
     public function listOrderItems(string $orderId, array $filter = [], array $pagination = [], array $sort = []): array
     {
         return $this->post('refb.merchant.v1.OrderItemService/ListOrderItemsByOrder', $this->cleanPayload([

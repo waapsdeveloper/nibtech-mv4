@@ -183,6 +183,23 @@
         resize: vertical;
     }
 
+    .support-order-panel {
+        border: 1px solid #e2e8f0;
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        background: #f8fafc;
+    }
+
+    .support-order-meta {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.65rem;
+    }
+
+    .support-order-panel .table {
+        border-color: #e5e7eb;
+    }
+
     @media (max-width: 1100px) {
         .support-grid {
             grid-template-columns: 1fr;
