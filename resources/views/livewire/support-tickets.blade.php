@@ -204,6 +204,50 @@
                     @endforeach
                 </div>
 
+                <div class="support-reply-panel mt-4">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <div>
+                            <h6 class="mb-0">Compose reply</h6>
+                            <small class="text-muted">Message sends through the connected Gmail API</small>
+                        </div>
+                        <div class="text-muted small" wire:loading wire:target="sendReply">Sending…</div>
+                    </div>
+                    @if ($replyStatus)
+                        <div class="alert alert-success py-2 px-3">{{ $replyStatus }}</div>
+                    @endif
+                    @if ($replyError)
+                        <div class="alert alert-danger py-2 px-3">{{ $replyError }}</div>
+                    @endif
+                    <div class="mb-3">
+                        <label class="form-label">To</label>
+                        <input type="email" class="form-control" value="{{ $replyRecipient ?: 'No recipient available' }}" disabled>
+                        @if (! $replyRecipient)
+                            <small class="text-danger">Recipient email missing for this ticket.</small>
+                        @endif
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Subject</label>
+                        <input type="text" class="form-control" wire:model.defer="replySubject" placeholder="Subject">
+                        @error('replySubject')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Message</label>
+                        <textarea class="form-control" rows="5" wire:model.defer="replyBody" placeholder="Type your reply"></textarea>
+                        @error('replyBody')
+                            <small class="text-danger">{{ $message }}</small>
+                        @enderror
+                    </div>
+                    <div class="d-flex justify-content-between align-items-center">
+                        <small class="text-muted">Replies are logged here and emailed instantly.</small>
+                        <button type="button" class="btn btn-primary" wire:click="sendReply" wire:loading.attr="disabled" wire:target="sendReply" @if (! $replyRecipient) disabled @endif>
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendReply"></span>
+                            Send via Gmail
+                        </button>
+                    </div>
+                </div>
+
                 <div class="message-feed">
                     @forelse ($selectedThread->messages as $message)
                         @php

@@ -172,6 +172,17 @@
         font-size: 0.9rem;
     }
 
+    .support-reply-panel {
+        border: 1px solid #e0e7ff;
+        border-radius: 1rem;
+        padding: 1rem 1.25rem;
+        background: #fdfdff;
+    }
+
+    .support-reply-panel textarea {
+        resize: vertical;
+    }
+
     @media (max-width: 1100px) {
         .support-grid {
             grid-template-columns: 1fr;
