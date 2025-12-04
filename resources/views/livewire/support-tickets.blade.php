@@ -201,10 +201,25 @@
 
                 <div class="message-feed">
                     @forelse ($selectedThread->messages as $message)
+                        @php
+                            $activeTranslation = $messageTranslations[$message->id]['text'] ?? null;
+                        @endphp
                         <div class="message {{ $message->is_internal_note ? 'message-note' : ($message->direction === 'outbound' ? 'outbound' : 'inbound') }}">
                             <div class="d-flex justify-content-between align-items-center mb-2">
                                 <div class="fw-semibold">{{ $message->author_name ?? ($message->direction === 'outbound' ? 'Nib Support' : 'Customer') }}</div>
                                 <div class="text-muted small">{{ optional($message->sent_at)->format('d M Y H:i') ?? 'n/a' }}</div>
+                            </div>
+                            <div class="d-flex justify-content-end flex-wrap gap-2 mb-2 translation-controls">
+                                @if (! $activeTranslation)
+                                    <button type="button" class="btn btn-sm btn-outline-secondary" wire:click="translateMessage({{ $message->id }})" wire:loading.attr="disabled" wire:target="translateMessage({{ $message->id }})">
+                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="translateMessage({{ $message->id }})"></span>
+                                        Translate to English
+                                    </button>
+                                @else
+                                    <button type="button" class="btn btn-sm btn-light border" wire:click="clearTranslation({{ $message->id }})">
+                                        Hide translation
+                                    </button>
+                                @endif
                             </div>
                             <div class="message-body">
                                 @if ($message->clean_body_html !== '')
@@ -215,6 +230,12 @@
                                     {!! nl2br(e($message->body_text ?? '')) !!}
                                 @endif
                             </div>
+                            @if ($activeTranslation)
+                                <div class="message-translation mt-2">
+                                    <div class="translation-label mb-1">English translation</div>
+                                    <div>{!! nl2br(e($activeTranslation)) !!}</div>
+                                </div>
+                            @endif
                             @if (!empty($message->attachments))
                                 <div class="mt-2">
                                     <div class="text-muted small mb-1">Attachments</div>

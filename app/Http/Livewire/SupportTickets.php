@@ -4,9 +4,11 @@ namespace App\Http\Livewire;
 
 use App\Models\Admin_model;
 use App\Models\Marketplace_model;
+use App\Models\SupportMessage;
 use App\Models\SupportTag;
 use App\Models\SupportThread;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Http;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -25,6 +27,7 @@ class SupportTickets extends Component
     public $selectedThreadId;
     public $sortField = 'last_external_activity_at';
     public $sortDirection = 'desc';
+    public array $messageTranslations = [];
 
     protected $queryString = [
         'search' => ['except' => ''],
@@ -83,12 +86,89 @@ class SupportTickets extends Component
         $this->sortDirection = 'desc';
         $this->perPage = 25;
         $this->selectedThreadId = null;
+        $this->messageTranslations = [];
         $this->resetPage();
     }
 
     public function selectThread(int $threadId): void
     {
         $this->selectedThreadId = $threadId;
+        $this->messageTranslations = [];
+    }
+
+    public function translateMessage(int $messageId, string $target = 'en'): void
+    {
+        if (! $this->selectedThreadId) {
+            return;
+        }
+
+        $target = strtolower($target);
+
+        if (isset($this->messageTranslations[$messageId]) && ($this->messageTranslations[$messageId]['target'] ?? null) === $target) {
+            return;
+        }
+
+        $message = SupportMessage::query()
+            ->where('support_thread_id', $this->selectedThreadId)
+            ->where('id', $messageId)
+            ->first();
+
+        if (! $message) {
+            return;
+        }
+
+        $existing = data_get($message->metadata, "translations.$target");
+        if ($existing) {
+            $this->messageTranslations[$messageId] = [
+                'target' => $target,
+                'text' => $existing,
+            ];
+
+            return;
+        }
+
+        $payload = $this->prepareTextForTranslation($message);
+
+        if ($payload === '') {
+            return;
+        }
+
+        try {
+            $response = Http::timeout(10)->get('https://translate.googleapis.com/translate_a/single', [
+                'client' => 'gtx',
+                'sl' => 'auto',
+                'tl' => $target,
+                'dt' => 't',
+                'q' => $payload,
+            ]);
+        } catch (\Throwable $exception) {
+            return;
+        }
+
+        if (! $response->ok()) {
+            return;
+        }
+
+        $translation = $this->extractTranslationText($response->json());
+
+        if (! $translation) {
+            return;
+        }
+
+        $this->messageTranslations[$messageId] = [
+            'target' => $target,
+            'text' => $translation,
+        ];
+
+        $metadata = $message->metadata ?? [];
+        data_set($metadata, "translations.$target", $translation);
+        $message->metadata = $metadata;
+        $message->save();
+    }
+
+    public function clearTranslation(int $messageId): void
+    {
+        unset($this->messageTranslations[$messageId]);
     }
 
     public function render()
@@ -206,5 +286,59 @@ class SupportTickets extends Component
     protected function sanitizeSortDirection(?string $direction): string
     {
         return $direction === 'asc' ? 'asc' : 'desc';
+    }
+
+    protected function prepareTextForTranslation(SupportMessage $message): string
+    {
+        $source = '';
+
+        if ($message->clean_body_html !== '') {
+            $source = $this->plainTextFromHtml($message->clean_body_html);
+        } elseif ($message->body_html) {
+            $source = $this->plainTextFromHtml($message->body_html);
+        } else {
+            $source = $message->body_text ?? '';
+        }
+
+        $source = trim(preg_replace('/\s+/', ' ', $source));
+
+        if ($source === '') {
+            return '';
+        }
+
+        $maxLength = 4500;
+
+        if (mb_strlen($source) > $maxLength) {
+            $source = mb_substr($source, 0, $maxLength);
+        }
+
+        return $source;
+    }
+
+    protected function plainTextFromHtml(string $html): string
+    {
+        $normalized = str_ireplace(['<br>', '<br/>', '<br />'], "\n", $html);
+        $normalized = preg_replace('/<(\/)?(p|div|li|tr|td|h[1-6])[^>]*>/', "\n", $normalized);
+
+        return strip_tags(html_entity_decode($normalized, ENT_QUOTES | ENT_HTML5));
+    }
+
+    protected function extractTranslationText($payload): ?string
+    {
+        if (! is_array($payload) || empty($payload[0])) {
+            return null;
+        }
+
+        $segments = [];
+
+        foreach ($payload[0] as $part) {
+            if (isset($part[0])) {
+                $segments[] = $part[0];
+            }
+        }
+
+        $text = trim(implode('', $segments));
+
+        return $text === '' ? null : $text;
     }
 }
