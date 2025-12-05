@@ -738,7 +738,13 @@ class SupportTickets extends Component
     protected function sendInvoiceMail(string $recipient, array $data, bool $isRefund): void
     {
         $mailableFactory = function () use ($data, $isRefund) {
-            return $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+            $mailable = $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+
+            if (method_exists($mailable, 'onConnection')) {
+                $mailable->onConnection('sync');
+            }
+
+            return $mailable;
         };
 
         try {
