@@ -44,7 +44,23 @@
     $gradeName = isset($grades[$gradeId]) ? $grades[$gradeId] : '';
     $productModel = $variation->product->model ?? 'N/A';
     $productId = $variation->product_id ?? 0;
-    $listedStock = $variation->listed_stock ?? 0;
+    // Calculate total stock from all marketplaces
+    $totalStock = 0;
+    if(isset($marketplaces) && count($marketplaces) > 0) {
+        foreach($marketplaces as $mpId => $mp) {
+            $marketplaceIdInt = (int)$mpId;
+            $marketplaceStock = \App\Models\MarketplaceStockModel::where('variation_id', $variationId)
+                ->where('marketplace_id', $marketplaceIdInt)
+                ->first();
+            if($marketplaceStock) {
+                $totalStock += $marketplaceStock->listed_stock ?? 0;
+            }
+        }
+    }
+    // Fallback to variation.listed_stock if no marketplace stock exists yet
+    if($totalStock == 0) {
+        $totalStock = $variation->listed_stock ?? 0;
+    }
     $availableStocks = $variation->available_stocks ?? collect();
     $pendingOrders = $variation->pending_orders ?? collect();
     $pendingBmOrders = $variation->pending_bm_orders ?? collect();
@@ -132,20 +148,12 @@
                     <i class="fas fa-history"></i>
                 </a>
             </div>
-            <form class="form-inline" method="POST" id="add_qty_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
-                @csrf
-                <input type="hidden" name="process_id" value="{{ $process_id ?? '' }}">
+            <div class="d-flex align-items-center gap-2">
                 <div class="form-floating">
-                    <input type="text" class="form-control" name="stock" id="quantity_{{ $variationId }}" value="{{ $listedStock }}" style="width:50px;" disabled>
-                    <label for="">Stock</label>
+                    <input type="text" class="form-control" id="total_stock_{{ $variationId }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
+                    <label for="">Total Stock</label>
                 </div>
-                <div class="form-floating">
-                    <input type="number" class="form-control" name="stock" id="add_{{ $variationId }}" value="" style="width:60px;">
-                    <label for="">Add</label>
-                </div>
-                <button id="send_{{ $variationId }}" class="btn btn-light d-none">Push</button>
-                <span class="text-success" id="success_{{ $variationId }}"></span>
-            </form>
+            </div>
         </div>
 
         
@@ -166,7 +174,8 @@
                         'variation' => $variation,
                         'variationId' => $variationId,
                         'marketplace' => $marketplace,
-                        'marketplaceId' => $marketplaceId
+                        'marketplaceId' => $marketplaceId,
+                        'process_id' => $process_id ?? null
                     ])
                 </div>
             @endforeach

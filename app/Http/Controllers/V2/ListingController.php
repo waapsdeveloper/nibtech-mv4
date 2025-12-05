@@ -20,6 +20,8 @@ use App\Models\Storage_model;
 use App\Models\Products_model;
 use App\Models\Listed_stock_verification_model;
 use App\Models\Admin_model;
+use App\Models\Listing_model;
+use App\Models\Order_item_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -86,7 +88,7 @@ class ListingController extends Controller
         $perPage = $request->input('per_page', 10);
         $variations = $this->buildVariationQuery($request)->paginate($perPage)->appends($request->except('page'));
         
-        // Calculate sales data and withoutBuybox HTML for each variation
+        // Calculate sales data, withoutBuybox HTML, and marketplace data for each variation
         foreach($variations as $variation) {
             $variation->sales_data = $this->calculationService->calculateSalesData($variation->id);
             
@@ -111,6 +113,47 @@ class ListingController extends Controller
             }
             
             $variation->withoutBuybox = $withoutBuybox;
+            
+            // Calculate marketplace data for each variation
+            // Group listings by marketplace and calculate counts
+            // Use the same logic as original - filter listings by marketplace_id
+            $marketplaceData = [];
+            foreach($data['marketplaces'] as $marketplaceId => $marketplace) {
+                // Ensure marketplaceId is integer for consistent key matching
+                $marketplaceIdInt = (int)$marketplaceId;
+                
+                // Filter listings exactly as original does - using strict comparison
+                $marketplaceListings = $variation->listings->filter(function($listing) use ($marketplaceIdInt) {
+                    // Get marketplace_id from listing
+                    $listingMarketplaceId = $listing->marketplace_id;
+                    
+                    // Only include listings with non-null marketplace_id that exactly matches
+                    if ($listingMarketplaceId === null) {
+                        return false;
+                    }
+                    
+                    // Use strict integer comparison (same as original JavaScript: listing.marketplace_id == marketplaceId)
+                    return (int)$listingMarketplaceId === $marketplaceIdInt;
+                })->values(); // Reset keys to ensure proper collection
+                
+                $listingCount = $marketplaceListings->count();
+
+                Log::info('Marketplace listings by id : ', ['marketplace_id' => $marketplaceIdInt, 'listing_count' => $listingCount]);
+                
+                // Calculate order summary for this marketplace
+                $orderSummary = $this->calculateMarketplaceOrderSummary($variation->id, $marketplaceIdInt);
+                
+                // Use integer key to ensure consistent access
+                $marketplaceData[$marketplaceIdInt] = [
+                    'name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
+                    'listing_count' => $listingCount,
+                    'listings' => $marketplaceListings,
+                    'order_summary' => $orderSummary
+                ];
+            }
+            
+            // Attach marketplace data to variation
+            $variation->marketplace_data = $marketplaceData;
         }
         
         $data['variations'] = $variations;
@@ -704,5 +747,103 @@ class ListingController extends Controller
         });
 
         return response()->json(['listed_stock_verifications' => $listed_stock_verifications]);
+    }
+
+    /**
+     * Get listings for a variation, optionally filtered by marketplace
+     * Similar to original getCompetitors but supports marketplace filtering
+     */
+    public function get_listings($variationId, Request $request)
+    {
+        $marketplaceId = $request->input('marketplace_id');
+        
+        $query = Listing_model::with(['marketplace', 'country_id', 'currency'])
+            ->where('variation_id', $variationId);
+        
+        // Filter by marketplace_id if provided
+        if ($marketplaceId !== null) {
+            $query->where('marketplace_id', $marketplaceId);
+        }
+        
+        $listings = $query->get();
+        
+        return response()->json(['listings' => $listings]);
+    }
+
+    /**
+     * Calculate order summary for a variation by marketplace
+     * Returns format: "7 days: €X.XX (count) - 14 days: €X.XX (count) - 30 days: €X.XX (count)"
+     */
+    private function calculateMarketplaceOrderSummary($variationId, $marketplaceId)
+    {
+        // Helper function to format amount
+        $formatAmount = function($amount) {
+            if ($amount === null || $amount === '') {
+                return '0.00';
+            }
+            return number_format((float)$amount, 2, '.', '');
+        };
+
+        // Calculate 7 days summary
+        $last7DaysAvg = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->avg('price');
+        
+        $last7DaysCount = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->count();
+
+        // Calculate 14 days summary
+        $last14DaysAvg = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->avg('price');
+        
+        $last14DaysCount = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->count();
+
+        // Calculate 30 days summary
+        $last30DaysAvg = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->avg('price');
+        
+        $last30DaysCount = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->count();
+
+        // Format the summary string
+        return sprintf(
+            '7 days: €%s (%d) - 14 days: €%s (%d) - 30 days: €%s (%d)',
+            $formatAmount($last7DaysAvg),
+            $last7DaysCount,
+            $formatAmount($last14DaysAvg),
+            $last14DaysCount,
+            $formatAmount($last30DaysAvg),
+            $last30DaysCount
+        );
     }
 }

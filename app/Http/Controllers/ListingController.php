@@ -12,6 +12,7 @@ use App\Models\Grade_model;
 use App\Models\Listed_stock_verification_model;
 use App\Models\Listing_model;
 use App\Models\Marketplace_model;
+use App\Models\MarketplaceStockModel;
 use App\Models\Order_item_model;
 use App\Models\Order_model;
 use App\Models\Process_model;
@@ -852,6 +853,123 @@ class ListingController extends Controller
 
         return $response->quantity;
     }
+    
+    /**
+     * Add quantity for a specific marketplace
+     * Updates marketplace_stock table for the specific marketplace
+     */
+    public function add_quantity_marketplace($variationId, $marketplaceId){
+        $stockToAdd = request('stock');
+        
+        // Log incoming request for debugging
+        Log::info("Marketplace stock add request", [
+            'variation_id' => $variationId,
+            'marketplace_id' => $marketplaceId,
+            'marketplace_id_from_request' => request('marketplace_id'),
+            'stock_to_add' => $stockToAdd,
+            'all_request_data' => request()->all()
+        ]);
+        
+        if($stockToAdd == null || $stockToAdd == ''){
+            return response()->json(['error' => 'Stock value is required'], 400);
+        }
+        
+        $process_id = null;
+        if(request('process_id') != null){
+            $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
+            if($process != null){
+                $process_id = $process->id;
+            }
+        }
+        
+        $variation = Variation_model::find($variationId);
+        if(!$variation){
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+        
+        if(!in_array($variation->state, [0,1,2,3])){
+            return response()->json(['error' => 'Ad State is not valid for Topup: '.$variation->state], 400);
+        }
+        
+        // Ensure marketplace_id is integer
+        $marketplaceId = (int)$marketplaceId;
+        
+        // Get or create marketplace_stock record
+        $marketplaceStock = MarketplaceStockModel::firstOrCreate(
+            [
+                'variation_id' => (int)$variationId,
+                'marketplace_id' => $marketplaceId
+            ],
+            [
+                'listed_stock' => 0,
+                'admin_id' => session('user_id')
+            ]
+        );
+        
+        $previous_qty = $marketplaceStock->listed_stock ?? 0;
+        $pending_orders = $variation->pending_orders->sum('quantity');
+        
+        // Calculate new quantity for this marketplace
+        $new_quantity = (int)$previous_qty + (int)$stockToAdd;
+        if($new_quantity < 0) {
+            $new_quantity = 0;
+        }
+        
+        // Update marketplace stock
+        $marketplaceStock->listed_stock = $new_quantity;
+        $marketplaceStock->admin_id = session('user_id');
+        $marketplaceStock->save();
+        
+        // Calculate total stock across all marketplaces
+        $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
+            ->sum('listed_stock');
+        
+        // Update variation.listed_stock to reflect total (for backward compatibility)
+        $variation->listed_stock = $totalStock;
+        $variation->save();
+        
+        // Update via API if variation has reference_id (BackMarket integration)
+        if($variation->reference_id) {
+            $bm = new BackMarketAPIController();
+            $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $totalStock]));
+            
+            if(is_string($apiResponse) || is_int($apiResponse) || is_null($apiResponse)){
+                Log::warning("API update warning for variation ID $variationId: $apiResponse");
+                // Continue even if API update fails - we've updated the database
+            } else if($apiResponse && isset($apiResponse->quantity)) {
+                // If API returns different quantity, use that
+                $variation->listed_stock = $apiResponse->quantity;
+                $variation->save();
+            }
+        }
+        
+        // Create verification record
+        $listed_stock_verification = new Listed_stock_verification_model();
+        $listed_stock_verification->process_id = $process_id;
+        $listed_stock_verification->variation_id = $variation->id;
+        $listed_stock_verification->pending_orders = $pending_orders;
+        $listed_stock_verification->qty_from = $previous_qty;
+        $listed_stock_verification->qty_change = $stockToAdd;
+        $listed_stock_verification->qty_to = $new_quantity;
+        $listed_stock_verification->admin_id = session('user_id');
+        $listed_stock_verification->save();
+        
+        Log::info("Marketplace stock update", [
+            'variation_id' => $variationId,
+            'marketplace_id' => $marketplaceId,
+            'stock_change' => $stockToAdd,
+            'previous_qty' => $previous_qty,
+            'new_marketplace_qty' => $new_quantity,
+            'total_stock' => $totalStock
+        ]);
+        
+        // Return both marketplace stock and total stock
+        return response()->json([
+            'marketplace_stock' => $new_quantity,
+            'total_stock' => $totalStock
+        ]);
+    }
+    
     public function update_price($id){
         $listing = Listing_model::find($id);
         if($listing == null){

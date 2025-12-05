@@ -67,6 +67,12 @@
     
     // Get order summary from controller (calculated per marketplace)
     $orderSummary = $marketplaceData['order_summary'] ?? '7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
+    
+    // Get current listed stock from marketplace_stock table for this specific marketplace
+    $marketplaceStock = \App\Models\MarketplaceStockModel::where('variation_id', $variationId)
+        ->where('marketplace_id', $marketplaceIdInt)
+        ->first();
+    $currentStock = $marketplaceStock->listed_stock ?? 0;
 @endphp
 
 <div class="marketplace-bar-wrapper border-bottom">
@@ -77,7 +83,27 @@
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
             </div>
             <div class="d-flex align-items-center gap-2">
+
+                
                 <div>{!! $buyboxFlags !!}</div>
+
+                <!-- stock box here for each marketplace stock record -->
+                <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" action="{{url('listing/add_quantity_marketplace')}}/{{ $variationId }}/{{ $marketplaceIdInt }}">
+                    @csrf
+                    <input type="hidden" name="process_id" value="{{ $process_id ?? '' }}">
+                    <input type="hidden" name="marketplace_id" value="{{ $marketplaceIdInt }}">
+                    <div class="form-floating" style="width: 60px;">
+                        <input type="text" class="form-control form-control-sm" id="quantity_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" value="{{ $currentStock }}" style="width:60px; height: 31px;" disabled readonly>
+                        <label for="" class="small">Stock</label>
+                    </div>
+                    <div class="form-floating" style="width: 60px;">
+                        <input type="number" class="form-control form-control-sm" name="stock" id="add_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" value="" style="width:60px; height: 31px;">
+                        <label for="" class="small">Add</label>
+                    </div>
+                    <button id="send_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
+                    <span class="text-success small" id="success_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}"></span>
+                </form>
+
                 <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
                     <i class="fas fa-chevron-down"></i>
                 </button>
