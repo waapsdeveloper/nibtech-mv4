@@ -267,7 +267,10 @@ class RefurbedWebhookController extends Controller
         }
 
         // Create or update order
-        $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
+        $order = Order_model::firstOrNew([
+            'reference_id' => $orderNumber,
+            'marketplace_id' => $marketplace_id,
+        ]);
         $order->customer_id = $customer->id;
         $order->currency_id = $currency->id;
         $order->country_id = $country->id ?? 1;

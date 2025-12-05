@@ -46,6 +46,31 @@ class BMPROAPIController extends Controller
         return $this->requestGet('orders/' . $orderId, [], $environment, $options);
     }
 
+    public function cancelOrder(
+        int|string $orderId,
+        ?string $reason = null,
+        string $environment = self::ENV_PROD,
+        array $options = []
+    ): array {
+        $orderId = trim((string) $orderId);
+
+        if ($orderId === '') {
+            return [
+                'success' => false,
+                'status' => 0,
+                'error' => 'Order ID is required.',
+            ];
+        }
+
+        $payload = [];
+
+        if ($reason !== null && trim($reason) !== '') {
+            $payload['reason'] = trim($reason);
+        }
+
+        return $this->requestPost('orders/' . $orderId . '/cancel', [], $environment, $payload ?: null, $options);
+    }
+
     public function getOrders(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false, array $options = []): array
     {
         $query = Arr::only($filters, ['fulfillment_status', 'financial_status', 'page-size', 'page']);

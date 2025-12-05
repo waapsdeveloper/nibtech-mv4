@@ -53,6 +53,8 @@ class RefurbedMailboxSyncService
 
         $buyer = $this->splitEmailAddress($message['from'] ?? '');
 
+        $mailbox = $this->splitEmailAddress($message['replyTo'] ?? '')['email'];
+
         $thread = SupportThread::updateOrCreate(
             [
                 'marketplace_source' => 'refurbed_mail',
@@ -73,6 +75,8 @@ class RefurbedMailboxSyncService
                     'ticket_id' => $ticketId,
                     'gmail_id' => $message['id'] ?? null,
                     'label_ids' => $message['labelIds'] ?? [],
+                    'mailbox_email' => $mailbox,
+                    'reply_to_header' => $message['replyTo'] ?? null,
                 ],
             ]
         );
