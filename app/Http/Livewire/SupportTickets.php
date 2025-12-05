@@ -657,31 +657,6 @@ class SupportTickets extends Component
             return;
         }
 
-    public function refreshExternalThreads(): void
-    {
-        $this->syncStatus = null;
-        $this->syncError = null;
-
-        try {
-            $exitCode = Artisan::call('support:sync');
-            $output = trim(Artisan::output() ?? '');
-        } catch (\Throwable $exception) {
-            Log::error('Support manual sync failed', ['error' => $exception->getMessage()]);
-            $this->syncError = 'Failed to refresh tickets: ' . $exception->getMessage();
-
-            return;
-        }
-
-        if ($exitCode !== 0) {
-            $this->syncError = $output !== '' ? $output : 'Sync command exited with errors.';
-
-            return;
-        }
-
-        $this->syncStatus = $output !== '' ? $output : 'Support channels refreshed.';
-        $this->emitSelf('supportThreadsUpdated');
-    }
-
         $thread = $this->selectedThread;
 
         if (! $thread) {
@@ -724,6 +699,31 @@ class SupportTickets extends Component
         }
 
         $this->invoiceActionStatus = ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ') . $customer->email . '.';
+    }
+
+    public function refreshExternalThreads(): void
+    {
+        $this->syncStatus = null;
+        $this->syncError = null;
+
+        try {
+            $exitCode = Artisan::call('support:sync');
+            $output = trim(Artisan::output() ?? '');
+        } catch (\Throwable $exception) {
+            Log::error('Support manual sync failed', ['error' => $exception->getMessage()]);
+            $this->syncError = 'Failed to refresh tickets: ' . $exception->getMessage();
+
+            return;
+        }
+
+        if ($exitCode !== 0) {
+            $this->syncError = $output !== '' ? $output : 'Sync command exited with errors.';
+
+            return;
+        }
+
+        $this->syncStatus = $output !== '' ? $output : 'Support channels refreshed.';
+        $this->emitSelf('supportThreadsUpdated');
     }
 
     protected function buildInvoicePayload(Order_model $order): array
