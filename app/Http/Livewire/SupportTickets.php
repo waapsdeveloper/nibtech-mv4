@@ -15,6 +15,7 @@ use App\Models\SupportThread;
 use App\Services\Support\MarketplaceOrderActionService;
 use App\Services\Support\SupportEmailSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
@@ -52,6 +53,8 @@ class SupportTickets extends Component
     public $ticketActionError = null;
     public $invoiceActionStatus = null;
     public $invoiceActionError = null;
+    public $syncStatus = null;
+    public $syncError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -129,6 +132,8 @@ class SupportTickets extends Component
         $this->ticketActionError = null;
         $this->invoiceActionStatus = null;
         $this->invoiceActionError = null;
+        $this->syncStatus = null;
+        $this->syncError = null;
         $this->resetPage();
     }
 
@@ -146,6 +151,8 @@ class SupportTickets extends Component
         $this->ticketActionError = null;
         $this->invoiceActionStatus = null;
         $this->invoiceActionError = null;
+        $this->syncStatus = null;
+        $this->syncError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
     }
@@ -256,6 +263,8 @@ class SupportTickets extends Component
             $this->ticketActionError = null;
             $this->invoiceActionStatus = null;
             $this->invoiceActionError = null;
+            $this->syncStatus = null;
+            $this->syncError = null;
             $this->hydrateOrderContext($threads->first());
         }
 
@@ -647,6 +656,31 @@ class SupportTickets extends Component
 
             return;
         }
+
+    public function refreshExternalThreads(): void
+    {
+        $this->syncStatus = null;
+        $this->syncError = null;
+
+        try {
+            $exitCode = Artisan::call('support:sync');
+            $output = trim(Artisan::output() ?? '');
+        } catch (\Throwable $exception) {
+            Log::error('Support manual sync failed', ['error' => $exception->getMessage()]);
+            $this->syncError = 'Failed to refresh tickets: ' . $exception->getMessage();
+
+            return;
+        }
+
+        if ($exitCode !== 0) {
+            $this->syncError = $output !== '' ? $output : 'Sync command exited with errors.';
+
+            return;
+        }
+
+        $this->syncStatus = $output !== '' ? $output : 'Support channels refreshed.';
+        $this->emitSelf('supportThreadsUpdated');
+    }
 
         $thread = $this->selectedThread;
 

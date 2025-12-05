@@ -8,9 +8,20 @@
                 <p class="text-muted mb-0">Live view of Back Market Care + Refurbed tickets.</p>
             </div>
             <div class="d-flex gap-2">
+                <button wire:click="refreshExternalThreads" type="button" class="btn btn-outline-primary" wire:loading.attr="disabled" wire:target="refreshExternalThreads">
+                    <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="refreshExternalThreads"></span>
+                    Refresh tickets
+                </button>
                 <button wire:click="resetFilters" type="button" class="btn btn-light border">Reset Filters</button>
             </div>
         </div>
+
+        @if ($syncError)
+            <div class="alert alert-danger mb-3">{{ $syncError }}</div>
+        @endif
+        @if ($syncStatus)
+            <div class="alert alert-success mb-3">{{ $syncStatus }}</div>
+        @endif
 
         <div class="support-filters">
             <div>
