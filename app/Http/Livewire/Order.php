@@ -3432,26 +3432,33 @@ class Order extends Component
             return null;
         }
 
-        try {
-            $orderResponse = $refurbedApi->getOrder($referenceId);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: API fetch failed for missing order', [
+        $orderPayload = $this->pullRefurbedOrderPayload($refurbedApi, $referenceId);
+
+        if (! $orderPayload) {
+            $locatedOrder = $this->locateRefurbedOrderByReference($refurbedApi, $referenceId);
+
+            if ($locatedOrder) {
+                $resolvedId = (string) ($locatedOrder['id'] ?? '');
+
+                $orderPayload = $resolvedId !== ''
+                    ? $this->pullRefurbedOrderPayload($refurbedApi, $resolvedId, $referenceId)
+                    : $locatedOrder;
+
+                if (! $orderPayload) {
+                    $orderPayload = $locatedOrder;
+                }
+            }
+        }
+
+        if (! $orderPayload) {
+            Log::info('Refurbed: unable to locate order for missing reference', [
                 'reference_id' => $referenceId,
-                'error' => $e->getMessage(),
             ]);
 
             return null;
         }
 
-        if (empty($orderResponse)) {
-            Log::info('Refurbed: API returned empty payload for missing order', [
-                'reference_id' => $referenceId,
-            ]);
-
-            return null;
-        }
-
-        $orderPayload = json_decode(json_encode($orderResponse), true) ?: [];
+        $orderPayload = json_decode(json_encode($orderPayload), true) ?: [];
         $orderPayload = $this->adaptRefurbedOrderPayload($orderPayload);
         $orderItems = $this->extractRefurbedOrderItemsFromPayload($orderPayload);
 
@@ -3554,6 +3561,81 @@ class Order extends Component
             ->paginate($perPage)
             ->onEachSide(5)
             ->appends(request()->except('page'));
+    }
+
+    protected function locateRefurbedOrderByReference(RefurbedAPIController $refurbedApi, string $referenceId): ?array
+    {
+        $referenceId = trim($referenceId);
+
+        if ($referenceId === '') {
+            return null;
+        }
+
+        $filters = $this->buildRefurbedOrderSearchFilters($referenceId);
+
+        foreach ($filters as $filter) {
+            try {
+                $response = $refurbedApi->listOrders($filter, ['page_size' => 1]);
+            } catch (\Throwable $e) {
+                Log::debug('Refurbed: order search attempt failed', [
+                    'reference_id' => $referenceId,
+                    'filter' => $filter,
+                    'error' => $e->getMessage(),
+                ]);
+                continue;
+            }
+
+            $orders = $response['orders'] ?? [];
+
+            if (! empty($orders)) {
+                return $orders[0];
+            }
+        }
+
+        return null;
+    }
+
+    protected function buildRefurbedOrderSearchFilters(string $referenceId): array
+    {
+        return [
+            ['order_number' => ['equals' => $referenceId]],
+            ['order_number' => ['any_of' => [$referenceId]]],
+            ['reference' => ['equals' => $referenceId]],
+            ['reference' => ['any_of' => [$referenceId]]],
+        ];
+    }
+
+    protected function pullRefurbedOrderPayload(RefurbedAPIController $refurbedApi, string $identifier, ?string $referenceHint = null): ?array
+    {
+        $identifier = trim($identifier);
+
+        if ($identifier === '') {
+            return null;
+        }
+
+        try {
+            $response = $refurbedApi->getOrder($identifier);
+        } catch (\Throwable $e) {
+            Log::debug('Refurbed: direct order fetch failed', [
+                'identifier' => $identifier,
+                'reference_hint' => $referenceHint,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        $payload = $response['order'] ?? $response ?? [];
+
+        if (! is_array($payload) || empty($payload)) {
+            return null;
+        }
+
+        if ($referenceHint && empty($payload['order_number'])) {
+            $payload['order_number'] = $referenceHint;
+        }
+
+        return $payload;
     }
 
     public function reprintRefurbedLabel($orderId)
