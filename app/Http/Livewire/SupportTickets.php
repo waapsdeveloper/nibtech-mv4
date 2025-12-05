@@ -55,6 +55,7 @@ class SupportTickets extends Component
     public $invoiceActionError = null;
     public $syncStatus = null;
     public $syncError = null;
+    public $syncLookbackHours = 6;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -78,6 +79,7 @@ class SupportTickets extends Component
         $this->perPage = $this->sanitizePerPage($this->perPage);
         $this->sortField = $this->sanitizeSortField($this->sortField);
         $this->sortDirection = $this->sanitizeSortDirection($this->sortDirection);
+        $this->syncLookbackHours = $this->sanitizeSyncLookbackHours($this->syncLookbackHours);
     }
 
     public function updated($property, $value): void
@@ -92,6 +94,10 @@ class SupportTickets extends Component
 
         if ($property === 'sortDirection') {
             $this->sortDirection = $this->sanitizeSortDirection($value);
+        }
+
+        if ($property === 'syncLookbackHours') {
+            $this->syncLookbackHours = $this->sanitizeSyncLookbackHours($value);
         }
 
         $filters = ['search', 'status', 'priority', 'marketplace', 'tag', 'assigned', 'changeOnly', 'perPage', 'sortField', 'sortDirection'];
@@ -134,6 +140,7 @@ class SupportTickets extends Component
         $this->invoiceActionError = null;
         $this->syncStatus = null;
         $this->syncError = null;
+        $this->syncLookbackHours = 6;
         $this->resetPage();
     }
 
@@ -705,9 +712,11 @@ class SupportTickets extends Component
     {
         $this->syncStatus = null;
         $this->syncError = null;
+        $hours = $this->sanitizeSyncLookbackHours($this->syncLookbackHours);
+        $since = now()->subHours($hours)->format('Y-m-d-H-i');
 
         try {
-            $exitCode = Artisan::call('support:sync');
+            $exitCode = Artisan::call('support:sync', ['--since' => $since]);
             $output = trim(Artisan::output() ?? '');
         } catch (\Throwable $exception) {
             Log::error('Support manual sync failed', ['error' => $exception->getMessage()]);
@@ -722,8 +731,24 @@ class SupportTickets extends Component
             return;
         }
 
-        $this->syncStatus = $output !== '' ? $output : 'Support channels refreshed.';
+        $summary = $output !== '' ? $output : 'Support channels refreshed.';
+        $this->syncStatus = $summary . ' Lookback: ' . $hours . 'h window.';
         $this->emitSelf('supportThreadsUpdated');
+    }
+
+    protected function sanitizeSyncLookbackHours($value): int
+    {
+        $value = (int) $value;
+
+        if ($value < 1) {
+            return 1;
+        }
+
+        if ($value > 168) {
+            return 168;
+        }
+
+        return $value;
     }
 
     protected function buildInvoicePayload(Order_model $order): array

@@ -7,7 +7,15 @@
                 <h4 class="mb-1">Support Hub</h4>
                 <p class="text-muted mb-0">Live view of Back Market Care + Refurbed tickets.</p>
             </div>
-            <div class="d-flex gap-2">
+            <div class="d-flex flex-wrap gap-2 align-items-center justify-content-end">
+                <div class="d-flex align-items-center gap-2">
+                    <label class="form-label mb-0 small text-muted">Look back</label>
+                    <select class="form-select form-select-sm" style="width:auto;" wire:model="syncLookbackHours">
+                        @foreach ([6, 12, 24, 48, 72, 120, 168] as $hours)
+                            <option value="{{ $hours }}">{{ $hours }}h</option>
+                        @endforeach
+                    </select>
+                </div>
                 <button wire:click="refreshExternalThreads" type="button" class="btn btn-outline-primary" wire:loading.attr="disabled" wire:target="refreshExternalThreads">
                     <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="refreshExternalThreads"></span>
                     Refresh tickets
