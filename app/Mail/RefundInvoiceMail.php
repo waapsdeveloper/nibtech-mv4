@@ -3,12 +3,11 @@
 namespace App\Mail;
 
 use Illuminate\Bus\Queueable;
-use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Mail\Mailable;
 use Illuminate\Queue\SerializesModels;
 use TCPDF;
 
-class RefundInvoiceMail extends Mailable implements ShouldQueue
+class RefundInvoiceMail extends Mailable
 {
     use Queueable, SerializesModels;
 
