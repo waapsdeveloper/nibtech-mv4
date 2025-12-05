@@ -674,8 +674,9 @@ class SupportTickets extends Component
 
         try {
             $payload = $this->buildInvoicePayload($order);
+            $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund);
             $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund);
-            $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund);
+            $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -760,27 +761,41 @@ class SupportTickets extends Component
         }
     }
 
-    protected function logInvoiceThreadEntry(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund): void
+    protected function renderInvoiceEmailBody(array $data, bool $isRefund): string
+    {
+        $view = $isRefund ? 'email.refund_invoice' : 'email.invoice';
+        $html = view($view, $data)->render();
+
+        if (preg_match('/<body[^>]*>(.*)<\/body>/is', $html, $matches)) {
+            return trim($matches[1]);
+        }
+
+        return trim($html);
+    }
+
+    protected function logInvoiceThreadEntry(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund, string $bodyHtml): void
     {
         $author = Admin_model::find(session('user_id'));
         $authorName = $author ? trim($author->first_name . ' ' . $author->last_name) : 'Nib Support';
         $authorEmail = $author->email ?? config('mail.from.address', 'no-reply@nibritaintech.com');
-        $label = $isRefund ? 'Refund invoice' : 'Invoice';
+        $plainText = $this->plainTextFromHtml($bodyHtml);
         $orderLabel = $order->reference_id ?? ('#' . $order->id);
-        $body = sprintf('%s emailed to %s for order %s.', $label, $recipient, $orderLabel);
+        $contextLine = sprintf('%s email sent to %s for order %s.', $isRefund ? 'Refund invoice' : 'Invoice', $recipient, $orderLabel);
+        $renderedBody = '<div>' . $bodyHtml . '</div><hr><p style="color:#64748b;font-size:12px;">' . e($contextLine) . '</p>';
 
         SupportMessage::create([
             'support_thread_id' => $thread->id,
-            'direction' => 'internal',
+            'direction' => 'outbound',
             'author_name' => $authorName,
             'author_email' => $authorEmail,
-            'body_text' => $body,
-            'body_html' => e($body),
+            'body_text' => $plainText ?: $contextLine,
+            'body_html' => $renderedBody,
             'sent_at' => now(),
-            'is_internal_note' => true,
+            'is_internal_note' => false,
             'metadata' => [
                 'source' => 'support_portal',
                 'invoice_action' => $isRefund ? 'refund' : 'order',
+                'customer_email' => $recipient,
             ],
         ]);
 
