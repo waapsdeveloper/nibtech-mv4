@@ -3340,6 +3340,78 @@ class Order extends Component
         if (! $order) {
             session()->put('error', 'Order not found.');
             return redirect()->back();
+        }
+
+        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
+            session()->put('error', 'Only Refurbed orders support this action.');
+            return redirect()->back();
+        }
+
+        $referenceId = trim((string) $order->reference_id);
+
+        if ($referenceId === '') {
+            session()->put('error', 'Missing Refurbed reference ID.');
+            return redirect()->back();
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to initialize API for manual refresh', [
+                'order_id' => $order->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Unable to initialize Refurbed API client.');
+            return redirect()->back();
+        }
+
+        try {
+            $orderResponse = $refurbedApi->getOrder($referenceId);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual refresh fetch failed', [
+                'order_id' => $order->id,
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Failed to fetch Refurbed order data.');
+            return redirect()->back();
+        }
+
+        $orderPayload = $orderResponse['order'] ?? $orderResponse ?? [];
+
+        if (! is_array($orderPayload) || empty($orderPayload)) {
+            session()->put('error', 'Refurbed API returned an empty response.');
+            return redirect()->back();
+        }
+
+        $orderPayload = $this->adaptRefurbedOrderPayload($orderPayload);
+
+        $orderItems = $this->extractRefurbedOrderItemsFromPayload($orderPayload);
+
+        if (! $orderItems) {
+            $orderItems = $this->fetchRefurbedOrderItemsPayload($refurbedApi, $referenceId);
+        }
+
+        try {
+            $orderModel = new Order_model();
+            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: manual refresh persist failed', [
+                'order_id' => $order->id,
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->put('error', 'Failed to persist Refurbed order locally.');
+            return redirect()->back();
+        }
+
+        session()->put('success', "Refurbed order {$referenceId} refreshed.");
+
+        return redirect()->back();
+    }
 
     protected function fetchRefurbedOrderByReference(string $referenceId): ?Order_model
     {
@@ -3482,78 +3554,6 @@ class Order extends Component
             ->paginate($perPage)
             ->onEachSide(5)
             ->appends(request()->except('page'));
-    }
-        }
-
-        if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {
-            session()->put('error', 'Only Refurbed orders support this action.');
-            return redirect()->back();
-        }
-
-        $referenceId = trim((string) $order->reference_id);
-
-        if ($referenceId === '') {
-            session()->put('error', 'Missing Refurbed reference ID.');
-            return redirect()->back();
-        }
-
-        try {
-            $refurbedApi = new RefurbedAPIController();
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: unable to initialize API for manual refresh', [
-                'order_id' => $order->id,
-                'error' => $e->getMessage(),
-            ]);
-
-            session()->put('error', 'Unable to initialize Refurbed API client.');
-            return redirect()->back();
-        }
-
-        try {
-            $orderResponse = $refurbedApi->getOrder($referenceId);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: manual refresh fetch failed', [
-                'order_id' => $order->id,
-                'reference_id' => $referenceId,
-                'error' => $e->getMessage(),
-            ]);
-
-            session()->put('error', 'Failed to fetch Refurbed order data.');
-            return redirect()->back();
-        }
-
-        $orderPayload = $orderResponse['order'] ?? $orderResponse ?? [];
-
-        if (! is_array($orderPayload) || empty($orderPayload)) {
-            session()->put('error', 'Refurbed API returned an empty response.');
-            return redirect()->back();
-        }
-
-        $orderPayload = $this->adaptRefurbedOrderPayload($orderPayload);
-
-        $orderItems = $this->extractRefurbedOrderItemsFromPayload($orderPayload);
-
-        if (! $orderItems) {
-            $orderItems = $this->fetchRefurbedOrderItemsPayload($refurbedApi, $referenceId);
-        }
-
-        try {
-            $orderModel = new Order_model();
-            $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems);
-        } catch (\Throwable $e) {
-            Log::error('Refurbed: manual refresh persist failed', [
-                'order_id' => $order->id,
-                'reference_id' => $referenceId,
-                'error' => $e->getMessage(),
-            ]);
-
-            session()->put('error', 'Failed to persist Refurbed order locally.');
-            return redirect()->back();
-        }
-
-        session()->put('success', "Refurbed order {$referenceId} refreshed.");
-
-        return redirect()->back();
     }
 
     public function reprintRefurbedLabel($orderId)
