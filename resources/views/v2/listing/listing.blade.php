@@ -1259,6 +1259,12 @@
                 let paginationContainer = $('#pagination-container');
                 paginationContainer.empty(); // Clear existing pagination
 
+                // Safety check: ensure response and links exist
+                if (!response || !response.links || !Array.isArray(response.links)) {
+                    console.error('Invalid pagination response:', response);
+                    return;
+                }
+
                 // Add Previous button
                 if (response.prev_page_url) {
                     paginationContainer.append(`
@@ -1273,11 +1279,17 @@
                 // Add page links
                 response.links.forEach(link => {
                     if (link.url) {
-                        paginationContainer.append(`
-                            <li class="page-item ${link.active ? 'active' : ''}">
-                                <a class="page-link w-auto" href="#" data-page="${new URL(link.url).searchParams.get('page')}">${link.label}</a>
-                            </li>
-                        `);
+                        try {
+                            const pageNum = new URL(link.url).searchParams.get('page');
+                            paginationContainer.append(`
+                                <li class="page-item ${link.active ? 'active' : ''}">
+                                    <a class="page-link w-auto" href="#" data-page="${pageNum}">${link.label}</a>
+                                </li>
+                            `);
+                        } catch (e) {
+                            // If URL parsing fails, skip this link
+                            console.warn('Failed to parse pagination link URL:', link.url);
+                        }
                     } else {
                         paginationContainer.append(`
                             <li class="page-item disabled"><span class="page-link w-auto">${link.label}</span></li>

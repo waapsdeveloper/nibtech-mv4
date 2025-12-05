@@ -174,6 +174,65 @@ class ListingController extends Controller
             // $pageKey = $this->cacheService->generatePageKey($request->all());
             // $this->cacheService->cacheVariationData($variationData, $pageKey);
 
+            // Generate links array for pagination (matching Laravel paginator format)
+            $links = [];
+            
+            // Previous link
+            $links[] = [
+                'url' => $page > 1 ? $request->fullUrlWithQuery(['page' => $page - 1]) : null,
+                'label' => '&laquo; Previous',
+                'active' => false,
+            ];
+            
+            // Page number links (show up to 7 pages around current page)
+            $startPage = max(1, $page - 3);
+            $endPage = min($lastPage, $page + 3);
+            
+            if ($startPage > 1) {
+                $links[] = [
+                    'url' => $request->fullUrlWithQuery(['page' => 1]),
+                    'label' => '1',
+                    'active' => false,
+                ];
+                if ($startPage > 2) {
+                    $links[] = [
+                        'url' => null,
+                        'label' => '...',
+                        'active' => false,
+                    ];
+                }
+            }
+            
+            for ($i = $startPage; $i <= $endPage; $i++) {
+                $links[] = [
+                    'url' => $request->fullUrlWithQuery(['page' => $i]),
+                    'label' => (string)$i,
+                    'active' => $i == $page,
+                ];
+            }
+            
+            if ($endPage < $lastPage) {
+                if ($endPage < $lastPage - 1) {
+                    $links[] = [
+                        'url' => null,
+                        'label' => '...',
+                        'active' => false,
+                    ];
+                }
+                $links[] = [
+                    'url' => $request->fullUrlWithQuery(['page' => $lastPage]),
+                    'label' => (string)$lastPage,
+                    'active' => false,
+                ];
+            }
+            
+            // Next link
+            $links[] = [
+                'url' => $page < $lastPage ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
+                'label' => 'Next &raquo;',
+                'active' => false,
+            ];
+
             return response()->json([
                 'data' => $variationData,
                 'current_page' => $page,
@@ -186,6 +245,7 @@ class ListingController extends Controller
                 'next_page_url' => $page < $lastPage ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
                 'first_page_url' => $request->fullUrlWithQuery(['page' => 1]),
                 'last_page_url' => $request->fullUrlWithQuery(['page' => $lastPage]),
+                'links' => $links, // Add links array for pagination
             ]);
         } catch (\Exception $e) {
             Log::error("Error fetching variations: " . $e->getMessage(), [
