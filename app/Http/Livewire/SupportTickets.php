@@ -293,10 +293,10 @@ class SupportTickets extends Component
             ->when($this->search !== '', function ($query) {
                 $needle = '%' . trim($this->search) . '%';
                 $query->where(function ($sub) use ($needle) {
-                    $sub->where('order_reference', 'like', $needle)
-                        ->orWhere('buyer_email', 'like', $needle)
-                        ->orWhere('buyer_name', 'like', $needle)
-                        ->orWhere('external_thread_id', 'like', $needle);
+                    $sub->where('order_reference', 'LIKE', $needle)
+                        ->orWhere('buyer_email', 'LIKE', $needle)
+                        ->orWhere('buyer_name', 'LIKE', $needle)
+                        ->orWhere('external_thread_id', 'LIKE', $needle);
                 });
             })
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
