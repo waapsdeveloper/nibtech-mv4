@@ -60,11 +60,16 @@ class UpdateOrderInDB implements ShouldQueue
             print_r($orderObj);
         }
 
-        $order = Order_model::firstOrNew(['reference_id' => $orderObj->order_id]);
+        $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+        $order = Order_model::firstOrNew([
+            'reference_id' => $orderObj->order_id,
+            'marketplace_id' => $marketplaceId,
+        ]);
         $order->customer_id = $this->updateCustomerInDB();
         $order->status = $this->mapStateToStatus();
         $order->currency = $currency_codes[$orderObj->currency];
         $order->order_type_id = 3;
+        $order->marketplace_id = $marketplaceId;
         $order->price = $orderObj->price;
         $order->delivery_note_url = $orderObj->delivery_note;
         if ($order->label_url == null && $bm->getOrderLabel($orderObj->order_id) != null) {
