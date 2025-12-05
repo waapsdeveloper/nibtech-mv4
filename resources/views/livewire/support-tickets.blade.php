@@ -10,10 +10,11 @@
             <div class="d-flex flex-wrap gap-2 align-items-center justify-content-end">
                 <div class="d-flex align-items-center gap-2">
                     <label class="form-label mb-0 small text-muted">Look back</label>
-                    <select class="form-select form-select-sm" style="width:auto;" wire:model="syncLookbackHours">
+                    <select class="form-select form-select-sm" style="width:auto;" wire:model="syncLookback">
                         @foreach ([6, 12, 24, 48, 72, 120, 168] as $hours)
                             <option value="{{ $hours }}">{{ $hours }}h</option>
                         @endforeach
+                        <option value="all">All history</option>
                     </select>
                 </div>
                 <button wire:click="refreshExternalThreads" type="button" class="btn btn-outline-primary" wire:loading.attr="disabled" wire:target="refreshExternalThreads">
