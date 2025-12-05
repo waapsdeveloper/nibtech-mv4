@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Controllers\GoogleController;
 use App\Mail\InvoiceMail;
 use App\Mail\RefundInvoiceMail;
 use App\Models\Admin_model;
@@ -16,7 +17,6 @@ use App\Services\Support\SupportEmailSender;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Livewire\Component;
 use Livewire\WithPagination;
 
@@ -674,7 +674,7 @@ class SupportTickets extends Component
 
         try {
             $payload = $this->buildInvoicePayload($order);
-            $this->sendInvoiceMail($customer->email, $payload, $isRefund);
+            $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund);
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
@@ -735,32 +735,28 @@ class SupportTickets extends Component
         return $query->get();
     }
 
-    protected function sendInvoiceMail(string $recipient, array $data, bool $isRefund): void
+    protected function sendInvoiceMail(Order_model $order, string $recipient, array $data, bool $isRefund): void
     {
-        $mailableFactory = fn () => $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+        $subjectOrderRef = $order->reference_id
+            ?: ($order->reference ?? ('#' . $order->id));
+        $subject = ($isRefund ? 'Refund invoice for ' : 'Invoice for ') . $subjectOrderRef;
+        $mailable = $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
 
         try {
-            Mail::to($recipient)->send($mailableFactory());
-        } catch (\Throwable $primary) {
-            Log::warning('Primary invoice mailer failed', [
+            $response = app(GoogleController::class)->sendEmailInvoice($recipient, $subject, $mailable);
+        } catch (\Throwable $exception) {
+            Log::error('Gmail invoice send failed', [
                 'recipient' => $recipient,
-                'order_id' => data_get($data, 'order.id'),
+                'order_id' => $order->id,
                 'refund' => $isRefund,
-                'error' => $primary->getMessage(),
+                'error' => $exception->getMessage(),
             ]);
 
-            try {
-                Mail::mailer('smtp_secondary')->to($recipient)->send($mailableFactory());
-            } catch (\Throwable $secondary) {
-                Log::error('Secondary invoice mailer failed', [
-                    'recipient' => $recipient,
-                    'order_id' => data_get($data, 'order.id'),
-                    'refund' => $isRefund,
-                    'error' => $secondary->getMessage(),
-                ]);
+            throw $exception;
+        }
 
-                throw new \RuntimeException('All mailers failed to send invoice.');
-            }
+        if ($response instanceof \Illuminate\Http\RedirectResponse) {
+            throw new \RuntimeException('Google account not connected. Please authenticate Gmail.');
         }
     }
 
