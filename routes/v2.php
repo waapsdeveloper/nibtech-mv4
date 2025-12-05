@@ -20,5 +20,6 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/render_listing_items', [V2ListingController::class, 'renderListingItems'])->name('v2.render_listing_items');
     Route::post('listings/clear_cache', [V2ListingController::class, 'clearCache'])->name('v2.clear_listing_cache');
     Route::get('listings/get_variation_history/{id}', [V2ListingController::class, 'get_variation_history'])->name('v2.get_variation_history');
+    Route::get('listings/get_listings/{variationId}', [V2ListingController::class, 'get_listings'])->name('v2.get_listings');
 });
 
