@@ -17,9 +17,13 @@ use App\Models\ExchangeRate;
 use App\Models\Grade_model;
 use App\Models\Marketplace_model;
 use App\Models\Storage_model;
+use App\Models\Products_model;
+use App\Models\Listed_stock_verification_model;
+use App\Models\Admin_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class ListingController extends Controller
 {
@@ -43,7 +47,7 @@ class ListingController extends Controller
     /**
      * Display the V2 listing page
      */
-    public function index()
+    public function index(Request $request)
     {
         \Log::info('V2 ListingController index called');
         $data['title_page'] = "Listings V2";
@@ -78,7 +82,216 @@ class ListingController extends Controller
             $data['marketplaces'][$marketplace->id] = $marketplace;
         }
 
+        // Get variations using the same logic as original ListingController
+        $perPage = $request->input('per_page', 10);
+        $variations = $this->buildVariationQuery($request)->paginate($perPage)->appends($request->except('page'));
+        
+        // Calculate sales data and withoutBuybox HTML for each variation
+        foreach($variations as $variation) {
+            $variation->sales_data = $this->calculationService->calculateSalesData($variation->id);
+            
+            // Build withoutBuybox HTML (listings without buybox from marketplace_id == 1)
+            $withoutBuybox = '';
+            $listingsWithoutBuybox = $variation->listings->where('buybox', '!=', 1)->where('marketplace_id', 1);
+            
+            foreach($listingsWithoutBuybox as $listing) {
+                $country = $listing->country_id ?? null;
+                if ($country && is_object($country)) {
+                    $countryCode = strtolower($country->code ?? '');
+                    $marketUrl = $country->market_url ?? '';
+                    $marketCode = $country->market_code ?? '';
+                    $referenceUuid2 = $listing->reference_uuid_2 ?? '';
+                    
+                    if ($countryCode && $marketUrl && $marketCode && $referenceUuid2) {
+                        $withoutBuybox .= '<a href="https://www.backmarket.' . $marketUrl . '/' . $marketCode . '/p/gb/' . $referenceUuid2 . '" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">';
+                        $withoutBuybox .= '<img src="' . asset('assets/img/flags/' . $countryCode . '.svg') . '" height="10">';
+                        $withoutBuybox .= strtoupper($country->code ?? '') . '</a>';
+                    }
+                }
+            }
+            
+            $variation->withoutBuybox = $withoutBuybox;
+        }
+        
+        $data['variations'] = $variations;
+
         return view('v2.listing.listing')->with($data);
+    }
+
+    /**
+     * Build variation query using the same logic as original ListingController
+     */
+    private function buildVariationQuery(Request $request)
+    {
+        list($productSearch, $storageSearch) = $this->resolveProductAndStorageSearch($request->input('product_name'));
+
+        $query = Variation_model::with([
+            'listings',
+            'listings.country_id',
+            'listings.currency',
+            'listings.marketplace',
+            'product',
+            'available_stocks',
+            'pending_orders',
+            'pending_bm_orders',
+            'storage_id',
+            'color_id',
+            'grade_id',
+        ]);
+
+        $query->when($request->filled('reference_id'), function ($q) use ($request) {
+            return $q->where('reference_id', $request->input('reference_id'));
+        })
+        ->when($request->filled('variation_id'), function ($q) use ($request) {
+            return $q->where('id', $request->input('variation_id'));
+        })
+        ->when($request->filled('category'), function ($q) use ($request) {
+            return $q->whereHas('product', function ($productQuery) use ($request) {
+                $productQuery->where('category', $request->input('category'));
+            });
+        })
+        ->when($request->filled('brand'), function ($q) use ($request) {
+            return $q->whereHas('product', function ($productQuery) use ($request) {
+                $productQuery->where('brand', $request->input('brand'));
+            });
+        })
+        ->when($request->filled('marketplace'), function ($q) use ($request) {
+            return $q->whereHas('listings', function ($q) {
+                $q->where('marketplace_id', request('marketplace'));
+            });
+        })
+        ->when($request->filled('product'), function ($q) use ($request) {
+            return $q->where('product_id', $request->input('product'));
+        })
+        ->when($productSearch->count() > 0, function ($q) use ($productSearch) {
+            return $q->whereIn('product_id', $productSearch);
+        })
+        ->when($storageSearch->count() > 0, function ($q) use ($storageSearch) {
+            return $q->whereIn('storage', $storageSearch);
+        })
+        ->when($request->filled('sku'), function ($q) use ($request) {
+            return $q->where('sku', $request->input('sku'));
+        })
+        ->when($request->filled('color'), function ($q) use ($request) {
+            return $q->where('color', $request->input('color'));
+        })
+        ->when($request->filled('storage'), function ($q) use ($request) {
+            return $q->where('storage', $request->input('storage'));
+        })
+        ->when($request->filled('grade'), function ($q) use ($request) {
+            return $q->whereIn('grade', (array) $request->input('grade'));
+        })
+        ->when($request->filled('topup'), function ($q) use ($request) {
+            return $q->whereHas('listed_stock_verifications', function ($verificationQuery) use ($request) {
+                $verificationQuery->where('process_id', $request->input('topup'));
+            });
+        })
+        ->when($request->filled('listed_stock'), function ($q) use ($request) {
+            if ((int) $request->input('listed_stock') === 1) {
+                return $q->where('listed_stock', '>', 0);
+            }
+
+            if ((int) $request->input('listed_stock') === 2) {
+                return $q->where('listed_stock', '<=', 0);
+            }
+        })
+        ->when($request->filled('available_stock'), function ($q) use ($request) {
+            if ((int) $request->input('available_stock') === 1) {
+                return $q->whereHas('available_stocks')
+                    ->withCount(['available_stocks', 'pending_orders'])
+                    ->havingRaw('(available_stocks_count - pending_orders_count) > 0');
+            }
+
+            if ((int) $request->input('available_stock') === 2) {
+                return $q->whereDoesntHave('available_stocks');
+            }
+        });
+
+        $state = $request->input('state');
+        if ($state === null || $state === '') {
+            $query->whereIn('state', [2, 3]);
+        } elseif ((int) $state !== 10) {
+            $query->where('state', $state);
+        }
+
+        $query->when($request->filled('sale_40'), function ($q) {
+            return $q->withCount('today_orders as today_orders_count')
+                ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
+        })
+        ->when((int) $request->input('handler_status') === 2, function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'))
+                    ->whereIn('country', [73, 199]);
+            });
+        })
+        ->when(in_array((int) $request->input('handler_status'), [1, 3], true), function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'));
+            });
+        })
+        ->when($request->filled('process_id') && $request->input('special') === 'show_only', function ($q) use ($request) {
+            return $q->whereHas('process_stocks', function ($processStockQuery) use ($request) {
+                $processStockQuery->where('process_id', $request->input('process_id'));
+            });
+        })
+        ->whereNotNull('sku')
+        ->when($request->input('sort') == 4, function ($q) {
+            return $q->join('products', 'variation.product_id', '=', 'products.id')
+                ->orderBy('products.model', 'asc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*');
+        })
+        ->when($request->input('sort') == 3, function ($q) {
+            return $q->join('products', 'variation.product_id', '=', 'products.id')
+                ->orderBy('products.model', 'desc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*');
+        })
+        ->when($request->input('sort') == 2, function ($q) {
+            return $q->orderBy('listed_stock', 'asc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc');
+        })
+        ->when($request->input('sort') == 1 || $request->input('sort') === null, function ($q) {
+            return $q->orderBy('listed_stock', 'desc')
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc');
+        });
+
+        return $query;
+    }
+
+    /**
+     * Resolve product and storage search from product name
+     */
+    private function resolveProductAndStorageSearch(?string $productName): array
+    {
+        if (empty($productName)) {
+            return [collect(), collect()];
+        }
+
+        $searchTerm = trim($productName);
+        $parts = explode(' ', $searchTerm);
+        $lastSegment = end($parts);
+
+        $storageSearch = Storage_model::where('name', 'like', $lastSegment . '%')->pluck('id');
+
+        if ($storageSearch->count() > 0) {
+            array_pop($parts);
+            $searchTerm = trim(implode(' ', $parts));
+        } else {
+            $storageSearch = collect();
+        }
+
+        $productSearch = Products_model::where('model', 'like', '%' . $searchTerm . '%')->pluck('id');
+
+        return [$productSearch, $storageSearch];
     }
 
     /**
@@ -473,5 +686,23 @@ class ListingController extends Controller
                 'message' => 'Error clearing cache: ' . $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Get variation history (duplicated from original ListingController for consistency)
+     */
+    public function get_variation_history($id)
+    {
+        $listed_stock_verifications = Listed_stock_verification_model::where('variation_id', $id)
+            ->orderByDesc('id')
+            ->limit(20)
+            ->get();
+
+        $listed_stock_verifications->each(function($verification) {
+            $verification->process_ref = Process_model::find($verification->process_id)->reference_id ?? null;
+            $verification->admin = Admin_model::find($verification->admin_id)->first_name ?? null;
+        });
+
+        return response()->json(['listed_stock_verifications' => $listed_stock_verifications]);
     }
 }
