@@ -80,53 +80,77 @@
                 </a>
             </h5>
             <span id="sales_{{ $variationId }}">{!! $variation->sales_data ?? '' !!}</span>
+            <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
+                <h6 class="mb-0">
+                    <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
+                        Pending Order Items: {{ $pendingCount }} (BM Orders: {{ $pendingBmCount }})
+                    </a>
+                </h6>
+                <span class="text-muted">|</span>
+                <h6 class="mb-0" id="available_stock_{{ $variationId }}">
+                    <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
+                        Available: {{ $availableCount }}
+                    </a>
+                </h6>
+                <span class="text-muted">|</span>
+                <h6 class="mb-0">Difference: {{ $difference }}</h6>
+            </div>
         </div>
 
-        <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal">
-            <i class="fas fa-history"></i>
-        </a>
+        <div class="d-flex flex-column align-items-end gap-2">
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                @if(isset($marketplaces) && count($marketplaces) > 0)
+                    <div class="d-flex align-items-center gap-1 flex-wrap">
+                        @foreach($marketplaces as $mpId => $mp)
+                            @php
+                                $marketplaceIdInt = (int)$mpId;
+                                $marketplaceData = $variation->marketplace_data[$marketplaceIdInt] ?? null;
+                                $mpName = $marketplaceData['name'] ?? ($mp->name ?? 'Marketplace ' . $marketplaceIdInt);
+                                $marketplaceListings = $marketplaceData['listings'] ?? collect();
+                                $listingCount = $marketplaceListings->count();
+                                $listingCountText = '(' . $listingCount . ')';
+                                $isFirst = $loop->first;
+                            @endphp
+                            <span 
+                                class="badge marketplace-toggle-badge {{ $isFirst ? 'badge-active' : 'badge-inactive' }}" 
+                                style="cursor: pointer; user-select: none; background-color: transparent; border: 1px solid {{ $isFirst ? '#28a745' : '#000' }}; color: {{ $isFirst ? '#28a745' : '#000' }}; font-size: 0.9rem; font-weight: 500; padding: 0.35em 0.65em;"
+                                data-marketplace-id="{{ $marketplaceIdInt }}"
+                                data-variation-id="{{ $variationId }}"
+                                onclick="toggleMarketplace({{ $variationId }}, {{ $marketplaceIdInt }}, this)"
+                                title="Click to show/hide {{ $mpName }}">
+                                {{ $mpName }} <span style="opacity: 0.8;">{{ $listingCountText }}</span>
+                            </span>
+                        @endforeach
+                    </div>
+                @endif
 
-        <form class="form-inline wd-150" method="POST" id="add_qty_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
-            @csrf
-            <input type="hidden" name="process_id" value="{{ $process_id ?? '' }}">
-            <div class="form-floating">
-                <input type="text" class="form-control" name="stock" id="quantity_{{ $variationId }}" value="{{ $listedStock }}" style="width:50px;" disabled>
-                <label for="">Stock</label>
-            </div>
-            <div class="form-floating">
-                <input type="number" class="form-control" name="stock" id="add_{{ $variationId }}" value="" style="width:60px;">
-                <label for="">Add</label>
-            </div>
-            <button id="send_{{ $variationId }}" class="btn btn-light d-none">Push</button>
-            <span class="text-success" id="success_{{ $variationId }}"></span>
-        </form>
-
-        <div class="text-center">
-            <h6 class="mb-0">
-                <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
-                    Pending Order Items: {{ $pendingCount }} (BM Orders: {{ $pendingBmCount }})
+                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
+                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
+                    {{ $state }}
+                </span>
+                <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal">
+                    <i class="fas fa-history"></i>
                 </a>
-            </h6>
-            <h6 class="mb-0" id="available_stock_{{ $variationId }}">
-                <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
-                    Available: {{ $availableCount }}
-                </a>
-            </h6>
-            <h6 class="mb-0">Difference: {{ $difference }}</h6>
+            </div>
+            <form class="form-inline" method="POST" id="add_qty_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
+                @csrf
+                <input type="hidden" name="process_id" value="{{ $process_id ?? '' }}">
+                <div class="form-floating">
+                    <input type="text" class="form-control" name="stock" id="quantity_{{ $variationId }}" value="{{ $listedStock }}" style="width:50px;" disabled>
+                    <label for="">Stock</label>
+                </div>
+                <div class="form-floating">
+                    <input type="number" class="form-control" name="stock" id="add_{{ $variationId }}" value="" style="width:60px;">
+                    <label for="">Add</label>
+                </div>
+                <button id="send_{{ $variationId }}" class="btn btn-light d-none">Push</button>
+                <span class="text-success" id="success_{{ $variationId }}"></span>
+            </form>
         </div>
+
+        
 
         {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
-    </div>
-    <div class="d-flex justify-content-between">
-        <div class="pt-3">
-            <h6 class="d-inline">Without&nbsp;Buybox</h6>
-            {!! $withoutBuybox !!}
-        </div>
-        <div class="pt-4">
-            <h6 class="badge bg-light text-dark">
-                {{ $state }}
-            </h6>
-        </div>
     </div>
     {{-- Details section removed - tables now shown in marketplace toggle sections --}}
     {{-- Marketplace Bars Section - Card Footer --}}
@@ -134,121 +158,16 @@
         <div class="card-footer p-0 border-top mt-2">
             @foreach($marketplaces as $marketplaceId => $marketplace)
                 @php
-                    $marketplaceName = $marketplace->name ?? 'Marketplace ' . $marketplaceId;
-                    $marketplaceListings = $variation->listings->where('marketplace_id', $marketplaceId) ?? collect();
-                    $listingCount = $marketplaceListings->count();
-                    $marketplaceNameWithCount = $marketplaceName . ' (' . $listingCount . ' ' . ($listingCount === 1 ? 'listing' : 'listings') . ')';
-                    
-                    // Calculate marketplace-specific values for form inputs
-                    $minHandlerValue = '';
-                    $handlerValue = '';
-                    $minPriceValue = '';
-                    $priceValue = '';
-                    
-                    if ($marketplaceListings->count() > 0) {
-                        $minPriceLimits = $marketplaceListings->pluck('min_price_limit')->filter()->values();
-                        if ($minPriceLimits->count() > 0) {
-                            $minHandlerValue = $minPriceLimits->min();
-                        }
-                        
-                        $priceLimits = $marketplaceListings->pluck('price_limit')->filter()->values();
-                        if ($priceLimits->count() > 0) {
-                            $handlerValue = $priceLimits->min();
-                        }
-                        
-                        $minPrices = $marketplaceListings->pluck('min_price')->filter()->values();
-                        if ($minPrices->count() > 0) {
-                            $minPriceValue = $minPrices->min();
-                        }
-                        
-                        $prices = $marketplaceListings->pluck('price')->filter()->values();
-                        if ($prices->count() > 0) {
-                            $priceValue = $prices->min();
-                        }
-                    }
-                    
-                    // Build buybox flags
-                    $buyboxFlags = '';
-                    $buyboxListingsForMarketplace = $marketplaceListings->where('buybox', 1);
-                    
-                    if ($buyboxListingsForMarketplace->count() > 0) {
-                        foreach($buyboxListingsForMarketplace as $listing) {
-                            $country = $listing->country_id ?? null;
-                            if ($country && is_object($country)) {
-                                $countryCode = $country->code ?? '';
-                                $marketUrl = $country->market_url ?? '';
-                                $marketCode = $country->market_code ?? '';
-                                $referenceUuid2 = $listing->reference_uuid_2 ?? '';
-                                
-                                if ($countryCode) {
-                                    $buyboxFlags .= '<a href="https://www.backmarket.' . $marketUrl . '/' . $marketCode . '/p/gb/' . $referenceUuid2 . '" target="_blank" class="btn btn-sm btn-link border p-1 m-1" title="View listing">
-                                        <img src="' . asset('assets/img/flags/' . strtolower($countryCode) . '.svg') . '" height="10" alt="' . $countryCode . '">
-                                        ' . $countryCode . '
-                                    </a>';
-                                }
-                            }
-                        }
-                    }
-                    
-                    if (empty($buyboxFlags)) {
-                        $buyboxFlags = '<span class="text-muted small">No buybox</span>';
-                    }
-                    
-                    // Format order summary (static for now)
-                    $orderSummary = '7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
+                    $marketplaceIdInt = (int)$marketplaceId;
+                    $isFirst = $loop->first;
                 @endphp
-                
-                <div class="marketplace-bar-wrapper border-bottom">
-                    <div class="p-2">
-                        <div class="d-flex justify-content-between align-items-center mb-2">
-                            <div class="fw-bold">{{ $marketplaceNameWithCount }}</div>
-                            <div class="d-flex align-items-center gap-2">
-                                <div>{!! $buyboxFlags !!}</div>
-                                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
-                                    <i class="fas fa-chevron-down"></i>
-                                </button>
-                            </div>
-                        </div>
-                        <div class="d-flex justify-content-between align-items-center">
-                            <div class="d-flex align-items-start gap-2">
-                                <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
-                                    @csrf
-                                    <div class="form-floating" style="width: 75px;">
-                                        <input type="number" class="form-control form-control-sm" id="all_min_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_handler" step="0.01" value="{{ $minHandlerValue }}" placeholder="Min" style="height: 31px;">
-                                        <label for="" class="small">Min</label>
-                                    </div>
-                                    <div class="form-floating" style="width: 75px;">
-                                        <input type="number" class="form-control form-control-sm" id="all_handler_{{ $variationId }}_{{ $marketplaceId }}" name="all_handler" step="0.01" value="{{ $handlerValue }}" placeholder="Handler" style="height: 31px;">
-                                        <label for="" class="small">Handler</label>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-primary" style="height: 31px; line-height: 1;">Change</button>
-                                </form>
-                                <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
-                                    @csrf
-                                    <div class="form-floating" style="width: 75px;">
-                                        <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="{{ $minPriceValue }}" placeholder="Min Price" style="height: 31px;">
-                                        <label for="" class="small">Min Price</label>
-                                    </div>
-                                    <div class="form-floating" style="width: 75px;">
-                                        <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="{{ $priceValue }}" placeholder="Price" style="height: 31px;">
-                                        <label for="" class="small">Price</label>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-success" style="height: 31px; line-height: 1;">Push</button>
-                                </form>
-                            </div>
-                            <div class="small fw-bold text-end">{{ $orderSummary }}</div>
-                        </div>
-                    </div>
-                    <div class="marketplace-toggle-content collapse" id="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}">
-                        <div class="p-3 bg-light border-top marketplace-tables-container" data-loaded="false">
-                            <div class="text-center p-4">
-                                <div class="spinner-border text-primary" role="status">
-                                    <span class="visually-hidden">Loading...</span>
-                                </div>
-                                <p class="mt-2 text-muted small">Click to load tables...</p>
-                            </div>
-                        </div>
-                    </div>
+                <div class="marketplace-bar-container" id="marketplace_bar_{{ $variationId }}_{{ $marketplaceIdInt }}" style="display: {{ $isFirst ? 'block' : 'none' }};">
+                    @include('v2.listing.partials.marketplace-bar', [
+                        'variation' => $variation,
+                        'variationId' => $variationId,
+                        'marketplace' => $marketplace,
+                        'marketplaceId' => $marketplaceId
+                    ])
                 </div>
             @endforeach
         </div>
@@ -258,4 +177,30 @@
         </div>
     @endif
 </div>
+
+<script>
+function toggleMarketplace(variationId, marketplaceId, badgeElement) {
+    const marketplaceBar = document.getElementById('marketplace_bar_' + variationId + '_' + marketplaceId);
+    
+    if (marketplaceBar) {
+        const isVisible = marketplaceBar.style.display !== 'none';
+        
+        if (isVisible) {
+            // Hide the marketplace
+            marketplaceBar.style.display = 'none';
+            badgeElement.style.borderColor = '#000';
+            badgeElement.style.color = '#000';
+            badgeElement.classList.remove('badge-active');
+            badgeElement.classList.add('badge-inactive');
+        } else {
+            // Show the marketplace
+            marketplaceBar.style.display = 'block';
+            badgeElement.style.borderColor = '#28a745';
+            badgeElement.style.color = '#28a745';
+            badgeElement.classList.remove('badge-inactive');
+            badgeElement.classList.add('badge-active');
+        }
+    }
+}
+</script>
 
