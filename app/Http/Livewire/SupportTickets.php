@@ -737,18 +737,10 @@ class SupportTickets extends Component
 
     protected function sendInvoiceMail(string $recipient, array $data, bool $isRefund): void
     {
-        $mailableFactory = function () use ($data, $isRefund) {
-            $mailable = $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
-
-            if (method_exists($mailable, 'onConnection')) {
-                $mailable->onConnection('sync');
-            }
-
-            return $mailable;
-        };
+        $mailableFactory = fn () => $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
 
         try {
-            Mail::to($recipient)->queue($mailableFactory());
+            Mail::to($recipient)->send($mailableFactory());
         } catch (\Throwable $primary) {
             Log::warning('Primary invoice mailer failed', [
                 'recipient' => $recipient,
@@ -758,7 +750,7 @@ class SupportTickets extends Component
             ]);
 
             try {
-                Mail::mailer('smtp_secondary')->to($recipient)->queue($mailableFactory());
+                Mail::mailer('smtp_secondary')->to($recipient)->send($mailableFactory());
             } catch (\Throwable $secondary) {
                 Log::error('Secondary invoice mailer failed', [
                     'recipient' => $recipient,
