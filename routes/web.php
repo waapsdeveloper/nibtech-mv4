@@ -373,6 +373,7 @@ Route::post('listing/add_quantity_marketplace/{variationId}/{marketplaceId}', [L
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
 Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit'])->name('update_listing_handler_limit');
 Route::post('listing/update_target/{id}', [ListingController::class,'update_target'])->name('update_listing_target');
+Route::post('listing/toggle_enable/{id}', [ListingController::class,'toggle_enable'])->name('toggle_listing_enable');
 
 Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
 Route::get('listed_stock_verification/start_listing_verification', [ListedStockVerification::class,'start_listing_verification'])->name('start_listed_stock_verification');

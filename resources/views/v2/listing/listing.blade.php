@@ -242,7 +242,7 @@
                 $(`#marketplace_count_${variationId}_${marketplaceId}`).text(countText);
                 
                 if (marketplaceListings.length === 0) {
-                    listingsTable = '<tr><td colspan="7" class="text-center text-muted">No listings found for this marketplace</td></tr>';
+                    listingsTable = '<tr><td colspan="8" class="text-center text-muted">No listings found for this marketplace</td></tr>';
                 } else {
                     marketplaceListings.forEach(function(listing) {
                         let best_price = $(`#best_price_${variationId}_${marketplaceId}`).text().replace('€', '') || 0;
@@ -331,6 +331,19 @@
                                     ${p_append}
                                 </td>
                                 <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
+                                <td class="text-center">
+                                    <div class="form-check form-switch d-inline-block">
+                                        <input 
+                                            class="form-check-input toggle-listing-enable" 
+                                            type="checkbox" 
+                                            role="switch"
+                                            id="toggle_listing_${listing.id}"
+                                            data-listing-id="${listing.id}"
+                                            ${listing.is_enabled !== undefined && listing.is_enabled == 1 ? 'checked' : ''}
+                                            style="cursor: pointer;">
+                                        <label class="form-check-label" for="toggle_listing_${listing.id}"></label>
+                                    </div>
+                                </td>
                             </tr>`;
                     });
                 }
@@ -388,7 +401,7 @@
         const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
         
         if (listingsTable === '') {
-            listingsTable = '<tr><td colspan="7" class="text-center text-muted">No listings for this marketplace</td></tr>';
+            listingsTable = '<tr><td colspan="8" class="text-center text-muted">No listings for this marketplace</td></tr>';
         }
         
         const tablesHtml = `
@@ -405,6 +418,7 @@
                                     <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}"></b>)</small></th>
                                     <th width="120"><small><b>Price</b></small></th>
                                     <th><small><b>Date</b></small></th>
+                                    <th width="80" class="text-center"><small><b>Action</b></small></th>
                                 </tr>
                             </thead>
                             <tbody id="listings_${variationId}_${marketplaceId}">
@@ -522,6 +536,47 @@
             const marketplaceId = matches[2];
             $('#add_qty_marketplace_' + variationId + '_' + marketplaceId).submit();
         }
+    });
+    
+    // Handle listing enable/disable toggle
+    $(document).on('change', '.toggle-listing-enable', function() {
+        const toggle = $(this);
+        const listingId = toggle.data('listing-id');
+        const isEnabled = toggle.is(':checked') ? 1 : 0;
+        
+        // Disable toggle during API call
+        toggle.prop('disabled', true);
+        
+        $.ajax({
+            type: "POST",
+            url: "{{ url('listing/toggle_enable') }}/" + listingId,
+            data: {
+                _token: "{{ csrf_token() }}",
+                is_enabled: isEnabled
+            },
+            dataType: 'json',
+            success: function(response) {
+                // Update the toggle state based on response
+                toggle.prop('checked', response.is_enabled == 1);
+                toggle.prop('disabled', false);
+                
+                // Optionally show a success message or update the row styling
+                // You can add visual feedback here if needed
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                // Revert toggle state on error
+                toggle.prop('checked', !isEnabled);
+                toggle.prop('disabled', false);
+                
+                let errorMsg = "Error updating listing status: " + textStatus;
+                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                    errorMsg = jqXHR.responseJSON.error;
+                } else if (jqXHR.responseText) {
+                    errorMsg = jqXHR.responseText;
+                }
+                alert(errorMsg);
+            }
+        });
     });
 </script>
 @endsection

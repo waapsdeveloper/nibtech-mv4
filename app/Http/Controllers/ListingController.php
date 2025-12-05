@@ -1035,6 +1035,38 @@ class ListingController extends Controller
         // die;
         return $listing;
     }
+    
+    /**
+     * Toggle enable/disable status for a listing
+     */
+    public function toggle_enable($id){
+        $listing = Listing_model::find($id);
+        if($listing == null){
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+        
+        // Get the requested status (1 = enabled, 0 = disabled)
+        $isEnabled = request('is_enabled');
+        if($isEnabled === null){
+            // If not provided, toggle the current value
+            $listing->is_enabled = $listing->is_enabled == 1 ? 0 : 1;
+        } else {
+            $listing->is_enabled = (int)$isEnabled;
+        }
+        
+        $listing->save();
+        
+        Log::info("Listing enable/disable toggled", [
+            'listing_id' => $id,
+            'is_enabled' => $listing->is_enabled
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'is_enabled' => $listing->is_enabled,
+            'message' => $listing->is_enabled == 1 ? 'Listing enabled' : 'Listing disabled'
+        ]);
+    }
 
     public function start_listing_verification(){
 
