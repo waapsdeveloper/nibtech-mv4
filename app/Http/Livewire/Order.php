@@ -341,10 +341,11 @@ class Order extends Component
 
         }
 
-        $data['orders'] = $orders
-        ->paginate($per_page)
-        ->onEachSide(5)
-        ->appends(request()->except('page'));
+        $data['orders'] = $this->buildOrdersPaginator($orders, $per_page);
+
+        if ($this->tryFetchMissingRefurbedOrders()) {
+            $data['orders'] = $this->buildOrdersPaginator($orders, $per_page);
+        }
 
 
         if(request('missing') == 'processed_at'){
@@ -353,10 +354,12 @@ class Order extends Component
                 $this->recheck($ref);
             }
         }
-        $ors = explode(' ',request('order_id'));
-        if(count($data['orders']) != count($ors) && request('order_id')){
-            foreach($ors as $or){
-                $this->recheck($or);
+        if ((int) request('marketplace', 0) !== self::REFURBED_MARKETPLACE_ID) {
+            $ors = explode(' ', request('order_id'));
+            if (count($data['orders']) != count($ors) && request('order_id')) {
+                foreach ($ors as $or) {
+                    $this->recheck($or);
+                }
             }
         }
         // dd($data['orders']);
@@ -3337,6 +3340,149 @@ class Order extends Component
         if (! $order) {
             session()->put('error', 'Order not found.');
             return redirect()->back();
+
+    protected function fetchRefurbedOrderByReference(string $referenceId): ?Order_model
+    {
+        $referenceId = trim($referenceId);
+
+        if ($referenceId === '') {
+            return null;
+        }
+
+        try {
+            $refurbedApi = new RefurbedAPIController();
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to initialize API for missing order fetch', [
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        try {
+            $orderResponse = $refurbedApi->getOrder($referenceId);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: API fetch failed for missing order', [
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+
+        if (empty($orderResponse)) {
+            Log::info('Refurbed: API returned empty payload for missing order', [
+                'reference_id' => $referenceId,
+            ]);
+
+            return null;
+        }
+
+        $orderPayload = json_decode(json_encode($orderResponse), true) ?: [];
+        $orderPayload = $this->adaptRefurbedOrderPayload($orderPayload);
+        $orderItems = $this->extractRefurbedOrderItemsFromPayload($orderPayload);
+
+        if (! $orderItems) {
+            $orderItems = $this->fetchRefurbedOrderItemsPayload($refurbedApi, $referenceId);
+        }
+
+        try {
+            $orderModel = new Order_model();
+
+            return $orderModel->storeRefurbedOrderInDB($orderPayload, $orderItems);
+        } catch (\Throwable $e) {
+            Log::error('Refurbed: unable to persist missing order fetched from API', [
+                'reference_id' => $referenceId,
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
+    }
+
+    protected function tryFetchMissingRefurbedOrders(): bool
+    {
+        if ((int) request('marketplace', 0) !== self::REFURBED_MARKETPLACE_ID) {
+            return false;
+        }
+
+        $requestedReferences = $this->extractRefurbedReferencesFromRequest();
+
+        if (empty($requestedReferences)) {
+            return false;
+        }
+
+        $existingReferences = Order_model::query()
+            ->where('marketplace_id', self::REFURBED_MARKETPLACE_ID)
+            ->whereIn('reference_id', $requestedReferences)
+            ->pluck('reference_id')
+            ->map(fn ($value) => (string) $value)
+            ->all();
+
+        $missingReferences = array_values(array_diff($requestedReferences, $existingReferences));
+
+        if (empty($missingReferences)) {
+            return false;
+        }
+
+        $fetchedAny = false;
+        $failed = [];
+
+        foreach ($missingReferences as $referenceId) {
+            $order = $this->fetchRefurbedOrderByReference($referenceId);
+            if ($order) {
+                $fetchedAny = true;
+            } else {
+                $failed[] = $referenceId;
+            }
+        }
+
+        if ($fetchedAny) {
+            session()->put('success', 'Fetched missing Refurbed order(s) from Refurbed API.');
+        }
+
+        if (! empty($failed)) {
+            session()->put('error', 'Unable to load Refurbed order(s): ' . implode(', ', $failed));
+        }
+
+        return $fetchedAny;
+    }
+
+    protected function extractRefurbedReferencesFromRequest(): array
+    {
+        $raw = trim((string) request('order_id', ''));
+
+        if ($raw === '') {
+            return [];
+        }
+
+        if (strpbrk($raw, '<>%') !== false) {
+            return [];
+        }
+
+        if (str_contains($raw, '-')) {
+            return [];
+        }
+
+        $parts = preg_split('/[\s,]+/', $raw);
+
+        $references = array_values(array_filter(array_map(function ($value) {
+            $value = trim($value);
+            return $value !== '' && ctype_digit($value) ? $value : null;
+        }, $parts)));
+
+        return array_values(array_unique($references));
+    }
+
+    protected function buildOrdersPaginator($ordersQuery, int $perPage)
+    {
+        return $ordersQuery
+            ->clone()
+            ->paginate($perPage)
+            ->onEachSide(5)
+            ->appends(request()->except('page'));
+    }
         }
 
         if ((int) $order->marketplace_id !== self::REFURBED_MARKETPLACE_ID) {

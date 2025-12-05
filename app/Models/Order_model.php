@@ -248,7 +248,11 @@ class Order_model extends Model
         // $orderObj = (object) $orderObj[0];
         if(isset($orderObj->order_id)){
             $customer_model = new Customer_model();
-            $order = Order_model::firstOrNew(['reference_id' => $orderObj->order_id]);
+            $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+            $order = Order_model::firstOrNew([
+                'reference_id' => $orderObj->order_id,
+                'marketplace_id' => $marketplaceId,
+            ]);
             if($order->customer_id == null){
                 $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
             }
@@ -258,7 +262,7 @@ class Order_model extends Model
             }
             $order->currency = $currency_codes[$orderObj->currency];
             $order->order_type_id = 3;
-            $order->marketplace_id = 1;
+            $order->marketplace_id = $marketplaceId;
             $order->price = $orderObj->price;
             $order->delivery_note_url = $orderObj->delivery_note;
             if($order->label_url == null){
@@ -350,8 +354,12 @@ class Order_model extends Model
             ]);
         }
 
-        $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
-        $order->marketplace_id = 4;
+        $marketplaceId = 4;
+        $order = Order_model::firstOrNew([
+            'reference_id' => $orderNumber,
+            'marketplace_id' => $marketplaceId,
+        ]);
+        $order->marketplace_id = $marketplaceId;
         if (! $order->reference) {
             $order->reference = $orderData['id'] ?? null;
         }
@@ -646,7 +654,10 @@ class Order_model extends Model
         $currencyId = $this->resolveCurrencyIdForOrder($currencyCode, $currency_codes, null);
         $marketplaceId = $this->resolveBmproMarketplaceId($currencyCode, $marketplaceId);
 
-        $order = Order_model::firstOrNew(['reference_id' => $orderNumber]);
+        $order = Order_model::firstOrNew([
+            'reference_id' => $orderNumber,
+            'marketplace_id' => $marketplaceId,
+        ]);
         $order->marketplace_id = $marketplaceId;
         $order->currency = $currencyId ?? $order->currency;
         $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
