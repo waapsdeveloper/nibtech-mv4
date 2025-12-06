@@ -760,23 +760,23 @@ class SupportTickets extends Component
         $buyerName = trim((string) data_get($folder, 'customer_firstname') . ' ' . (string) data_get($folder, 'customer_lastname'));
 
         return [
-            'id' => data_get($folder, 'id'),
-            'order_id' => data_get($folder, 'order_id'),
-            'orderline' => data_get($folder, 'orderline'),
-            'topic' => data_get($folder, 'topic'),
-            'state' => data_get($folder, 'state'),
-            'priority' => data_get($folder, 'priority'),
-            'summary' => data_get($folder, 'summary'),
-            'reason_code' => data_get($folder, 'reason_code'),
-            'buyer_email' => data_get($folder, 'customer_email'),
-            'buyer_name' => $buyerName !== '' ? $buyerName : null,
+            'id' => $this->stringifyCareValue(data_get($folder, 'id')),
+            'order_id' => $this->stringifyCareValue(data_get($folder, 'order_id')),
+            'orderline' => $this->stringifyCareValue(data_get($folder, 'orderline')),
+            'topic' => $this->stringifyCareValue(data_get($folder, 'topic')),
+            'state' => $this->stringifyCareValue(data_get($folder, 'state')),
+            'priority' => $this->stringifyCareValue(data_get($folder, 'priority')),
+            'summary' => $this->stringifyCareValue(data_get($folder, 'summary')),
+            'reason_code' => $this->stringifyCareValue(data_get($folder, 'reason_code')),
+            'buyer_email' => $this->stringifyCareValue(data_get($folder, 'customer_email')),
+            'buyer_name' => $this->stringifyCareValue($buyerName !== '' ? $buyerName : null),
             'created_at' => $createdAt,
             'created_at_human' => $this->formatCareDate($createdAt),
             'last_message_at' => $lastMessageAt,
             'last_message_at_human' => $this->formatCareDate($lastMessageAt),
             'last_modification_at' => $lastModifiedAt,
             'last_modification_at_human' => $this->formatCareDate($lastModifiedAt),
-            'portal_url' => data_get($folder, 'portal_url'),
+            'portal_url' => $this->stringifyCareValue(data_get($folder, 'portal_url')),
             'raw' => $folder,
         ];
     }
@@ -786,13 +786,13 @@ class SupportTickets extends Component
         $sentAt = data_get($message, 'date')
             ?? data_get($message, 'created_at')
             ?? data_get($message, 'sent_at');
-        $bodyHtml = data_get($message, 'body_html');
-        $bodyText = data_get($message, 'body') ?? data_get($message, 'message');
+        $bodyHtml = $this->stringifyCareValue(data_get($message, 'body_html'));
+        $bodyText = $this->stringifyCareValue(data_get($message, 'body') ?? data_get($message, 'message'));
 
         return [
-            'id' => data_get($message, 'id'),
-            'author' => data_get($message, 'author_name') ?? data_get($message, 'author'),
-            'author_type' => data_get($message, 'author_type'),
+            'id' => $this->stringifyCareValue(data_get($message, 'id')),
+            'author' => $this->stringifyCareValue(data_get($message, 'author_name') ?? data_get($message, 'author')),
+            'author_type' => $this->stringifyCareValue(data_get($message, 'author_type')),
             'direction' => $this->resolveCareDirection($message),
             'internal' => (bool) data_get($message, 'internal', false),
             'body' => $bodyText,
@@ -849,6 +849,33 @@ class SupportTickets extends Component
         }
 
         return (array) $payload;
+    }
+
+    protected function stringifyCareValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        if (is_object($value)) {
+            $value = $this->convertToArray($value);
+        }
+
+        if (is_array($value)) {
+            $encoded = json_encode($value, JSON_UNESCAPED_SLASHES);
+
+            return $encoded !== false ? $encoded : null;
+        }
+
+        return null;
     }
 
     public function sendOrderInvoice(): void
