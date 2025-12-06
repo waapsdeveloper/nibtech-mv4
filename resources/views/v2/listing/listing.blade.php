@@ -50,6 +50,51 @@
 .form-floating>.form-select {
   height: calc(2.3rem + 2px) !important;
 }
+
+/* Disabled listing row styles */
+tr.listing-disabled {
+    position: relative;
+    opacity: 0.5;
+}
+
+tr.listing-disabled td:not(:last-child) {
+    position: relative;
+}
+
+tr.listing-disabled td:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.7);
+    z-index: 100;
+    pointer-events: all;
+    cursor: not-allowed;
+}
+
+/* Keep action column interactive */
+tr.listing-disabled td:last-child {
+    pointer-events: auto;
+    opacity: 1;
+    position: relative;
+    z-index: 101;
+}
+
+tr.listing-disabled td:not(:last-child) a,
+tr.listing-disabled td:not(:last-child) input,
+tr.listing-disabled td:not(:last-child) form,
+tr.listing-disabled td:not(:last-child) button {
+    pointer-events: none;
+    cursor: not-allowed;
+}
+
+tr.listing-disabled input[type="number"],
+tr.listing-disabled input[type="text"] {
+    cursor: not-allowed;
+    background-color: #e9ecef;
+}
     </style>
 @endsection
 
@@ -282,8 +327,10 @@
                             marketplaceName = listing.marketplace.name;
                         }
                         
+                        const isEnabled = listing.is_enabled !== undefined && listing.is_enabled == 1;
+                        const disabledClass = !isEnabled ? 'listing-disabled' : '';
                         listingsTable += `
-                            <tr class="${classs}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''}>
+                            <tr class="${classs} ${disabledClass}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''} data-listing-id="${listing.id}" data-enabled="${isEnabled ? '1' : '0'}">
                                 <td title="${listing.id} ${country.title || ''}">
                                     <a href="https://www.backmarket.${country.market_url}/${country.market_code}/p/gb/${listing.reference_uuid_2 || listing._2 || ''}" target="_blank">
                                         <img src="{{ asset('assets/img/flags/') }}/${country.code.toLowerCase()}.svg" height="15">
@@ -296,10 +343,10 @@
                                         @csrf
                                         <input type="submit" hidden>
                                     </form>
-                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit || ''}" form="change_limit_${listing.id}">
+                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="min_price_limit_${listing.id}" name="min_price_limit" step="0.01" value="${listing.min_price_limit || ''}" form="change_limit_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                                 </td>
                                 <td>
-                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit || ''}" form="change_limit_${listing.id}">
+                                    <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit || ''}" form="change_limit_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                                 </td>
                                 <td>${listing.buybox_price || ''}
                                     <span class="text-danger" title="Buybox Winner Price">
@@ -316,7 +363,7 @@
                                         <input type="submit" hidden>
                                     </form>
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price || ''}" form="change_min_price_${listing.id}">
+                                        <input type="number" class="form-control" id="min_price_${listing.id}" name="min_price" step="0.01" value="${listing.min_price || ''}" form="change_min_price_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                                         <label for="">Min Price</label>
                                     </div>
                                     <span id="pm_append_${listing.id}" title="${pm_append_title}">
@@ -325,7 +372,7 @@
                                 </td>
                                 <td>
                                     <div class="form-floating">
-                                        <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price || ''}" form="change_price_${listing.id}">
+                                        <input type="number" class="form-control" id="price_${listing.id}" name="price" step="0.01" value="${listing.price || ''}" form="change_price_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                                         <label for="">Price</label>
                                     </div>
                                     ${p_append}
@@ -560,13 +607,43 @@
                 toggle.prop('checked', response.is_enabled == 1);
                 toggle.prop('disabled', false);
                 
-                // Optionally show a success message or update the row styling
-                // You can add visual feedback here if needed
+                // Find the row and update its disabled state
+                const row = toggle.closest('tr');
+                const isEnabled = response.is_enabled == 1;
+                
+                // Update row classes and data attribute
+                if (isEnabled) {
+                    row.removeClass('listing-disabled');
+                    row.attr('data-enabled', '1');
+                } else {
+                    row.addClass('listing-disabled');
+                    row.attr('data-enabled', '0');
+                }
+                
+                // Enable/disable all inputs in the row (except the toggle)
+                row.find('input[type="number"]').prop('disabled', !isEnabled);
+                row.find('input[type="text"]').prop('disabled', !isEnabled);
             },
             error: function(jqXHR, textStatus, errorThrown) {
                 // Revert toggle state on error
                 toggle.prop('checked', !isEnabled);
                 toggle.prop('disabled', false);
+                
+                // Revert row state on error
+                const row = toggle.closest('tr');
+                const wasEnabled = !isEnabled; // Revert to previous state
+                
+                if (wasEnabled) {
+                    row.removeClass('listing-disabled');
+                    row.attr('data-enabled', '1');
+                    row.find('input[type="number"]').prop('disabled', false);
+                    row.find('input[type="text"]').prop('disabled', false);
+                } else {
+                    row.addClass('listing-disabled');
+                    row.attr('data-enabled', '0');
+                    row.find('input[type="number"]').prop('disabled', true);
+                    row.find('input[type="text"]').prop('disabled', true);
+                }
                 
                 let errorMsg = "Error updating listing status: " + textStatus;
                 if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
