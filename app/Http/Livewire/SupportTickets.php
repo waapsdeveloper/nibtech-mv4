@@ -752,24 +752,104 @@ class SupportTickets extends Component
 
     protected function normalizeCareFolder(array $folder): array
     {
-        $createdAt = data_get($folder, 'created_at')
-            ?? data_get($folder, 'creation_date');
-        $lastMessageAt = data_get($folder, 'last_message_date')
-            ?? data_get($folder, 'last_message_at');
-        $lastModifiedAt = data_get($folder, 'last_modification_date');
-        $buyerName = trim((string) data_get($folder, 'customer_firstname') . ' ' . (string) data_get($folder, 'customer_lastname'));
+        $orderId = $this->preferCareValue([
+            data_get($folder, 'order_id'),
+            data_get($folder, 'order.order_id'),
+            data_get($folder, 'orderline.order_id'),
+            data_get($folder, 'orderline.order.order_id'),
+            data_get($folder, 'lines.0.order_id'),
+        ]);
+
+        $orderline = $this->preferCareValue([
+            data_get($folder, 'orderline'),
+            data_get($folder, 'orderline.id'),
+            data_get($folder, 'orderline.orderline_id'),
+            data_get($folder, 'lines.0'),
+            data_get($folder, 'lines.0.id'),
+        ]);
+
+        $topic = $this->preferCareScalar([
+            data_get($folder, 'topic'),
+            data_get($folder, 'topic.name'),
+            data_get($folder, 'topic.label'),
+            data_get($folder, 'lines.0.issues.0.customerIssue'),
+        ]);
+
+        $reason = $this->preferCareScalar([
+            data_get($folder, 'reason_code'),
+            data_get($folder, 'reason'),
+            data_get($folder, 'lines.0.issues.0.tag'),
+        ]);
+
+        $priority = $this->preferCareScalar([
+            data_get($folder, 'priority'),
+            data_get($folder, 'priority.level'),
+            data_get($folder, 'priority.label'),
+        ]);
+
+        $state = $this->preferCareScalar([
+            data_get($folder, 'state'),
+            data_get($folder, 'status'),
+        ]);
+
+        $summary = $this->preferCareScalar([
+            data_get($folder, 'summary'),
+            data_get($folder, 'subject'),
+        ]);
+
+        $createdAt = $this->preferCareScalar([
+            data_get($folder, 'created_at'),
+            data_get($folder, 'creation_date'),
+            data_get($folder, 'date_creation'),
+        ]);
+
+        $lastMessageAt = $this->preferCareScalar([
+            data_get($folder, 'last_message_date'),
+            data_get($folder, 'last_message_at'),
+            data_get($folder, 'date_last_message'),
+            data_get($folder, 'date_last_message_at'),
+        ]);
+
+        $lastModifiedAt = $this->preferCareScalar([
+            data_get($folder, 'last_modification_date'),
+            data_get($folder, 'last_modification_at'),
+            data_get($folder, 'date_modification'),
+        ]);
+
+        $firstName = $this->preferCareScalar([
+            data_get($folder, 'customer_firstname'),
+            data_get($folder, 'client.first_name'),
+            data_get($folder, 'order.shipping_address.first_name'),
+            data_get($folder, 'order.billing_address.first_name'),
+        ]);
+
+        $lastName = $this->preferCareScalar([
+            data_get($folder, 'customer_lastname'),
+            data_get($folder, 'client.last_name'),
+            data_get($folder, 'order.shipping_address.last_name'),
+            data_get($folder, 'order.billing_address.last_name'),
+        ]);
+
+        $buyerName = trim(($firstName ?: '') . ' ' . ($lastName ?: ''));
+
+        $buyerEmail = $this->preferCareScalar([
+            data_get($folder, 'customer_email'),
+            data_get($folder, 'client.email'),
+            data_get($folder, 'order.shipping_address.email'),
+            data_get($folder, 'order.billing_address.email'),
+        ]);
 
         return [
             'id' => $this->stringifyCareValue(data_get($folder, 'id')),
-            'order_id' => $this->stringifyCareValue(data_get($folder, 'order_id')),
-            'orderline' => $this->stringifyCareValue(data_get($folder, 'orderline')),
-            'topic' => $this->stringifyCareValue(data_get($folder, 'topic')),
-            'state' => $this->stringifyCareValue(data_get($folder, 'state')),
-            'priority' => $this->stringifyCareValue(data_get($folder, 'priority')),
-            'summary' => $this->stringifyCareValue(data_get($folder, 'summary')),
-            'reason_code' => $this->stringifyCareValue(data_get($folder, 'reason_code')),
-            'buyer_email' => $this->stringifyCareValue(data_get($folder, 'customer_email')),
-            'buyer_name' => $this->stringifyCareValue($buyerName !== '' ? $buyerName : null),
+            'order_id' => $orderId,
+            'orderline' => $orderline,
+            'topic' => $topic,
+            'state' => $state,
+            'priority' => $priority,
+            'summary' => $summary,
+            'reason_code' => $reason,
+            'buyer_email' => $buyerEmail,
+            'buyer_name' => $buyerName !== '' ? $buyerName : null,
             'created_at' => $createdAt,
             'created_at_human' => $this->formatCareDate($createdAt),
             'last_message_at' => $lastMessageAt,
@@ -870,9 +950,49 @@ class SupportTickets extends Component
         }
 
         if (is_array($value)) {
-            $encoded = json_encode($value, JSON_UNESCAPED_SLASHES);
+            $encoded = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
 
             return $encoded !== false ? $encoded : null;
+        }
+
+        return null;
+    }
+
+    protected function preferCareValue(array $candidates): ?string
+    {
+        foreach ($candidates as $candidate) {
+            if ($candidate === null) {
+                continue;
+            }
+
+            $value = $this->stringifyCareValue($candidate);
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    protected function preferCareScalar(array $candidates): ?string
+    {
+        foreach ($candidates as $candidate) {
+            if ($candidate === null) {
+                continue;
+            }
+
+            if (is_string($candidate)) {
+                $trimmed = trim($candidate);
+                if ($trimmed !== '') {
+                    return $trimmed;
+                }
+            } elseif (is_scalar($candidate)) {
+                $string = trim((string) $candidate);
+                if ($string !== '') {
+                    return $string;
+                }
+            }
         }
 
         return null;
