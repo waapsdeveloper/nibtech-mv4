@@ -52,9 +52,9 @@ class BackMarketCareSyncService
     protected function upsertThread(object|array $case): SupportThread
     {
         $caseArr = (array) $case;
-        $externalId = (string) data_get($caseArr, 'id');
+        $externalId = $this->careString(data_get($caseArr, 'id'));
 
-        $orderReference = (string) data_get($caseArr, 'order_id');
+        $orderReference = $this->careString(data_get($caseArr, 'order_id'));
         $order = $orderReference !== ''
             ? Order_model::where('reference_id', $orderReference)->first()
             : null;
@@ -72,11 +72,11 @@ class BackMarketCareSyncService
             [
                 'marketplace_id' => 1,
                 'order_id' => $order?->id,
-                'order_reference' => $orderReference ?: data_get($caseArr, 'orderline'),
+                'order_reference' => $orderReference ?: $this->careString(data_get($caseArr, 'orderline')),
                 'buyer_name' => $this->buildBuyerName($caseArr),
-                'buyer_email' => data_get($caseArr, 'customer_email'),
-                'status' => (string) data_get($caseArr, 'state', 'open'),
-                'priority' => (string) data_get($caseArr, 'priority'),
+                'buyer_email' => $this->careString(data_get($caseArr, 'customer_email')),
+                'status' => $this->careString(data_get($caseArr, 'state', 'open')),
+                'priority' => $this->careString(data_get($caseArr, 'priority')),
                 'change_of_mind' => $this->detectChangeOfMind($caseArr),
                 'last_external_activity_at' => $lastActivity,
                 'last_synced_at' => now(),
@@ -99,7 +99,7 @@ class BackMarketCareSyncService
 
         foreach ($messages as $message) {
             $messageArr = (array) $message;
-            $externalId = (string) data_get($messageArr, 'id');
+            $externalId = $this->careString(data_get($messageArr, 'id'));
 
             if ($externalId === '' && SupportMessage::where('support_thread_id', $thread->id)->count() > 200) {
                 continue;
@@ -114,10 +114,10 @@ class BackMarketCareSyncService
                 ],
                 [
                     'direction' => $this->resolveDirection($messageArr),
-                    'author_name' => data_get($messageArr, 'author_name') ?? data_get($messageArr, 'author'),
-                    'author_email' => data_get($messageArr, 'author_email'),
-                    'body_text' => data_get($messageArr, 'body') ?? data_get($messageArr, 'message'),
-                    'body_html' => data_get($messageArr, 'body_html'),
+                    'author_name' => $this->careString(data_get($messageArr, 'author_name') ?? data_get($messageArr, 'author')),
+                    'author_email' => $this->careString(data_get($messageArr, 'author_email')),
+                    'body_text' => $this->careString(data_get($messageArr, 'body') ?? data_get($messageArr, 'message')),
+                    'body_html' => $this->careString(data_get($messageArr, 'body_html')),
                     'attachments' => data_get($messageArr, 'attachments'),
                     'sent_at' => $sentAt,
                     'is_internal_note' => (bool) data_get($messageArr, 'internal'),
@@ -145,9 +145,9 @@ class BackMarketCareSyncService
 
     protected function detectChangeOfMind(array $case): bool
     {
-        $reason = strtolower((string) data_get($case, 'reason_code'));
-        $topic = strtolower((string) data_get($case, 'topic'));
-        $summary = strtolower((string) data_get($case, 'summary'));
+        $reason = strtolower($this->careString(data_get($case, 'reason_code')));
+        $topic = strtolower($this->careString(data_get($case, 'topic')));
+        $summary = strtolower($this->careString(data_get($case, 'summary')));
 
         return str_contains($reason, 'change_of_mind')
             || str_contains($reason, 'buyerchange')
@@ -157,7 +157,7 @@ class BackMarketCareSyncService
 
     protected function resolveDirection(array $message): string
     {
-        $authorType = strtolower((string) data_get($message, 'author_type'));
+        $authorType = strtolower($this->careString(data_get($message, 'author_type')));
 
         if ($authorType === 'seller' || $authorType === 'merchant') {
             return 'outbound';
@@ -208,5 +208,32 @@ class BackMarketCareSyncService
         }
 
         return $case;
+    }
+
+    protected function careString($value): string
+    {
+        if ($value === null) {
+            return '';
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        if (is_object($value)) {
+            $value = json_decode(json_encode($value), true);
+        }
+
+        if (is_array($value)) {
+            $encoded = json_encode($value, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
+
+            return $encoded !== false ? $encoded : '';
+        }
+
+        return '';
     }
 }
