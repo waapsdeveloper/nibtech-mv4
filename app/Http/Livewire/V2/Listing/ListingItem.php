@@ -57,6 +57,11 @@ class ListingItem extends Component
         ?string $processId = null,
         ?array $preloadedVariationData = null
     ): void {
+        \Log::info('ListingItem mount called', [
+            'variation_id' => $variationId,
+            'has_preloaded_data' => $preloadedVariationData !== null
+        ]);
+        
         $this->variationId = $variationId;
         $this->rowNumber = $rowNumber;
         $this->storages = $storages;
@@ -73,6 +78,9 @@ class ListingItem extends Component
         // If preloaded data is available, use it immediately
         if ($preloadedVariationData !== null) {
             $this->initializeFromPreloadedData($preloadedVariationData);
+        } else {
+            // No preloaded data - load it fresh
+            $this->loadRow();
         }
     }
 
@@ -166,6 +174,11 @@ class ListingItem extends Component
             $this->buyboxListings = $calculated['buybox_listings'] ?? [];
             $this->marketplaceSummaries = $calculated['marketplace_summaries'] ?? [];
             $this->salesData = $calculated['sales_data'] ?? null; // Preloaded sales data
+            
+            \Log::info('Marketplace summaries loaded from preloaded data in ListingItem', [
+                'variation_id' => $this->variationId,
+                'summaries' => $this->marketplaceSummaries
+            ]);
         } else {
             // Fallback: calculate stats if not pre-calculated
             $this->calculateStats();
@@ -211,6 +224,8 @@ class ListingItem extends Component
      */
     private function calculateStats(): void
     {
+        \Log::info('calculateStats called', ['variation_id' => $this->variationId, 'has_variation' => $this->variation !== null]);
+        
         if (!$this->variation) {
             return;
         }
@@ -238,6 +253,11 @@ class ListingItem extends Component
             $this->variationId,
             $this->variation->listings ?? collect()
         );
+        
+        \Log::info('Marketplace summaries returned in ListingItem', [
+            'variation_id' => $this->variationId,
+            'summaries' => $this->marketplaceSummaries
+        ]);
         
         // Get buybox listings with country info for display
         if ($this->variation->listings) {

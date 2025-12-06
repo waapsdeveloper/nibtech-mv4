@@ -369,9 +369,11 @@ Route::get('listing/get_or_create_listing/{variationId}/{marketplaceId}', [Listi
 Route::get('listing/get_variation_history/{id}', [ListingController::class, 'get_variation_history'])->name('view_listing_history');
 Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/add_quantity/{id}', [ListingController::class,'add_quantity'])->name('update_listing_quantity');
+Route::post('listing/add_quantity_marketplace/{variationId}/{marketplaceId}', [ListingController::class,'add_quantity_marketplace'])->name('add_marketplace_quantity');
 Route::post('listing/update_price/{id}', [ListingController::class,'update_price'])->name('update_listing_price');
 Route::post('listing/update_limit/{id}', [ListingController::class,'update_limit'])->name('update_listing_handler_limit');
 Route::post('listing/update_target/{id}', [ListingController::class,'update_target'])->name('update_listing_target');
+Route::post('listing/toggle_enable/{id}', [ListingController::class,'toggle_enable'])->name('toggle_listing_enable');
 
 Route::get('listed_stock_verification', ListedStockVerification::class)->name('view_listed_stock_verification');
 Route::get('listed_stock_verification/start_listing_verification', [ListedStockVerification::class,'start_listing_verification'])->name('start_listed_stock_verification');
