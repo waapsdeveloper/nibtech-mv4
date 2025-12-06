@@ -221,8 +221,19 @@
                     <div class="alert alert-light border">No support threads match your filters.</div>
                 @endforelse
             </div>
-            <div class="mt-2">
-                {{ $threads->links() }}
+            <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="text-muted small">
+                    Showing
+                    {{ $threads->firstItem() ?? 0 }}
+                    –
+                    {{ $threads->lastItem() ?? 0 }}
+                    of
+                    {{ $threads->total() }}
+                    tickets
+                </div>
+                <div class="support-pagination">
+                    {{ $threads->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
 
