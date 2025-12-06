@@ -269,18 +269,15 @@ class BackMarketAPIController extends Controller
 
 
     public function getAllCare($date_modification = false, $param = []) {
-        $end_point = 'sav?';
-
         if ($date_modification == false) {
             $date_modification = date("Y-m-d-H-i", time() - 2 * 24 * 60 * 60);
         }
 
-        $end_point .= "?last_modification_date=$date_modification";
-        // $end_point .= "?last_message_date=$date_modification";
+        $query = array_merge([
+            'last_modification_date' => $date_modification,
+        ], $param);
 
-        if (count($param) > 0) {
-            $end_point .= '&' . http_build_query($param);
-        }
+        $end_point = 'sav?' . http_build_query($query);
 
         sleep(10);
 
