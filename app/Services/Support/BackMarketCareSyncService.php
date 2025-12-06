@@ -36,6 +36,7 @@ class BackMarketCareSyncService
         $imported = 0;
 
         foreach ($cases as $case) {
+            $case = $this->ensureCaseDetails($case);
             $thread = $this->upsertThread($case);
             $imported += $this->syncMessages($thread, $case);
         }
@@ -180,5 +181,32 @@ class BackMarketCareSyncService
         } catch (\Throwable $e) {
             return null;
         }
+    }
+
+    protected function ensureCaseDetails(object|array $case): object|array
+    {
+        $messages = Arr::wrap(data_get($case, 'messages', []));
+        if (! empty($messages)) {
+            return $case;
+        }
+
+        $caseId = data_get($case, 'id');
+        if (! $caseId) {
+            return $case;
+        }
+
+        try {
+            $detailed = $this->api->getCare($caseId);
+            if ($detailed) {
+                return $detailed;
+            }
+        } catch (\Throwable $e) {
+            Log::warning('BackMarketCareSyncService: Failed to hydrate Care case', [
+                'case_id' => $caseId,
+                'error' => $e->getMessage(),
+            ]);
+        }
+
+        return $case;
     }
 }
