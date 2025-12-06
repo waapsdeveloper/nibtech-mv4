@@ -798,7 +798,7 @@ class ListingController extends Controller
         }
         return $response->quantity;
     }
-    public function add_quantity($id, $stock = 'no', $process_id = null){
+    public function add_quantity($id, $stock = 'no', $process_id = null, $listing = false){
         if($stock == 'no'){
             $stock = request('stock');
         }
@@ -824,7 +824,7 @@ class ListingController extends Controller
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
         if($check_active_verification != null){
             $new_quantity = $stock - $pending_orders;
-            $new_quantity = $stock;
+            // $new_quantity = $stock;
         }else{
             if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
                 $new_quantity = $stock;
