@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\GoogleController;
 use App\Mail\InvoiceMail;
 use App\Mail\RefundInvoiceMail;
@@ -14,6 +15,7 @@ use App\Models\SupportTag;
 use App\Models\SupportThread;
 use App\Services\Support\MarketplaceOrderActionService;
 use App\Services\Support\SupportEmailSender;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
@@ -66,6 +68,9 @@ class SupportTickets extends Component
     public $careLastId = '';
     public $carePageSize = '50';
     public $careExtraQuery = '';
+    public $careFolderDetails = null;
+    public $careFolderMessages = [];
+    public $careFolderError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -166,6 +171,9 @@ class SupportTickets extends Component
         $this->careLastId = '';
         $this->carePageSize = '50';
         $this->careExtraQuery = '';
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
         $this->resetPage();
     }
 
@@ -185,8 +193,12 @@ class SupportTickets extends Component
         $this->invoiceActionError = null;
         $this->syncStatus = null;
         $this->syncError = null;
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
+        $this->hydrateCareFolder();
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -285,6 +297,9 @@ class SupportTickets extends Component
             $this->ticketActionError = null;
             $this->invoiceActionStatus = null;
             $this->invoiceActionError = null;
+            $this->careFolderDetails = null;
+            $this->careFolderMessages = [];
+            $this->careFolderError = null;
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
             $this->hydrateReplyDefaults($threads->first());
@@ -298,6 +313,7 @@ class SupportTickets extends Component
             $this->syncStatus = null;
             $this->syncError = null;
             $this->hydrateOrderContext($threads->first());
+            $this->hydrateCareFolder($threads->first());
         }
 
         return view('livewire.support-tickets', [
@@ -666,6 +682,173 @@ class SupportTickets extends Component
         $service = app(MarketplaceOrderActionService::class);
         $this->marketplaceOrderUrl = $service->buildMarketplaceOrderUrl($thread);
         $this->canCancelOrder = $service->supportsCancellation($thread);
+    }
+
+    protected function hydrateCareFolder(?SupportThread $thread = null): void
+    {
+        $thread = $thread ?: $this->selectedThread;
+
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
+
+        if (! $thread || $thread->marketplace_source !== 'backmarket_care') {
+            return;
+        }
+
+        $folderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+        if (! $folderId) {
+            $this->careFolderError = 'Care folder id missing on this ticket.';
+
+            return;
+        }
+
+        try {
+            $controller = app(BackMarketAPIController::class);
+            $folder = $controller->getCare($folderId);
+        } catch (\Throwable $e) {
+            Log::warning('SupportTickets: Care folder fetch failed', [
+                'thread_id' => $thread->id,
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->careFolderError = 'Unable to load Back Market Care details.';
+
+            return;
+        }
+
+        if (! $folder) {
+            $this->careFolderError = 'Care API returned an empty response.';
+
+            return;
+        }
+
+        if (isset($folder->results)) {
+            $folder = $folder->results;
+        }
+
+        $folderArray = $this->convertToArray($folder);
+
+        if (empty($folderArray)) {
+            $this->careFolderError = 'Care API response could not be parsed.';
+
+            return;
+        }
+
+        $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
+
+        $messages = data_get($folderArray, 'messages', []);
+        if (! is_array($messages)) {
+            $messages = $this->convertToArray($messages);
+        }
+
+        $this->careFolderMessages = collect($messages)
+            ->filter()
+            ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeCareFolder(array $folder): array
+    {
+        $createdAt = data_get($folder, 'created_at')
+            ?? data_get($folder, 'creation_date');
+        $lastMessageAt = data_get($folder, 'last_message_date')
+            ?? data_get($folder, 'last_message_at');
+        $lastModifiedAt = data_get($folder, 'last_modification_date');
+        $buyerName = trim((string) data_get($folder, 'customer_firstname') . ' ' . (string) data_get($folder, 'customer_lastname'));
+
+        return [
+            'id' => data_get($folder, 'id'),
+            'order_id' => data_get($folder, 'order_id'),
+            'orderline' => data_get($folder, 'orderline'),
+            'topic' => data_get($folder, 'topic'),
+            'state' => data_get($folder, 'state'),
+            'priority' => data_get($folder, 'priority'),
+            'summary' => data_get($folder, 'summary'),
+            'reason_code' => data_get($folder, 'reason_code'),
+            'buyer_email' => data_get($folder, 'customer_email'),
+            'buyer_name' => $buyerName !== '' ? $buyerName : null,
+            'created_at' => $createdAt,
+            'created_at_human' => $this->formatCareDate($createdAt),
+            'last_message_at' => $lastMessageAt,
+            'last_message_at_human' => $this->formatCareDate($lastMessageAt),
+            'last_modification_at' => $lastModifiedAt,
+            'last_modification_at_human' => $this->formatCareDate($lastModifiedAt),
+            'portal_url' => data_get($folder, 'portal_url'),
+            'raw' => $folder,
+        ];
+    }
+
+    protected function normalizeCareMessage(array $message): array
+    {
+        $sentAt = data_get($message, 'date')
+            ?? data_get($message, 'created_at')
+            ?? data_get($message, 'sent_at');
+        $bodyHtml = data_get($message, 'body_html');
+        $bodyText = data_get($message, 'body') ?? data_get($message, 'message');
+
+        return [
+            'id' => data_get($message, 'id'),
+            'author' => data_get($message, 'author_name') ?? data_get($message, 'author'),
+            'author_type' => data_get($message, 'author_type'),
+            'direction' => $this->resolveCareDirection($message),
+            'internal' => (bool) data_get($message, 'internal', false),
+            'body' => $bodyText,
+            'body_html' => $bodyHtml,
+            'sent_at' => $sentAt,
+            'sent_at_human' => $this->formatCareDate($sentAt),
+        ];
+    }
+
+    protected function resolveCareDirection(array $message): string
+    {
+        $authorType = strtolower((string) data_get($message, 'author_type'));
+
+        if (in_array($authorType, ['seller', 'merchant'], true)) {
+            return 'outbound';
+        }
+
+        if (in_array($authorType, ['customer', 'buyer'], true)) {
+            return 'inbound';
+        }
+
+        return data_get($message, 'internal') ? 'internal' : 'inbound';
+    }
+
+    protected function formatCareDate(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format('d M Y H:i');
+        } catch (\Throwable $e) {
+            return $value;
+        }
+    }
+
+    protected function convertToArray($payload): array
+    {
+        if (is_array($payload)) {
+            return $payload;
+        }
+
+        if (is_null($payload)) {
+            return [];
+        }
+
+        if ($payload instanceof \JsonSerializable) {
+            return (array) $payload->jsonSerialize();
+        }
+
+        if (is_object($payload)) {
+            return json_decode(json_encode($payload), true) ?: [];
+        }
+
+        return (array) $payload;
     }
 
     public function sendOrderInvoice(): void
