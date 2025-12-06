@@ -184,15 +184,6 @@
                                 View in support portal
                             </a>
                         @endif
-                        @if ($selectedThread->reply_email)
-                            @php
-                                $mailtoSubject = rawurlencode('Re: ' . ($selectedThread->order_reference ?? $selectedThread->external_thread_id));
-                                $mailtoBody = rawurlencode("Hi,\n\n");
-                            @endphp
-                            <a href="mailto:{{ $selectedThread->reply_email }}?subject={{ $mailtoSubject }}&body={{ $mailtoBody }}" class="btn btn-sm btn-outline-primary">
-                                Reply via email
-                            </a>
-                        @endif
                         <button type="button" class="btn btn-sm btn-success" wire:click="markThreadSolved" wire:loading.attr="disabled" wire:target="markThreadSolved" @if ($isThreadSolved) disabled @endif>
                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="markThreadSolved"></span>
                             {{ $isThreadSolved ? 'Solved' : 'Mark as solved' }}
