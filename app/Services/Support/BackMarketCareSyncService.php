@@ -9,6 +9,7 @@ use App\Models\SupportThread;
 use Carbon\Carbon;
 use Illuminate\Support\Arr;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class BackMarketCareSyncService
 {
@@ -54,7 +55,7 @@ class BackMarketCareSyncService
         $caseArr = (array) $case;
         $externalId = $this->careString(data_get($caseArr, 'id'));
 
-        $orderReference = $this->careString(data_get($caseArr, 'order_id'));
+        $orderReference = $this->resolveOrderReference($caseArr);
         $order = $orderReference !== ''
             ? Order_model::where('reference_id', $orderReference)->first()
             : null;
@@ -72,7 +73,7 @@ class BackMarketCareSyncService
             [
                 'marketplace_id' => 1,
                 'order_id' => $order?->id,
-                'order_reference' => $orderReference ?: $this->careString(data_get($caseArr, 'orderline')),
+                'order_reference' => $orderReference,
                 'buyer_name' => $this->buildBuyerName($caseArr),
                 'buyer_email' => $this->careString(data_get($caseArr, 'customer_email')),
                 'status' => $this->careString(data_get($caseArr, 'state', 'open')),
@@ -85,6 +86,31 @@ class BackMarketCareSyncService
         );
 
         return $thread;
+    }
+
+    protected function resolveOrderReference(array $case): string
+    {
+        $candidates = [
+            data_get($case, 'order_id'),
+            data_get($case, 'order_reference'),
+            data_get($case, 'order.order_id'),
+            data_get($case, 'order.order_reference'),
+            data_get($case, 'orderline.order_id'),
+            data_get($case, 'orderline.order.order_id'),
+            data_get($case, 'orderline.order.order_reference'),
+            data_get($case, 'orderline.reference'),
+            data_get($case, 'orderline.order_reference'),
+            data_get($case, 'orderline.id'),
+        ];
+
+        foreach ($candidates as $candidate) {
+            $value = $this->careString($candidate);
+            if ($value !== '') {
+                return Str::limit($value, 190, '');
+            }
+        }
+
+        return '';
     }
 
     protected function syncMessages(SupportThread $thread, object|array $case): int
