@@ -56,6 +56,16 @@ class SupportTickets extends Component
     public $syncStatus = null;
     public $syncError = null;
     public $syncLookback = '6';
+    public $syncBackmarket = true;
+    public $syncRefurbed = true;
+    public $careState = '';
+    public $carePriority = '';
+    public $careTopic = '';
+    public $careOrderline = '';
+    public $careOrderId = '';
+    public $careLastId = '';
+    public $carePageSize = '50';
+    public $careExtraQuery = '';
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -80,6 +90,7 @@ class SupportTickets extends Component
         $this->sortField = $this->sanitizeSortField($this->sortField);
         $this->sortDirection = $this->sanitizeSortDirection($this->sortDirection);
         $this->syncLookback = $this->sanitizeSyncLookback($this->syncLookback);
+        $this->carePageSize = $this->sanitizeCarePageSize($this->carePageSize);
     }
 
     public function updated($property, $value): void
@@ -98,6 +109,10 @@ class SupportTickets extends Component
 
         if ($property === 'syncLookback') {
             $this->syncLookback = $this->sanitizeSyncLookback($value);
+        }
+
+        if ($property === 'carePageSize') {
+            $this->carePageSize = $this->sanitizeCarePageSize($value);
         }
 
         $filters = ['search', 'status', 'priority', 'marketplace', 'tag', 'assigned', 'changeOnly', 'perPage', 'sortField', 'sortDirection'];
@@ -141,6 +156,16 @@ class SupportTickets extends Component
         $this->syncStatus = null;
         $this->syncError = null;
         $this->syncLookback = '6';
+        $this->syncBackmarket = true;
+        $this->syncRefurbed = true;
+        $this->careState = '';
+        $this->carePriority = '';
+        $this->careTopic = '';
+        $this->careOrderline = '';
+        $this->careOrderId = '';
+        $this->careLastId = '';
+        $this->carePageSize = '50';
+        $this->careExtraQuery = '';
         $this->resetPage();
     }
 
@@ -714,10 +739,26 @@ class SupportTickets extends Component
         $this->syncError = null;
         $since = $this->resolveSyncSince();
 
+        $sources = $this->buildSyncSources();
+
+        if (empty($sources)) {
+            $this->syncError = 'Select at least one support channel to refresh.';
+
+            return;
+        }
+
         try {
             $params = [];
             if ($since) {
                 $params['--since'] = $since;
+            }
+
+            if (count($sources) < 2) {
+                $params['--source'] = $sources;
+            }
+
+            foreach ($this->buildCareCliOptions() as $option => $value) {
+                $params[$option] = $value;
             }
 
             $exitCode = Artisan::call('support:sync', $params);
@@ -901,5 +942,78 @@ class SupportTickets extends Component
         $withBreaks = nl2br($escaped);
 
         return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4;">' . $withBreaks . '</div>';
+    }
+
+    protected function buildSyncSources(): array
+    {
+        $sources = [];
+
+        if ($this->syncBackmarket) {
+            $sources[] = 'backmarket';
+        }
+
+        if ($this->syncRefurbed) {
+            $sources[] = 'refurbed';
+        }
+
+        return $sources;
+    }
+
+    protected function buildCareCliOptions(): array
+    {
+        if (! $this->syncBackmarket) {
+            return [];
+        }
+
+        $options = [];
+        $filters = [
+            '--care-state' => $this->careState,
+            '--care-priority' => $this->carePriority,
+            '--care-topic' => $this->careTopic,
+            '--care-orderline' => $this->careOrderline,
+            '--care-order-id' => $this->careOrderId,
+            '--care-last-id' => $this->careLastId,
+        ];
+
+        foreach ($filters as $flag => $value) {
+            $value = is_string($value) ? trim($value) : $value;
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $options[$flag] = (string) $value;
+        }
+
+        $pageSize = $this->sanitizeCarePageSize($this->carePageSize);
+        if ($pageSize !== '') {
+            $options['--care-page-size'] = $pageSize;
+        }
+
+        $extra = trim((string) $this->careExtraQuery);
+        if ($extra !== '') {
+            $options['--care-extra'] = ltrim($extra, '&?');
+        }
+
+        return $options;
+    }
+
+    protected function sanitizeCarePageSize($value): string
+    {
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            $value = 50;
+        }
+
+        $value = (int) $value;
+
+        if ($value < 1) {
+            $value = 1;
+        }
+
+        if ($value > 200) {
+            $value = 200;
+        }
+
+        return (string) $value;
     }
 }

@@ -25,6 +25,71 @@
             </div>
         </div>
 
+        <div class="bg-light border rounded p-3 mb-3">
+            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+                <div>
+                    <div class="fw-semibold text-uppercase small text-muted">Manual sync scope</div>
+                    <p class="mb-0 text-muted">Pick which support channels to refresh and optionally add Back Market Care filters before running the sync.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="syncBackmarket" wire:model="syncBackmarket">
+                        <label class="form-check-label" for="syncBackmarket">
+                            Back Market Care
+                            <small class="d-block text-muted">Care API with filters</small>
+                        </label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="syncRefurbed" wire:model="syncRefurbed">
+                        <label class="form-check-label" for="syncRefurbed">
+                            Refurbed Mailbox
+                            <small class="d-block text-muted">orders@refurbed sync</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Back Market Care filters</div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">State</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="open / waiting_seller" wire:model.lazy="careState" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Priority</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="low / normal / high" wire:model.lazy="carePriority" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Topic</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="delivery / quality" wire:model.lazy="careTopic" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Order line</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="BM orderline" wire:model.lazy="careOrderline" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Order ID</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Back Market order id" wire:model.lazy="careOrderId" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Cursor / last ID</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Use to resume pagination" wire:model.lazy="careLastId" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Page size</label>
+                        <input type="number" min="1" max="200" class="form-control form-control-sm" wire:model.lazy="carePageSize" @if (! $syncBackmarket) disabled @endif>
+                        <small class="text-muted">Max 200 per pull</small>
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label small text-muted">Extra query string</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="state=open&priority=high" wire:model.lazy="careExtraQuery" @if (! $syncBackmarket) disabled @endif>
+                        <small class="text-muted">Sent as-is to the Care API. Leave blank for defaults.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @if ($syncError)
             <div class="alert alert-danger mb-3">{{ $syncError }}</div>
         @endif
