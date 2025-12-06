@@ -34,7 +34,8 @@ class Listing_model extends Model
         'target_price',
         'target_percentage',
         'admin_id',
-        'status'
+        'status',
+        'is_enabled'
     ];
 
 
