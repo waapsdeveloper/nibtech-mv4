@@ -5,11 +5,16 @@ namespace App\Console\Commands;
 use App\Services\Support\BackMarketCareSyncService;
 use App\Services\Support\RefurbedMailboxSyncService;
 use Illuminate\Console\Command;
+use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
 class SupportSyncCommand extends Command
 {
+    private BackMarketCareSyncService $backMarketCare;
+    private Container $container;
+    private ?RefurbedMailboxSyncService $refurbedMailbox = null;
+
     /**
      * The name and signature of the console command.
      *
@@ -36,11 +41,11 @@ SIG;
      */
     protected $description = 'Synchronize external support channels into the unified support tables.';
 
-    public function __construct(
-        private BackMarketCareSyncService $backMarketCare,
-        private RefurbedMailboxSyncService $refurbedMailbox
-    ) {
+    public function __construct(BackMarketCareSyncService $backMarketCare, Container $container)
+    {
         parent::__construct();
+        $this->backMarketCare = $backMarketCare;
+        $this->container = $container;
     }
 
     public function handle(): int
@@ -67,7 +72,11 @@ SIG;
         }
 
         if (in_array('refurbed', $sources, true)) {
-            $synced += $this->runSync(fn () => $this->refurbedMailbox->sync(), 'Refurbed mailbox');
+            $service = $this->resolveRefurbedMailbox();
+
+            if ($service) {
+                $synced += $this->runSync(fn () => $service->sync(), 'Refurbed mailbox');
+            }
         }
 
         $this->info("Support sync completed. Messages processed: {$synced}");
@@ -91,6 +100,26 @@ SIG;
             $this->error("{$label} sync failed: {$e->getMessage()}");
 
             return 0;
+        }
+    }
+
+    protected function resolveRefurbedMailbox(): ?RefurbedMailboxSyncService
+    {
+        if ($this->refurbedMailbox) {
+            return $this->refurbedMailbox;
+        }
+
+        try {
+            $this->refurbedMailbox = $this->container->make(RefurbedMailboxSyncService::class);
+
+            return $this->refurbedMailbox;
+        } catch (Throwable $e) {
+            Log::warning('SupportSyncCommand: Refurbed mailbox unavailable', [
+                'error' => $e->getMessage(),
+            ]);
+            $this->warn('Refurbed mailbox skipped: ' . $e->getMessage());
+
+            return null;
         }
     }
 
