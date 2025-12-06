@@ -267,6 +267,62 @@ class BackMarketAPIController extends Controller
         return $result;
     }
 
+    public function careFeed(Request $request)
+    {
+        $since = $request->input('since');
+        $filters = array_filter($request->only([
+            'state',
+            'priority',
+            'topic',
+            'orderline',
+            'order_id',
+            'last_id',
+            'page',
+            'page_size',
+        ]), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        if ($request->filled('extra')) {
+            parse_str($request->input('extra'), $extraFilters);
+            foreach ($extraFilters as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $filters[$key] = $value;
+                }
+            }
+        }
+
+        try {
+            $cases = $this->getAllCare($since ?: false, $filters);
+        } catch (\Throwable $e) {
+            Log::error('Care API probe failed', [
+                'since' => $since,
+                'filters' => $filters,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Care API request failed.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        if (! is_array($cases)) {
+            return response()->json([
+                'message' => 'Care API response was empty or invalid.',
+                'since' => $since,
+                'filters' => $filters,
+            ], 502);
+        }
+
+        return response()->json([
+            'count' => count($cases),
+            'since' => $since ?: null,
+            'filters' => $filters,
+            'data' => $cases,
+        ]);
+    }
+
 
     public function getAllCare($date_modification = false, $param = []) {
         if ($date_modification == false) {
