@@ -2631,7 +2631,7 @@ class Order extends Component
                 if($items->count() > 1 && $order->price < $items->sum('price')){
                     $total_price = $items->sum('price');
                     foreach($items as $item){
-                        $proportional_price = ($item->price / $total_price) * $order->price;
+                        $proportional_price = $order->price / $items->count();
                         $item->price = round($proportional_price, 2);
                         $item->save();
                     }
