@@ -10,33 +10,11 @@
     // Get listings for this marketplace - use the filtered list from controller
     $marketplaceListings = $marketplaceData['listings'] ?? collect();
     
-    // Calculate marketplace-specific values for form inputs
+    // Form inputs are empty by default - user must manually enter values
     $minHandlerValue = '';
     $handlerValue = '';
     $minPriceValue = '';
     $priceValue = '';
-    
-    if ($marketplaceListings->count() > 0) {
-        $minPriceLimits = $marketplaceListings->pluck('min_price_limit')->filter()->values();
-        if ($minPriceLimits->count() > 0) {
-            $minHandlerValue = $minPriceLimits->min();
-        }
-        
-        $priceLimits = $marketplaceListings->pluck('price_limit')->filter()->values();
-        if ($priceLimits->count() > 0) {
-            $handlerValue = $priceLimits->min();
-        }
-        
-        $minPrices = $marketplaceListings->pluck('min_price')->filter()->values();
-        if ($minPrices->count() > 0) {
-            $minPriceValue = $minPrices->min();
-        }
-        
-        $prices = $marketplaceListings->pluck('price')->filter()->values();
-        if ($prices->count() > 0) {
-            $priceValue = $prices->min();
-        }
-    }
     
     // Build buybox flags
     $buyboxFlags = '';
@@ -87,22 +65,13 @@
                 
                 <div>{!! $buyboxFlags !!}</div>
 
-                <!-- stock box here for each marketplace stock record -->
-                <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" action="{{url('listing/add_quantity_marketplace')}}/{{ $variationId }}/{{ $marketplaceIdInt }}">
-                    @csrf
-                    <input type="hidden" name="process_id" value="{{ $process_id ?? '' }}">
-                    <input type="hidden" name="marketplace_id" value="{{ $marketplaceIdInt }}">
-                    <div class="form-floating" style="width: 60px;">
-                        <input type="text" class="form-control form-control-sm" id="quantity_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" value="{{ $currentStock }}" style="width:60px; height: 31px;" disabled readonly>
-                        <label for="" class="small">Stock</label>
-                    </div>
-                    <div class="form-floating" style="width: 60px;">
-                        <input type="number" class="form-control form-control-sm" name="stock" id="add_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" value="" style="width:60px; height: 31px;">
-                        <label for="" class="small">Add</label>
-                    </div>
-                    <button id="send_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
-                    <span class="text-success small" id="success_marketplace_{{ $variationId }}_{{ $marketplaceIdInt }}"></span>
-                </form>
+                <!-- Marketplace Stock Editor Component -->
+                @include('v2.listing.partials.marketplace-stock-editor', [
+                    'variationId' => $variationId,
+                    'marketplaceIdInt' => $marketplaceIdInt,
+                    'currentStock' => $currentStock,
+                    'process_id' => $process_id ?? null
+                ])
 
                 <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
                     <i class="fas fa-chevron-down"></i>

@@ -22,6 +22,8 @@ use App\Models\Listed_stock_verification_model;
 use App\Models\Admin_model;
 use App\Models\Listing_model;
 use App\Models\Order_item_model;
+use App\Models\Category_model;
+use App\Models\Brand_model;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -75,6 +77,13 @@ class ListingController extends Controller
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['currencies'] = Currency_model::pluck('code','id');
         $data['currency_sign'] = Currency_model::pluck('sign','id');
+        
+        // Filter data
+        $data['categories'] = Category_model::all();
+        $data['brands'] = Brand_model::all();
+        $data['products'] = Products_model::all();
+        $data['marketplaces_dropdown'] = Marketplace_model::pluck('name','id')->toArray();
+        
         $countries = Country_model::all();
         foreach($countries as $country){
             $data['countries'][$country->id] = $country;
@@ -87,6 +96,15 @@ class ListingController extends Controller
         // Get variations using the same logic as original ListingController
         $perPage = $request->input('per_page', 10);
         $variations = $this->buildVariationQuery($request)->paginate($perPage)->appends($request->except('page'));
+        
+        // Calculate global marketplace listing counts across all variations
+        $globalMarketplaceCounts = [];
+        foreach($data['marketplaces'] as $marketplaceId => $marketplace) {
+            $globalMarketplaceCounts[$marketplaceId] = [
+                'name' => $marketplace->name ?? 'Marketplace ' . $marketplaceId,
+                'total_count' => 0
+            ];
+        }
         
         // Calculate sales data, withoutBuybox HTML, and marketplace data for each variation
         foreach($variations as $variation) {
@@ -150,6 +168,11 @@ class ListingController extends Controller
                     'listings' => $marketplaceListings,
                     'order_summary' => $orderSummary
                 ];
+                
+                // Add to global counts
+                if (isset($globalMarketplaceCounts[$marketplaceIdInt])) {
+                    $globalMarketplaceCounts[$marketplaceIdInt]['total_count'] += $listingCount;
+                }
             }
             
             // Attach marketplace data to variation
@@ -157,6 +180,7 @@ class ListingController extends Controller
         }
         
         $data['variations'] = $variations;
+        $data['global_marketplace_counts'] = $globalMarketplaceCounts;
 
         return view('v2.listing.listing')->with($data);
     }
