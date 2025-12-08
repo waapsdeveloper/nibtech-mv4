@@ -90,11 +90,33 @@ class ChatSidebar extends Component
     {
         $this->groupId = $groupId;
         $this->emit('openGroupChat', $groupId);
+
+        if ($this->groups instanceof Collection) {
+            $selected = $this->groups->firstWhere('id', $groupId);
+
+            if ($selected) {
+                $this->groups = $this->groups
+                    ->reject(fn ($group) => $group->id === $groupId)
+                    ->push($selected)
+                    ->values();
+            }
+        }
     }
 
     public function openPrivateChat($adminId)
     {
         $this->emit('openPrivateChat', $adminId);
+
+        if ($this->privateChats instanceof Collection) {
+            $selected = $this->privateChats->firstWhere('id', $adminId);
+
+            if ($selected) {
+                $this->privateChats = $this->privateChats
+                    ->reject(fn ($user) => $user->id === $adminId)
+                    ->push($selected)
+                    ->values();
+            }
+        }
     }
 
     public function storeNewGroup()
