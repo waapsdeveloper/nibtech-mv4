@@ -17,11 +17,13 @@ class PrivateChat extends Component
     public $selectedAdminId;
     public $message = '';
     public $image;
-    public $messages;
+    public $gifUrl = null;
+    public $threadMessages;
 
     protected $rules = [
         'message' => 'nullable|string|max:1000',
         'image' => 'nullable|image|max:2048',
+        'gifUrl' => 'nullable|url|max:2048',
     ];
 
     public function mount($receiverId)
@@ -33,7 +35,7 @@ class PrivateChat extends Component
     public function loadMessages()
     {
         $userId = session('user_id');
-        $this->messages = PrivateMessage::where(function($query) use ($userId) {
+        $this->threadMessages = PrivateMessage::where(function($query) use ($userId) {
             $query->where('sender_id', $userId)->where('receiver_id', $this->receiverId);
         })->orWhere(function($query) use ($userId) {
             $query->where('sender_id', $this->receiverId)->where('receiver_id', $userId);
@@ -47,6 +49,11 @@ class PrivateChat extends Component
 
     public function sendMessage()
     {
+        if (! $this->message && ! $this->image && ! $this->gifUrl) {
+            $this->addError('message', 'Type a message, attach an image, or pick a GIF.');
+            return;
+        }
+
         $this->validate();
 
         $data = [
@@ -59,20 +66,39 @@ class PrivateChat extends Component
             $data['image'] = $this->image->store('chat_images', 'public');
         }
 
+        if ($this->gifUrl) {
+            $data['gif_url'] = $this->gifUrl;
+        }
+
         $message = PrivateMessage::create($data);
 
         PrivateMessageSent::dispatch($message);
 
-        $this->reset(['message', 'image']);
+        $this->reset(['message', 'image', 'gifUrl']);
         $this->loadMessages();
     }
 
-    protected $listeners = ['echo:private-chat,PrivateMessageSent' => 'loadMessages', 'openPrivateChat'];
+    protected $listeners = [
+        'echo:private-chat,PrivateMessageSent' => 'loadMessages',
+        'openPrivateChat',
+        'gifSelected' => 'setGif',
+        'clearGif' => 'removeGif',
+    ];
 
     public function openPrivateChat($adminId)
     {
         $this->selectedAdminId = $adminId;
         $this->loadMessages();
+    }
+
+    public function setGif(?string $url): void
+    {
+        $this->gifUrl = $url;
+    }
+
+    public function removeGif(): void
+    {
+        $this->gifUrl = null;
     }
     public function render()
     {

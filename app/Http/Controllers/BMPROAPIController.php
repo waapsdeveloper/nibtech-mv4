@@ -74,6 +74,7 @@ class BMPROAPIController extends Controller
     public function getOrders(array $filters = [], string $environment = self::ENV_PROD, bool $autoPaginate = false, array $options = []): array
     {
         $query = Arr::only($filters, ['fulfillment_status', 'financial_status', 'page-size', 'page']);
+        $query = $this->normalizeOrderFilters($query);
 
         if (! $autoPaginate) {
             return $this->requestGet('orders', $query, $environment, $options);
@@ -366,6 +367,26 @@ class BMPROAPIController extends Controller
             'payload' => is_scalar($payload) ? $payload : (is_array($payload) ? $payload : null),
             'options' => $options,
         ];
+    }
+
+    private function normalizeOrderFilters(array $filters): array
+    {
+        if (isset($filters['fulfillment_status'])) {
+            $filters['fulfillment_status'] = $this->normalizeFulfillmentStatus($filters['fulfillment_status']);
+        }
+
+        return $filters;
+    }
+
+    private function normalizeFulfillmentStatus(mixed $status): string
+    {
+        $status = strtolower(trim((string) $status));
+
+        if ($status === '' || $status === 'pending') {
+            return 'fulfilled';
+        }
+
+        return $status;
     }
 
     private function extractItems($data): array

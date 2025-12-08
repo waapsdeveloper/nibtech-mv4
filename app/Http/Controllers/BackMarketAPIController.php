@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 
 
@@ -20,7 +22,23 @@ class BackMarketAPIController extends Controller
     protected static $YOUR_USER_AGENT;
 
     public function __construct() {
-        self::$YOUR_ACCESS_TOKEN = Marketplace_model::where('name', 'BackMarket')->first()->api_key ?? env('BM_API1');
+        $token = null;
+
+        try {
+            $token = Marketplace_model::where('name', 'BackMarket')->first()?->api_key;
+        } catch (Throwable $exception) {
+            Log::warning('BackMarket API token lookup failed.', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        $envToken = env('BM_API1');
+        self::$YOUR_ACCESS_TOKEN = $token ?? $envToken;
+
+        if (! self::$YOUR_ACCESS_TOKEN) {
+            throw new RuntimeException('Back Market API token is missing. Set BM_API1 or populate the marketplace table.');
+        }
+
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
     public function requestGet($end_point, $retryCount = 0){
