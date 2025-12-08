@@ -42,7 +42,7 @@ class BMProSyncOrders extends Command
         $filters = array_filter([
             'fulfillment_status' => $this->option('fulfillment') !== null && $this->option('fulfillment') !== ''
                 ? $this->option('fulfillment')
-                : 'pending',
+                : 'fulfilled',
             'financial_status' => $this->option('financial'),
             'page-size' => min($pageSize, 200),
             'page' => $page,

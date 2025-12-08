@@ -10,7 +10,7 @@ use App\Services\Chat\ChatNotificationService;
 class PrivateMessage extends Model
 {
     use HasFactory;
-    protected $fillable = ['sender_id', 'receiver_id', 'message', 'image'];
+    protected $fillable = ['sender_id', 'receiver_id', 'message', 'image', 'gif_url'];
 
     protected static function booted(): void
     {

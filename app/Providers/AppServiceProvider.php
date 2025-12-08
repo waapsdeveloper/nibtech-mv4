@@ -31,11 +31,12 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         date_default_timezone_set("Europe/London");
 
+        if ($this->app->environment('testing')) {
+            return;
+        }
+
         // Handle locale settings
         view()->composer('*', function ($view) {
-
-
-
             if (!Session::has('dropdown_data')) {
                 Session::put('dropdown_data', [
                     'products' => \App\Models\Products_model::orderBy('model','asc')->pluck('model','id'),

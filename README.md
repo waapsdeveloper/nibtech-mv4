@@ -172,7 +172,7 @@ If the referenced marketplace record does not contain an API key (or the databas
 
 Need a quick sanity check without writing code? Hit `GET /api/bmpro/listings/test` (optionally pass `currency`, `marketplace_id`, `publication_state`, `per_page`, `page`, or `auto_paginate=false`). If you omit `publication_state`, the controller automatically requests `publication_state=active` so the response only contains active listings. The endpoint proxies through to Back Market Pro using the same controller logic and responds with the raw API payload plus metadata about the filters/options that were applied.
 
-Looking for orders instead? Call `GET /api/bmpro/orders/pending` (supports `currency`, `marketplace_id`, `fulfillment_status`, `financial_status`, `per_page`, `page`, and `auto_paginate=false`). The endpoint defaults to `fulfillment_status=pending`, aggregates across pages when `auto_paginate` is true, and returns the raw BMPRO orders payload alongside the applied filters/options so ops can troubleshoot quickly.
+Looking for orders instead? Call `GET /api/bmpro/orders/pending` (supports `currency`, `marketplace_id`, `fulfillment_status`, `financial_status`, `per_page`, `page`, and `auto_paginate=false`). The endpoint defaults to `fulfillment_status=fulfilled` (Back Market's sellers API expects `fulfilled` for pending-to-ship orders), aggregates across pages when `auto_paginate` is true, and returns the raw BMPRO orders payload alongside the applied filters/options so ops can troubleshoot quickly.
 
 ### Order ingestion & sync
 
@@ -238,3 +238,9 @@ $tracking = $dhl->trackShipment($shipment['shipmentTrackingNumber']);
 ```
 
 Keep using the controller when adding new DHL-related flows so credentials, retries, and logging stay centralized.
+
+## Internal chat enhancements
+
+- The private chat widget now includes a lightweight emoji palette plus Tenor-powered GIF search so agents can add a little context or personality when coordinating.
+- Configure `TENOR_API_KEY` (and optionally `TENOR_SEARCH_LIMIT`) in `.env` to enable the GIF picker; a fallback key is already set for PHPUnit via `phpunit.xml`.
+- Messages accept plain text, image uploads, or GIF links—picked GIFs show up inline for both participants, and the component prevents empty posts if none of those inputs are provided.
