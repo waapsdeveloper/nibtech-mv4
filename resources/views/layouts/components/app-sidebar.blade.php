@@ -13,7 +13,7 @@
 							<svg width="0" height="0" style="position:absolute;">
 								<defs>
 									<linearGradient id="iconGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-										<stop offset="0%" style="stop-color:#ffffff;stop-opacity:1" />
+										<stop offset="0%" style="stop-color:#8e8e8e;stop-opacity:1" />
 										<stop offset="100%" style="stop-color:#ffffff;stop-opacity:1" />
 									</linearGradient>
 								</defs>
