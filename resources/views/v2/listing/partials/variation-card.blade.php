@@ -96,50 +96,27 @@
                 </a>
             </h5>
             <span id="sales_{{ $variationId }}">{!! $variation->sales_data ?? '' !!}</span>
-            <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
-                <h6 class="mb-0">
-                    <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
-                        Pending Order Items: {{ $pendingCount }} (BM Orders: {{ $pendingBmCount }})
-                    </a>
-                </h6>
-                <span class="text-muted">|</span>
-                <h6 class="mb-0" id="available_stock_{{ $variationId }}">
-                    <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
-                        Available: {{ $availableCount }}
-                    </a>
-                </h6>
-                <span class="text-muted">|</span>
-                <h6 class="mb-0">Difference: {{ $difference }}</h6>
-            </div>
+            
         </div>
 
         <div class="d-flex flex-column align-items-end gap-2">
+            
             <div class="d-flex align-items-center gap-2 flex-wrap">
-                @if(isset($marketplaces) && count($marketplaces) > 0)
-                    <div class="d-flex align-items-center gap-1 flex-wrap">
-                        @foreach($marketplaces as $mpId => $mp)
-                            @php
-                                $marketplaceIdInt = (int)$mpId;
-                                $marketplaceData = $variation->marketplace_data[$marketplaceIdInt] ?? null;
-                                $mpName = $marketplaceData['name'] ?? ($mp->name ?? 'Marketplace ' . $marketplaceIdInt);
-                                $marketplaceListings = $marketplaceData['listings'] ?? collect();
-                                $listingCount = $marketplaceListings->count();
-                                $listingCountText = '(' . $listingCount . ')';
-                                $isFirst = $loop->first;
-                            @endphp
-                            <span 
-                                class="badge marketplace-toggle-badge {{ $isFirst ? 'badge-active' : 'badge-inactive' }}" 
-                                style="cursor: pointer; user-select: none; background-color: transparent; border: 1px solid {{ $isFirst ? '#28a745' : '#000' }}; color: {{ $isFirst ? '#28a745' : '#000' }}; font-size: 0.9rem; font-weight: 500; padding: 0.35em 0.65em;"
-                                data-marketplace-id="{{ $marketplaceIdInt }}"
-                                data-variation-id="{{ $variationId }}"
-                                onclick="toggleMarketplace({{ $variationId }}, {{ $marketplaceIdInt }}, this)"
-                                title="Click to show/hide {{ $mpName }}">
-                                {{ $mpName }} <span style="opacity: 0.8;">{{ $listingCountText }}</span>
-                            </span>
-                        @endforeach
-                    </div>
-                @endif
-
+                <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
+                    <h6 class="mb-0">
+                        <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
+                            Pending Order Items: {{ $pendingCount }} (BM Orders: {{ $pendingBmCount }})
+                        </a>
+                    </h6>
+                    <span class="text-muted">|</span>
+                    <h6 class="mb-0" id="available_stock_{{ $variationId }}">
+                        <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
+                            Available: {{ $availableCount }}
+                        </a>
+                    </h6>
+                    <span class="text-muted">|</span>
+                    <h6 class="mb-0">Difference: {{ $difference }}</h6>
+                </div>
                 <span class="badge bg-light text-dark d-flex align-items-center gap-1">
                     <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
                     {{ $state }}
@@ -149,10 +126,22 @@
                 </a>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <div class="form-floating">
-                    <input type="text" class="form-control" id="total_stock_{{ $variationId }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
-                    <label for="">Total Stock</label>
-                </div>
+                <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_total_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
+                    @csrf
+                    @if($process_id)
+                        <input type="hidden" name="process_id" value="{{ $process_id }}">
+                    @endif
+                    <div class="form-floating">
+                        <input type="text" class="form-control" id="total_stock_{{ $variationId }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
+                        <label for="">Total Stock</label>
+                    </div>
+                    <div class="form-floating" style="width: 60px;">
+                        <input type="number" class="form-control form-control-sm" name="stock" id="add_total_{{ $variationId }}" value="" style="width:60px; height: 31px;">
+                        <label for="" class="small">Add</label>
+                    </div>
+                    <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
+                    <span class="text-success small" id="success_total_{{ $variationId }}"></span>
+                </form>
             </div>
         </div>
 
@@ -187,29 +176,4 @@
     @endif
 </div>
 
-<script>
-function toggleMarketplace(variationId, marketplaceId, badgeElement) {
-    const marketplaceBar = document.getElementById('marketplace_bar_' + variationId + '_' + marketplaceId);
-    
-    if (marketplaceBar) {
-        const isVisible = marketplaceBar.style.display !== 'none';
-        
-        if (isVisible) {
-            // Hide the marketplace
-            marketplaceBar.style.display = 'none';
-            badgeElement.style.borderColor = '#000';
-            badgeElement.style.color = '#000';
-            badgeElement.classList.remove('badge-active');
-            badgeElement.classList.add('badge-inactive');
-        } else {
-            // Show the marketplace
-            marketplaceBar.style.display = 'block';
-            badgeElement.style.borderColor = '#28a745';
-            badgeElement.style.color = '#28a745';
-            badgeElement.classList.remove('badge-inactive');
-            badgeElement.classList.add('badge-active');
-        }
-    }
-}
-</script>
 
