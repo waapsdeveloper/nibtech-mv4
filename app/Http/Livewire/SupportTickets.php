@@ -1277,7 +1277,7 @@ class SupportTickets extends Component
 
         $invoiceType = $isRefund ? 'refund invoice' : 'invoice';
         $body = sprintf(
-            "Hello,\n\nYour %s for order %s has been sent to %s.\n\nIf you have any questions, please don't hesitate to reply to this email.\n\nBest regards,\nNib Britain Tech Support Team",
+            "Hello,\n\nYour %s for order %s has been sent to %s.\n\nIf you have any questions, please don't hesitate to reply to this email.\n\nBest regards,\nSupport Team",
             $invoiceType,
             $orderLabel,
             $recipient
