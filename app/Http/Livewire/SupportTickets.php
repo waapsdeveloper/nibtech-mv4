@@ -1286,12 +1286,12 @@ class SupportTickets extends Component
         try {
             app(SupportEmailSender::class)->sendHtml($replyTo, $subject, $this->formatReplyHtml($body));
 
-            Log::info('Support invoice notification sent', [
-                'thread_id' => $thread->id,
-                'order_id' => $order->id,
-                'recipient' => $replyTo,
-                'refund' => $isRefund,
-            ]);
+            // Log::info('Support invoice notification sent', [
+            //     'thread_id' => $thread->id,
+            //     'order_id' => $order->id,
+            //     'recipient' => $replyTo,
+            //     'refund' => $isRefund,
+            // ]);
         } catch (\Throwable $exception) {
             Log::error('Support invoice notification failed', [
                 'thread_id' => $thread->id,
