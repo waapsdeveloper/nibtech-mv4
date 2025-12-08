@@ -5,9 +5,9 @@ namespace App\Http\Livewire;
 use Livewire\Component;
 use App\Models\Admin_model;
 use App\Models\ChatGroup;
+use App\Models\ChatNotification;
 use App\Models\GroupMessage;
 use App\Models\PrivateMessage;
-use Illuminate\Support\Facades\DB;
 
 class ChatSidebar extends Component
 {
@@ -17,6 +17,8 @@ class ChatSidebar extends Component
     public $groupName;
     public $selectedAdminIds = [];
     public $groupId = null;
+
+    protected $listeners = ['chatNotificationsUpdated' => 'loadChats'];
 
 
     public function mount()
@@ -28,12 +30,28 @@ class ChatSidebar extends Component
     {
         $adminId = session('user_id');
 
+        if (! $adminId) {
+            $this->groups = collect();
+            $this->privateChats = collect();
+            return;
+        }
+
+        $unreadGroups = ChatNotification::where('admin_id', $adminId)
+            ->where('context_type', 'group')
+            ->whereNull('read_at')
+            ->selectRaw('context_id, COUNT(*) as total')
+            ->groupBy('context_id')
+            ->pluck('total', 'context_id');
+
+        $unreadPrivates = ChatNotification::where('admin_id', $adminId)
+            ->where('context_type', 'private')
+            ->whereNull('read_at')
+            ->selectRaw('context_id, COUNT(*) as total')
+            ->groupBy('context_id')
+            ->pluck('total', 'context_id');
+
         $this->groups = ChatGroup::with(['latestMessage' => function ($query) {
                 $query->latest();
-            }])
-            ->withCount(['messages as hasNewMessages' => function ($query) use ($adminId) {
-                $query->where('sender_id', '!=', $adminId)
-                      ->where('created_at', '>=', now()->subMinutes(5));
             }])
             ->whereHas('members', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
@@ -42,13 +60,18 @@ class ChatSidebar extends Component
                 ->whereColumn('group_id', 'chat_groups.id')
                 ->latest()
                 ->take(1)
-            )->get();
+            )->get()
+            ->map(function ($group) use ($unreadGroups) {
+                $group->unread_count = $unreadGroups[$group->id] ?? 0;
+                return $group;
+            });
 
         $this->privateChats = Admin_model::where('id', '!=', $adminId)
             ->with(['privateMessages'])
             ->get()
-            ->map(function ($user) use ($adminId) {
-                $user->hasNewMessages = $user->latestMessage && $user->latestMessage->sender_id != $adminId && $user->latestMessage->created_at >= now()->subMinutes(5);
+            ->map(function ($user) use ($adminId, $unreadPrivates) {
+                $user->unread_count = $unreadPrivates[$user->id] ?? 0;
+                $user->hasNewMessages = ($user->unread_count ?? 0) > 0;
                 return $user;
             });
     }

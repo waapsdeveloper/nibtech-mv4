@@ -1,4 +1,4 @@
-<div class="card">
+<div class="card" wire:poll.20s="loadChats">
     <div class="card-header bg-primary text-white d-flex justify-content-between align-items-center">
         <h5 class="mb-0">Chats</h5>
         <button wire:click="createNewChat" class="btn btn-sm btn-light text-primary">+ New Chat</button>
@@ -16,8 +16,8 @@
                             {{ $group->latestMessage?->message ? Str::limit($group->latestMessage->message, 30) : 'No messages' }}
                         </small>
                     </div>
-                    @if($group->hasNewMessages)
-                        <span class="badge bg-danger rounded-pill">New</span>
+                    @if(($group->unread_count ?? 0) > 0)
+                        <span class="badge bg-danger rounded-pill">{{ $group->unread_count > 99 ? '99+' : $group->unread_count }}</span>
                     @endif
                 </li>
             @empty
@@ -36,8 +36,8 @@
                             {{ $user->latestMessage?->message ? Str::limit($user->latestMessage->message, 30) : 'No messages' }}
                         </small>
                     </div>
-                    @if($user->hasNewMessages)
-                        <span class="badge bg-danger rounded-pill">New</span>
+                    @if(($user->unread_count ?? 0) > 0)
+                        <span class="badge bg-danger rounded-pill">{{ $user->unread_count > 99 ? '99+' : $user->unread_count }}</span>
                     @endif
                 </li>
             @empty
