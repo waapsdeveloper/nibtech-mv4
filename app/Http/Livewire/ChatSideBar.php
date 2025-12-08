@@ -8,6 +8,7 @@ use App\Models\ChatGroup;
 use App\Models\ChatNotification;
 use App\Models\GroupMessage;
 use App\Models\PrivateMessage;
+use Illuminate\Support\Collection;
 
 class ChatSidebar extends Component
 {
@@ -36,6 +37,8 @@ class ChatSidebar extends Component
             return;
         }
 
+        $lastPrivateMessages = $this->getPrivateLastMessages($adminId);
+
         $unreadGroups = ChatNotification::where('admin_id', $adminId)
             ->where('context_type', 'group')
             ->whereNull('read_at')
@@ -56,24 +59,31 @@ class ChatSidebar extends Component
             ->whereHas('members', function ($query) use ($adminId) {
                 $query->where('admin_id', $adminId);
             })
-            ->orderByDesc(GroupMessage::select('created_at')
-                ->whereColumn('group_id', 'chat_groups.id')
-                ->latest()
-                ->take(1)
-            )->get()
+            ->get()
             ->map(function ($group) use ($unreadGroups) {
                 $group->unread_count = $unreadGroups[$group->id] ?? 0;
                 return $group;
-            });
+            })
+            ->sortByDesc(function ($group) {
+                return $group->latestMessage?->created_at?->timestamp ?? 0;
+            })
+            ->values();
 
-        $this->privateChats = Admin_model::where('id', '!=', $adminId)
-            ->with(['privateMessages'])
+        $this->privateChats = Admin_model::query()
+            ->where('id', '!=', $adminId)
             ->get()
-            ->map(function ($user) use ($adminId, $unreadPrivates) {
+            ->map(function ($user) use ($unreadPrivates, $lastPrivateMessages) {
+                $lastMessage = $lastPrivateMessages->get($user->id);
+                $user->latestMessage = $lastMessage;
+                $user->last_message_at = $lastMessage?->created_at;
                 $user->unread_count = $unreadPrivates[$user->id] ?? 0;
                 $user->hasNewMessages = ($user->unread_count ?? 0) > 0;
                 return $user;
-            });
+            })
+            ->sortByDesc(function ($user) {
+                return $user->last_message_at?->timestamp ?? 0;
+            })
+            ->values();
     }
 
     public function openGroupChat($groupId)
@@ -115,5 +125,31 @@ class ChatSidebar extends Component
     public function render()
     {
         return view('livewire.chat-sidebar');
+    }
+
+    protected function getPrivateLastMessages(int $adminId): Collection
+    {
+        $conversationLastIds = PrivateMessage::query()
+            ->selectRaw('MAX(id) as last_id, CASE WHEN sender_id = ? THEN receiver_id ELSE sender_id END as partner_id', [$adminId])
+            ->where(function ($query) use ($adminId) {
+                $query->where('sender_id', $adminId)
+                      ->orWhere('receiver_id', $adminId);
+            })
+            ->groupBy('partner_id')
+            ->pluck('last_id', 'partner_id');
+
+        if ($conversationLastIds->isEmpty()) {
+            return collect();
+        }
+
+        return PrivateMessage::query()
+            ->whereIn('id', $conversationLastIds->values())
+            ->with('sender')
+            ->get()
+            ->keyBy(function ($message) use ($adminId) {
+                return $message->sender_id === $adminId
+                    ? $message->receiver_id
+                    : $message->sender_id;
+            });
     }
 }
