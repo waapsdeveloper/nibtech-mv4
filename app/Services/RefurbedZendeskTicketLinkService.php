@@ -142,17 +142,17 @@ class RefurbedZendeskTicketLinkService
         $stats['result_size_estimate'] = $lastResultSizeEstimate;
         $stats['max_results_per_page'] = $maxResults;
 
-        Log::info('Refurbed Zendesk auto-link summary', [
-            'processed' => $stats['processed'],
-            'linked' => $stats['linked'],
-            'skipped' => $stats['skipped'],
-            'ignored' => $stats['ignored'],
-            'query' => $query,
-            'labelIds' => $labelIds,
-            'maxResults' => $maxResults,
-            'pages_processed' => $pageCount,
-            'result_size_estimate' => $lastResultSizeEstimate,
-        ]);
+        // Log::info('Refurbed Zendesk auto-link summary', [
+        //     'processed' => $stats['processed'],
+        //     'linked' => $stats['linked'],
+        //     'skipped' => $stats['skipped'],
+        //     'ignored' => $stats['ignored'],
+        //     'query' => $query,
+        //     'labelIds' => $labelIds,
+        //     'maxResults' => $maxResults,
+        //     'pages_processed' => $pageCount,
+        //     'result_size_estimate' => $lastResultSizeEstimate,
+        // ]);
 
         return $stats;
     }
