@@ -88,20 +88,34 @@
         const tenorKey = @json(config('services.tenor.api_key'));
         const tenorLimit = @json(config('services.tenor.limit', 12));
 
-        // Listen on both directions
-        window.Echo.private(`private-chat.${userId}.${receiverId}`)
-            .listen('PrivateMessageSent', (e) => {
-                Livewire.emit('loadMessages');
-                const container = document.getElementById('private-chat-messages');
+        const scrollMessagesToBottom = () => {
+            const container = document.getElementById('private-chat-messages');
+            if (! container) {
+                return;
+            }
+            requestAnimationFrame(() => {
                 container.scrollTop = container.scrollHeight;
             });
+        };
 
-        window.Echo.private(`private-chat.${receiverId}.${userId}`)
-            .listen('PrivateMessageSent', (e) => {
-                Livewire.emit('loadMessages');
-                const container = document.getElementById('private-chat-messages');
-                container.scrollTop = container.scrollHeight;
-            });
+        if (! window.Echo) {
+            console.warn('Laravel Echo is not loaded; real-time chat updates are disabled.');
+        }
+
+        // Listen on both directions when Echo is available
+        if (window.Echo) {
+            window.Echo.private(`private-chat.${userId}.${receiverId}`)
+                .listen('PrivateMessageSent', () => {
+                    Livewire.emit('loadMessages');
+                    scrollMessagesToBottom();
+                });
+
+            window.Echo.private(`private-chat.${receiverId}.${userId}`)
+                .listen('PrivateMessageSent', () => {
+                    Livewire.emit('loadMessages');
+                    scrollMessagesToBottom();
+                });
+        }
 
         async function searchGifs(query, gifStatusEl, gifResultsEl) {
             if (! tenorKey) {
@@ -217,9 +231,11 @@
         };
 
         bindComposer();
+        scrollMessagesToBottom();
 
         Livewire.hook('message.processed', () => {
             bindComposer();
+            scrollMessagesToBottom();
         });
     });
 </script>
