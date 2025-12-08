@@ -259,7 +259,7 @@ tr.listing-disabled input[type="text"] {
                                 data-marketplace-id="{{ $marketplaceIdInt }}"
                                 onclick="toggleGlobalMarketplace({{ $marketplaceIdInt }}, this)"
                                 title="Click to show/hide {{ $mpName }} for all listings">
-                                {{ $mpName }} <span style="opacity: 0.8;">{{ $listingCountText }}</span>
+                                {{ $mpName }} 
                             </span>
                         @endforeach
                     </div>
@@ -353,6 +353,7 @@ tr.listing-disabled input[type="text"] {
     let currencies = {!! json_encode($currencies ?? []) !!};
     let currency_sign = {!! json_encode($currency_sign ?? []) !!};
     let eur_gbp = {!! json_encode($eur_gbp ?? 1) !!};
+    let processId = {{ $process_id ?? 'null' }};
     window.eur_listings = window.eur_listings || {};
 
     function show_variation_history(variationId, variationName) {
@@ -589,12 +590,19 @@ tr.listing-disabled input[type="text"] {
             success: function(data) {
                 let stocksTable = '';
                 let count = 0;
+                let stockPrices = []; // Array to collect prices for average calculation
+                
                 data.stocks.forEach(function(item, index) {
                     count++;
-                    let price = data.stock_costs[item.id];
+                    let price = data.stock_costs[item.id] || 0;
                     let vendor = data.vendors[data.po[item.order_id]];
                     let reference_id = data.reference[item.order_id];
                     let topup_ref = data.topup_reference[data.latest_topup_items[item.id]];
+                    
+                    // Collect price for average calculation
+                    if (price) {
+                        stockPrices.push(parseFloat(price));
+                    }
                     
                     stocksTable += `
                         <tr>
@@ -609,11 +617,35 @@ tr.listing-disabled input[type="text"] {
                 });
                 
                 renderMarketplaceTables(variationId, marketplaceId, listingsTable, stocksTable);
+                
+                // Calculate and display average cost after rendering (element needs to exist first)
+                updateAverageCost(variationId, marketplaceId, stockPrices);
             },
             error: function() {
                 renderMarketplaceTables(variationId, marketplaceId, listingsTable, '<tr><td colspan="3" class="text-center text-muted">Error loading stocks</td></tr>');
             }
         });
+    }
+    
+    // Calculate and display average cost and best price (same logic as original listings page)
+    function updateAverageCost(variationId, marketplaceId, prices) {
+        const averageCostElement = $(`#average_cost_${variationId}_${marketplaceId}`);
+        const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
+        
+        if (averageCostElement.length === 0 || bestPriceElement.length === 0) {
+            return; // Elements don't exist yet
+        }
+        
+        if (prices.length > 0) {
+            let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
+            averageCostElement.text(`€${average.toFixed(2)}`);
+            // Calculate best_price: (average_cost + 20) / 0.88 (same formula as original)
+            let bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
+            bestPriceElement.text(bestPrice);
+        } else {
+            averageCostElement.text('€0.00');
+            bestPriceElement.text('0.00');
+        }
     }
 
     function renderMarketplaceTables(variationId, marketplaceId, listingsTable, stocksTable) {
@@ -669,21 +701,63 @@ tr.listing-disabled input[type="text"] {
         container.data('loaded', true);
     }
     
-    // Handle marketplace stock form input changes
-    $(document).on('input', '[id^="add_marketplace_"]', function() {
+    // Handle parent total stock form input changes
+    $(document).on('input', '[id^="add_total_"]', function() {
         const inputId = $(this).attr('id');
-        const matches = inputId.match(/add_marketplace_(\d+)_(\d+)/);
+        const matches = inputId.match(/add_total_(\d+)/);
         if (!matches) return;
         
         const variationId = matches[1];
-        const marketplaceId = matches[2];
         const value = $(this).val();
         
         if (value && parseFloat(value) !== 0) {
-            $('#send_marketplace_' + variationId + '_' + marketplaceId).removeClass('d-none');
+            $('#send_total_' + variationId).removeClass('d-none');
         } else {
-            $('#send_marketplace_' + variationId + '_' + marketplaceId).addClass('d-none');
+            $('#send_total_' + variationId).addClass('d-none');
         }
+    });
+    
+    // Handle parent total stock form submission
+    $(document).on('submit', '[id^="add_qty_total_"]', function(e) {
+        e.preventDefault();
+        
+        const formId = $(this).attr('id');
+        const matches = formId.match(/add_qty_total_(\d+)/);
+        if (!matches) return;
+        
+        const variationId = matches[1];
+        const form = $(this);
+        const actionUrl = form.attr('action');
+        const quantity = $('#add_total_' + variationId).val();
+        
+        // Disable submission
+        $('#send_total_' + variationId).addClass('d-none');
+        $('#send_total_' + variationId).prop('disabled', true);
+        $('#success_total_' + variationId).text('');
+        
+        $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: form.serialize(),
+            dataType: 'text',
+            success: function(response) {
+                // Update the total stock display
+                $('#total_stock_' + variationId).val(response);
+                $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + response);
+                $('#add_total_' + variationId).val('');
+            },
+            error: function(jqXHR, textStatus, errorThrown) {
+                let errorMsg = "Error: " + textStatus;
+                if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                    errorMsg = jqXHR.responseJSON.error;
+                } else if (jqXHR.responseText) {
+                    errorMsg = jqXHR.responseText;
+                }
+                alert(errorMsg);
+                $('#send_total_' + variationId).removeClass('d-none');
+                $('#send_total_' + variationId).prop('disabled', false);
+            }
+        });
     });
     
     // Handle marketplace stock form submission
@@ -756,7 +830,6 @@ tr.listing-disabled input[type="text"] {
             $('#add_qty_marketplace_' + variationId + '_' + marketplaceId).submit();
         }
     });
-    
     // Handle listing enable/disable toggle
     $(document).on('change', '.toggle-listing-enable', function() {
         const toggle = $(this);
