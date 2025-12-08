@@ -1048,6 +1048,7 @@ class SupportTickets extends Component
             $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund);
             $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund);
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml);
+            $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -1256,6 +1257,49 @@ class SupportTickets extends Component
         $thread->save();
 
         $this->emitSelf('supportThreadsUpdated');
+    }
+
+    protected function sendInvoiceNotificationEmail(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund): void
+    {
+        $replyTo = $thread->reply_email ?? $thread->buyer_email;
+
+        if (! $replyTo) {
+            Log::warning('Support invoice notification skipped: no reply email', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+            ]);
+
+            return;
+        }
+
+        $orderLabel = $order->reference_id ?? $order->reference ?? ('#' . $order->id);
+        $subject = ($isRefund ? 'Refund Invoice Sent - ' : 'Invoice Sent - ') . $orderLabel;
+
+        $invoiceType = $isRefund ? 'refund invoice' : 'invoice';
+        $body = sprintf(
+            "Hello,\n\nYour %s for order %s has been sent to %s.\n\nIf you have any questions, please don't hesitate to reply to this email.\n\nBest regards,\nNib Britain Tech Support Team",
+            $invoiceType,
+            $orderLabel,
+            $recipient
+        );
+
+        try {
+            app(SupportEmailSender::class)->sendHtml($replyTo, $subject, $this->formatReplyHtml($body));
+
+            Log::info('Support invoice notification sent', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'recipient' => $replyTo,
+                'refund' => $isRefund,
+            ]);
+        } catch (\Throwable $exception) {
+            Log::error('Support invoice notification failed', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'recipient' => $replyTo,
+                'error' => $exception->getMessage(),
+            ]);
+        }
     }
 
     protected function defaultReplySubject(SupportThread $thread): string
