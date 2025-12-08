@@ -69,7 +69,8 @@
 
         {{-- Global QZ Tray Connection Manager --}}
         {{-- Note: qz-tray.js is already loaded in layouts.components.scripts --}}
-        @if(env('QZ_TRAY_ENABLED', true))
+        @php($isQzEnabled = filter_var(env('QZ_TRAY_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
+        @if($isQzEnabled)
         <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
@@ -84,10 +85,10 @@
                     console.log('QZ Tray Connection Manager already initialized - skipping duplicate');
                     return;
                 }
-                
+
                 // Mark as initialized
                 window.qzConnectionManagerInitialized = true;
-                
+
                 // Global flag to track connection state
                 window.qzGlobalConnectionEstablished = false;
                 window.qzGlobalConnectionInProgress = false;
