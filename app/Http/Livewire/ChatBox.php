@@ -11,6 +11,7 @@ use App\Models\GroupMessage;
 use App\Models\PrivateMessage;
 use App\Models\Admin_model;
 use App\Models\ChatGroup;
+use App\Models\ChatNotification;
 
 class ChatBox extends Component
 {
@@ -74,7 +75,7 @@ class ChatBox extends Component
             ->get()
             ->reverse();
         }
-
+        $this->markNotificationsAsRead();
     }
 
     public function removeImage()
@@ -153,6 +154,33 @@ class ChatBox extends Component
     public function hideChat()
     {
         // $this->hide = true;
+    }
+
+    protected function markNotificationsAsRead(): void
+    {
+        $adminId = session('user_id');
+
+        if (! $adminId) {
+            return;
+        }
+
+        if ($this->isGroup && $this->groupId) {
+            ChatNotification::where('admin_id', $adminId)
+                ->where('context_type', 'group')
+                ->where('context_id', $this->groupId)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
+
+        if (! $this->isGroup && $this->recipientId) {
+            ChatNotification::where('admin_id', $adminId)
+                ->where('context_type', 'private')
+                ->where('context_id', $this->recipientId)
+                ->whereNull('read_at')
+                ->update(['read_at' => now()]);
+        }
+
+        $this->emit('chatNotificationsUpdated');
     }
     public function close()
     {
