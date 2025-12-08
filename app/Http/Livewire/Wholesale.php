@@ -527,7 +527,7 @@ class Wholesale extends Component
 
             }
 
-            if($stock->variation->grade == 17){
+            if($stock->variation->grade == 17 && request('bypass_flagged') != 1){
                 // session()->put('error', "IMEI Flagged | Contact Admin");
                 $errors .= "IMEI Flagged | Contact Admin" . $imei . "<br>";
                 if($back != 1){
