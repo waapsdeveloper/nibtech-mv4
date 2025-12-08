@@ -2,6 +2,7 @@
 
 namespace App\Http\Livewire;
 
+use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\GoogleController;
 use App\Mail\InvoiceMail;
 use App\Mail\RefundInvoiceMail;
@@ -14,6 +15,7 @@ use App\Models\SupportTag;
 use App\Models\SupportThread;
 use App\Services\Support\MarketplaceOrderActionService;
 use App\Services\Support\SupportEmailSender;
+use Carbon\Carbon;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
@@ -56,6 +58,19 @@ class SupportTickets extends Component
     public $syncStatus = null;
     public $syncError = null;
     public $syncLookback = '6';
+    public $syncBackmarket = true;
+    public $syncRefurbed = true;
+    public $careState = '';
+    public $carePriority = '';
+    public $careTopic = '';
+    public $careOrderline = '';
+    public $careOrderId = '';
+    public $careLastId = '';
+    public $carePageSize = '50';
+    public $careExtraQuery = '';
+    public $careFolderDetails = null;
+    public $careFolderMessages = [];
+    public $careFolderError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -80,6 +95,7 @@ class SupportTickets extends Component
         $this->sortField = $this->sanitizeSortField($this->sortField);
         $this->sortDirection = $this->sanitizeSortDirection($this->sortDirection);
         $this->syncLookback = $this->sanitizeSyncLookback($this->syncLookback);
+        $this->carePageSize = $this->sanitizeCarePageSize($this->carePageSize);
     }
 
     public function updated($property, $value): void
@@ -98,6 +114,10 @@ class SupportTickets extends Component
 
         if ($property === 'syncLookback') {
             $this->syncLookback = $this->sanitizeSyncLookback($value);
+        }
+
+        if ($property === 'carePageSize') {
+            $this->carePageSize = $this->sanitizeCarePageSize($value);
         }
 
         $filters = ['search', 'status', 'priority', 'marketplace', 'tag', 'assigned', 'changeOnly', 'perPage', 'sortField', 'sortDirection'];
@@ -141,6 +161,19 @@ class SupportTickets extends Component
         $this->syncStatus = null;
         $this->syncError = null;
         $this->syncLookback = '6';
+        $this->syncBackmarket = true;
+        $this->syncRefurbed = true;
+        $this->careState = '';
+        $this->carePriority = '';
+        $this->careTopic = '';
+        $this->careOrderline = '';
+        $this->careOrderId = '';
+        $this->careLastId = '';
+        $this->carePageSize = '50';
+        $this->careExtraQuery = '';
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
         $this->resetPage();
     }
 
@@ -160,8 +193,12 @@ class SupportTickets extends Component
         $this->invoiceActionError = null;
         $this->syncStatus = null;
         $this->syncError = null;
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
+        $this->hydrateCareFolder();
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -260,6 +297,9 @@ class SupportTickets extends Component
             $this->ticketActionError = null;
             $this->invoiceActionStatus = null;
             $this->invoiceActionError = null;
+            $this->careFolderDetails = null;
+            $this->careFolderMessages = [];
+            $this->careFolderError = null;
         } elseif (! $this->selectedThreadId || ! $threads->pluck('id')->contains($this->selectedThreadId)) {
             $this->selectedThreadId = $threads->first()->id;
             $this->hydrateReplyDefaults($threads->first());
@@ -273,6 +313,7 @@ class SupportTickets extends Component
             $this->syncStatus = null;
             $this->syncError = null;
             $this->hydrateOrderContext($threads->first());
+            $this->hydrateCareFolder($threads->first());
         }
 
         return view('livewire.support-tickets', [
@@ -643,6 +684,320 @@ class SupportTickets extends Component
         $this->canCancelOrder = $service->supportsCancellation($thread);
     }
 
+    protected function hydrateCareFolder(?SupportThread $thread = null): void
+    {
+        $thread = $thread ?: $this->selectedThread;
+
+        $this->careFolderDetails = null;
+        $this->careFolderMessages = [];
+        $this->careFolderError = null;
+
+        if (! $thread || $thread->marketplace_source !== 'backmarket_care') {
+            return;
+        }
+
+        $folderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+        if (! $folderId) {
+            $this->careFolderError = 'Care folder id missing on this ticket.';
+
+            return;
+        }
+
+        try {
+            $controller = app(BackMarketAPIController::class);
+            $folder = $controller->getCare($folderId);
+        } catch (\Throwable $e) {
+            Log::warning('SupportTickets: Care folder fetch failed', [
+                'thread_id' => $thread->id,
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->careFolderError = 'Unable to load Back Market Care details.';
+
+            return;
+        }
+
+        if (! $folder) {
+            $this->careFolderError = 'Care API returned an empty response.';
+
+            return;
+        }
+
+        if (isset($folder->results)) {
+            $folder = $folder->results;
+        }
+
+        $folderArray = $this->convertToArray($folder);
+
+        if (empty($folderArray)) {
+            $this->careFolderError = 'Care API response could not be parsed.';
+
+            return;
+        }
+
+        $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
+
+        $messages = data_get($folderArray, 'messages', []);
+        if (! is_array($messages)) {
+            $messages = $this->convertToArray($messages);
+        }
+
+        $this->careFolderMessages = collect($messages)
+            ->filter()
+            ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
+            ->values()
+            ->all();
+    }
+
+    protected function normalizeCareFolder(array $folder): array
+    {
+        $orderId = $this->preferCareValue([
+            data_get($folder, 'order_id'),
+            data_get($folder, 'order.order_id'),
+            data_get($folder, 'orderline.order_id'),
+            data_get($folder, 'orderline.order.order_id'),
+            data_get($folder, 'lines.0.order_id'),
+        ]);
+
+        $orderline = $this->preferCareValue([
+            data_get($folder, 'orderline'),
+            data_get($folder, 'orderline.id'),
+            data_get($folder, 'orderline.orderline_id'),
+            data_get($folder, 'lines.0'),
+            data_get($folder, 'lines.0.id'),
+        ]);
+
+        $topic = $this->preferCareScalar([
+            data_get($folder, 'topic'),
+            data_get($folder, 'topic.name'),
+            data_get($folder, 'topic.label'),
+            data_get($folder, 'lines.0.issues.0.customerIssue'),
+        ]);
+
+        $reason = $this->preferCareScalar([
+            data_get($folder, 'reason_code'),
+            data_get($folder, 'reason'),
+            data_get($folder, 'lines.0.issues.0.tag'),
+        ]);
+
+        $priority = $this->preferCareScalar([
+            data_get($folder, 'priority'),
+            data_get($folder, 'priority.level'),
+            data_get($folder, 'priority.label'),
+        ]);
+
+        $state = $this->preferCareScalar([
+            data_get($folder, 'state'),
+            data_get($folder, 'status'),
+        ]);
+
+        $summary = $this->preferCareScalar([
+            data_get($folder, 'summary'),
+            data_get($folder, 'subject'),
+        ]);
+
+        $createdAt = $this->preferCareScalar([
+            data_get($folder, 'created_at'),
+            data_get($folder, 'creation_date'),
+            data_get($folder, 'date_creation'),
+        ]);
+
+        $lastMessageAt = $this->preferCareScalar([
+            data_get($folder, 'last_message_date'),
+            data_get($folder, 'last_message_at'),
+            data_get($folder, 'date_last_message'),
+            data_get($folder, 'date_last_message_at'),
+        ]);
+
+        $lastModifiedAt = $this->preferCareScalar([
+            data_get($folder, 'last_modification_date'),
+            data_get($folder, 'last_modification_at'),
+            data_get($folder, 'date_modification'),
+        ]);
+
+        $firstName = $this->preferCareScalar([
+            data_get($folder, 'customer_firstname'),
+            data_get($folder, 'client.first_name'),
+            data_get($folder, 'order.shipping_address.first_name'),
+            data_get($folder, 'order.billing_address.first_name'),
+        ]);
+
+        $lastName = $this->preferCareScalar([
+            data_get($folder, 'customer_lastname'),
+            data_get($folder, 'client.last_name'),
+            data_get($folder, 'order.shipping_address.last_name'),
+            data_get($folder, 'order.billing_address.last_name'),
+        ]);
+
+        $buyerName = trim(($firstName ?: '') . ' ' . ($lastName ?: ''));
+
+        $buyerEmail = $this->preferCareScalar([
+            data_get($folder, 'customer_email'),
+            data_get($folder, 'client.email'),
+            data_get($folder, 'order.shipping_address.email'),
+            data_get($folder, 'order.billing_address.email'),
+        ]);
+
+        return [
+            'id' => $this->stringifyCareValue(data_get($folder, 'id')),
+            'order_id' => $orderId,
+            'orderline' => $orderline,
+            'topic' => $topic,
+            'state' => $state,
+            'priority' => $priority,
+            'summary' => $summary,
+            'reason_code' => $reason,
+            'buyer_email' => $buyerEmail,
+            'buyer_name' => $buyerName !== '' ? $buyerName : null,
+            'created_at' => $createdAt,
+            'created_at_human' => $this->formatCareDate($createdAt),
+            'last_message_at' => $lastMessageAt,
+            'last_message_at_human' => $this->formatCareDate($lastMessageAt),
+            'last_modification_at' => $lastModifiedAt,
+            'last_modification_at_human' => $this->formatCareDate($lastModifiedAt),
+            'portal_url' => $this->stringifyCareValue(data_get($folder, 'portal_url')),
+            'raw' => $folder,
+        ];
+    }
+
+    protected function normalizeCareMessage(array $message): array
+    {
+        $sentAt = data_get($message, 'date')
+            ?? data_get($message, 'created_at')
+            ?? data_get($message, 'sent_at');
+        $bodyHtml = $this->stringifyCareValue(data_get($message, 'body_html'));
+        $bodyText = $this->stringifyCareValue(data_get($message, 'body') ?? data_get($message, 'message'));
+
+        return [
+            'id' => $this->stringifyCareValue(data_get($message, 'id')),
+            'author' => $this->stringifyCareValue(data_get($message, 'author_name') ?? data_get($message, 'author')),
+            'author_type' => $this->stringifyCareValue(data_get($message, 'author_type')),
+            'direction' => $this->resolveCareDirection($message),
+            'internal' => (bool) data_get($message, 'internal', false),
+            'body' => $bodyText,
+            'body_html' => $bodyHtml,
+            'sent_at' => $sentAt,
+            'sent_at_human' => $this->formatCareDate($sentAt),
+        ];
+    }
+
+    protected function resolveCareDirection(array $message): string
+    {
+        $authorType = strtolower((string) data_get($message, 'author_type'));
+
+        if (in_array($authorType, ['seller', 'merchant'], true)) {
+            return 'outbound';
+        }
+
+        if (in_array($authorType, ['customer', 'buyer'], true)) {
+            return 'inbound';
+        }
+
+        return data_get($message, 'internal') ? 'internal' : 'inbound';
+    }
+
+    protected function formatCareDate(?string $value): ?string
+    {
+        if (! $value) {
+            return null;
+        }
+
+        try {
+            return Carbon::parse($value)->format('d M Y H:i');
+        } catch (\Throwable $e) {
+            return $value;
+        }
+    }
+
+    protected function convertToArray($payload): array
+    {
+        if (is_array($payload)) {
+            return $payload;
+        }
+
+        if (is_null($payload)) {
+            return [];
+        }
+
+        if ($payload instanceof \JsonSerializable) {
+            return (array) $payload->jsonSerialize();
+        }
+
+        if (is_object($payload)) {
+            return json_decode(json_encode($payload), true) ?: [];
+        }
+
+        return (array) $payload;
+    }
+
+    protected function stringifyCareValue($value): ?string
+    {
+        if ($value === null) {
+            return null;
+        }
+
+        if (is_string($value)) {
+            return $value;
+        }
+
+        if (is_scalar($value)) {
+            return (string) $value;
+        }
+
+        if (is_object($value)) {
+            $value = $this->convertToArray($value);
+        }
+
+        if (is_array($value)) {
+            $encoded = json_encode($value, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+
+            return $encoded !== false ? $encoded : null;
+        }
+
+        return null;
+    }
+
+    protected function preferCareValue(array $candidates): ?string
+    {
+        foreach ($candidates as $candidate) {
+            if ($candidate === null) {
+                continue;
+            }
+
+            $value = $this->stringifyCareValue($candidate);
+
+            if ($value !== null && $value !== '') {
+                return $value;
+            }
+        }
+
+        return null;
+    }
+
+    protected function preferCareScalar(array $candidates): ?string
+    {
+        foreach ($candidates as $candidate) {
+            if ($candidate === null) {
+                continue;
+            }
+
+            if (is_string($candidate)) {
+                $trimmed = trim($candidate);
+                if ($trimmed !== '') {
+                    return $trimmed;
+                }
+            } elseif (is_scalar($candidate)) {
+                $string = trim((string) $candidate);
+                if ($string !== '') {
+                    return $string;
+                }
+            }
+        }
+
+        return null;
+    }
+
     public function sendOrderInvoice(): void
     {
         $this->dispatchInvoice(false);
@@ -714,10 +1069,26 @@ class SupportTickets extends Component
         $this->syncError = null;
         $since = $this->resolveSyncSince();
 
+        $sources = $this->buildSyncSources();
+
+        if (empty($sources)) {
+            $this->syncError = 'Select at least one support channel to refresh.';
+
+            return;
+        }
+
         try {
             $params = [];
             if ($since) {
                 $params['--since'] = $since;
+            }
+
+            if (count($sources) < 2) {
+                $params['--source'] = $sources;
+            }
+
+            foreach ($this->buildCareCliOptions() as $option => $value) {
+                $params[$option] = $value;
             }
 
             $exitCode = Artisan::call('support:sync', $params);
@@ -901,5 +1272,78 @@ class SupportTickets extends Component
         $withBreaks = nl2br($escaped);
 
         return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4;">' . $withBreaks . '</div>';
+    }
+
+    protected function buildSyncSources(): array
+    {
+        $sources = [];
+
+        if ($this->syncBackmarket) {
+            $sources[] = 'backmarket';
+        }
+
+        if ($this->syncRefurbed) {
+            $sources[] = 'refurbed';
+        }
+
+        return $sources;
+    }
+
+    protected function buildCareCliOptions(): array
+    {
+        if (! $this->syncBackmarket) {
+            return [];
+        }
+
+        $options = [];
+        $filters = [
+            '--care-state' => $this->careState,
+            '--care-priority' => $this->carePriority,
+            '--care-topic' => $this->careTopic,
+            '--care-orderline' => $this->careOrderline,
+            '--care-order-id' => $this->careOrderId,
+            '--care-last-id' => $this->careLastId,
+        ];
+
+        foreach ($filters as $flag => $value) {
+            $value = is_string($value) ? trim($value) : $value;
+
+            if ($value === null || $value === '') {
+                continue;
+            }
+
+            $options[$flag] = (string) $value;
+        }
+
+        $pageSize = $this->sanitizeCarePageSize($this->carePageSize);
+        if ($pageSize !== '') {
+            $options['--care-page-size'] = $pageSize;
+        }
+
+        $extra = trim((string) $this->careExtraQuery);
+        if ($extra !== '') {
+            $options['--care-extra'] = ltrim($extra, '&?');
+        }
+
+        return $options;
+    }
+
+    protected function sanitizeCarePageSize($value): string
+    {
+        if ($value === null || $value === '' || ! is_numeric($value)) {
+            $value = 50;
+        }
+
+        $value = (int) $value;
+
+        if ($value < 1) {
+            $value = 1;
+        }
+
+        if ($value > 200) {
+            $value = 200;
+        }
+
+        return (string) $value;
     }
 }

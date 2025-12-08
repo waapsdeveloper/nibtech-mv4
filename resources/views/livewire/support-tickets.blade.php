@@ -25,6 +25,71 @@
             </div>
         </div>
 
+        <div class="bg-light border rounded p-3 mb-3">
+            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+                <div>
+                    <div class="fw-semibold text-uppercase small text-muted">Manual sync scope</div>
+                    <p class="mb-0 text-muted">Pick which support channels to refresh and optionally add Back Market Care filters before running the sync.</p>
+                </div>
+                <div class="d-flex flex-wrap gap-4">
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="syncBackmarket" wire:model="syncBackmarket">
+                        <label class="form-check-label" for="syncBackmarket">
+                            Back Market Care
+                            <small class="d-block text-muted">Care API with filters</small>
+                        </label>
+                    </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="syncRefurbed" wire:model="syncRefurbed">
+                        <label class="form-check-label" for="syncRefurbed">
+                            Refurbed Mailbox
+                            <small class="d-block text-muted">orders@refurbed sync</small>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="mt-3">
+                <div class="fw-semibold small text-uppercase text-muted mb-2">Back Market Care filters</div>
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">State</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="open / waiting_seller" wire:model.lazy="careState" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Priority</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="low / normal / high" wire:model.lazy="carePriority" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Topic</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="delivery / quality" wire:model.lazy="careTopic" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Order line</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="BM orderline" wire:model.lazy="careOrderline" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Order ID</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Back Market order id" wire:model.lazy="careOrderId" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label small text-muted">Cursor / last ID</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="Use to resume pagination" wire:model.lazy="careLastId" @if (! $syncBackmarket) disabled @endif>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label small text-muted">Page size</label>
+                        <input type="number" min="1" max="200" class="form-control form-control-sm" wire:model.lazy="carePageSize" @if (! $syncBackmarket) disabled @endif>
+                        <small class="text-muted">Max 200 per pull</small>
+                    </div>
+                    <div class="col-md-9">
+                        <label class="form-label small text-muted">Extra query string</label>
+                        <input type="text" class="form-control form-control-sm" placeholder="state=open&priority=high" wire:model.lazy="careExtraQuery" @if (! $syncBackmarket) disabled @endif>
+                        <small class="text-muted">Sent as-is to the Care API. Leave blank for defaults.</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         @if ($syncError)
             <div class="alert alert-danger mb-3">{{ $syncError }}</div>
         @endif
@@ -156,8 +221,19 @@
                     <div class="alert alert-light border">No support threads match your filters.</div>
                 @endforelse
             </div>
-            <div class="mt-2">
-                {{ $threads->links() }}
+            <div class="mt-3 d-flex flex-wrap justify-content-between align-items-center gap-2">
+                <div class="text-muted small">
+                    Showing
+                    {{ $threads->firstItem() ?? 0 }}
+                    –
+                    {{ $threads->lastItem() ?? 0 }}
+                    of
+                    {{ $threads->total() }}
+                    tickets
+                </div>
+                <div class="support-pagination">
+                    {{ $threads->onEachSide(1)->links('pagination::bootstrap-5') }}
+                </div>
             </div>
         </div>
 
@@ -182,15 +258,6 @@
                         @if ($selectedThread->portal_url)
                             <a href="{{ $selectedThread->portal_url }}" class="btn btn-sm btn-primary" target="_blank" rel="noopener">
                                 View in support portal
-                            </a>
-                        @endif
-                        @if ($selectedThread->reply_email)
-                            @php
-                                $mailtoSubject = rawurlencode('Re: ' . ($selectedThread->order_reference ?? $selectedThread->external_thread_id));
-                                $mailtoBody = rawurlencode("Hi,\n\n");
-                            @endphp
-                            <a href="mailto:{{ $selectedThread->reply_email }}?subject={{ $mailtoSubject }}&body={{ $mailtoBody }}" class="btn btn-sm btn-outline-primary">
-                                Reply via email
                             </a>
                         @endif
                         <button type="button" class="btn btn-sm btn-success" wire:click="markThreadSolved" wire:loading.attr="disabled" wire:target="markThreadSolved" @if ($isThreadSolved) disabled @endif>
@@ -377,6 +444,109 @@
                         <div class="text-muted small mt-3">No internal order is linked to this ticket yet.</div>
                     @endif
                 </div>
+
+                @if ($selectedThread && $selectedThread->marketplace_source === 'backmarket_care')
+                    @if ($careFolderError)
+                        <div class="alert alert-warning mt-3">{{ $careFolderError }}</div>
+                    @endif
+
+                    @if ($careFolderDetails)
+                        <div class="support-order-panel mt-3">
+                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                <div>
+                                    <h6 class="mb-1">Back Market Care folder #{{ $careFolderDetails['id'] ?? 'n/a' }}</h6>
+                                    <small class="text-muted">Live snapshot loaded directly from the Care API.</small>
+                                </div>
+                                <div class="d-flex flex-wrap gap-2">
+                                    <span class="badge bg-dark text-uppercase">{{ $careFolderDetails['state'] ?? 'n/a' }}</span>
+                                    <span class="badge bg-primary text-uppercase">{{ $careFolderDetails['priority'] ?? 'n/a' }}</span>
+                                </div>
+                            </div>
+
+                            @if (! empty($careFolderDetails['summary']))
+                                <p class="mt-3 mb-0">{{ $careFolderDetails['summary'] }}</p>
+                            @endif
+
+                            <div class="support-order-meta mt-3">
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Topic</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['topic'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Reason</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['reason_code'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Order ID</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Orderline</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['orderline'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Buyer</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['buyer_name'] ?? 'Unknown' }}</div>
+                                    <small class="text-muted">{{ $careFolderDetails['buyer_email'] ?? 'n/a' }}</small>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Created</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['created_at_human'] ?? ($careFolderDetails['created_at'] ?? 'n/a') }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Last message</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['last_message_at_human'] ?? ($careFolderDetails['last_message_at'] ?? 'n/a') }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Last update</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['last_modification_at_human'] ?? ($careFolderDetails['last_modification_at'] ?? 'n/a') }}</div>
+                                </div>
+                            </div>
+                        </div>
+                    @endif
+
+                    @if (! empty($careFolderMessages))
+                        <div class="support-reply-panel mt-3">
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <div>
+                                    <h6 class="mb-0">Care conversation</h6>
+                                    <small class="text-muted">Messages returned from the Care API in real time.</small>
+                                </div>
+                                <div class="text-muted small">{{ count($careFolderMessages) }} messages</div>
+                            </div>
+                            <div class="care-message-feed">
+                                @foreach ($careFolderMessages as $careMessage)
+                                    <div class="care-message border rounded p-3 mb-2 {{ $careMessage['direction'] }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <div class="fw-semibold">{{ $careMessage['author'] ?? 'Unknown author' }}</div>
+                                                <small class="text-muted text-uppercase">{{ $careMessage['author_type'] ?? 'n/a' }}</small>
+                                            </div>
+                                            <div class="text-end">
+                                                <small class="text-muted">{{ $careMessage['sent_at_human'] ?? ($careMessage['sent_at'] ?? 'n/a') }}</small>
+                                                <div>
+                                                    <span class="badge bg-light text-dark text-uppercase">{{ $careMessage['direction'] }}</span>
+                                                    @if ($careMessage['internal'])
+                                                        <span class="badge bg-warning text-dark">Internal</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="mt-2">
+                                            @if (! empty($careMessage['body_html']))
+                                                {!! $careMessage['body_html'] !!}
+                                            @else
+                                                {!! nl2br(e($careMessage['body'] ?? '')) !!}
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                            </div>
+                        </div>
+                    @elseif ($careFolderDetails && ! $careFolderError)
+                        <small class="text-muted d-block mt-3">No live messages were returned for this Care folder.</small>
+                    @endif
+                @endif
 
                 <div class="mt-3 d-flex flex-wrap gap-2">
                     @foreach ($selectedThread->tags as $tag)

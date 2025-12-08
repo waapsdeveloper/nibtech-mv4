@@ -9,6 +9,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
+use Throwable;
 
 
 
@@ -20,7 +22,23 @@ class BackMarketAPIController extends Controller
     protected static $YOUR_USER_AGENT;
 
     public function __construct() {
-        self::$YOUR_ACCESS_TOKEN = Marketplace_model::where('name', 'BackMarket')->first()->api_key ?? env('BM_API1');
+        $token = null;
+
+        try {
+            $token = Marketplace_model::where('name', 'BackMarket')->first()?->api_key;
+        } catch (Throwable $exception) {
+            Log::warning('BackMarket API token lookup failed.', [
+                'message' => $exception->getMessage(),
+            ]);
+        }
+
+        $envToken = env('BM_API1');
+        self::$YOUR_ACCESS_TOKEN = $token ?? $envToken;
+
+        if (! self::$YOUR_ACCESS_TOKEN) {
+            throw new RuntimeException('Back Market API token is missing. Set BM_API1 or populate the marketplace table.');
+        }
+
         self::$YOUR_USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36";
     }
     public function requestGet($end_point, $retryCount = 0){
@@ -267,20 +285,73 @@ class BackMarketAPIController extends Controller
         return $result;
     }
 
+    public function careFeed(Request $request)
+    {
+        $since = $request->input('since');
+        $filters = array_filter($request->only([
+            'state',
+            'priority',
+            'topic',
+            'orderline',
+            'order_id',
+            'last_id',
+            'page',
+            'page_size',
+        ]), function ($value) {
+            return $value !== null && $value !== '';
+        });
+
+        if ($request->filled('extra')) {
+            parse_str($request->input('extra'), $extraFilters);
+            foreach ($extraFilters as $key => $value) {
+                if ($value !== null && $value !== '') {
+                    $filters[$key] = $value;
+                }
+            }
+        }
+
+        try {
+            $cases = $this->getAllCare($since ?: false, $filters);
+        } catch (\Throwable $e) {
+            Log::error('Care API probe failed', [
+                'since' => $since,
+                'filters' => $filters,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'message' => 'Care API request failed.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+
+        if (! is_array($cases)) {
+            return response()->json([
+                'message' => 'Care API response was empty or invalid.',
+                'since' => $since,
+                'filters' => $filters,
+            ], 502);
+        }
+
+        return response()->json([
+            'count' => count($cases),
+            'since' => $since ?: null,
+            'filters' => $filters,
+            'data' => $cases,
+        ]);
+    }
+
 
     public function getAllCare($date_modification = false, $param = []) {
-        $end_point = 'sav?';
-
         if ($date_modification == false) {
             $date_modification = date("Y-m-d-H-i", time() - 2 * 24 * 60 * 60);
         }
 
-        $end_point .= "?last_modification_date=$date_modification";
-        // $end_point .= "?last_message_date=$date_modification";
+        $query = array_merge([
+            'last_modification_date' => $date_modification,
+        ], $param);
 
-        if (count($param) > 0) {
-            $end_point .= '&' . http_build_query($param);
-        }
+        $end_point = 'sav?' . http_build_query($query);
 
         sleep(10);
 

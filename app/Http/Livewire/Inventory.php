@@ -823,9 +823,10 @@ class Inventory extends Component
         }else{
             $reference = null;
         }
+        $error = '';
 
         $imei = request('imei');
-        $imeis = explode("\n", $imei);
+        $imeis = explode(" ", $imei);
         foreach($imeis as $imei){
             if (ctype_digit($imei)) {
                 $i = $imei;
@@ -836,8 +837,9 @@ class Inventory extends Component
                         $stock = $stock->first();
                     }elseif($stock->count() > 1){
                         $imeis = $stock->pluck('imei')->toArray();
-                        $error = "Did you mean: ".implode(", ", $imeis);
+                        $error .= "Did you mean: ".implode(", ", $imeis)."<br>";
                         $stock = null;
+                        continue;
                     }else{
                         $stock = null;
                     }
@@ -852,8 +854,9 @@ class Inventory extends Component
                         $stock = $stock->first();
                     }elseif($stock->count() > 1){
                         $imeis = $stock->pluck('imei')->toArray();
-                        $error = "Did you mean: ".implode(", ", $imeis);
+                        $error .= "Did you mean: ".implode(", ", $imeis)."<br>";
                         $stock = null;
+                        continue;
                     }else{
                         $stock = null;
                     }
@@ -868,8 +871,10 @@ class Inventory extends Component
             // }
             // $stock = Stock_model::where(['imei' => $i, 'serial_number' => $s])->first();
             if($stock == null){
-                session()->put('error', 'IMEI Invalid / Not Found');
-                return redirect()->back();
+                // session()->put('error', 'IMEI Invalid / Not Found');
+                // return redirect()->back();
+                $error.= 'IMEI / Serial Number Invalid / Not Found: '.$imei.'<br>';
+                continue;
 
             }
 
@@ -962,6 +967,9 @@ class Inventory extends Component
                     session()->put('error', 'Stock already verified');
                 }
             }
+        }
+        if($error != ''){
+            session()->put('error', $error);
         }
         return redirect()->back();
     }

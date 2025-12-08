@@ -3,6 +3,7 @@
 use App\Http\Controllers\ApiRequestController;
 use App\Http\Controllers\BMPROListingsController;
 use App\Http\Controllers\BMPROOrdersController;
+use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\InternalApiController;
 use App\Http\Controllers\RefurbedListingsController;
@@ -85,6 +86,9 @@ Route::group(['middleware' => ['internal.only']], function () {
 
     Route::get('/google/emails', [GoogleController::class, 'readEmails'])
         ->name('google.emails.read');
+
+    Route::get('/backmarket/care', [BackMarketAPIController::class, 'careFeed'])
+        ->name('backmarket.care.index');
 
 
 

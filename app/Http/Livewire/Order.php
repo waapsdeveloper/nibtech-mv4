@@ -2624,6 +2624,20 @@ class Order extends Component
             $order_items = $order_items->get();
         }
 
+        $item_price = $order_items->sum('price');
+        if($order->price != $item_price){
+            $variation_items = $order_items->groupBy('variation_id');
+            foreach($variation_items as $variation_id => $items){
+                if($items->count() > 1 && $order->price < $items->sum('price')){
+                    $total_price = $items->sum('price');
+                    foreach($items as $item){
+                        $proportional_price = $order->price / $items->count();
+                        $item->price = round($proportional_price, 2);
+                        $item->save();
+                    }
+                }
+            }
+        }
         // Generate PDF for the invoice content
         $data = [
             'order' => $order,
@@ -2689,6 +2703,20 @@ class Order extends Component
             $order_items = $order_items->get();
         }
 
+        $item_price = $order_items->sum('price');
+        if($order->price != $item_price){
+            $variation_items = $order_items->groupBy('variation_id');
+            foreach($variation_items as $variation_id => $items){
+                if($items->count() > 1 && $order->price < $items->sum('price')){
+                    $total_price = $items->sum('price');
+                    foreach($items as $item){
+                        $proportional_price = $order->price / $items->count();
+                        $item->price = round($proportional_price, 2);
+                        $item->save();
+                    }
+                }
+            }
+        }
         $packingMode = (string) request('packing') === '1' || (string) $packing === '1';
 
         // Generate PDF for the invoice content

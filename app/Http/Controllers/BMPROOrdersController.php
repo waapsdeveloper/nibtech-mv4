@@ -18,7 +18,7 @@ class BMPROOrdersController extends Controller
         $fulfillmentStatus = $request->input('fulfillment_status');
 
         if ($fulfillmentStatus === null || $fulfillmentStatus === '') {
-            $fulfillmentStatus = 'pending';
+            $fulfillmentStatus = 'fulfilled';
         }
 
         $filters = array_filter([
