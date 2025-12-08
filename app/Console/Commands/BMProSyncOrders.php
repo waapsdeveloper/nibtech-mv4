@@ -19,7 +19,7 @@ class BMProSyncOrders extends Command
         {--financial= : Filter BMPRO orders by financial status}
         {--page-size=100 : Page size for each BMPRO API request (max 200)}
         {--page= : Request a specific BMPRO page (auto pagination disabled)}
-        {--env=prod : Target BMPRO environment (prod or dev)}
+        {--bmpro-env=prod : Target BMPRO environment (prod or dev)}
         {--no-auto-paginate : Disable automatic pagination across BMPRO responses}';
 
     /**
@@ -56,7 +56,7 @@ class BMProSyncOrders extends Command
         $options = [
             'currencies' => $this->option('currency'),
             'marketplace_ids' => $this->option('marketplace'),
-            'environment' => $this->option('env') ?? 'prod',
+            'environment' => $this->option('bmpro-env') ?? 'prod',
             'auto_paginate' => $autoPaginate,
         ];
 
