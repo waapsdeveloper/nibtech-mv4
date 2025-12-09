@@ -16,12 +16,12 @@
     $minPriceValue = '';
     $priceValue = '';
     
-    // Build buybox flags
+    // Build buybox flags - show flags for listings that do NOT have buybox
     $buyboxFlags = '';
-    $buyboxListingsForMarketplace = $marketplaceListings->where('buybox', 1);
+    $nonBuyboxListingsForMarketplace = $marketplaceListings->where('buybox', '!=', 1);
     
-    if ($buyboxListingsForMarketplace->count() > 0) {
-        foreach($buyboxListingsForMarketplace as $listing) {
+    if ($nonBuyboxListingsForMarketplace->count() > 0) {
+        foreach($nonBuyboxListingsForMarketplace as $listing) {
             $country = $listing->country_id ?? null;
             if ($country && is_object($country)) {
                 $countryCode = $country->code ?? '';
@@ -40,25 +40,39 @@
     }
     
     if (empty($buyboxFlags)) {
-        $buyboxFlags = '<span class="text-muted small">No buybox</span>';
+        $buyboxFlags = '<span class="text-muted small">All have buybox</span>';
     }
     
     // Get order summary from controller (calculated per marketplace)
-    $orderSummary = $marketplaceData['order_summary'] ?? '7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
+    $orderSummary = $marketplaceData['order_summary'] ?? 'Today: €0.00 (0) - Yesterday: €0.00 (0) - 7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
     
     // Get current listed stock from marketplace_stock table for this specific marketplace
     $marketplaceStock = \App\Models\MarketplaceStockModel::where('variation_id', $variationId)
         ->where('marketplace_id', $marketplaceIdInt)
         ->first();
     $currentStock = $marketplaceStock->listed_stock ?? 0;
+    
+    // Calculate state for this marketplace (using variation state)
+    $state = 'Unknown';
+    switch($variation->state ?? null) {
+        case 0: $state = 'Missing price or comment'; break;
+        case 1: $state = 'Pending validation'; break;
+        case 2: $state = 'Online'; break;
+        case 3: $state = 'Offline'; break;
+        case 4: $state = 'Deactivated'; break;
+    }
 @endphp
 
 <div class="marketplace-bar-wrapper border-bottom">
     <div class="p-2">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-bold">
+            <div class="fw-bold d-flex align-items-center gap-2">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
+                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
+                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
+                    {{ $state }}
+                </span>
             </div>
             <div class="d-flex align-items-center gap-2">
 

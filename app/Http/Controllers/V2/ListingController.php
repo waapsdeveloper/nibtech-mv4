@@ -796,7 +796,7 @@ class ListingController extends Controller
 
     /**
      * Calculate order summary for a variation by marketplace
-     * Returns format: "7 days: €X.XX (count) - 14 days: €X.XX (count) - 30 days: €X.XX (count)"
+     * Returns format: "Today: €X.XX (count) - Yesterday: €X.XX (count) - 7 days: €X.XX (count) - 14 days: €X.XX (count) - 30 days: €X.XX (count)"
      */
     private function calculateMarketplaceOrderSummary($variationId, $marketplaceId)
     {
@@ -807,6 +807,40 @@ class ListingController extends Controller
             }
             return number_format((float)$amount, 2, '.', '');
         };
+
+        // Calculate today's summary
+        $todayAvg = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->startOfDay(), now()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->avg('price');
+        
+        $todayCount = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->startOfDay(), now()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->count();
+
+        // Calculate yesterday's summary
+        $yesterdayAvg = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->avg('price');
+        
+        $yesterdayCount = Order_item_model::where('variation_id', $variationId)
+            ->whereHas('order', function($q) use ($marketplaceId) {
+                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3)
+                  ->where('marketplace_id', $marketplaceId);
+            })
+            ->count();
 
         // Calculate 7 days summary
         $last7DaysAvg = Order_item_model::where('variation_id', $variationId)
@@ -859,9 +893,13 @@ class ListingController extends Controller
             })
             ->count();
 
-        // Format the summary string
+        // Format the summary string with today and yesterday
         return sprintf(
-            '7 days: €%s (%d) - 14 days: €%s (%d) - 30 days: €%s (%d)',
+            'Today: €%s (%d) - Yesterday: €%s (%d) - 7 days: €%s (%d) - 14 days: €%s (%d) - 30 days: €%s (%d)',
+            $formatAmount($todayAvg),
+            $todayCount,
+            $formatAmount($yesterdayAvg),
+            $yesterdayCount,
             $formatAmount($last7DaysAvg),
             $last7DaysCount,
             $formatAmount($last14DaysAvg),

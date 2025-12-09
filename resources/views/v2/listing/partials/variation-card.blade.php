@@ -69,16 +69,6 @@
     $pendingBmCount = $pendingBmOrders->count();
     $difference = $availableCount - $pendingCount;
     
-    // State
-    $state = 'Unknown';
-    switch($variation->state ?? null) {
-        case 0: $state = 'Missing price or comment'; break;
-        case 1: $state = 'Pending validation'; break;
-        case 2: $state = 'Online'; break;
-        case 3: $state = 'Offline'; break;
-        case 4: $state = 'Deactivated'; break;
-    }
-    
     // Get withoutBuybox HTML from variation data
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
@@ -95,12 +85,6 @@
                     - {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}
                 </a>
             </h5>
-            <span id="sales_{{ $variationId }}">{!! $variation->sales_data ?? '' !!}</span>
-            
-        </div>
-
-        <div class="d-flex flex-column align-items-end gap-2">
-            
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
                     <h6 class="mb-0">
@@ -117,14 +101,13 @@
                     <span class="text-muted">|</span>
                     <h6 class="mb-0">Difference: {{ $difference }}</h6>
                 </div>
-                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
-                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
-                    {{ $state }}
-                </span>
                 <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal">
                     <i class="fas fa-history"></i>
                 </a>
             </div>
+        </div>
+
+        <div class="d-flex flex-column align-items-end gap-2">
             <div class="d-flex align-items-center gap-2">
                 <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_total_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
                     @csrf
@@ -152,7 +135,7 @@
     {{-- Details section removed - tables now shown in marketplace toggle sections --}}
     {{-- Marketplace Bars Section - Card Footer --}}
     @if(isset($marketplaces) && count($marketplaces) > 0)
-        <div class="card-footer p-0 border-top mt-2">
+        <div class="card-footer p-0">
             @foreach($marketplaces as $marketplaceId => $marketplace)
                 @php
                     $marketplaceIdInt = (int)$marketplaceId;
@@ -170,7 +153,7 @@
             @endforeach
         </div>
     @else
-        <div class="card-footer mt-3 p-2 text-center text-muted border-top">
+        <div class="card-footer p-2 text-center text-muted">
             <small>No marketplaces available</small>
         </div>
     @endif
