@@ -343,6 +343,10 @@
                                 <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendRefundInvoice"></span>
                                 Send refund invoice
                             </button>
+                            <button type="button" class="btn btn-outline-warning btn-sm" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="openPartialRefundModal"></span>
+                                Send partial refund invoice
+                            </button>
                         </div>
                         @if (! $canSendInvoice)
                             <small class="text-danger d-block mt-1">Customer email missing for invoice delivery.</small>
@@ -681,4 +685,70 @@
             @endif
         </div>
     </div>
+
+    {{-- Partial Refund Modal --}}
+    @if ($showPartialRefundModal && $selectedThread && $selectedThread->order)
+        <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Select Items for Partial Refund</h5>
+                        <button type="button" class="btn-close" wire:click="closePartialRefundModal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        @if ($invoiceActionError)
+                            <div class="alert alert-danger">{{ $invoiceActionError }}</div>
+                        @endif
+
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Select order items to refund:</label>
+                            @foreach ($selectedThread->order->order_items as $item)
+                                <div class="form-check mb-2 p-3 border rounded">
+                                    <input class="form-check-input" type="checkbox" wire:model="selectedOrderItems" value="{{ $item->id }}" id="item-{{ $item->id }}">
+                                    <label class="form-check-label w-100" for="item-{{ $item->id }}">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <strong>{{ $item->variation->product->name ?? 'Product' }}</strong>
+                                                @if ($item->variation)
+                                                    <div class="text-muted small">
+                                                        @if ($item->variation->storage_id)
+                                                            {{ $item->variation->storage_id->name ?? '' }}
+                                                        @endif
+                                                        @if ($item->variation->color_id)
+                                                            - {{ $item->variation->color_id->name ?? '' }}
+                                                        @endif
+                                                    </div>
+                                                @endif
+                                                <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
+                                            </div>
+                                            <div class="text-end">
+                                                <strong class="text-primary">{{ $item->selling_price ? number_format($item->selling_price, 2) : '0.00' }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
+                                                <div class="text-muted small">Qty: {{ $item->quantity ?? 1 }}</div>
+                                            </div>
+                                        </div>
+                                    </label>
+                                </div>
+                            @endforeach
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="partialRefundAmount" class="form-label fw-bold">Partial Refund Amount (Optional)</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="partialRefundAmount" wire:model="partialRefundAmount" step="0.01" min="0" placeholder="Leave empty to refund selected items' total">
+                                <span class="input-group-text">{{ $selectedThread->order->currency_id->code ?? 'GBP' }}</span>
+                            </div>
+                            <small class="text-muted">Enter a specific amount to override the total of selected items.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" wire:click="closePartialRefundModal">Cancel</button>
+                        <button type="button" class="btn btn-warning" wire:click="sendPartialRefundInvoice" wire:loading.attr="disabled" wire:target="sendPartialRefundInvoice">
+                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendPartialRefundInvoice"></span>
+                            Send Partial Refund Invoice
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

@@ -102,7 +102,7 @@ class RefurbedAPIController extends Controller
             $pageCount++;
 
             if ($pageCount > 100) {
-                Log::warning("Refurbed: Reached page limit for orders", ['pages' => $pageCount]);
+                // Log::warning("Refurbed: Reached page limit for orders", ['pages' => $pageCount]);
                 break;
             }
         }
