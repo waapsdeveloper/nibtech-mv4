@@ -73,8 +73,8 @@
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
 
-<div class="card">
-    <div class="card-header py-0 d-flex justify-content-between">
+<div class="card" style="padding-left: 5px; padding-right: 5px;">
+    <div class="card-header py-0 d-flex justify-content-between" style="padding-left: 5px; padding-right: 5px;">
         <div>
             <h5>
                 <a href="{{url('inventory')}}?sku={{ $sku }}" title="View Inventory" target="_blank">
@@ -125,6 +125,10 @@
                     <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
                     <span class="text-success small" id="success_total_{{ $variationId }}"></span>
                 </form>
+                <!-- Dropdown chevron for marketplace and stocks -->
+                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_stocks_dropdown_{{ $variationId }}" aria-expanded="false" aria-controls="marketplace_stocks_dropdown_{{ $variationId }}" style="min-width: 24px;">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
             </div>
         </div>
 
@@ -132,31 +136,49 @@
 
         {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
     </div>
-    {{-- Details section removed - tables now shown in marketplace toggle sections --}}
-    {{-- Marketplace Bars Section - Card Footer --}}
-    @if(isset($marketplaces) && count($marketplaces) > 0)
-        <div class="card-footer p-0">
-            @foreach($marketplaces as $marketplaceId => $marketplace)
-                @php
-                    $marketplaceIdInt = (int)$marketplaceId;
-                    $isFirst = $loop->first;
-                @endphp
-                <div class="marketplace-bar-container" id="marketplace_bar_{{ $variationId }}_{{ $marketplaceIdInt }}" style="display: {{ $isFirst ? 'block' : 'none' }};">
-                    @include('v2.listing.partials.marketplace-bar', [
-                        'variation' => $variation,
+    
+    {{-- Marketplace & Stocks Dropdown Section --}}
+    <div class="collapse" id="marketplace_stocks_dropdown_{{ $variationId }}">
+        <div class="card-body border-top p-0">
+            <div class="row g-0">
+                {{-- Left Column: Marketplace Bars --}}
+                <div class="col-md-8 border-end" style="max-height: 600px; overflow-y: auto;">
+                    <div class="">
+                        @if(isset($marketplaces) && count($marketplaces) > 0)
+                            @foreach($marketplaces as $marketplaceId => $marketplace)
+                                @php
+                                    $marketplaceIdInt = (int)$marketplaceId;
+                                    $isFirst = $loop->first;
+                                @endphp
+                                <div class="marketplace-bar-container" id="marketplace_bar_{{ $variationId }}_{{ $marketplaceIdInt }}" style="display: {{ $isFirst ? 'block' : 'none' }};">
+                                    @include('v2.listing.partials.marketplace-bar', [
+                                        'variation' => $variation,
+                                        'variationId' => $variationId,
+                                        'marketplace' => $marketplace,
+                                        'marketplaceId' => $marketplaceId,
+                                        'process_id' => $process_id ?? null
+                                    ])
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-center text-muted p-3">
+                                <small>No marketplaces available</small>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
+                {{-- Right Column: Stocks Section --}}
+                <div class="col-md-4" style="max-height: 600px; overflow-y: auto;">
+                    @include('v2.listing.partials.marketplace-stocks-section', [
                         'variationId' => $variationId,
-                        'marketplace' => $marketplace,
-                        'marketplaceId' => $marketplaceId,
+                        'marketplaces' => $marketplaces ?? [],
                         'process_id' => $process_id ?? null
                     ])
                 </div>
-            @endforeach
+            </div>
         </div>
-    @else
-        <div class="card-footer p-2 text-center text-muted">
-            <small>No marketplaces available</small>
-        </div>
-    @endif
+    </div>
 </div>
 
 

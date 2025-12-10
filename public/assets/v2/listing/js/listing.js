@@ -241,11 +241,15 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                 });
             }
             
-            // Load stocks for marketplace 1 only
+            // Render listings table first
+            renderMarketplaceTables(variationId, marketplaceId, listingsTable);
+            
+            // Load stocks only to calculate best_price (for marketplace 1 only, stocks are common)
             if (marketplaceId === 1) {
-                loadMarketplaceStocks(variationId, marketplaceId, listingsTable);
+                loadStocksForBestPrice(variationId, marketplaceId);
             } else {
-                renderMarketplaceTables(variationId, marketplaceId, listingsTable, '<tr><td colspan="3" class="text-center text-muted">Stocks are only shown for marketplace 1</td></tr>');
+                // For other marketplaces, set best_price to empty or calculate from listings
+                $(`#best_price_${variationId}_${marketplaceId}`).text('0.00');
             }
         },
         error: function(xhr) {
@@ -256,81 +260,58 @@ function loadMarketplaceTables(variationId, marketplaceId) {
 }
 
 /**
- * Load marketplace stocks
+ * Load stocks only to calculate best_price (stocks table removed from marketplace bar)
  */
-function loadMarketplaceStocks(variationId, marketplaceId, listingsTable) {
+function loadStocksForBestPrice(variationId, marketplaceId) {
     $.ajax({
         url: window.ListingConfig.urls.getVariationStocks + '/' + variationId,
         type: 'GET',
         dataType: 'json',
         success: function(data) {
-            let stocksTable = '';
-            let count = 0;
             let stockPrices = []; // Array to collect prices for average calculation
             
-            data.stocks.forEach(function(item, index) {
-                count++;
+            data.stocks.forEach(function(item) {
                 let price = data.stock_costs[item.id] || 0;
-                let vendor = data.vendors[data.po[item.order_id]];
-                let reference_id = data.reference[item.order_id];
-                let topup_ref = data.topup_reference[data.latest_topup_items[item.id]];
-                
                 // Collect price for average calculation
                 if (price) {
                     stockPrices.push(parseFloat(price));
                 }
-                
-                const imeiUrl = window.ListingConfig.urls.imei || '';
-                stocksTable += `
-                    <tr>
-                        <td>${index + 1}</td>
-                        <td data-stock="${item.id}" title="${topup_ref}">
-                            <a href="${imeiUrl}?imei=${item.imei || item.serial_number}" target="_blank">
-                                ${item.imei || item.serial_number || ''}
-                            </a>
-                        </td>
-                        <td>€${price || '0.00'}</td>
-                    </tr>`;
             });
             
-            renderMarketplaceTables(variationId, marketplaceId, listingsTable, stocksTable);
-            
-            // Calculate and display average cost after rendering (element needs to exist first)
-            updateAverageCost(variationId, marketplaceId, stockPrices);
+            // Calculate and display best_price only (average_cost removed from marketplace bar)
+            updateBestPrice(variationId, marketplaceId, stockPrices);
         },
         error: function() {
-            renderMarketplaceTables(variationId, marketplaceId, listingsTable, '<tr><td colspan="3" class="text-center text-muted">Error loading stocks</td></tr>');
+            // Set default best_price on error
+            $(`#best_price_${variationId}_${marketplaceId}`).text('0.00');
         }
     });
 }
 
 /**
- * Calculate and display average cost and best price
+ * Calculate and display best price only (average_cost removed from marketplace bar)
  */
-function updateAverageCost(variationId, marketplaceId, prices) {
-    const averageCostElement = $(`#average_cost_${variationId}_${marketplaceId}`);
+function updateBestPrice(variationId, marketplaceId, prices) {
     const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
     
-    if (averageCostElement.length === 0 || bestPriceElement.length === 0) {
-        return; // Elements don't exist yet
+    if (bestPriceElement.length === 0) {
+        return; // Element doesn't exist yet
     }
     
     if (prices.length > 0) {
         let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
-        averageCostElement.text(`€${average.toFixed(2)}`);
         // Calculate best_price: (average_cost + 20) / 0.88 (same formula as original)
         let bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
         bestPriceElement.text(bestPrice);
     } else {
-        averageCostElement.text('€0.00');
         bestPriceElement.text('0.00');
     }
 }
 
 /**
- * Render marketplace tables
+ * Render marketplace tables (only listings, stocks removed)
  */
-function renderMarketplaceTables(variationId, marketplaceId, listingsTable, stocksTable) {
+function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
     if (listingsTable === '') {
@@ -338,44 +319,24 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable, stoc
     }
     
     const tablesHtml = `
-        <div class="row g-2">
-            <div class="col-md">
-                <div class="table-responsive">
-                    <table class="table table-hover mb-0 text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th width="80"><small><b>Country</b></small></th>
-                                <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
-                                <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
-                                <th width="80"><small><b>BuyBox</b></small></th>
-                                <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}"></b>)</small></th>
-                                <th width="120"><small><b>Price</b></small></th>
-                                <th><small><b>Date</b></small></th>
-                                <th width="80" class="text-center"><small><b>Action</b></small></th>
-                            </tr>
-                        </thead>
-                        <tbody id="listings_${variationId}_${marketplaceId}">
-                            ${listingsTable}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-            <div class="col-md-auto">
-                <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
-                        <thead>
-                            <tr>
-                                <th><small><b>No</b></small></th>
-                                <th><small><b>IMEI/Serial</b></small></th>
-                                <th><small><b>Cost</b> (<b id="average_cost_${variationId}_${marketplaceId}"></b>)</small></th>
-                            </tr>
-                        </thead>
-                        <tbody id="stocks_${variationId}_${marketplaceId}">
-                            ${stocksTable}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+        <div class="table-responsive">
+            <table class="table table-hover mb-0 text-md-nowrap">
+                <thead>
+                    <tr>
+                        <th width="80"><small><b>Country</b></small></th>
+                        <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
+                        <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
+                        <th width="80"><small><b>BuyBox</b></small></th>
+                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}"></b>)</small></th>
+                        <th width="120"><small><b>Price</b></small></th>
+                        <th><small><b>Date</b></small></th>
+                        <th width="80" class="text-center"><small><b>Action</b></small></th>
+                    </tr>
+                </thead>
+                <tbody id="listings_${variationId}_${marketplaceId}">
+                    ${listingsTable}
+                </tbody>
+            </table>
         </div>
     `;
     
