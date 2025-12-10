@@ -133,14 +133,8 @@
     $productModel = $selectedVariation->product->model ?? 'N/A';
     $productId = $selectedVariation->product_id ?? 0;
     
-    // Calculate total stock from all marketplaces
-    $totalStock = 0;
-    foreach($marketplaceStocks as $mpStock) {
-        $totalStock += $mpStock['listed_stock'] ?? 0;
-    }
-    if($totalStock == 0) {
-        $totalStock = $selectedVariation->listed_stock ?? 0;
-    }
+    // Get total stock from variation (source of truth, not calculated from children)
+    $totalStock = $selectedVariation->listed_stock ?? 0;
     
     $availableStocks = $selectedVariation->available_stocks ?? collect();
     $pendingOrders = $selectedVariation->pending_orders ?? collect();
@@ -193,9 +187,26 @@
 <div class="row mt-3">
     <div class="col-12">
         <div class="card">
-            <div class="card-header pb-0">
-                <h4 class="card-title mg-b-0">Marketplace Stock Formulas</h4>
-                <p class="text-muted small mb-0">Configure how stock is distributed across marketplaces when stock is updated</p>
+            <div class="card-header pb-0 d-flex justify-content-between align-items-start">
+                <div>
+                    <h4 class="card-title mg-b-0">Marketplace Stock Formulas</h4>
+                    <p class="text-muted small mb-0">Configure how stock is distributed across marketplaces when stock is updated</p>
+                </div>
+                @if($selectedVariation)
+                <div class="ms-3">
+                    <form class="form-inline d-inline-flex gap-1 align-items-center" id="total_stock_form_formula_{{ $selectedVariation->id }}" action="{{url('listing/add_quantity')}}/{{ $selectedVariation->id }}">
+                        @csrf
+                        <div class="form-floating">
+                            <input type="number" class="form-control" id="total_stock_stock_formula_{{ $selectedVariation->id }}" value="{{ $totalStock }}" style="width:120px;" min="0" step="1">
+                            <label for="" class="small">Total Stock</label>
+                        </div>
+                        <button type="button" id="save_total_stock_formula_{{ $selectedVariation->id }}" class="btn btn-sm btn-primary" style="height: 31px; line-height: 1;" title="Update total stock and distribute to marketplaces">
+                            <i class="fe fe-save"></i> Update
+                        </button>
+                        <span class="text-success small" id="success_total_stock_formula_{{ $selectedVariation->id }}"></span>
+                    </form>
+                </div>
+                @endif
             </div>
             <div class="card-body">
                 @foreach($marketplaceStocks as $marketplaceId => $marketplaceStock)
@@ -208,6 +219,27 @@
                                 <small class="text-muted">
                                     Stock: <span id="stock_{{ $marketplaceStock['marketplace_id'] }}">{{ $marketplaceStock['listed_stock'] }}</span>
                                 </small>
+                                <!-- Reset Stock Form -->
+                                <div class="mt-1">
+                                    <form class="d-inline-flex align-items-center gap-1 reset-stock-form" 
+                                          id="reset_stock_form_{{ $marketplaceStock['marketplace_id'] }}" 
+                                          data-variation-id="{{ $selectedVariation->id }}" 
+                                          data-marketplace-id="{{ $marketplaceStock['marketplace_id'] }}"
+                                          onsubmit="return false;">
+                                        <input type="number" 
+                                               class="form-control form-control-sm" 
+                                               name="stock"
+                                               id="reset_stock_value_{{ $marketplaceStock['marketplace_id'] }}"
+                                               value="{{ $marketplaceStock['listed_stock'] }}"
+                                               min="0"
+                                               placeholder="Set stock"
+                                               style="width: 80px; height: 24px; font-size: 0.75rem;"
+                                               required>
+                                        <button type="button" class="btn btn-sm btn-secondary reset-stock-btn" style="height: 24px; padding: 0 8px; font-size: 0.75rem;" title="Reset stock to exact value" data-form-id="reset_stock_form_{{ $marketplaceStock['marketplace_id'] }}">
+                                            <i class="fe fe-refresh-cw"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </div>
                             @if($marketplaceStock['has_formula'])
                             @php $formula = $marketplaceStock['formula']; @endphp
@@ -273,6 +305,7 @@
             getStocks: "{{ url('v2/marketplace/stock-formula') }}/",
             saveFormula: "{{ url('v2/marketplace/stock-formula') }}/",
             deleteFormula: "{{ url('v2/marketplace/stock-formula') }}/",
+            resetStock: "{{ url('v2/marketplace/stock-formula') }}/",
         },
         csrfToken: "{{ csrf_token() }}",
         selectedVariationId: {{ $selectedVariation->id ?? 'null' }},

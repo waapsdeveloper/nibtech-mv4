@@ -176,6 +176,48 @@ class MarketplaceStockFormulaController extends Controller
     }
 
     /**
+     * Reset stock to exact value for a marketplace
+     */
+    public function resetStock(Request $request, $variationId, $marketplaceId)
+    {
+        $request->validate([
+            'stock' => 'required|integer|min:0',
+        ]);
+
+        $stockValue = (int)$request->input('stock');
+
+        // Get or create marketplace stock record
+        $marketplaceStock = MarketplaceStockModel::firstOrCreate(
+            [
+                'variation_id' => $variationId,
+                'marketplace_id' => $marketplaceId,
+            ],
+            [
+                'listed_stock' => 0,
+                'admin_id' => session('user_id'),
+            ]
+        );
+
+        // Store old value in reserve
+        $marketplaceStock->reserve_old_value = $marketplaceStock->listed_stock;
+        $marketplaceStock->listed_stock = $stockValue;
+        $marketplaceStock->reserve_new_value = $stockValue;
+        $marketplaceStock->admin_id = session('user_id');
+        $marketplaceStock->save();
+
+        // Get current total stock from variation (don't update it - total stock is source of truth)
+        $variation = Variation_model::find($variationId);
+        $totalStock = $variation ? $variation->listed_stock : 0;
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Stock reset successfully',
+            'stock' => $stockValue,
+            'total_stock' => $totalStock
+        ]);
+    }
+
+    /**
      * Load marketplace stocks for a variation
      */
     private function loadMarketplaceStocks($variationId, $marketplaces)

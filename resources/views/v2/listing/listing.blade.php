@@ -283,5 +283,6 @@
         @endforeach
     };
 </script>
+<script src="{{asset('assets/v2/listing/js/total-stock-form.js')}}"></script>
 <script src="{{asset('assets/v2/listing/js/listing.js')}}"></script>
 @endsection

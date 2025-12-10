@@ -347,65 +347,7 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
 /**
  * Handle parent total stock form input changes
  */
-$(document).on('input', '[id^="add_total_"]', function() {
-    const inputId = $(this).attr('id');
-    const matches = inputId.match(/add_total_(\d+)/);
-    if (!matches) return;
-    
-    const variationId = matches[1];
-    const value = $(this).val();
-    
-    if (value && parseFloat(value) !== 0) {
-        $('#send_total_' + variationId).removeClass('d-none');
-    } else {
-        $('#send_total_' + variationId).addClass('d-none');
-    }
-});
-
-/**
- * Handle parent total stock form submission
- */
-$(document).on('submit', '[id^="add_qty_total_"]', function(e) {
-    e.preventDefault();
-    
-    const formId = $(this).attr('id');
-    const matches = formId.match(/add_qty_total_(\d+)/);
-    if (!matches) return;
-    
-    const variationId = matches[1];
-    const form = $(this);
-    const actionUrl = form.attr('action');
-    const quantity = $('#add_total_' + variationId).val();
-    
-    // Disable submission
-    $('#send_total_' + variationId).addClass('d-none');
-    $('#send_total_' + variationId).prop('disabled', true);
-    $('#success_total_' + variationId).text('');
-    
-    $.ajax({
-        type: "POST",
-        url: actionUrl,
-        data: form.serialize(),
-        dataType: 'text',
-        success: function(response) {
-            // Update the total stock display
-            $('#total_stock_' + variationId).val(response);
-            $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + response);
-            $('#add_total_' + variationId).val('');
-        },
-        error: function(jqXHR, textStatus, errorThrown) {
-            let errorMsg = "Error: " + textStatus;
-            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
-                errorMsg = jqXHR.responseJSON.error;
-            } else if (jqXHR.responseText) {
-                errorMsg = jqXHR.responseText;
-            }
-            alert(errorMsg);
-            $('#send_total_' + variationId).removeClass('d-none');
-            $('#send_total_' + variationId).prop('disabled', false);
-        }
-    });
-});
+// Total stock form functionality moved to total-stock-form.js
 
 /**
  * Handle marketplace stock form submission

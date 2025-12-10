@@ -14,9 +14,11 @@ class StockDistributionService
      *
      * @param int $variationId
      * @param int $stockChange The amount of stock added/removed (positive or negative)
+     * @param int|null $totalStock The total stock after change (for apply_to: total)
+     * @param bool $ignoreRemaining If true, don't add remaining stock to marketplace 1
      * @return array Distribution results
      */
-    public function distributeStock($variationId, $stockChange)
+    public function distributeStock($variationId, $stockChange, $totalStock = null, $ignoreRemaining = false)
     {
         if ($stockChange == 0) {
             return ['success' => false, 'message' => 'No stock change to distribute'];
@@ -36,31 +38,32 @@ class StockDistributionService
         $totalDistributed = 0;
         $remainingStock = abs($stockChange);
 
-        // First pass: Apply formulas to marketplaces
+        // Get variation to determine total stock if needed
+        $variation = \App\Models\Variation_model::find($variationId);
+        if (!$totalStock && $variation) {
+            $totalStock = $variation->listed_stock;
+        }
+
+        // Apply each marketplace's formula
         foreach ($marketplaceStocks as $marketplaceStock) {
             $formula = $marketplaceStock->formula;
 
-            if (!$formula || !isset($formula['marketplaces'])) {
+            if (!$formula || !isset($formula['value']) || !isset($formula['type'])) {
                 continue;
             }
 
-            // Find this marketplace in the formula
-            $marketplaceConfig = collect($formula['marketplaces'])
-                ->firstWhere('marketplace_id', $marketplaceStock->marketplace_id);
+            // Determine base value to apply formula to
+            $baseValue = ($formula['apply_to'] ?? 'pushed') === 'total' ? $totalStock : $stockChange;
 
-            if (!$marketplaceConfig) {
-                continue;
-            }
-
-            $oldValue = $marketplaceStock->listed_stock;
+            // Calculate distribution based on formula
             $distribution = $this->calculateDistribution(
-                $stockChange,
+                $baseValue,
                 $formula['type'],
-                $marketplaceConfig['value']
+                $formula['value']
             );
 
-            // Only distribute if we have remaining stock
-            if ($remainingStock > 0 && $distribution > 0) {
+            if ($distribution > 0 && $remainingStock > 0) {
+                $oldValue = $marketplaceStock->listed_stock;
                 $actualDistribution = min($distribution, $remainingStock);
                 $newValue = $oldValue + $actualDistribution;
 
@@ -85,38 +88,35 @@ class StockDistributionService
             }
         }
 
-        // Second pass: Distribute remaining stock to marketplace 1 if enabled
-        if ($remainingStock > 0) {
+        // Distribute remaining stock to marketplace 1 if there's any left (unless ignoreRemaining is true)
+        if ($remainingStock > 0 && !$ignoreRemaining) {
             $marketplace1Stock = $marketplaceStocks->firstWhere('marketplace_id', 1);
 
             if ($marketplace1Stock) {
-                $formula = $marketplace1Stock->formula;
-                $shouldDistributeRemaining = $formula['remaining_to_marketplace_1'] ?? true;
+                $oldValue = $marketplace1Stock->listed_stock;
+                $newValue = $oldValue + $remainingStock;
 
-                if ($shouldDistributeRemaining) {
-                    $oldValue = $marketplace1Stock->listed_stock;
-                    $newValue = $oldValue + $remainingStock;
+                $marketplace1Stock->reserve_old_value = $oldValue;
+                $marketplace1Stock->listed_stock = $newValue;
+                $marketplace1Stock->reserve_new_value = $newValue;
+                $marketplace1Stock->save();
 
-                    $marketplace1Stock->reserve_old_value = $oldValue;
-                    $marketplace1Stock->listed_stock = $newValue;
-                    $marketplace1Stock->reserve_new_value = $newValue;
-                    $marketplace1Stock->save();
+                $totalDistributed += $remainingStock;
 
-                    $totalDistributed += $remainingStock;
+                $distributionResults[] = [
+                    'marketplace_id' => 1,
+                    'marketplace_name' => $marketplace1Stock->marketplace->name ?? 'Marketplace 1',
+                    'old_value' => $oldValue,
+                    'new_value' => $newValue,
+                    'distribution' => $remainingStock,
+                    'is_remaining' => true,
+                ];
 
-                    $distributionResults[] = [
-                        'marketplace_id' => 1,
-                        'marketplace_name' => $marketplace1Stock->marketplace->name ?? 'Marketplace 1',
-                        'old_value' => $oldValue,
-                        'new_value' => $newValue,
-                        'distribution' => $remainingStock,
-                        'is_remaining' => true,
-                    ];
-
-                    Log::info("Distributed remaining {$remainingStock} units to marketplace 1 for variation {$variationId}");
-                    $remainingStock = 0;
-                }
+                Log::info("Distributed remaining {$remainingStock} units to marketplace 1 for variation {$variationId}");
+                $remainingStock = 0;
             }
+        } else if ($remainingStock > 0 && $ignoreRemaining) {
+            Log::info("Ignoring remaining {$remainingStock} units for variation {$variationId} (exact stock set mode)");
         }
 
         return [
@@ -132,19 +132,19 @@ class StockDistributionService
     /**
      * Calculate distribution amount based on formula type
      *
-     * @param int $stockChange
+     * @param int $baseValue The base value to apply formula to (stockChange or totalStock)
      * @param string $type 'percentage' or 'fixed'
      * @param float $value The percentage or fixed value
      * @return int
      */
-    private function calculateDistribution($stockChange, $type, $value)
+    private function calculateDistribution($baseValue, $type, $value)
     {
         if ($type === 'percentage') {
-            // Calculate percentage of the stock change
-            return (int) round(($stockChange * $value) / 100);
+            // Calculate percentage of the base value
+            return (int) round(($baseValue * $value) / 100);
         } elseif ($type === 'fixed') {
-            // Fixed amount, but don't exceed the stock change
-            return min((int) $value, abs($stockChange));
+            // Fixed amount (value is the exact number to distribute)
+            return (int) $value;
         }
 
         return 0;

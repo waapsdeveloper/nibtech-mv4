@@ -74,7 +74,7 @@
             <div class="fw-bold d-flex align-items-center gap-2">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
-                <span class="text-muted small">({{ $currentStock }})</span>
+                <span class="text-muted small">(<span id="stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $currentStock }}</span>)</span>
                 <span class="badge bg-light text-dark d-flex align-items-center gap-1">
                     <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
                     {{ $state }}

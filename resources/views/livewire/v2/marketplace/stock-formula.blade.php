@@ -277,7 +277,7 @@
 <script src="{{asset('assets/v2/marketplace/js/stock-formula.js')}}"></script>
 <script>
     // Auto-hide alerts after 5 seconds
-    function autoHideAlerts() {
+    function autoHideAlerts() {iu
         setTimeout(function() {
             $('.alert').fadeOut('slow', function() {
                 $(this).remove();
