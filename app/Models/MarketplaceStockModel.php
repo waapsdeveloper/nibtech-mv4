@@ -19,6 +19,20 @@ class MarketplaceStockModel extends Model
         'marketplace_id',
         'listed_stock',
         'admin_id',
+        'formula',
+        'reserve_old_value',
+        'reserve_new_value',
+    ];
+    
+    /**
+     * The attributes that should be cast.
+     *
+     * @var array
+     */
+    protected $casts = [
+        'formula' => 'array',
+        'reserve_old_value' => 'integer',
+        'reserve_new_value' => 'integer',
     ];
     
     /**

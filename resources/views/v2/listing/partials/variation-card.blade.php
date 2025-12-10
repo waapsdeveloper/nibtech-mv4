@@ -73,7 +73,7 @@
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
 
-<div class="card" style="padding-left: 5px; padding-right: 5px;">
+<div class="card" style="padding-left: 5px; padding-right: 5px; width: 100%;">
     <div class="card-header py-0 d-flex justify-content-between" style="padding-left: 5px; padding-right: 5px;">
         <div>
             <h5>
@@ -139,8 +139,8 @@
     
     {{-- Marketplace & Stocks Dropdown Section --}}
     <div class="collapse" id="marketplace_stocks_dropdown_{{ $variationId }}">
-        <div class="card-body border-top p-0">
-            <div class="row g-0">
+        <div class="card-body border-top p-0" style="width: 100%;">
+            <div class="row g-0" style="width: 100%; margin: 0;">
                 {{-- Left Column: Marketplace Bars --}}
                 <div class="col-md-8 border-end" style="max-height: 600px; overflow-y: auto;">
                     <div class="">

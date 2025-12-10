@@ -21,6 +21,7 @@ use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
+use App\Events\VariationStockUpdated;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
@@ -838,8 +839,23 @@ class ListingController extends Controller
             return $response;
         }
         if($response->quantity != null){
+            $oldStock = $variation->listed_stock;
             $variation->listed_stock = $response->quantity;
             $variation->save();
+            
+            // Calculate stock change (the increment amount)
+            $stockChange = (int)$stock;
+            
+            // Fire event to distribute stock to marketplaces based on formulas
+            if($stockChange > 0){
+                event(new VariationStockUpdated(
+                    $variation->id,
+                    $oldStock,
+                    $response->quantity,
+                    $stockChange,
+                    session('user_id')
+                ));
+            }
         }
         $listed_stock_verification = new Listed_stock_verification_model();
         $listed_stock_verification->process_id = $process_id;
