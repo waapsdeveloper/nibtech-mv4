@@ -55,6 +55,9 @@ class SupportTickets extends Component
     public $ticketActionError = null;
     public $invoiceActionStatus = null;
     public $invoiceActionError = null;
+    public $showPartialRefundModal = false;
+    public $selectedOrderItems = [];
+    public $partialRefundAmount = '';
     public $syncStatus = null;
     public $syncError = null;
     public $syncLookback = '6';
@@ -1008,7 +1011,37 @@ class SupportTickets extends Component
         $this->dispatchInvoice(true);
     }
 
-    protected function dispatchInvoice(bool $isRefund): void
+    public function openPartialRefundModal(): void
+    {
+        $this->showPartialRefundModal = true;
+        $this->selectedOrderItems = [];
+        $this->partialRefundAmount = '';
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
+    }
+
+    public function closePartialRefundModal(): void
+    {
+        $this->showPartialRefundModal = false;
+        $this->selectedOrderItems = [];
+        $this->partialRefundAmount = '';
+    }
+
+    public function sendPartialRefundInvoice(): void
+    {
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
+
+        if (empty($this->selectedOrderItems)) {
+            $this->invoiceActionError = 'Please select at least one order item for partial refund.';
+            return;
+        }
+
+        $this->dispatchInvoice(true, true);
+        $this->closePartialRefundModal();
+    }
+
+    protected function dispatchInvoice(bool $isRefund, bool $isPartial = false): void
     {
         $this->invoiceActionStatus = null;
         $this->invoiceActionError = null;
@@ -1044,24 +1077,26 @@ class SupportTickets extends Component
         }
 
         try {
-            $payload = $this->buildInvoicePayload($order);
-            $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund);
-            $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund);
-            $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml);
-            $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund);
+            $payload = $this->buildInvoicePayload($order, $isPartial);
+            $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund, $isPartial);
+            $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
+            $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
+            $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
                 'thread_id' => $thread->id,
                 'order_id' => $order->id,
                 'refund' => $isRefund,
+                'partial' => $isPartial,
                 'error' => $exception->getMessage(),
             ]);
 
             return;
         }
 
-        $this->invoiceActionStatus = ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ') . $customer->email . '.';
+        $invoiceType = $isPartial ? 'Partial refund invoice sent to ' : ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ');
+        $this->invoiceActionStatus = $invoiceType . $customer->email . '.';
     }
 
     public function refreshExternalThreads(): void
@@ -1143,7 +1178,7 @@ class SupportTickets extends Component
         return (string) $value;
     }
 
-    protected function buildInvoicePayload(Order_model $order): array
+    protected function buildInvoicePayload(Order_model $order, bool $isPartial = false): array
     {
         $order->loadMissing([
             'customer',
@@ -1157,14 +1192,18 @@ class SupportTickets extends Component
             'marketplace',
         ]);
 
+        $orderItems = $this->resolveInvoiceOrderItems($order->id, $isPartial);
+
         return [
             'order' => $order,
             'customer' => $order->customer,
-            'orderItems' => $this->resolveInvoiceOrderItems($order->id),
+            'orderItems' => $orderItems,
+            'isPartial' => $isPartial,
+            'partialRefundAmount' => $isPartial ? $this->partialRefundAmount : null,
         ];
     }
 
-    protected function resolveInvoiceOrderItems(int $orderId)
+    protected function resolveInvoiceOrderItems(int $orderId, bool $isPartial = false)
     {
         $query = Order_item_model::with([
             'variation.product',
@@ -1174,25 +1213,35 @@ class SupportTickets extends Component
             'replacement',
         ])->where('order_id', $orderId);
 
-        $count = (clone $query)->count();
+        if ($isPartial && !empty($this->selectedOrderItems)) {
+            $query->whereIn('id', $this->selectedOrderItems);
+        } else {
+            $count = (clone $query)->count();
 
-        if ($count > 1) {
-            $query->whereHas('stock', function ($stockQuery) {
-                $stockQuery->where(function ($inner) {
-                    $inner->where('status', 2)->orWhereNull('status');
+            if ($count > 1) {
+                $query->whereHas('stock', function ($stockQuery) {
+                    $stockQuery->where(function ($inner) {
+                        $inner->where('status', 2)->orWhereNull('status');
+                    });
                 });
-            });
+            }
         }
 
         return $query->get();
     }
 
-    protected function sendInvoiceMail(Order_model $order, string $recipient, array $data, bool $isRefund): void
+    protected function sendInvoiceMail(Order_model $order, string $recipient, array $data, bool $isRefund, bool $isPartial = false): void
     {
         $subjectOrderRef = $order->reference_id
             ?: ($order->reference ?? ('#' . $order->id));
-        $subject = ($isRefund ? 'Refund invoice for ' : 'Invoice for ') . $subjectOrderRef;
-        $mailable = $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+
+        $subject = ($isPartial ? 'Partial refund invoice for ' : ($isRefund ? 'Refund invoice for ' : 'Invoice for ')) . $subjectOrderRef;
+
+        if ($isPartial) {
+            $mailable = new \App\Mail\PartialRefundInvoiceMail($data);
+        } else {
+            $mailable = $isRefund ? new RefundInvoiceMail($data) : new InvoiceMail($data);
+        }
 
         try {
             $response = app(GoogleController::class)->sendEmailInvoice($recipient, $subject, $mailable);
@@ -1201,6 +1250,7 @@ class SupportTickets extends Component
                 'recipient' => $recipient,
                 'order_id' => $order->id,
                 'refund' => $isRefund,
+                'partial' => $isPartial,
                 'error' => $exception->getMessage(),
             ]);
 
@@ -1212,9 +1262,14 @@ class SupportTickets extends Component
         }
     }
 
-    protected function renderInvoiceEmailBody(array $data, bool $isRefund): string
+    protected function renderInvoiceEmailBody(array $data, bool $isRefund, bool $isPartial = false): string
     {
-        $view = $isRefund ? 'email.refund_invoice' : 'email.invoice';
+        if ($isPartial) {
+            $view = 'email.partial_refund_invoice';
+        } else {
+            $view = $isRefund ? 'email.refund_invoice' : 'email.invoice';
+        }
+
         $html = view($view, $data)->render();
 
         if (preg_match('/<body[^>]*>(.*)<\/body>/is', $html, $matches)) {
@@ -1224,14 +1279,16 @@ class SupportTickets extends Component
         return trim($html);
     }
 
-    protected function logInvoiceThreadEntry(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund, string $bodyHtml): void
+    protected function logInvoiceThreadEntry(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund, string $bodyHtml, bool $isPartial = false): void
     {
         $author = Admin_model::find(session('user_id'));
         $authorName = $author ? trim($author->first_name . ' ' . $author->last_name) : 'Nib Support';
         $authorEmail = $author->email ?? config('mail.from.address', 'no-reply@nibritaintech.com');
         $plainText = $this->plainTextFromHtml($bodyHtml);
         $orderLabel = $order->reference_id ?? ('#' . $order->id);
-        $contextLine = sprintf('%s email sent to %s for order %s.', $isRefund ? 'Refund invoice' : 'Invoice', $recipient, $orderLabel);
+
+        $invoiceType = $isPartial ? 'Partial refund invoice' : ($isRefund ? 'Refund invoice' : 'Invoice');
+        $contextLine = sprintf('%s email sent to %s for order %s.', $invoiceType, $recipient, $orderLabel);
         $renderedBody = '<div>' . $bodyHtml . '</div><hr><p style="color:#64748b;font-size:12px;">' . e($contextLine) . '</p>';
 
         SupportMessage::create([
@@ -1245,8 +1302,10 @@ class SupportTickets extends Component
             'is_internal_note' => false,
             'metadata' => [
                 'source' => 'support_portal',
-                'invoice_action' => $isRefund ? 'refund' : 'order',
+                'invoice_action' => $isPartial ? 'partial_refund' : ($isRefund ? 'refund' : 'order'),
                 'customer_email' => $recipient,
+                'selected_items' => $isPartial ? $this->selectedOrderItems : null,
+                'partial_amount' => $isPartial ? $this->partialRefundAmount : null,
             ],
         ]);
 
@@ -1259,7 +1318,7 @@ class SupportTickets extends Component
         $this->emitSelf('supportThreadsUpdated');
     }
 
-    protected function sendInvoiceNotificationEmail(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund): void
+    protected function sendInvoiceNotificationEmail(SupportThread $thread, Order_model $order, string $recipient, bool $isRefund, bool $isPartial = false): void
     {
         $replyTo = $thread->reply_email ?? $thread->buyer_email;
 
@@ -1273,9 +1332,10 @@ class SupportTickets extends Component
         }
 
         $orderLabel = $order->reference_id ?? $order->reference ?? ('#' . $order->id);
-        $subject = ($isRefund ? 'Refund Invoice Sent - ' : 'Invoice Sent - ') . $orderLabel;
 
-        $invoiceType = $isRefund ? 'refund invoice' : 'invoice';
+        $invoiceType = $isPartial ? 'partial refund invoice' : ($isRefund ? 'refund invoice' : 'invoice');
+        $subject = ($isPartial ? 'Partial Refund Invoice Sent - ' : ($isRefund ? 'Refund Invoice Sent - ' : 'Invoice Sent - ')) . $orderLabel;
+
         $body = sprintf(
             "Hello,\n\nYour %s for order %s has been sent to %s.\n\nIf you have any questions, please don't hesitate to reply to this email.\n\nBest regards,\nSupport Team",
             $invoiceType,
