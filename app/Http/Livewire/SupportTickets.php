@@ -1299,7 +1299,7 @@ class SupportTickets extends Component
 
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
 
-            $this->maybeSendBackmarketPartialRefundAttachment($thread, $order, $payload, $isPartial);
+            $this->maybeSendBackmarketInvoiceAttachment($thread, $order, $payload, $isRefund, $isPartial);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -1587,9 +1587,9 @@ class SupportTickets extends Component
         }
     }
 
-    protected function maybeSendBackmarketPartialRefundAttachment(SupportThread $thread, Order_model $order, array $payload, bool $isPartial): void
+    protected function maybeSendBackmarketInvoiceAttachment(SupportThread $thread, Order_model $order, array $payload, bool $isRefund, bool $isPartial): void
     {
-        if (! $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial)) {
+        if (! $this->shouldSendBackmarketInvoiceAttachment($thread, $isRefund, $isPartial)) {
             return;
         }
 
@@ -1605,10 +1605,14 @@ class SupportTickets extends Component
         }
 
         $orderLabel = $order->reference_id ?? $order->reference ?? ('#' . $order->id);
-        $message = 'Partial refund invoice attached for order ' . $orderLabel . '.';
+        $message = $isPartial
+            ? 'Partial refund invoice attached for order ' . $orderLabel . '.'
+            : ($isRefund
+                ? 'Refund invoice attached for order ' . $orderLabel . '.'
+                : 'Invoice attached for order ' . $orderLabel . '.');
 
         try {
-            $pdf = $this->buildPartialRefundPdf($payload);
+            $pdf = $this->buildInvoicePdf($payload, $isRefund, $isPartial);
 
             $this->careAttachmentRequest = [
                 'folder_id' => $folderId,
@@ -1621,7 +1625,7 @@ class SupportTickets extends Component
 
             $this->careAttachmentResponse = $response;
 
-            Log::info('Back Market partial refund invoice posted', [
+            Log::info('Back Market invoice posted', [
                 'thread_id' => $thread->id,
                 'order_id' => $order->id,
                 'folder_id' => $folderId,
@@ -1642,29 +1646,32 @@ class SupportTickets extends Component
         }
     }
 
-    protected function shouldSendBackmarketInvoiceAttachment(SupportThread $thread, bool $isPartial): bool
+    protected function shouldSendBackmarketInvoiceAttachment(SupportThread $thread, bool $isRefund, bool $isPartial): bool
     {
-        // Always send partial refund invoices with Care attachments for Back Market threads.
-        return $isPartial && $thread->marketplace_source === 'backmarket_care';
+        // Always send Back Market Care invoices (order, refund, or partial refund) via Care API attachment.
+        return $thread->marketplace_source === 'backmarket_care';
     }
 
-    protected function buildPartialRefundPdf(array $payload): array
+    protected function buildInvoicePdf(array $payload, bool $isRefund, bool $isPartial): array
     {
         $pdf = new TCPDF();
         $pdf->SetCreator(PDF_CREATOR);
-        // Reuse the original refund invoice template for partials to keep styling consistent.
-        $pdf->SetTitle('Refund Invoice');
+
+        $isRefundLike = $isRefund || $isPartial;
+        $pdf->SetTitle($isRefundLike ? 'Refund Invoice' : 'Invoice');
         $pdf->AddPage();
         $pdf->SetFont('dejavusans', '', 12);
 
-        $html = view('export.refund_invoice', $payload)->render();
+        $view = $isRefundLike ? 'export.refund_invoice' : 'export.invoice';
+        $html = view($view, $payload)->render();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdfOutput = $pdf->Output('refund-invoice.pdf', 'S');
+        $fileName = $isRefundLike ? 'refund-invoice.pdf' : 'invoice.pdf';
+        $pdfOutput = $pdf->Output($fileName, 'S');
 
         return [
             'data' => $pdfOutput,
-            'name' => 'refund-invoice.pdf',
+            'name' => $fileName,
             'mime' => 'application/pdf',
         ];
     }
