@@ -462,6 +462,13 @@
                                 </div>
                             </div>
                         </div>
+
+                        @if (!empty($careFolderDetails['raw']))
+                            <details class="mt-3">
+                                <summary class="btn btn-sm btn-outline-secondary">🔍 View Raw API Response</summary>
+                                <pre class="bg-light border rounded p-3 mt-2 small" style="max-height: 400px; overflow: auto;"><code>{{ json_encode($careFolderDetails['raw'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                            </details>
+                        @endif
                     @endif
 
                     @if (! empty($careFolderMessages))
