@@ -33,6 +33,14 @@ return new class extends Migration
             if (!Schema::hasColumn('marketplace', 'api_url')) {
                 $table->string('api_url')->nullable()->after('api_secret');
             }
+            
+            // Add timestamps if they don't exist (add at the end)
+            if (!Schema::hasColumn('marketplace', 'created_at')) {
+                $table->timestamp('created_at')->nullable();
+            }
+            if (!Schema::hasColumn('marketplace', 'updated_at')) {
+                $table->timestamp('updated_at')->nullable();
+            }
         });
     }
 
