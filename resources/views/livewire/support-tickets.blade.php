@@ -233,42 +233,27 @@
                     <div class="alert alert-success mt-3">{{ $ticketActionStatus }}</div>
                 @endif
 
-                <div class="row g-3 mt-3">
+                <div class="row g-2 mt-2">
                     <div class="col-lg-4 order-lg-2 order-1">
-                        <div class="card mb-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-start mb-2">
+                        <div class="card mb-2">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-start mb-1">
                                     <div>
-                                        <div class="text-muted small">Marketplace</div>
-                                        <div class="fw-semibold">{{ optional($selectedThread->marketplace)->name ?? $selectedThread->marketplace_source ?? 'n/a' }}</div>
+                                        <div class="text-muted small">{{ optional($selectedThread->marketplace)->name ?? $selectedThread->marketplace_source ?? 'n/a' }}</div>
+                                        <div class="fw-semibold small">{{ optional($selectedThread->assignee)->first_name ? trim($selectedThread->assignee->first_name . ' ' . $selectedThread->assignee->last_name) : 'Unassigned' }}</div>
                                     </div>
                                     <div class="text-end">
-                                        <span class="badge bg-dark text-uppercase">{{ $selectedThread->status ?? 'open' }}</span>
-                                        <span class="badge bg-primary text-uppercase">{{ $selectedThread->priority ?? 'normal' }}</span>
+                                        <span class="badge bg-dark text-uppercase" style="font-size: 0.65rem;">{{ $selectedThread->status ?? 'open' }}</span>
                                     </div>
                                 </div>
-                                <div class="support-meta-grid mb-2">
+                                <div class="support-meta-grid">
                                     <div class="meta-pill">
-                                        <div class="text-muted small">Assigned</div>
-                                        <div class="fw-semibold">{{ optional($selectedThread->assignee)->first_name ? trim($selectedThread->assignee->first_name . ' ' . $selectedThread->assignee->last_name) : 'Unassigned' }}</div>
-                                    </div>
-                                    <div class="meta-pill">
-                                        <div class="text-muted small">Last activity</div>
-                                        <div class="fw-semibold">{{ optional($selectedThread->last_external_activity_at)->format('d M Y H:i') ?? 'n/a' }}</div>
+                                        <div class="text-muted small">Activity</div>
+                                        <div class="fw-semibold">{{ optional($selectedThread->last_external_activity_at)->format('d/m H:i') ?? 'n/a' }}</div>
                                     </div>
                                     <div class="meta-pill">
                                         <div class="text-muted small">Messages</div>
                                         <div class="fw-semibold">{{ $selectedThread->messages_count ?? $selectedThread->messages?->count() ?? 0 }}</div>
-                                    </div>
-                                    <div class="meta-pill">
-                                        <div class="text-muted small">Order link</div>
-                                        @if ($selectedThread->order_id)
-                                            <a href="{{ url('order/detail/' . $selectedThread->order_id) }}" class="fw-semibold" target="_blank">Open order</a>
-                                        @elseif ($selectedThread->order_reference)
-                                            <a href="{{ url('order') . '?order_id=' . $selectedThread->order_reference }}" class="fw-semibold" target="_blank">Search order</a>
-                                        @else
-                                            <div class="fw-semibold">n/a</div>
-                                        @endif
                                     </div>
                                     @if ($selectedThread->marketplace_source === 'backmarket_care')
                                         <div class="meta-pill">
@@ -276,18 +261,14 @@
                                             <div class="fw-semibold">{{ $selectedThread->external_thread_id ?? 'n/a' }}</div>
                                         </div>
                                     @endif
-                                    @if ($selectedThread->portal_url)
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Portal</div>
-                                            <a href="{{ $selectedThread->portal_url }}" class="fw-semibold" target="_blank" rel="noopener">Open</a>
-                                        </div>
-                                    @endif
                                 </div>
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                    @foreach ($selectedThread->tags as $tag)
-                                        <span class="tag-chip" style="color: {{ $tag->color ?? '#2563eb' }}">{{ $tag->name }}</span>
-                                    @endforeach
-                                </div>
+                                @if ($selectedThread->tags->count() > 0)
+                                    <div class="d-flex flex-wrap gap-1 mt-1">
+                                        @foreach ($selectedThread->tags as $tag)
+                                            <span class="tag-chip" style="color: {{ $tag->color ?? '#2563eb' }}; font-size: 0.65rem;">{{ $tag->name }}</span>
+                                        @endforeach
+                                    </div>
+                                @endif
                             </div>
                         </div>
 
@@ -302,77 +283,52 @@
                                 ?? ($order->reference_id ?? $order->reference ?? null);
                         @endphp
 
-                        <div class="support-sidebar-section">
-                            <details class="support-order-panel mb-0" open>
-                                <summary class="d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
-                                    <div>
-                                        <h6 class="mb-0">Order information</h6>
-                                        <small class="text-muted">{{ $order ? 'Order #' . $order->id : 'No order linked' }}</small>
-                                    </div>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="transition: transform 0.2s;">
-                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                    </svg>
-                                </summary>
-                                <div class="mt-2">
-                                    <div class="d-flex flex-wrap gap-2 mb-2">
-                                        @if ($marketplaceOrderUrl)
-                                            <a href="{{ $marketplaceOrderUrl }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
-                                                View in marketplace
-                                            </a>
-                                        @endif
-                                        <button type="button" class="btn btn-outline-danger btn-sm" wire:click="cancelMarketplaceOrder" wire:loading.attr="disabled" wire:target="cancelMarketplaceOrder" @if (! $canCancelOrder) disabled @endif>
-                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="cancelMarketplaceOrder"></span>
-                                            Cancel order
-                                        </button>
-                                    </div>
-
-                                @if ($order)
-                                    @php
-                                        $customerEmail = $customer?->email;
-                                        $canSendInvoice = $customerEmail !== null && $customerEmail !== '';
-                                    @endphp
-                                    <div class="d-flex flex-wrap gap-1">
-                                        <button type="button" class="btn btn-outline-success btn-sm" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>
-                                            Invoice
-                                        </button>
-                                        <button type="button" class="btn btn-outline-info btn-sm" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>
-                                            Refund
-                                        </button>
-                                        <button type="button" class="btn btn-outline-warning btn-sm" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>
-                                            Partial
-                                        </button>
-                                    </div>
-                                    @if (! $canSendInvoice)
-                                        <small class="text-danger d-block">No customer email.</small>
+                        <div class="support-order-panel mb-2">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <h6 class="mb-0 small">Order {{ $order ? '#' . $order->id : 'N/A' }}</h6>
+                                <div class="d-flex gap-1">
+                                    @if ($marketplaceOrderUrl)
+                                        <a href="{{ $marketplaceOrderUrl }}" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" target="_blank" rel="noopener">Marketplace</a>
                                     @endif
-                                @endif
+                                    @if ($selectedThread->order_id)
+                                        <a href="{{ url('order/detail/' . $selectedThread->order_id) }}" class="btn btn-outline-primary btn-sm py-0 px-1" style="font-size: 0.7rem;" target="_blank">Internal</a>
+                                    @endif
+                                </div>
+                            </div>
 
-                                @if ($orderActionError)
-                                    <div class="alert alert-danger py-1 px-2 mb-0 small">{{ $orderActionError }}</div>
-                                @endif
-                                @if ($orderActionStatus)
-                                    <div class="alert alert-success py-1 px-2 mb-0 small">{{ $orderActionStatus }}</div>
-                                @endif
-                                @if ($invoiceActionError)
-                                    <div class="alert alert-danger py-1 px-2 mb-0 small">{{ $invoiceActionError }}</div>
-                                @endif
-                                @if ($invoiceActionStatus)
-                                    <div class="alert alert-success py-1 px-2 mb-0 small">{{ $invoiceActionStatus }}</div>
-                                @endif
+                            @if ($order)
+                                @php
+                                    $customerEmail = $customer?->email;
+                                    $canSendInvoice = $customerEmail !== null && $customerEmail !== '';
+                                @endphp
+                                <div class="d-flex flex-wrap gap-1 mb-1">
+                                    <button type="button" class="btn btn-outline-danger btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="cancelMarketplaceOrder" wire:loading.attr="disabled" wire:target="cancelMarketplaceOrder" @if (! $canCancelOrder) disabled @endif>Cancel</button>
+                                    <button type="button" class="btn btn-outline-success btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>Invoice</button>
+                                    <button type="button" class="btn btn-outline-info btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>Refund</button>
+                                    <button type="button" class="btn btn-outline-warning btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>Partial</button>
+                                </div>
+                            @endif
 
-                                @if ($orderActionPayload)
-                                    @php
-                                        $payloadJson = is_string($orderActionPayload)
-                                            ? $orderActionPayload
-                                            : json_encode($orderActionPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                                    @endphp
-                                    <details class="mt-2">
-                                        <summary class="btn btn-sm btn-outline-secondary">API response</summary>
-                                        <pre class="bg-dark text-light p-2 rounded small mt-1" style="max-height: 150px; overflow: auto;">{{ $payloadJson }}</pre>
-                                    </details>
-                                @endif
+                            @if ($orderActionError || $invoiceActionError)
+                                <div class="alert alert-danger py-0 px-1 mb-1" style="font-size: 0.75rem;">{{ $orderActionError ?: $invoiceActionError }}</div>
+                            @endif
+                            @if ($orderActionStatus || $invoiceActionStatus)
+                                <div class="alert alert-success py-0 px-1 mb-1" style="font-size: 0.75rem;">{{ $orderActionStatus ?: $invoiceActionStatus }}</div>
+                            @endif
 
-                                <div class="support-order-meta mt-2">
+                            @if ($orderActionPayload)
+                                @php
+                                    $payloadJson = is_string($orderActionPayload)
+                                        ? $orderActionPayload
+                                        : json_encode($orderActionPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                                @endphp
+                                <details class="mt-1">
+                                    <summary class="btn btn-sm btn-outline-secondary py-0" style="font-size: 0.7rem;">API response</summary>
+                                    <pre class="bg-dark text-light p-1 rounded small mt-1" style="max-height: 100px; overflow: auto; font-size: 0.65rem;">{{ $payloadJson }}</pre>
+                                </details>
+                            @endif
+
+                            <div class="support-order-meta">
                                 <div class="meta-pill">
                                     <div class="text-muted small">Internal order</div>
                                     <div class="fw-semibold">{{ $order ? '#' . $order->id : 'n/a' }}</div>
@@ -399,48 +355,27 @@
                                 </div>
                             </div>
 
-                            @if ($order)
-                                @if ($orderItems->count() > 0)
-                                    <div class="table-responsive mt-3">
-                                        <table class="table table-sm align-middle mb-0">
-                                            <thead class="table-light">
-                                                <tr>
-                                                    <th scope="col">Line</th>
-                                                    <th scope="col">SKU / Item</th>
-                                                    <th scope="col" class="text-center">Qty</th>
-                                                    <th scope="col" class="text-end">Price</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                @foreach ($orderItems as $item)
-                                                    <tr>
-                                                        <td>{{ $item->reference_id ?? ('#' . $item->id) }}</td>
-                                                        <td>
-                                                            <div class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</div>
-                                                            <small class="text-muted">{{ $item->status ?? 'pending' }}</small>
-                                                        </td>
-                                                        <td class="text-center">{{ $item->quantity ?? 1 }}</td>
-                                                        <td class="text-end">
-                                                            @if ($item->price !== null)
-                                                                {{ number_format((float) $item->price, 2) }} {{ $item->currency ?? $orderCurrency ?? '' }}
-                                                            @else
-                                                                n/a
-                                                            @endif
-                                                        </td>
-                                                    </tr>
-                                                @endforeach
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                @else
-                                    <div class="text-muted small mt-3">No order items captured for this order.</div>
-                                @endif
-                                @else
-                                    <div class="text-muted small">No internal order is linked to this ticket yet.</div>
-                                @endif
-                            </div>
-                        </details>
-                    </div>
+                            @if ($order && $orderItems->count() > 0)
+                                <div class="mt-1">
+                                    <div class="small fw-semibold mb-1">Items ({{ $orderItems->count() }})</div>
+                                    @foreach ($orderItems as $item)
+                                        <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 0.75rem;">
+                                            <div class="text-truncate" style="max-width: 60%;">
+                                                <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
+                                                <span class="text-muted ms-1">({{ $item->quantity ?? 1 }})</span>
+                                            </div>
+                                            <div class="text-end">
+                                                @if ($item->price !== null)
+                                                    {{ number_format((float) $item->price, 2) }} {{ $item->currency ?? $orderCurrency ?? '' }}
+                                                @else
+                                                    n/a
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            @endif
+                        </div>
 
                         @if ($selectedThread && $selectedThread->marketplace_source === 'backmarket_care')
                             <div class="support-sidebar-section">
@@ -472,16 +407,8 @@
                                         </summary>
                                         <div class="care-details-collapsible mt-2">a">
                                         <div class="meta-pill">
-                                            <div class="text-muted small">Care Folder ID</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['id'] ?? 'n/a' }}</div>
-                                        </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Order ID</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
-                                        </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Orderline ID</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['orderline_id'] ?? 'n/a' }}</div>
+                                            <div class="text-muted small">State</div>
+                                            <div class="fw-semibold">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</div>
                                         </div>
                                         <div class="meta-pill">
                                             <div class="text-muted small">Topic</div>
@@ -492,123 +419,27 @@
                                             <div class="fw-semibold">{{ $careFolderDetails['reason_code'] ?? 'n/a' }}</div>
                                         </div>
                                         <div class="meta-pill">
-                                            <div class="text-muted small">Type</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['type'] ?? 'n/a' }}</div>
-                                        </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Source</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['source'] ?? 'n/a' }}</div>
-                                        </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Channel</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['channel'] ?? 'n/a' }}</div>
-                                        </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Buyer</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['buyer_name'] ?? 'Unknown' }}</div>
-                                            <small class="text-muted">{{ $careFolderDetails['buyer_email'] ?? 'n/a' }}</small>
-                                        </div>
-                                        @if (!empty($careFolderDetails['seller_name']))
-                                            <div class="meta-pill">
-                                                <div class="text-muted small">Seller</div>
-                                                <div class="fw-semibold">{{ $careFolderDetails['seller_name'] }}</div>
-                                            </div>
-                                        @endif
-                                        @if (!empty($careFolderDetails['tracking_number']))
-                                            <div class="meta-pill">
-                                                <div class="text-muted small">Tracking</div>
-                                                <div class="fw-semibold">{{ $careFolderDetails['tracking_number'] }}</div>
-                                            </div>
-                                        @endif
-                                        @if (!empty($careFolderDetails['messages_count']))
-                                            <div class="meta-pill">
-                                                <div class="text-muted small">Messages</div>
-                                                <div class="fw-semibold">{{ $careFolderDetails['messages_count'] }}</div>
-                                            </div>
-                                        @endif
-                                        <div class="meta-pill">
                                             <div class="text-muted small">Created</div>
                                             <div class="fw-semibold">{{ $careFolderDetails['created_at_human'] ?? ($careFolderDetails['created_at'] ?? 'n/a') }}</div>
                                         </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Last message</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['last_message_at_human'] ?? ($careFolderDetails['last_message_at'] ?? 'n/a') }}</div>
-                                        </div>
-                                                <div class="meta-pill">
-                                                    <div class="text-muted small">Last update</div>
-                                                    <div class="fw-semibold">{{ $careFolderDetails['last_modification_at_human'] ?? ($careFolderDetails['last_modification_at'] ?? 'n/a') }}</div>
-                                                </div>
-                                            </div>
-
-                                            @if (!empty($careFolderDetails['portal_url']))
-                                                <div class="mt-2">
-                                                    <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary w-100" target="_blank" rel="noopener">
-                                                        Open in Back Market Portal
-                                                    </a>
-                                                </div>
-                                            @endif
-
-                                            @if ($careFolderApiRequest || $careFolderApiResponse)
-                                                <details class="mt-2">
-                                                    <summary class="btn btn-sm btn-outline-info">📡 API Request & Response</summary>
-                                                    <div class="bg-light border rounded p-2 mt-1" style="max-height: 200px; overflow: auto;">
-                                                        @if ($careFolderApiRequest)
-                                                            <h6 class="text-primary mb-1 small">Request</h6>
-                                                            <pre class="small mb-2" style="font-size: 0.7rem;"><code>{{ json_encode($careFolderApiRequest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                                                        @endif
-
-                                                        @if ($careFolderApiResponse)
-                                                            <h6 class="text-success mb-1 small">Response</h6>
-                                                            <pre class="small mb-0" style="font-size: 0.7rem;"><code>{{ json_encode($careFolderApiResponse, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                                                        @endif
-                                                    </div>
-                                                </details>
-                                            @endif
-
-                                            @if (!empty($careFolderDetails['raw']))
-                                                <details class="mt-2">
-                                                    <summary class="btn btn-sm btn-outline-secondary">🔍 Raw Response</summary>
-                                                    <pre class="bg-light border rounded p-2 mt-1 small" style="max-height: 200px; overflow: auto; font-size: 0.7rem;"><code>{{ json_encode($careFolderDetails['raw'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                                                </details>
-                                            @endif
-                                        </div>
-                                    </details>
-                                @endif                                @if (! empty($careFolderMessages))
-                                    <div class="support-sidebar-section">
-                                        <details class="support-reply-panel mb-0" open>
-                                            <summary class="d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
-                                                <div>
-                                                    <h6 class="mb-0">Care conversation</h6>
-                                                    <small class="text-muted">{{ count($careFolderMessages) }} messages</small>
-                                                </div>
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="transition: transform 0.2s;">
-                                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
-                                                </svg>
-                                            </summary>
-                                            <div class="care-details-collapsible mt-2">
-                                                @foreach ($careFolderMessages as $careMessage)
-                                                    <div class="border rounded p-2 mb-2 {{ $careMessage['direction'] }}">
-                                                        <div class="d-flex justify-content-between align-items-start mb-1">
-                                                            <div>
-                                                                <div class="fw-semibold small">{{ $careMessage['author'] ?? 'Unknown' }}</div>
-                                                                <small class="text-muted" style="font-size: 0.7rem;">{{ $careMessage['sent_at_human'] ?? 'n/a' }}</small>
-                                                            </div>
-                                                            <span class="badge bg-light text-dark text-uppercase" style="font-size: 0.65rem;">{{ $careMessage['direction'] }}</span>
-                                                        </div>
-                                                        <div class="small">
-                                                            @if (! empty($careMessage['body_html']))
-                                                                {!! Str::limit(strip_tags($careMessage['body_html']), 200) !!}
-                                                            @else
-                                                                {{ Str::limit($careMessage['body'] ?? '', 200) }}
-                                                            @endif
-                                                        </div>
-                                                    </div>
-                                                @endforeach
-                                            </div>
-                                        </details>
                                     </div>
-                                @elseif ($careFolderDetails && ! $careFolderError)
-                                    <small class="text-muted d-block">No live messages were returned for this Care folder.</small>
+
+                                    @if (!empty($careFolderDetails['portal_url']))
+                                        <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary w-100 mt-1 py-0" style="font-size: 0.7rem;" target="_blank" rel="noopener">Back Market Portal</a>
+                                    @endif
+                                @endif                                @if (! empty($careFolderMessages))
+                                    <div class="mt-1">
+                                        <div class="small fw-semibold mb-1">Messages ({{ count($careFolderMessages) }})</div>
+                                        @foreach (array_slice($careFolderMessages, 0, 4) as $careMessage)
+                                            <div class="border-bottom py-1" style="font-size: 0.7rem;">
+                                                <div class="d-flex justify-content-between">
+                                                    <span class="fw-semibold">{{ $careMessage['author'] ?? 'Unknown' }}</span>
+                                                    <span class="text-muted">{{ $careMessage['sent_at_human'] ?? 'n/a' }}</span>
+                                                </div>
+                                                <div class="text-muted">{{ Str::limit(strip_tags($careMessage['body_html'] ?? $careMessage['body'] ?? ''), 100) }}</div>
+                                            </div>
+                                        @endforeach
+                                    </div>
                                 @endif
                             </div>
                         @endif
@@ -660,36 +491,30 @@
                             </div>
                         </div>
 
-                        <div class="card mt-3">
-                            <div class="card-body">
-                                <div class="d-flex justify-content-between align-items-center mb-2">
-                                    <div>
-                                        <h6 class="mb-0">Free AI helper</h6>
-                                        <small class="text-muted">Summarizes recent messages and drafts a reply locally.</small>
-                                    </div>
-                                    <button type="button" class="btn btn-sm btn-outline-primary" wire:click="generateAiAssist" wire:loading.attr="disabled" wire:target="generateAiAssist">
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="generateAiAssist"></span>
-                                        Generate summary & draft
+                        <div class="card mt-2">
+                            <div class="card-body p-2">
+                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                    <h6 class="mb-0 small">AI Helper</h6>
+                                    <button type="button" class="btn btn-sm btn-outline-primary py-0 px-1" style="font-size: 0.7rem;" wire:click="generateAiAssist" wire:loading.attr="disabled" wire:target="generateAiAssist">
+                                        <span wire:loading.remove wire:target="generateAiAssist">Generate</span>
+                                        <span wire:loading wire:target="generateAiAssist">...</span>
                                     </button>
                                 </div>
                                 @if ($aiError)
-                                    <div class="alert alert-danger py-2 px-3">{{ $aiError }}</div>
+                                    <div class="alert alert-danger py-0 px-1 mb-1" style="font-size: 0.7rem;">{{ $aiError }}</div>
                                 @endif
                                 @if ($aiSummary)
-                                    <div class="mb-2">
+                                    <div class="mb-1" style="font-size: 0.75rem;">
                                         <div class="text-muted small">Summary</div>
-                                        <div class="fw-semibold">{{ $aiSummary }}</div>
+                                        <div>{{ $aiSummary }}</div>
                                     </div>
                                 @endif
                                 @if ($aiDraft)
-                                    <div class="mb-2">
-                                        <div class="text-muted small">Draft reply</div>
-                                        <pre class="bg-light p-2 border rounded small" style="white-space: pre-wrap;">{{ $aiDraft }}</pre>
+                                    <div class="mb-1" style="font-size: 0.75rem;">
+                                        <div class="text-muted small">Draft</div>
+                                        <pre class="bg-light p-1 border rounded" style="white-space: pre-wrap; font-size: 0.7rem;">{{ Str::limit($aiDraft, 250) }}</pre>
                                     </div>
-                                    <button type="button" class="btn btn-sm btn-secondary" wire:click="useAiDraft">Use this draft</button>
-                                @endif
-                                @if (! $aiSummary && ! $aiDraft)
-                                    <small class="text-muted">No AI summary yet. Click the button to generate.</small>
+                                    <button type="button" class="btn btn-sm btn-secondary py-0 px-1" style="font-size: 0.7rem;" wire:click="useAiDraft">Use draft</button>
                                 @endif
                             </div>
                         </div>
