@@ -191,11 +191,11 @@ class GoogleController extends Controller
         try {
             $response = $service->users_messages->send('me', $message);
 
-            Log::info('Send Email Request Body', [
-                'recipientEmail' => $recipientEmail,
-                'subject' => $subject,
-            ]);
-            Log::info('Send Email Response', ['response' => $response]);
+            // Log::info('Send Email Request Body', [
+            //     'recipientEmail' => $recipientEmail,
+            //     'subject' => $subject,
+            // ]);
+            // Log::info('Send Email Response', ['response' => $response]);
         } catch (Exception $e) {
             Log::error('Failed to send email', ['error' => $e->getMessage()]);
         }
