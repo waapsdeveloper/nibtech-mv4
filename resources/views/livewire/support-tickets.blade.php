@@ -26,65 +26,19 @@
         </div>
 
         <div class="bg-light border rounded p-3 mb-3">
-            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-start">
+            <div class="d-flex flex-wrap justify-content-between gap-3 align-items-center">
                 <div>
-                    <div class="fw-semibold text-uppercase small text-muted">Manual sync scope</div>
-                    <p class="mb-0 text-muted">Pick which support channels to refresh and optionally add Back Market Care filters before running the sync.</p>
+                    <div class="fw-semibold">Sync Channels</div>
+                    <p class="mb-0 text-muted small">Select which support channels to refresh</p>
                 </div>
-                <div class="d-flex flex-wrap gap-4">
+                <div class="d-flex flex-wrap gap-3 align-items-center">
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="syncBackmarket" wire:model="syncBackmarket">
-                        <label class="form-check-label" for="syncBackmarket">
-                            Back Market Care
-                            <small class="d-block text-muted">Care API with filters</small>
-                        </label>
+                        <label class="form-check-label" for="syncBackmarket">Back Market Care</label>
                     </div>
                     <div class="form-check form-switch">
                         <input class="form-check-input" type="checkbox" id="syncRefurbed" wire:model="syncRefurbed">
-                        <label class="form-check-label" for="syncRefurbed">
-                            Refurbed Mailbox
-                            <small class="d-block text-muted">orders@refurbed sync</small>
-                        </label>
-                    </div>
-                </div>
-            </div>
-
-            <div class="mt-3">
-                <div class="fw-semibold small text-uppercase text-muted mb-2">Back Market Care filters</div>
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">State</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="open / waiting_seller" wire:model.lazy="careState" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Priority</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="low / normal / high" wire:model.lazy="carePriority" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Topic</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="delivery / quality" wire:model.lazy="careTopic" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Order line</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="BM orderline" wire:model.lazy="careOrderline" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Order ID</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="Back Market order id" wire:model.lazy="careOrderId" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label small text-muted">Cursor / last ID</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="Use to resume pagination" wire:model.lazy="careLastId" @if (! $syncBackmarket) disabled @endif>
-                    </div>
-                    <div class="col-md-3">
-                        <label class="form-label small text-muted">Page size</label>
-                        <input type="number" min="1" max="200" class="form-control form-control-sm" wire:model.lazy="carePageSize" @if (! $syncBackmarket) disabled @endif>
-                        <small class="text-muted">Max 200 per pull</small>
-                    </div>
-                    <div class="col-md-9">
-                        <label class="form-label small text-muted">Extra query string</label>
-                        <input type="text" class="form-control form-control-sm" placeholder="state=open&priority=high" wire:model.lazy="careExtraQuery" @if (! $syncBackmarket) disabled @endif>
-                        <small class="text-muted">Sent as-is to the Care API. Leave blank for defaults.</small>
+                        <label class="form-check-label" for="syncRefurbed">Refurbed Mailbox</label>
                     </div>
                 </div>
             </div>
@@ -105,17 +59,8 @@
             <div>
                 <label class="form-label fw-semibold">Status</label>
                 <select class="form-select" wire:model="status">
-                    <option value="">All statuses</option>
+                    <option value="">All</option>
                     @foreach ($statusOptions as $option)
-                        <option value="{{ $option }}">{{ ucfirst($option) }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
-                <label class="form-label fw-semibold">Priority</label>
-                <select class="form-select" wire:model="priority">
-                    <option value="">All priorities</option>
-                    @foreach ($priorityOptions as $option)
                         <option value="{{ $option }}">{{ ucfirst($option) }}</option>
                     @endforeach
                 </select>
@@ -130,51 +75,21 @@
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">Tag</label>
-                <select class="form-select" wire:model="tag">
-                    <option value="">Any tag</option>
-                    @foreach ($tagOptions as $tagOption)
-                        <option value="{{ $tagOption->id }}">{{ $tagOption->name }}</option>
-                    @endforeach
-                </select>
-            </div>
-            <div>
                 <label class="form-label fw-semibold">Assignee</label>
                 <select class="form-select" wire:model="assigned">
-                    <option value="">Unassigned / anyone</option>
+                    <option value="">All</option>
                     @foreach ($assigneeOptions as $admin)
                         <option value="{{ $admin->id }}">{{ trim($admin->first_name . ' ' . $admin->last_name) }}</option>
                     @endforeach
                 </select>
             </div>
             <div>
-                <label class="form-label fw-semibold">Items / page</label>
+                <label class="form-label fw-semibold">Per page</label>
                 <select class="form-select" wire:model="perPage">
-                    @foreach ([10, 25, 50, 75, 100] as $pageSize)
+                    @foreach ([10, 25, 50, 100] as $pageSize)
                         <option value="{{ $pageSize }}">{{ $pageSize }}</option>
                     @endforeach
                 </select>
-            </div>
-            <div>
-                <label class="form-label fw-semibold">Sort</label>
-                <div class="d-flex gap-2">
-                    <select class="form-select" wire:model="sortField">
-                        <option value="last_external_activity_at">Last activity</option>
-                        <option value="priority">Priority</option>
-                        <option value="status">Status</option>
-                        <option value="created_at">Created</option>
-                    </select>
-                    <select class="form-select" wire:model="sortDirection">
-                        <option value="desc">Desc</option>
-                        <option value="asc">Asc</option>
-                    </select>
-                </div>
-            </div>
-            <div class="d-flex align-items-end">
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="changeOnly" wire:model="changeOnly">
-                    <label class="form-check-label" for="changeOnly">Change-of-mind only</label>
-                </div>
             </div>
         </div>
     </div>
@@ -450,6 +365,19 @@
                 </div>
 
                 @if ($selectedThread && $selectedThread->marketplace_source === 'backmarket_care')
+                    <div class="mt-3">
+                        <button type="button" class="btn btn-outline-primary btn-sm" wire:click="fetchCareFolder" wire:loading.attr="disabled">
+                            <span wire:loading.remove wire:target="fetchCareFolder">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+                                Fetch Back Market Care Folder
+                            </span>
+                            <span wire:loading wire:target="fetchCareFolder">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                                Fetching...
+                            </span>
+                        </button>
+                    </div>
+
                     @if ($careFolderError)
                         <div class="alert alert-warning mt-3">{{ $careFolderError }}</div>
                     @endif
