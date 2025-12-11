@@ -16,12 +16,12 @@
     $minPriceValue = '';
     $priceValue = '';
     
-    // Build buybox flags
+    // Build buybox flags - show flags for listings that do NOT have buybox
     $buyboxFlags = '';
-    $buyboxListingsForMarketplace = $marketplaceListings->where('buybox', 1);
+    $nonBuyboxListingsForMarketplace = $marketplaceListings->where('buybox', '!=', 1);
     
-    if ($buyboxListingsForMarketplace->count() > 0) {
-        foreach($buyboxListingsForMarketplace as $listing) {
+    if ($nonBuyboxListingsForMarketplace->count() > 0) {
+        foreach($nonBuyboxListingsForMarketplace as $listing) {
             $country = $listing->country_id ?? null;
             if ($country && is_object($country)) {
                 $countryCode = $country->code ?? '';
@@ -40,46 +40,47 @@
     }
     
     if (empty($buyboxFlags)) {
-        $buyboxFlags = '<span class="text-muted small">No buybox</span>';
+        $buyboxFlags = '<span class="text-muted small">All have buybox</span>';
     }
     
     // Get order summary from controller (calculated per marketplace)
-    $orderSummary = $marketplaceData['order_summary'] ?? '7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
+    $orderSummary = $marketplaceData['order_summary'] ?? 'Today: €0.00 (0) - Yesterday: €0.00 (0) - 7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
     
     // Get current listed stock from marketplace_stock table for this specific marketplace
     $marketplaceStock = \App\Models\MarketplaceStockModel::where('variation_id', $variationId)
         ->where('marketplace_id', $marketplaceIdInt)
         ->first();
-    $currentStock = $marketplaceStock->listed_stock ?? 0;
+    
+    // Get stock value - if record exists use it, otherwise 0
+    $currentStock = $marketplaceStock ? ($marketplaceStock->listed_stock ?? 0) : 0;
+    
+    // Debug: Uncomment the line below to see what's being queried (remove after debugging)
+    // {{-- Debug: variation_id={{ $variationId }}, marketplace_id={{ $marketplaceIdInt }}, found={{ $marketplaceStock ? 'yes' : 'no' }}, stock={{ $currentStock }} --}}
+    
+    // Calculate state for this marketplace (using variation state)
+    $state = 'Unknown';
+    switch($variation->state ?? null) {
+        case 0: $state = 'Missing price or comment'; break;
+        case 1: $state = 'Pending validation'; break;
+        case 2: $state = 'Online'; break;
+        case 3: $state = 'Offline'; break;
+        case 4: $state = 'Deactivated'; break;
+    }
 @endphp
 
 <div class="marketplace-bar-wrapper border-bottom">
     <div class="p-2">
         <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-bold">
+            <div class="fw-bold d-flex align-items-center gap-2">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
+                <span class="text-muted small">(<span id="stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $currentStock }}</span>)</span>
+                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
+                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
+                    {{ $state }}
+                </span>
             </div>
             <div class="d-flex align-items-center gap-2">
-
-                
-                <div>{!! $buyboxFlags !!}</div>
-
-                <!-- Marketplace Stock Editor Component -->
-                @include('v2.listing.partials.marketplace-stock-editor', [
-                    'variationId' => $variationId,
-                    'marketplaceIdInt' => $marketplaceIdInt,
-                    'currentStock' => $currentStock,
-                    'process_id' => $process_id ?? null
-                ])
-
-                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </div>
-        </div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-start gap-2">
                 <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}">
                     @csrf
                     <div class="form-floating" style="width: 75px;">
@@ -96,7 +97,7 @@
                     @csrf
                     <div class="form-floating" style="width: 75px;">
                         <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="{{ $minPriceValue }}" placeholder="Min Price" style="height: 31px;">
-                        <label for="" class="small">Min Price</label>
+                        <label for="" class="small">Min</label>
                     </div>
                     <div class="form-floating" style="width: 75px;">
                         <input type="number" class="form-control form-control-sm" id="all_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_price" step="0.01" value="{{ $priceValue }}" placeholder="Price" style="height: 31px;">
@@ -104,12 +105,20 @@
                     </div>
                     <button type="button" class="btn btn-sm btn-success" style="height: 31px; line-height: 1;">Push</button>
                 </form>
+                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
+                <div>{!! $buyboxFlags !!}</div>
             </div>
             <div class="small fw-bold text-end">{{ $orderSummary }}</div>
         </div>
     </div>
     <div class="marketplace-toggle-content collapse" id="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}">
-        <div class="p-3 bg-light border-top marketplace-tables-container" data-loaded="false">
+        <div class="border-top marketplace-tables-container" data-loaded="false">
             <div class="text-center p-4">
                 <div class="spinner-border text-primary" role="status">
                     <span class="visually-hidden">Loading...</span>

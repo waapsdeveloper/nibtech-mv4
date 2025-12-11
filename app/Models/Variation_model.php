@@ -173,12 +173,25 @@ class Variation_model extends Model
     public function update_qty($bm)
     {
         $var = $bm->getOneListing($this->reference_id);
+        
+        // Check if response is valid and has expected properties, use current values as fallback
+        if ($var && is_object($var)) {
+            $quantity = isset($var->quantity) ? $var->quantity : $this->listed_stock;
+            $sku = isset($var->sku) ? $var->sku : $this->sku;
+            $state = isset($var->publication_state) ? $var->publication_state : $this->state;
+        } else {
+            // If API call failed, use current database values
+            $quantity = $this->listed_stock;
+            $sku = $this->sku;
+            $state = $this->state;
+        }
+        
         Variation_model::where('id', $this->id)->update([
-            'listed_stock' => $var->quantity,
-            'sku' => $var->sku,
-            'state' => $var->publication_state
+            'listed_stock' => $quantity,
+            'sku' => $sku,
+            'state' => $state
         ]);
-        return $var->quantity;
+        return $quantity;
     }
     public function update_product($product_id)
     {
