@@ -175,7 +175,7 @@
                 // Preferred connection configuration (force ws:// and known hosts)
                 const connectionConfig = {
                     host: ['localhost', '127.0.0.1', 'localhost.qz.io'],
-                    usingSecure: false,
+                    usingSecure: (window.location && window.location.protocol === 'https:'),
                     port: {
                         secure: [8181, 8282, 8383, 8484],
                         insecure: [8182, 8283, 8384, 8485],
@@ -207,11 +207,9 @@
                         console.debug('Unable to set QZ connection config', e);
                     }
 
-                    // Helper to check if connection is fully ready
+                    // Helper to check if connection is ready (active socket)
                     function isConnectionReady() {
-                        return qz.websocket.isActive()
-                            && qz.websocket.connection
-                            && typeof qz.websocket.connection.sendData === 'function';
+                        return qz.websocket.isActive();
                     }
 
                     // Skip if already connected and fully ready
@@ -244,14 +242,14 @@
                             }
                         }, 500);
 
-                        // Timeout after 10 seconds
+                        // Timeout after 15 seconds
                         setTimeout(function() {
                             clearInterval(checkInterval);
                             if (!isConnectionReady()) {
                                 window.qzGlobalConnectionInProgress = false;
                                 console.log('⚠ Global QZ Tray connection timeout (will retry when needed)');
                             }
-                        }, 10000);
+                        }, 15000);
                     } else {
                         // Fallback to direct connection
                         qz.websocket.connect()
@@ -269,7 +267,7 @@
                                     clearInterval(readyCheck);
                                     if (!window.qzGlobalConnectionEstablished) {
                                         window.qzGlobalConnectionInProgress = false;
-                                        console.log('⚠ QZ sendData not ready after connect');
+                                        console.log('⚠ QZ connection not ready after connect');
                                     }
                                 }, 3000);
                             })
@@ -289,9 +287,7 @@
                         function isConnectionReady() {
                             return typeof qz !== 'undefined'
                                 && qz.websocket
-                                && qz.websocket.isActive()
-                                && qz.websocket.connection
-                                && typeof qz.websocket.connection.sendData === 'function';
+                                && qz.websocket.isActive();
                         }
 
                         // Already connected and ready
