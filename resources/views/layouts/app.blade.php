@@ -349,6 +349,5 @@
                 console.log('Global QZ Tray Connection Manager initialized');
             })();
         </script>
-        @endif
     </body>
 </html>
