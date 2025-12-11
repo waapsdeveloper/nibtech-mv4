@@ -254,9 +254,18 @@ class PriceHandler extends Command
 
     }
     public function recheck_inactive_handlers(){
-        $listings = Listing_model::where('handler_status', 2)->where('min_price_limit', '>', 0)->where('min_price_limit', '<=', 'buybox_price')->where('min_price_limit', '<=', 'min_price')->get();
-        $variations = Variation_model::whereIn('id', $listings->pluck('variation_id'))->where('listed_stock','>',0)->get();
-        $listingController = new ListingController();
+        $listings = Listing_model::where('handler_status', 2)
+            ->where('min_price_limit', '>', 0)
+            ->where('min_price_limit', '<=', 'buybox_price')
+            ->where('min_price_limit', '<=', 'min_price')
+            ->get();
+
+        $variations = Variation_model::whereIn('id', $listings->pluck('variation_id'))
+            ->where('listed_stock', '>', 0)
+            ->get();
+
+        // Resolve with container so constructor dependencies (StockDistributionService) are injected
+        $listingController = app(ListingController::class);
         foreach ($variations as $variation) {
             $json_data = $listingController->get_variation_available_stocks( $variation->id );
             if (json_decode($json_data) == null) {
