@@ -63,9 +63,9 @@
         var host = "localhost"; // Default host
         var usingSecure = $("#connectionUsingSecure").prop('checked');
 
-        // Default to insecure (ws://) when toggle is absent
+        // Default to page protocol (use wss on https to avoid mixed-content blocks)
         if (typeof usingSecure === 'undefined') {
-            usingSecure = false;
+            usingSecure = (window.location && window.location.protocol === 'https:');
         }
 
         // Always supply a host list and protocol preference
