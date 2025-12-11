@@ -77,6 +77,8 @@ class SupportTickets extends Component
     public $careFolderApiResponse = null;
     public $careReplyRequest = null;
     public $careReplyResponse = null;
+    public $careAttachmentRequest = null;
+    public $careAttachmentResponse = null;
     public $aiSummary = null;
     public $aiDraft = null;
     public $aiError = null;
@@ -1281,23 +1283,21 @@ class SupportTickets extends Component
         }
 
         try {
+            $this->careAttachmentRequest = null;
+            $this->careAttachmentResponse = null;
+
             $payload = $this->buildInvoicePayload($order, $isPartial);
             $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund, $isPartial);
 
             $isCareThread = $thread->marketplace_source === 'backmarket_care';
-            $willSendToBackmarketCare = $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial);
 
-            // For Care threads with attachment feature enabled, skip email and only post to Care API
-            if (! ($isCareThread && $willSendToBackmarketCare)) {
+            // For Back Market Care threads, skip all emails and only post to Care API
+            if (! $isCareThread) {
                 $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
+                $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
             }
 
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
-
-            // Only send notification email if we sent the main invoice email
-            if (! ($isCareThread && $willSendToBackmarketCare)) {
-                $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
-            }
 
             $this->maybeSendBackmarketPartialRefundAttachment($thread, $order, $payload, $isPartial);
         } catch (\Throwable $exception) {
@@ -1316,9 +1316,8 @@ class SupportTickets extends Component
         $invoiceType = $isPartial ? 'Partial refund invoice sent to ' : ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ');
 
         $isCareThread = $thread->marketplace_source === 'backmarket_care';
-        $sentToBackmarketCare = $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial);
 
-        if ($isCareThread && $sentToBackmarketCare) {
+        if ($isCareThread) {
             $this->invoiceActionStatus = $invoiceType . 'Back Market Care (folder #' . ($thread->external_thread_id ?: 'unknown') . ') with PDF attachment.';
         } else {
             $this->invoiceActionStatus = $invoiceType . $customer->email . '.';
@@ -1611,14 +1610,29 @@ class SupportTickets extends Component
         try {
             $pdf = $this->buildPartialRefundPdf($payload);
 
-            app(BackMarketAPIController::class)->sendCareMessageWithAttachment($folderId, $message, $pdf);
+            $this->careAttachmentRequest = [
+                'folder_id' => $folderId,
+                'message' => $message,
+                'attachment_name' => $pdf['name'] ?? 'invoice.pdf',
+                'attachment_size' => isset($pdf['data']) ? strlen($pdf['data']) : 0,
+            ];
+
+            $response = app(BackMarketAPIController::class)->sendCareMessageWithAttachment($folderId, $message, $pdf);
+
+            $this->careAttachmentResponse = $response;
 
             Log::info('Back Market partial refund invoice posted', [
                 'thread_id' => $thread->id,
                 'order_id' => $order->id,
                 'folder_id' => $folderId,
+                'response' => $response,
             ]);
         } catch (\Throwable $exception) {
+            $this->careAttachmentResponse = [
+                'error' => $exception->getMessage(),
+                'trace' => $exception->getTraceAsString(),
+            ];
+
             Log::warning('Back Market Care attachment failed', [
                 'thread_id' => $thread->id,
                 'order_id' => $order->id,
