@@ -69,11 +69,24 @@
     $pendingBmCount = $pendingBmOrders->count();
     $difference = $availableCount - $pendingCount;
     
+    // Calculate average cost from available stocks
+    $averageCost = 0;
+    if($availableStocks->count() > 0) {
+        $stockIds = $availableStocks->pluck('id');
+        $stockCosts = \App\Models\Order_item_model::whereHas('order', function($q){
+            $q->where('order_type_id', 1);
+        })->whereIn('stock_id', $stockIds)->pluck('price');
+        
+        if($stockCosts->count() > 0) {
+            $averageCost = $stockCosts->avg();
+        }
+    }
+    
     // Get withoutBuybox HTML from variation data
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
 
-<div class="card" style="padding-left: 5px; padding-right: 5px; width: 100%;">
+<div class="card" id="variation_card_{{ $variationId }}" style="padding-left: 5px; padding-right: 5px; width: 100%;">
     <div class="card-header py-0 d-flex justify-content-between" style="padding-left: 5px; padding-right: 5px;">
         <div>
             <h5>
@@ -113,6 +126,22 @@
                 'totalStock' => $totalStock,
                 'process_id' => $process_id ?? null
             ])
+            
+            {{-- Listing Total Quantity and Average Cost --}}
+            <div class="d-flex flex-row align-items-center gap-2" style="font-size: 0.85rem;">
+                <div class="text-muted">
+                    <span>Listing Total: </span>
+                    <strong id="listing_total_quantity_{{ $variationId }}">{{ $totalStock }}</strong>
+                </div>
+                <div class="text-muted">
+                    <span>Average Cost: </span>
+                    <strong id="average_cost_display_{{ $variationId }}">€{{ number_format($averageCost, 2, '.', '') }}</strong>
+                </div>
+                {{-- expansion chevron right left --}}
+                <a href="javascript:void(0)" class="btn btn-link p-0" id="stock_expand_toggle_{{ $variationId }}" onclick="toggleStockPanel({{ $variationId }})" style="min-width: 24px;">
+                    <i class="fas fa-chevron-right" id="stock_expand_icon_{{ $variationId }}"></i>
+                </a>
+            </div>
         </div>
 
         
@@ -120,13 +149,13 @@
         {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
     </div>
     
-    {{-- Marketplace & Stocks Dropdown Section --}}
-    <div class="collapse" id="marketplace_stocks_dropdown_{{ $variationId }}">
+    {{-- Marketplace & Stocks Section (Always Expanded) --}}
+    <div class="show" id="marketplace_stocks_dropdown_{{ $variationId }}">
         <div class="card-body border-top p-0" style="width: 100%;">
-            <div class="row g-0" style="width: 100%; margin: 0;">
+            <div class="d-flex g-0" style="width: 100%; margin: 0;">
                 {{-- Left Column: Marketplace Bars --}}
-                <div class="col-md-8 border-end" style="max-height: 600px; overflow-y: auto;">
-                    <div class="">
+                <div class="marketplace-column flex-grow-1" id="marketplace_column_{{ $variationId }}" style="transition: width 0.3s ease; min-width: 0;">
+                    <div>
                         @if(isset($marketplaces) && count($marketplaces) > 0)
                             @foreach($marketplaces as $marketplaceId => $marketplace)
                                 @php
@@ -151,17 +180,149 @@
                     </div>
                 </div>
                 
-                {{-- Right Column: Stocks Section --}}
-                <div class="col-md-4" style="max-height: 600px; overflow-y: auto;">
-                    @include('v2.listing.partials.marketplace-stocks-section', [
-                        'variationId' => $variationId,
-                        'marketplaces' => $marketplaces ?? [],
-                        'process_id' => $process_id ?? null
-                    ])
+                {{-- Expandable Right Side Stock Panel (Inside Card) --}}
+                <div class="stock-panel" id="stock_panel_{{ $variationId }}" style="display: none; width: 0; overflow: hidden; transition: width 0.3s ease; border-left: 1px solid #dee2e6; flex-shrink: 0;">
+                    <div class="d-flex flex-column h-100" style="width: 400px;">
+                        <div class="p-3 border-bottom flex-shrink-0">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h6 class="mb-0">Stock List</h6>
+                                <button type="button" class="btn btn-sm btn-link p-0" onclick="toggleStockPanel({{ $variationId }})" style="min-width: 24px;">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="flex-grow-1 overflow-auto" style="overflow-y: auto;">
+                            <div class="p-3 pt-2">
+                                <div class="table-responsive">
+                                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                        <thead>
+                                            <tr>
+                                                <th><small><b>No</b></small></th>
+                                                <th><small><b>IMEI/Serial</b></small></th>
+                                                <th><small><b>Cost</b> (<b id="average_cost_stocks_panel_{{ $variationId }}"></b>)</small></th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="stocks_table_panel_{{ $variationId }}">
+                                            <tr>
+                                                <td colspan="3" class="text-center text-muted small">Loading stocks...</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+@once
+<style>
+    .marketplace-column {
+        transition: width 0.3s ease;
+    }
+    .stock-panel {
+        display: none;
+        align-items: stretch;
+    }
+    .stock-panel.show {
+        display: flex !important;
+        width: 400px !important;
+    }
+</style>
+<script>
+    function toggleStockPanel(variationId) {
+        const panel = $('#stock_panel_' + variationId);
+        const icon = $('#stock_expand_icon_' + variationId);
+        const marketplaceColumn = $('#marketplace_column_' + variationId);
+        const isExpanded = panel.hasClass('show');
+        
+        if (isExpanded) {
+            // Collapse
+            panel.removeClass('show');
+            icon.removeClass('fa-chevron-left').addClass('fa-chevron-right');
+            // Reset marketplace column width to auto/full
+            marketplaceColumn.css('width', '');
+        } else {
+            // Expand
+            panel.addClass('show');
+            icon.removeClass('fa-chevron-right').addClass('fa-chevron-left');
+            // Set marketplace column width to make room for panel
+            marketplaceColumn.css('width', 'calc(100% - 400px)');
+            
+            // Load stocks if not already loaded
+            const tableBody = $('#stocks_table_panel_' + variationId);
+            const firstRow = tableBody.find('tr:first');
+            if (firstRow.length && firstRow.find('td').text().includes('Loading')) {
+                loadStocksForPanel(variationId);
+            }
+        }
+    }
+    
+    function loadStocksForPanel(variationId) {
+        const stocksTableBody = $('#stocks_table_panel_' + variationId);
+        const averageCostElement = $('#average_cost_stocks_panel_' + variationId);
+        
+        if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.getVariationStocks) {
+            stocksTableBody.html('<tr><td colspan="3" class="text-center text-danger small">Configuration error</td></tr>');
+            return;
+        }
+        
+        $.ajax({
+            url: window.ListingConfig.urls.getVariationStocks + '/' + variationId,
+            type: 'GET',
+            dataType: 'json',
+            success: function(data) {
+                let stocksTable = '';
+                let stockPrices = [];
+                
+                if (data.stocks && data.stocks.length > 0) {
+                    data.stocks.forEach(function(item, index) {
+                        let price = data.stock_costs[item.id] || 0;
+                        let topup_ref = data.topup_reference[data.latest_topup_items[item.id]] || '';
+                        
+                        // Collect price for average calculation
+                        if (price) {
+                            stockPrices.push(parseFloat(price));
+                        }
+                        
+                        const imeiUrl = window.ListingConfig.urls.imei || '';
+                        stocksTable += `
+                            <tr>
+                                <td><small>${index + 1}</small></td>
+                                <td data-stock="${item.id}" title="${topup_ref}">
+                                    <small>
+                                        <a href="${imeiUrl}?imei=${item.imei || item.serial_number}" target="_blank">
+                                            ${item.imei || item.serial_number || ''}
+                                        </a>
+                                    </small>
+                                </td>
+                                <td><small>€${price ? parseFloat(price).toFixed(2) : '0.00'}</small></td>
+                            </tr>`;
+                    });
+                } else {
+                    stocksTable = '<tr><td colspan="3" class="text-center text-muted small">No stocks available</td></tr>';
+                }
+                
+                stocksTableBody.html(stocksTable);
+                
+                // Calculate and display average cost
+                if (stockPrices.length > 0) {
+                    let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
+                    averageCostElement.text(`€${average.toFixed(2)}`);
+                } else {
+                    averageCostElement.text('€0.00');
+                }
+            },
+            error: function() {
+                stocksTableBody.html('<tr><td colspan="3" class="text-center text-danger small">Error loading stocks</td></tr>');
+                averageCostElement.text('€0.00');
+            }
+        });
+    }
+</script>
+@endonce
 
 
