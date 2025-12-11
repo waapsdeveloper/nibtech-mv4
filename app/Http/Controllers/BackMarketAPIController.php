@@ -304,16 +304,20 @@ class BackMarketAPIController extends Controller
         // Use config('backmarket.api_key_2') if available (for Care API), otherwise fall back to main token
         $authToken = config('backmarket.api_key_2') ?: self::$YOUR_ACCESS_TOKEN;
 
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . $authToken,
-        ])->attach(
-            'attachment[]',
-            $attachment['data'] ?? '',
-            $attachment['name'] ?? 'invoice.pdf'
-        )->post($url, [
-            'message' => $message,
-        ]);
+        $response = Http::asMultipart()
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Basic ' . $authToken,
+            ])
+            ->attach(
+                'attachments[]',
+                $attachment['data'] ?? '',
+                $attachment['name'] ?? 'invoice.pdf',
+                isset($attachment['mime']) && $attachment['mime'] ? ['Content-Type' => $attachment['mime']] : []
+            )
+            ->post($url, [
+                'message' => $message,
+            ]);
 
         if ($response->failed()) {
             Log::error('Care API attachment post failed', [
