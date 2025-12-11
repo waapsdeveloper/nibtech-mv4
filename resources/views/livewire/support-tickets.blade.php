@@ -461,6 +461,17 @@
                             @if ($replyError)
                                 <div class="alert alert-danger py-2 px-3">{{ $replyError }}</div>
                             @endif
+                            @if ($isCareThread && ($careReplyRequest || $careReplyResponse))
+                                <div class="alert alert-secondary py-2 px-3" style="font-size: 0.75rem;">
+                                    <div class="fw-semibold mb-1">Care API debug</div>
+                                    @if ($careReplyRequest)
+                                        <div class="mb-1"><span class="text-muted">Request:</span> <code>{{ json_encode($careReplyRequest) }}</code></div>
+                                    @endif
+                                    @if ($careReplyResponse)
+                                        <div><span class="text-muted">Response:</span> <code>{{ json_encode($careReplyResponse) }}</code></div>
+                                    @endif
+                                </div>
+                            @endif
                             <div class="mb-3">
                                 <label class="form-label">{{ $isCareThread ? 'Care folder' : 'To' }}</label>
                                 <input type="text" class="form-control" value="{{ $isCareThread ? ($selectedThread->external_thread_id ?? 'No folder id') : ($replyRecipient ?: 'No recipient available') }}" disabled>

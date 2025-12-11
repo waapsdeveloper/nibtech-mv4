@@ -75,6 +75,8 @@ class SupportTickets extends Component
     public $careFolderFetchSuccess = null;
     public $careFolderApiRequest = null;
     public $careFolderApiResponse = null;
+    public $careReplyRequest = null;
+    public $careReplyResponse = null;
     public $aiSummary = null;
     public $aiDraft = null;
     public $aiError = null;
@@ -652,6 +654,8 @@ class SupportTickets extends Component
         $this->replyStatus = null;
         $this->replyError = null;
         $this->aiError = null;
+        $this->careReplyRequest = null;
+        $this->careReplyResponse = null;
 
         if (! $this->selectedThreadId) {
             $this->replyError = 'Select a thread before replying.';
@@ -697,6 +701,11 @@ class SupportTickets extends Component
             }
 
             try {
+                $this->careReplyRequest = [
+                    'folder_id' => $careFolderId,
+                    'message' => $body,
+                ];
+
                 $careApiResponseRaw = app(BackMarketAPIController::class)
                     ->apiPost('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
 
@@ -712,6 +721,8 @@ class SupportTickets extends Component
 
                     return;
                 }
+
+                $this->careReplyResponse = $careApiResponse;
             } catch (\Throwable $exception) {
                 Log::error('Support reply via Care API failed', [
                     'thread_id' => $thread->id,
