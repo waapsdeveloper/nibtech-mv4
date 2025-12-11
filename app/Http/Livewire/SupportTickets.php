@@ -659,13 +659,8 @@ class SupportTickets extends Component
             return;
         }
 
+        $isCareThread = $thread->marketplace_source === 'backmarket_care';
         $recipient = $this->replyRecipientEmail ?: ($thread->reply_email ?? $thread->buyer_email);
-
-        if (! $recipient) {
-            $this->replyError = 'This ticket does not have a valid recipient email.';
-
-            return;
-        }
 
         $subject = $this->replySubject ?: $this->defaultReplySubject($thread);
         $body = trim($this->replyBody ?? '');
@@ -676,17 +671,58 @@ class SupportTickets extends Component
             return;
         }
 
-        try {
-            app(SupportEmailSender::class)->sendHtml($recipient, $subject, $this->formatReplyHtml($body));
-        } catch (\Throwable $exception) {
-            Log::error('Support reply failed', [
-                'thread_id' => $thread->id,
-                'recipient' => $recipient,
-                'error' => $exception->getMessage(),
-            ]);
-            $this->replyError = $exception->getMessage();
+        $careFolderId = null;
+        $careApiResponse = null;
 
-            return;
+        if ($isCareThread) {
+            $careFolderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+            if (! $careFolderId) {
+                $this->replyError = 'Back Market Care folder id is missing for this ticket.';
+
+                return;
+            }
+
+            try {
+                $careApiResponse = app(BackMarketAPIController::class)
+                    ->apiPost('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
+
+                $careApiResponse = $this->convertToArray($careApiResponse) ?: null;
+
+                if (! $careApiResponse) {
+                    $this->replyError = 'Care API did not return a valid response.';
+
+                    return;
+                }
+            } catch (\Throwable $exception) {
+                Log::error('Support reply via Care API failed', [
+                    'thread_id' => $thread->id,
+                    'folder_id' => $careFolderId,
+                    'error' => $exception->getMessage(),
+                ]);
+                $this->replyError = 'Care API rejected the reply: ' . $exception->getMessage();
+
+                return;
+            }
+        } else {
+            if (! $recipient) {
+                $this->replyError = 'This ticket does not have a valid recipient email.';
+
+                return;
+            }
+
+            try {
+                app(SupportEmailSender::class)->sendHtml($recipient, $subject, $this->formatReplyHtml($body));
+            } catch (\Throwable $exception) {
+                Log::error('Support reply failed', [
+                    'thread_id' => $thread->id,
+                    'recipient' => $recipient,
+                    'error' => $exception->getMessage(),
+                ]);
+                $this->replyError = $exception->getMessage();
+
+                return;
+            }
         }
 
         $author = Admin_model::find(session('user_id'));
@@ -703,7 +739,9 @@ class SupportTickets extends Component
             'sent_at' => now(),
             'is_internal_note' => false,
             'metadata' => [
-                'source' => 'support_portal',
+                'source' => $isCareThread ? 'backmarket_care_api' : 'support_portal',
+                'care_folder_id' => $careFolderId,
+                'care_api_response' => $careApiResponse,
             ],
         ]);
 
@@ -714,11 +752,17 @@ class SupportTickets extends Component
         $thread->save();
 
         $this->replyBody = '';
-        $this->replyStatus = 'Reply sent via Gmail.';
+        $this->replyStatus = $isCareThread
+            ? 'Reply sent via Back Market Care API.'
+            : 'Reply sent via Gmail.';
         $this->messageTranslations = [];
         $this->expandedMessages = [];
         $this->replyFormThreadId = $thread->id;
         $this->emitSelf('supportThreadsUpdated');
+
+        if ($isCareThread) {
+            $this->hydrateCareFolder($thread);
+        }
     }
 
     protected function hydrateReplyDefaults(?SupportThread $thread = null): void
