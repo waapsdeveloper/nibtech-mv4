@@ -877,10 +877,26 @@ class SupportTickets extends Component
             data_get($folder, 'order.billing_address.email'),
         ]);
 
+        $sellerName = $this->preferCareScalar([
+            data_get($folder, 'seller_name'),
+            data_get($folder, 'seller.name'),
+            data_get($folder, 'merchant_name'),
+            data_get($folder, 'merchant.name'),
+        ]);
+
+        $trackingNumber = $this->preferCareScalar([
+            data_get($folder, 'tracking_number'),
+            data_get($folder, 'tracking'),
+            data_get($folder, 'shipment.tracking_number'),
+        ]);
+
+        $messagesCount = data_get($folder, 'messages_count') ?? data_get($folder, 'message_count') ?? (is_array(data_get($folder, 'messages')) ? count(data_get($folder, 'messages')) : null);
+
         return [
             'id' => $this->stringifyCareValue(data_get($folder, 'id')),
             'order_id' => $orderId,
             'orderline' => $orderline,
+            'orderline_id' => $this->stringifyCareValue(data_get($folder, 'orderline_id') ?? data_get($folder, 'orderline.id') ?? data_get($folder, 'lines.0.id')),
             'topic' => $topic,
             'state' => $state,
             'state_label' => $this->decodeCareState($state),
@@ -889,6 +905,12 @@ class SupportTickets extends Component
             'reason_code' => $reason,
             'buyer_email' => $buyerEmail,
             'buyer_name' => $buyerName !== '' ? $buyerName : null,
+            'seller_name' => $sellerName,
+            'tracking_number' => $trackingNumber,
+            'messages_count' => $messagesCount,
+            'type' => $this->stringifyCareValue(data_get($folder, 'type')),
+            'source' => $this->stringifyCareValue(data_get($folder, 'source')),
+            'channel' => $this->stringifyCareValue(data_get($folder, 'channel')),
             'created_at' => $createdAt,
             'created_at_human' => $this->formatCareDate($createdAt),
             'last_message_at' => $lastMessageAt,
