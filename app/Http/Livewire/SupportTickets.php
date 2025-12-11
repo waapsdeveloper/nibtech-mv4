@@ -64,6 +64,8 @@ class SupportTickets extends Component
     public $careFolderIdInput = '';
     public $careFolderFetchError = null;
     public $careFolderFetchSuccess = null;
+    public $careFolderApiRequest = null;
+    public $careFolderApiResponse = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -178,6 +180,8 @@ class SupportTickets extends Component
     {
         $this->careFolderFetchError = null;
         $this->careFolderFetchSuccess = null;
+        $this->careFolderApiRequest = null;
+        $this->careFolderApiResponse = null;
 
         $folderId = trim($this->careFolderIdInput);
 
@@ -186,13 +190,58 @@ class SupportTickets extends Component
             return;
         }
 
+        // Capture request details
+        $baseUrl = config('services.backmarket.base_url', 'https://www.backmarket.fr/ws/');
+        $endpoint = 'sav/' . $folderId;
+        $fullUrl = $baseUrl . $endpoint;
+
+        $this->careFolderApiRequest = [
+            'method' => 'GET',
+            'url' => $fullUrl,
+            'endpoint' => $endpoint,
+            'folder_id' => $folderId,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Accept-Language' => 'en',
+                'Authorization' => 'Basic [REDACTED]',
+                'User-Agent' => 'NIB System',
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        Log::info('Back Market Care API Request', [
+            'folder_id' => $folderId,
+            'url' => $fullUrl,
+            'method' => 'GET',
+        ]);
+
         try {
             $controller = app(BackMarketAPIController::class);
             $folder = $controller->getCare($folderId);
+
+            // Capture raw response
+            $this->careFolderApiResponse = [
+                'status' => 'success',
+                'data' => $folder,
+                'timestamp' => now()->toIso8601String(),
+            ];
+
+            Log::info('Back Market Care API Response', [
+                'folder_id' => $folderId,
+                'response' => $folder,
+            ]);
         } catch (\Throwable $e) {
+            $this->careFolderApiResponse = [
+                'status' => 'error',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'timestamp' => now()->toIso8601String(),
+            ];
+
             Log::warning('Manual Care folder fetch failed', [
                 'folder_id' => $folderId,
                 'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
             ]);
             $this->careFolderFetchError = 'Failed to fetch folder: ' . $e->getMessage();
             return;
