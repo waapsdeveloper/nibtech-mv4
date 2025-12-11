@@ -242,7 +242,17 @@ class SupportTickets extends Component
                 ->values()
                 ->all();
 
-            $this->careFolderFetchSuccess = 'Care folder fetched (Order: ' . ($orderId ?? 'N/A') . '). No existing ticket found in system.';
+            $summary = $this->careFolderDetails['summary'] ?? 'N/A';
+            $state = $this->careFolderDetails['state'] ?? 'N/A';
+            $buyerEmail = $this->careFolderDetails['buyer_email'] ?? 'N/A';
+
+            $this->careFolderFetchSuccess = sprintf(
+                'Care folder #%s fetched (Order: %s, State: %s, Email: %s). No existing ticket found - showing preview below.',
+                $folderId,
+                $orderId ?? 'N/A',
+                $state,
+                $buyerEmail
+            );
         }
 
         $this->careFolderIdInput = '';
