@@ -308,16 +308,20 @@ class BackMarketAPIController extends Controller
             'Accept' => 'application/json',
             'Authorization' => 'Basic ' . $authToken,
         ])->attach(
-            'attachment',
+            'attachment[]',
             $attachment['data'] ?? '',
-            $attachment['name'] ?? 'invoice.pdf',
-            ['Content-Type' => $attachment['mime'] ?? 'application/pdf']
+            $attachment['name'] ?? 'invoice.pdf'
         )->post($url, [
             'message' => $message,
         ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Care API attachment post failed: ' . $response->body());
+            Log::error('Care API attachment post failed', [
+                'folder_id' => $folderId,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new RuntimeException('Care API attachment post failed (HTTP ' . $response->status() . '): ' . $response->body());
         }
 
         return $response->json() ?? [];
