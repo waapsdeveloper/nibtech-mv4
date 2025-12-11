@@ -1283,9 +1283,22 @@ class SupportTickets extends Component
         try {
             $payload = $this->buildInvoicePayload($order, $isPartial);
             $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund, $isPartial);
-            $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
+
+            $isCareThread = $thread->marketplace_source === 'backmarket_care';
+            $willSendToBackmarketCare = $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial);
+
+            // For Care threads with attachment feature enabled, skip email and only post to Care API
+            if (! ($isCareThread && $willSendToBackmarketCare)) {
+                $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
+            }
+
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
-            $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
+
+            // Only send notification email if we sent the main invoice email
+            if (! ($isCareThread && $willSendToBackmarketCare)) {
+                $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
+            }
+
             $this->maybeSendBackmarketPartialRefundAttachment($thread, $order, $payload, $isPartial);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
@@ -1301,7 +1314,15 @@ class SupportTickets extends Component
         }
 
         $invoiceType = $isPartial ? 'Partial refund invoice sent to ' : ($isRefund ? 'Refund invoice sent to ' : 'Invoice sent to ');
-        $this->invoiceActionStatus = $invoiceType . $customer->email . '.';
+
+        $isCareThread = $thread->marketplace_source === 'backmarket_care';
+        $sentToBackmarketCare = $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial);
+
+        if ($isCareThread && $sentToBackmarketCare) {
+            $this->invoiceActionStatus = $invoiceType . 'Back Market Care (folder #' . ($thread->external_thread_id ?: 'unknown') . ') with PDF attachment.';
+        } else {
+            $this->invoiceActionStatus = $invoiceType . $customer->email . '.';
+        }
     }
 
     public function refreshExternalThreads(): void
