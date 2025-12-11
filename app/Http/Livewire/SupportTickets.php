@@ -58,6 +58,14 @@ class SupportTickets extends Component
     public $syncLookback = '6';
     public $syncBackmarket = true;
     public $syncRefurbed = true;
+    public $careState = '';
+    public $carePriority = '';
+    public $careTopic = '';
+    public $careOrderline = '';
+    public $careOrderId = '';
+    public $careLastId = '';
+    public $carePageSize = '50';
+    public $careExtraQuery = '';
     public $careFolderDetails = null;
     public $careFolderMessages = [];
     public $careFolderError = null;
@@ -792,17 +800,20 @@ class SupportTickets extends Component
 
     protected function hydrateOrderContext(?SupportThread $thread = null): void
     {
-                $this->aiSummary = null; // Initialize AI summary
-                $this->aiDraft = null;   // Initialize AI draft
-                $this->aiError = null;   // Initialize AI error
-            $this->marketplaceOrderUrl = null;
-            $this->canCancelOrder = false;
-            $this->orderActionStatus = null;
-            $this->orderActionError = null;
-            $this->orderActionPayload = null;
-            $this->invoiceActionStatus = null;
-            $this->invoiceActionError = null;
+        $thread = $thread ?: $this->selectedThread;
 
+        $this->aiSummary = null;
+        $this->aiDraft = null;
+        $this->aiError = null;
+        $this->marketplaceOrderUrl = null;
+        $this->canCancelOrder = false;
+        $this->orderActionStatus = null;
+        $this->orderActionError = null;
+        $this->orderActionPayload = null;
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
+
+        if (! $thread) {
             return;
         }
 
@@ -1605,14 +1616,16 @@ class SupportTickets extends Component
             '--care-last-id' => $this->careLastId,
         ];
 
-        foreach ($filters as $flag => $value) {
-            $value = is_string($value) ? trim($value) : $value;
+        foreach ($filters as $flag => $raw) {
+            if (is_string($raw)) {
+                $raw = trim($raw);
+            }
 
-            if ($value === null || $value === '') {
+            if ($raw === null || $raw === '') {
                 continue;
             }
 
-            $options[$flag] = (string) $value;
+            $options[$flag] = (string) $raw;
         }
 
         return $options;
