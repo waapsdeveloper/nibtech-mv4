@@ -30,6 +30,7 @@
                 <h6>{{ $customer->city }} {{ $customer->postal_code }}</h6>
                 <h6>{{ $customer->country_id->title ?? null }}</h6>
                 <h6>{{ $customer->vat }}</h6>
+                <a href="{{ url('edit-customer/'.$customer->id) }}" class="btn btn-sm btn-primary mt-2">Edit Customer</a>
             </div>
             <div class="align-self-center">
                 @foreach($totals as $total)
