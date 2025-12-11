@@ -16,7 +16,7 @@ use Throwable;
 
 class BackMarketAPIController extends Controller
 {
-    protected static $base_url = 'https://www.backmarket.fr/ws/';
+    protected static $base_url;
     protected static $COUNTRY_CODE = 'en-gb';
     protected static $YOUR_ACCESS_TOKEN;
     protected static $YOUR_USER_AGENT;
@@ -34,6 +34,8 @@ class BackMarketAPIController extends Controller
 
         $envToken = env('BM_API1');
         self::$YOUR_ACCESS_TOKEN = $token ?? $envToken;
+
+        self::$base_url = rtrim(config('services.backmarket.base_url', 'https://www.backmarket.fr/ws/'), '/') . '/';
 
         if (! self::$YOUR_ACCESS_TOKEN) {
             throw new RuntimeException('Back Market API token is missing. Set BM_API1 or populate the marketplace table.');
@@ -241,6 +243,35 @@ class BackMarketAPIController extends Controller
         curl_close($ch);
 
         return json_decode($post_result);
+    }
+
+    public function sendCareMessageWithAttachment($folderId, string $message, array $attachment): array
+    {
+        $folderId = trim((string) $folderId);
+
+        if ($folderId === '') {
+            throw new RuntimeException('Care folder id is required to post attachments.');
+        }
+
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/messages';
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic ' . self::$YOUR_ACCESS_TOKEN,
+        ])->attach(
+            'attachment',
+            $attachment['data'] ?? '',
+            $attachment['name'] ?? 'invoice.pdf',
+            ['Content-Type' => $attachment['mime'] ?? 'application/pdf']
+        )->post($url, [
+            'message' => $message,
+        ]);
+
+        if ($response->failed()) {
+            throw new RuntimeException('Care API attachment post failed: ' . $response->body());
+        }
+
+        return $response->json() ?? [];
     }
 
     public function shippingOrderlines($order_id, $sku, $imei, $tracking_number, $serial = null) {
