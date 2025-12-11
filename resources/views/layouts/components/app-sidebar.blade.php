@@ -51,6 +51,14 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/listings')}}">Listings</a>
                                         </li>
+                                        @if ($user->hasPermission('view_marketplace'))
+                                        <li class="slide">
+                                            <a class="side-menu__item ps-0" href="{{url('v2/marketplace')}}">Marketplaces</a>
+                                        </li>
+                                        <li class="slide">
+                                            <a class="side-menu__item ps-0" href="{{url('v2/marketplace/stock-formula')}}">Stock Formula</a>
+                                        </li>
+                                        @endif
                                     </ul>
                                 </li>
                                 @endif

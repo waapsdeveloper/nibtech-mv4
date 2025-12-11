@@ -1,0 +1,230 @@
+/**
+ * V2 Total Stock Form JavaScript
+ * Handles the total stock add quantity form functionality
+ */
+
+(function() {
+    'use strict';
+
+    /**
+     * Initialize total stock form handlers
+     */
+    function initializeTotalStockForm() {
+        // Show/hide Push button based on input value
+        $(document).on('input', '[id^="add_total_"]', function() {
+            const inputId = $(this).attr('id');
+            const matches = inputId.match(/add_total_(\d+)/);
+            
+            if (!matches) {
+                return;
+            }
+            
+            const variationId = matches[1];
+            const value = $(this).val();
+            
+            if (value && parseFloat(value) !== 0) {
+                $('#send_total_' + variationId).removeClass('d-none');
+            } else {
+                $('#send_total_' + variationId).addClass('d-none');
+            }
+        });
+
+        // Handle form submission
+        $(document).on('submit', '[id^="add_qty_total_"]', function(e) {
+            e.preventDefault();
+            
+            const formId = $(this).attr('id');
+            const matches = formId.match(/add_qty_total_(\d+)/);
+            
+            if (!matches) {
+                return;
+            }
+            
+            const variationId = matches[1];
+            const form = $(this);
+            const quantity = parseFloat($('#add_total_' + variationId).val());
+            const currentTotal = parseFloat($('#total_stock_' + variationId).val()) || 0;
+            
+            // Validate quantity
+            if (!quantity || quantity === 0 || isNaN(quantity)) {
+                return;
+            }
+            
+            // Show loading state on button
+            const pushButton = $('#send_total_' + variationId);
+            const originalButtonText = pushButton.html();
+            pushButton.prop('disabled', true);
+            pushButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+            pushButton.removeClass('d-none');
+            
+            // Clear success message
+            $('#success_total_' + variationId).text('');
+            
+            // Submit via AJAX
+            $.ajax({
+                type: "POST",
+                url: form.attr('action'),
+                data: form.serialize(),
+                dataType: 'json',
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest',
+                    'Accept': 'application/json'
+                },
+                success: function(response) {
+                    // Handle both JSON and plain text responses
+                    let totalStock, marketplaceStocks = {};
+                    
+                    if (typeof response === 'object' && response !== null) {
+                        // JSON response - should contain total_stock or quantity
+                        totalStock = parseFloat(response.total_stock) || parseFloat(response.quantity) || 0;
+                        marketplaceStocks = response.marketplace_stocks || {};
+                        
+                        // Safety check: if totalStock seems wrong (less than current total), recalculate
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                    } else if (typeof response === 'string' || typeof response === 'number') {
+                        // Plain text or number response (backward compatibility)
+                        totalStock = parseFloat(response) || 0;
+                        // If the response is less than current total, it's likely just the added quantity
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                        // Fetch marketplace stocks separately
+                        fetchMarketplaceStocks(variationId, {});
+                        // Reset form and return early
+                        resetForm(variationId, originalButtonText);
+                        $('#total_stock_' + variationId).val(totalStock);
+                        $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        return;
+                    } else {
+                        // Fallback: calculate from current total + quantity added
+                        totalStock = currentTotal + quantity;
+                        marketplaceStocks = {};
+                    }
+                    
+                    // Final safety check
+                    if (isNaN(totalStock) || totalStock < 0) {
+                        totalStock = currentTotal + quantity;
+                    }
+                    
+                    // Update the total stock display
+                    $('#total_stock_' + variationId).val(totalStock);
+                    $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                    
+                    // Update marketplace stock displays
+                    updateMarketplaceStockDisplays(variationId, marketplaceStocks);
+                    
+                    // Reset form
+                    resetForm(variationId, originalButtonText);
+                },
+                error: function(jqXHR, textStatus, errorThrown) {
+                    // Try to parse as text if JSON fails (backward compatibility)
+                    if (jqXHR.responseText && !isNaN(jqXHR.responseText.trim())) {
+                        let totalStock = parseFloat(jqXHR.responseText.trim());
+                        // If response is less than current total, it's likely just the added quantity
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                        $('#total_stock_' + variationId).val(totalStock);
+                        $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        resetForm(variationId, originalButtonText);
+                        // Fetch marketplace stocks
+                        fetchMarketplaceStocks(variationId, {});
+                        return;
+                    }
+                    
+                    let errorMsg = "Error: " + textStatus;
+                    if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                        errorMsg = jqXHR.responseJSON.error;
+                    } else if (jqXHR.responseText) {
+                        errorMsg = jqXHR.responseText;
+                    }
+                    alert(errorMsg);
+                    resetForm(variationId, originalButtonText);
+                }
+            });
+        });
+    }
+
+    // Initialize when DOM is ready
+    $(document).ready(function() {
+        initializeTotalStockForm();
+    });
+
+    // Also initialize if document is already loaded (for dynamically loaded content)
+    if (document.readyState === 'complete' || document.readyState === 'interactive') {
+        setTimeout(initializeTotalStockForm, 1);
+    }
+
+    /**
+     * Update marketplace stock displays
+     */
+    function updateMarketplaceStockDisplays(variationId, marketplaceStocks) {
+        // Update marketplace bar stock displays
+        Object.keys(marketplaceStocks).forEach(function(marketplaceId) {
+            const stockValue = marketplaceStocks[marketplaceId];
+            
+            // Update in marketplace bar (format: stock_{variationId}_{marketplaceId})
+            const barStockElement = $('#stock_' + variationId + '_' + marketplaceId);
+            if (barStockElement.length) {
+                barStockElement.text(stockValue);
+            }
+            
+            // Update in marketplace stocks section if visible
+            const stockInput = $('#stock_input_' + variationId + '_' + marketplaceId);
+            if (stockInput.length) {
+                stockInput.val(stockValue);
+                // Also update the display value
+                const stockDisplay = $('#stock_display_' + variationId + '_' + marketplaceId);
+                if (stockDisplay.length) {
+                    stockDisplay.text(stockValue);
+                }
+            }
+        });
+    }
+
+    /**
+     * Fetch marketplace stocks via API
+     */
+    function fetchMarketplaceStocks(variationId, callback) {
+        // If we have a URL to fetch marketplace stocks, use it
+        // Otherwise, we'll update from the response
+        if (window.ListingConfig && window.ListingConfig.urls && window.ListingConfig.urls.getVariationStocks) {
+            $.ajax({
+                url: window.ListingConfig.urls.getVariationStocks,
+                type: 'GET',
+                data: { variation_id: variationId },
+                success: function(data) {
+                    if (data && data.marketplace_stocks) {
+                        updateMarketplaceStockDisplays(variationId, data.marketplace_stocks);
+                    }
+                },
+                error: function() {
+                    console.warn('Could not fetch marketplace stocks');
+                }
+            });
+        }
+    }
+
+    /**
+     * Reset form after successful submission
+     */
+    function resetForm(variationId, originalButtonText) {
+        // Clear input
+        $('#add_total_' + variationId).val('');
+        // Restore button and hide it
+        const pushButton = $('#send_total_' + variationId);
+        pushButton.prop('disabled', false);
+        if (originalButtonText) {
+            pushButton.html(originalButtonText);
+        }
+        pushButton.addClass('d-none');
+        // Clear success message after 3 seconds
+        setTimeout(function() {
+            $('#success_total_' + variationId).text('');
+        }, 3000);
+    }
+
+})();
+
