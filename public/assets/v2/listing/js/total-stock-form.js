@@ -96,6 +96,12 @@
                         resetForm(variationId, originalButtonText);
                         $('#total_stock_' + variationId).val(totalStock);
                         $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        
+                        // Update listing total quantity display
+                        const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                        if (listingTotalElement.length) {
+                            listingTotalElement.text(totalStock);
+                        }
                         return;
                     } else {
                         // Fallback: calculate from current total + quantity added
@@ -111,6 +117,12 @@
                     // Update the total stock display
                     $('#total_stock_' + variationId).val(totalStock);
                     $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                    
+                    // Update listing total quantity display
+                    const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                    if (listingTotalElement.length) {
+                        listingTotalElement.text(totalStock);
+                    }
                     
                     // Update marketplace stock displays
                     updateMarketplaceStockDisplays(variationId, marketplaceStocks);
@@ -128,6 +140,13 @@
                         }
                         $('#total_stock_' + variationId).val(totalStock);
                         $('#success_total_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        
+                        // Update listing total quantity display
+                        const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                        if (listingTotalElement.length) {
+                            listingTotalElement.text(totalStock);
+                        }
+                        
                         resetForm(variationId, originalButtonText);
                         // Fetch marketplace stocks
                         fetchMarketplaceStocks(variationId, {});

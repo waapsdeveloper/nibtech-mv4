@@ -164,11 +164,15 @@
                                 class="badge global-marketplace-toggle-badge {{ $isFirst ? 'badge-active' : 'badge-inactive' }}" 
                                 style="cursor: pointer; user-select: none; background-color: transparent; border: 1px solid {{ $isFirst ? '#28a745' : '#000' }}; color: {{ $isFirst ? '#28a745' : '#000' }}; font-size: 0.9rem; font-weight: 500; padding: 0.35em 0.65em;"
                                 data-marketplace-id="{{ $marketplaceIdInt }}"
+                                data-initial-state="{{ $isFirst ? 'active' : 'inactive' }}"
                                 onclick="toggleGlobalMarketplace({{ $marketplaceIdInt }}, this)"
                                 title="Click to show/hide {{ $mpName }} for all listings">
                                 {{ $mpName }} 
                             </span>
                         @endforeach
+                        <button class="btn btn-sm btn-outline-secondary" onclick="clearMarketplaceState()" title="Clear marketplace selection state">
+                            <i class="fas fa-times"></i>
+                        </button>
                     </div>
                 @endif
                 

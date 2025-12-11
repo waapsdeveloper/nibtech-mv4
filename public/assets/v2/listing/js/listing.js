@@ -525,12 +525,25 @@ $(document).ready(function() {
  * Global marketplace toggle function
  */
 function toggleGlobalMarketplace(marketplaceId, badgeElement) {
-    // Toggle global state
+    // Initialize global state if not exists
     if (!window.globalMarketplaceState) {
         window.globalMarketplaceState = {};
     }
-    window.globalMarketplaceState[marketplaceId] = !window.globalMarketplaceState[marketplaceId];
+    
+    // Get current state (default to true if not set, based on initial state)
+    const badge = $(badgeElement);
+    const initialState = badge.data('initial-state');
+    const defaultIsActive = initialState === 'active';
+    const currentState = window.globalMarketplaceState.hasOwnProperty(marketplaceId) 
+        ? window.globalMarketplaceState[marketplaceId] 
+        : defaultIsActive;
+    
+    // Toggle global state
+    window.globalMarketplaceState[marketplaceId] = !currentState;
     const isVisible = window.globalMarketplaceState[marketplaceId];
+    
+    // Save state to localStorage
+    saveMarketplaceState();
     
     // Toggle all marketplace bars with this marketplace ID across all variations
     $('[id^="marketplace_bar_"]').each(function() {
@@ -547,6 +560,79 @@ function toggleGlobalMarketplace(marketplaceId, badgeElement) {
     });
     
     // Update badge appearance
+    updateBadgeAppearance(badgeElement, isVisible);
+}
+
+/**
+ * Save marketplace state to localStorage
+ */
+function saveMarketplaceState() {
+    if (window.globalMarketplaceState) {
+        localStorage.setItem('globalMarketplaceState', JSON.stringify(window.globalMarketplaceState));
+    }
+}
+
+/**
+ * Load marketplace state from localStorage
+ */
+function loadMarketplaceState() {
+    try {
+        const savedState = localStorage.getItem('globalMarketplaceState');
+        if (savedState) {
+            window.globalMarketplaceState = JSON.parse(savedState);
+            return true;
+        }
+    } catch (e) {
+        console.warn('Failed to load marketplace state from localStorage:', e);
+    }
+    return false;
+}
+
+/**
+ * Clear marketplace state and reset to defaults
+ */
+function clearMarketplaceState() {
+    // Clear localStorage
+    localStorage.removeItem('globalMarketplaceState');
+    
+    // Reset global state
+    window.globalMarketplaceState = {};
+    
+    // Reset all badges to their initial state
+    $('.global-marketplace-toggle-badge').each(function() {
+        const badge = $(this);
+        const marketplaceId = parseInt(badge.data('marketplace-id'));
+        const initialState = badge.data('initial-state');
+        const isActive = initialState === 'active';
+        
+        // Update state
+        window.globalMarketplaceState[marketplaceId] = isActive;
+        
+        // Update badge appearance
+        updateBadgeAppearance(badge[0], isActive);
+        
+        // Show/hide marketplace bars
+        $('[id^="marketplace_bar_"]').each(function() {
+            const id = $(this).attr('id');
+            const matches = id.match(/marketplace_bar_(\d+)_(\d+)/);
+            if (matches && parseInt(matches[2]) === marketplaceId) {
+                if (isActive) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            }
+        });
+    });
+    
+    // Save the reset state
+    saveMarketplaceState();
+}
+
+/**
+ * Update badge appearance based on state
+ */
+function updateBadgeAppearance(badgeElement, isVisible) {
     if (isVisible) {
         $(badgeElement).css({
             'border-color': '#28a745',
@@ -561,4 +647,62 @@ function toggleGlobalMarketplace(marketplaceId, badgeElement) {
         $(badgeElement).removeClass('badge-active').addClass('badge-inactive');
     }
 }
+
+/**
+ * Restore marketplace state on page load
+ */
+function restoreMarketplaceState() {
+    // Initialize global state if not exists
+    if (!window.globalMarketplaceState) {
+        window.globalMarketplaceState = {};
+    }
+    
+    // Load saved state
+    const hasSavedState = loadMarketplaceState();
+    
+    // Apply state to badges and marketplace bars
+    $('.global-marketplace-toggle-badge').each(function() {
+        const badge = $(this);
+        const marketplaceId = parseInt(badge.data('marketplace-id'));
+        const initialState = badge.data('initial-state');
+        const defaultIsActive = initialState === 'active';
+        
+        // Use saved state if exists, otherwise use initial state
+        let isVisible;
+        if (hasSavedState && window.globalMarketplaceState.hasOwnProperty(marketplaceId)) {
+            // Use saved state value
+            isVisible = window.globalMarketplaceState[marketplaceId] === true;
+        } else {
+            // Use initial state for first time
+            isVisible = defaultIsActive;
+            window.globalMarketplaceState[marketplaceId] = isVisible;
+        }
+        
+        // Update badge appearance
+        updateBadgeAppearance(badge[0], isVisible);
+        
+        // Show/hide marketplace bars
+        $('[id^="marketplace_bar_"]').each(function() {
+            const id = $(this).attr('id');
+            const matches = id.match(/marketplace_bar_(\d+)_(\d+)/);
+            if (matches && parseInt(matches[2]) === marketplaceId) {
+                if (isVisible) {
+                    $(this).show();
+                } else {
+                    $(this).hide();
+                }
+            }
+        });
+    });
+    
+    // Save state (in case we initialized defaults)
+    if (!hasSavedState) {
+        saveMarketplaceState();
+    }
+}
+
+// Restore state when DOM is ready
+$(document).ready(function() {
+    restoreMarketplaceState();
+});
 
