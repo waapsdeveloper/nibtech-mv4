@@ -706,23 +706,24 @@ class SupportTickets extends Component
                     'message' => $body,
                 ];
 
-                $careApiResponseRaw = app(BackMarketAPIController::class)
-                    ->apiPost('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
+                $careMeta = app(BackMarketAPIController::class)
+                    ->apiPostWithMeta('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
 
-                $careApiResponse = $this->convertToArray($careApiResponseRaw);
+                $careApiResponse = $this->convertToArray($careMeta['decoded'] ?? []);
 
                 // Care API may return 200/201 with an empty body; treat that as success.
-                if ($careApiResponse === [] && $careApiResponseRaw !== null) {
+                if ($careApiResponse === [] && ($careMeta['raw'] ?? '') !== '') {
                     $careApiResponse = ['status' => 'accepted'];
                 }
 
-                if ($careApiResponse === [] && $careApiResponseRaw === null) {
+                if ($careApiResponse === [] && (($careMeta['raw'] ?? null) === null || ($careMeta['raw'] === ''))) {
                     $this->replyError = 'Care API did not return a valid response.';
+                    $this->careReplyResponse = $careMeta;
 
                     return;
                 }
 
-                $this->careReplyResponse = $careApiResponse;
+                $this->careReplyResponse = $careMeta;
             } catch (\Throwable $exception) {
                 Log::error('Support reply via Care API failed', [
                     'thread_id' => $thread->id,
