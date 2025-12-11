@@ -104,8 +104,15 @@
                         return;
                     }
 
-                    // Skip if already connected
-                    if (qz.websocket.isActive()) {
+                    // Helper to check if connection is fully ready
+                    function isConnectionReady() {
+                        return qz.websocket.isActive()
+                            && qz.websocket.connection
+                            && typeof qz.websocket.connection.sendData === 'function';
+                    }
+
+                    // Skip if already connected and fully ready
+                    if (isConnectionReady()) {
                         console.log('✓ QZ Tray already connected globally');
                         window.qzGlobalConnectionEstablished = true;
                         return;
@@ -124,9 +131,9 @@
                     if (typeof startConnection === 'function') {
                         startConnection({ retries: 3, delay: 1 });
 
-                        // Monitor connection success
+                        // Monitor connection success - check for full readiness
                         var checkInterval = setInterval(function() {
-                            if (qz.websocket.isActive()) {
+                            if (isConnectionReady()) {
                                 clearInterval(checkInterval);
                                 window.qzGlobalConnectionEstablished = true;
                                 window.qzGlobalConnectionInProgress = false;
@@ -137,7 +144,7 @@
                         // Timeout after 10 seconds
                         setTimeout(function() {
                             clearInterval(checkInterval);
-                            if (!qz.websocket.isActive()) {
+                            if (!isConnectionReady()) {
                                 window.qzGlobalConnectionInProgress = false;
                                 console.log('⚠ Global QZ Tray connection timeout (will retry when needed)');
                             }
@@ -146,9 +153,23 @@
                         // Fallback to direct connection
                         qz.websocket.connect()
                             .then(function() {
-                                window.qzGlobalConnectionEstablished = true;
-                                window.qzGlobalConnectionInProgress = false;
-                                console.log('✓ Global QZ Tray connection established successfully');
+                                // Wait for sendData to be available
+                                var readyCheck = setInterval(function() {
+                                    if (isConnectionReady()) {
+                                        clearInterval(readyCheck);
+                                        window.qzGlobalConnectionEstablished = true;
+                                        window.qzGlobalConnectionInProgress = false;
+                                        console.log('✓ Global QZ Tray connection established successfully');
+                                    }
+                                }, 100);
+
+                                setTimeout(function() {
+                                    clearInterval(readyCheck);
+                                    if (!window.qzGlobalConnectionEstablished) {
+                                        window.qzGlobalConnectionInProgress = false;
+                                        console.log('⚠ QZ sendData not ready after connect');
+                                    }
+                                }, 3000);
                             })
                             .catch(function(err) {
                                 window.qzGlobalConnectionInProgress = false;
