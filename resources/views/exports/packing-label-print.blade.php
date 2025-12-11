@@ -632,19 +632,35 @@
                 // Small delay to ensure all resources are loaded
                 await new Promise(resolve => setTimeout(resolve, 300));
 
-                try {
-                    await sendToPrinter();
-                    updateStatus('Label sent to printer.', 'success');
-                    updatePrinterStatus('Print completed - closing in 1s', 'success');
-                    setTimeout(() => {
-                        window.close();
-                    }, 1000);
-                } catch (error) {
-                    console.error('Automatic label printing failed:', error);
-                    updateStatus('Printing failed - use buttons to retry or change printer', 'error');
-                    updatePrinterStatus('Print failed: ' + error.message, 'error');
-                    // Don't auto-close or redirect on error - let user interact with the panel
+                let retryCount = 0;
+                const maxRetries = 2;
+
+                async function attemptPrint() {
+                    try {
+                        await sendToPrinter();
+                        updateStatus('Label sent to printer.', 'success');
+                        updatePrinterStatus('Print completed - closing in 1s', 'success');
+                        setTimeout(() => {
+                            window.close();
+                        }, 1000);
+                    } catch (error) {
+                        console.error('Automatic label printing failed:', error);
+
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            updateStatus(`Print attempt ${retryCount} failed - retrying...`, 'warning');
+                            updatePrinterStatus(`Retrying (${retryCount}/${maxRetries})...`, 'warning');
+
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await attemptPrint();
+                        } else {
+                            updateStatus('Printing failed after ' + maxRetries + ' attempts - use buttons to retry or change printer', 'error');
+                            updatePrinterStatus('Print failed: ' + error.message, 'error');
+                        }
+                    }
                 }
+
+                await attemptPrint();
             });
 
             // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs
