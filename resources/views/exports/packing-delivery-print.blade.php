@@ -538,29 +538,28 @@
                 updateStatus('Sending delivery note to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
 
-                // Ensure QZ Tray API version is available before printing (avoids undefined version errors)
-                async function ensureQzVersion() {
-                    try {
-                        const v = await qz.api.getVersion();
-                        if (v) {
-                            qz.api.setVersion(v);
-                            return v;
-                        }
-                    } catch (e) {
-                        console.debug('Unable to read QZ version, falling back:', e);
-                    }
-                    // Fallback to a safe default; prevents versionCompare from reading undefined
-                    const fallback = '2.1.0';
-                    if (qz.api && typeof qz.api.setVersion === 'function') {
-                        qz.api.setVersion(fallback);
-                    }
-                    return fallback;
-                }
-
-                await ensureQzVersion();
-
                 if (!pdfBase64 || pdfBase64.length < 10) {
                     throw new Error('Delivery note PDF is empty or failed to load');
+                }
+
+                // Ensure version is populated before qz.print checks it
+                if (qz.websocket.connection && !qz.websocket.connection.semver) {
+                    try {
+                        const version = await qz.api.getVersion();
+                        if (version && typeof version === 'string') {
+                            // Parse version string like "2.2.4" into [2, 2, 4]
+                            qz.websocket.connection.semver = version.split('.').map(n => parseInt(n, 10) || 0);
+                            qz.websocket.connection.version = version;
+                        } else {
+                            // Fallback to a safe default version
+                            qz.websocket.connection.semver = [2, 2, 0];
+                            qz.websocket.connection.version = '2.2.0';
+                        }
+                    } catch (e) {
+                        console.debug('Unable to read QZ version, using fallback:', e);
+                        qz.websocket.connection.semver = [2, 2, 0];
+                        qz.websocket.connection.version = '2.2.0';
+                    }
                 }
 
                 const config = qz.configs.create(printer, {
