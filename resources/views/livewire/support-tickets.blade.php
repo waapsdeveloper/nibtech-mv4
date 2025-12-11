@@ -76,6 +76,23 @@
             @if ($careFolderFetchSuccess)
                 <div class="alert alert-success mt-2 mb-0">{{ $careFolderFetchSuccess }}</div>
             @endif
+
+            @if ($careFolderApiRequest || $careFolderApiResponse)
+                <details class="mt-3">
+                    <summary class="btn btn-sm btn-outline-info">📡 View API Request & Response</summary>
+                    <div class="bg-light border rounded p-3 mt-2">
+                        @if ($careFolderApiRequest)
+                            <h6 class="text-primary mb-2">Request</h6>
+                            <pre class="small mb-3" style="max-height: 220px; overflow: auto;"><code>{{ json_encode($careFolderApiRequest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                        @endif
+
+                        @if ($careFolderApiResponse)
+                            <h6 class="text-success mb-2">Response</h6>
+                            <pre class="small mb-0" style="max-height: 260px; overflow: auto;"><code>{{ json_encode($careFolderApiResponse, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                        @endif
+                    </div>
+                </details>
+            @endif
         </div>
 
         <div class="support-filters">
