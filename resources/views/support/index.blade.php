@@ -16,15 +16,15 @@
     .support-grid {
         display: grid;
         grid-template-columns: 360px 1fr;
-        gap: 1.5rem;
+        gap: 1rem;
         margin-top: 1rem;
     }
 
     .support-panel {
         background: #fff;
-        border-radius: 1.25rem;
+        border-radius: 1rem;
         box-shadow: 0 20px 45px rgba(15, 23, 42, 0.08);
-        padding: 1.25rem;
+        padding: 1rem;
         display: flex;
         flex-direction: column;
         min-height: 0;
@@ -86,19 +86,17 @@
     }
 
     .message-feed {
-        margin-top: 1.25rem;
-        padding: 1rem;
-        border-radius: 1rem;
+        margin-top: 0.75rem;
+        padding: 0.5rem;
+        border-radius: 0.75rem;
         background: #f6f7fb;
-        overflow-y: auto;
-        flex: 1;
     }
 
     .message {
         background: #fff;
-        border-radius: 1rem;
-        padding: 0.85rem 1rem;
-        margin-bottom: 0.85rem;
+        border-radius: 0.75rem;
+        padding: 0.6rem 0.75rem;
+        margin-bottom: 0.6rem;
         box-shadow: 0 10px 25px rgba(15, 23, 42, 0.05);
     }
 
@@ -160,22 +158,30 @@
 
     .support-meta-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 0.4rem;
+        margin-top: 0.5rem;
     }
 
     .meta-pill {
         background: #eef2ff;
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.85rem;
-        font-size: 0.9rem;
+        border-radius: 0.5rem;
+        padding: 0.35rem 0.5rem;
+        font-size: 0.8rem;
+    }
+
+    .support-sidebar-section {
+        margin-bottom: 0.75rem;
+    }
+
+    .support-sidebar-section:last-child {
+        margin-bottom: 0;
     }
 
     .support-reply-panel {
         border: 1px solid #e0e7ff;
-        border-radius: 1rem;
-        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        padding: 0.6rem 0.75rem;
         background: #fdfdff;
     }
 
@@ -185,8 +191,8 @@
 
     .support-order-panel {
         border: 1px solid #e2e8f0;
-        border-radius: 1rem;
-        padding: 1rem 1.25rem;
+        border-radius: 0.75rem;
+        padding: 0.5rem 0.75rem;
         background: #f8fafc;
     }
 

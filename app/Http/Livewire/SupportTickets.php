@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use TCPDF;
 
 class SupportTickets extends Component
 {
@@ -29,15 +30,10 @@ class SupportTickets extends Component
 
     public $search = '';
     public $status = '';
-    public $priority = '';
     public $marketplace = '';
-    public $tag = '';
     public $assigned = '';
-    public $changeOnly = false;
     public $perPage = 25;
     public $selectedThreadId;
-    public $sortField = 'last_external_activity_at';
-    public $sortDirection = 'desc';
     public array $messageTranslations = [];
     public array $expandedMessages = [];
     public $replySubject = '';
@@ -74,19 +70,24 @@ class SupportTickets extends Component
     public $careFolderDetails = null;
     public $careFolderMessages = [];
     public $careFolderError = null;
+    public $careFolderIdInput = '';
+    public $careFolderFetchError = null;
+    public $careFolderFetchSuccess = null;
+    public $careFolderApiRequest = null;
+    public $careFolderApiResponse = null;
+    public $careReplyRequest = null;
+    public $careReplyResponse = null;
+    public $aiSummary = null;
+    public $aiDraft = null;
+    public $aiError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
-        'priority' => ['except' => ''],
         'marketplace' => ['except' => ''],
-        'tag' => ['except' => ''],
         'assigned' => ['except' => ''],
-        'changeOnly' => ['except' => false],
         'perPage' => ['except' => 25],
-        'sortField' => ['except' => 'last_external_activity_at'],
-        'sortDirection' => ['except' => 'desc'],
         'page' => ['except' => 1],
     ];
 
@@ -95,10 +96,7 @@ class SupportTickets extends Component
     public function mount(): void
     {
         $this->perPage = $this->sanitizePerPage($this->perPage);
-        $this->sortField = $this->sanitizeSortField($this->sortField);
-        $this->sortDirection = $this->sanitizeSortDirection($this->sortDirection);
         $this->syncLookback = $this->sanitizeSyncLookback($this->syncLookback);
-        $this->carePageSize = $this->sanitizeCarePageSize($this->carePageSize);
     }
 
     public function updated($property, $value): void
@@ -107,23 +105,11 @@ class SupportTickets extends Component
             $this->perPage = $this->sanitizePerPage($value);
         }
 
-        if ($property === 'sortField') {
-            $this->sortField = $this->sanitizeSortField($value);
-        }
-
-        if ($property === 'sortDirection') {
-            $this->sortDirection = $this->sanitizeSortDirection($value);
-        }
-
         if ($property === 'syncLookback') {
             $this->syncLookback = $this->sanitizeSyncLookback($value);
         }
 
-        if ($property === 'carePageSize') {
-            $this->carePageSize = $this->sanitizeCarePageSize($value);
-        }
-
-        $filters = ['search', 'status', 'priority', 'marketplace', 'tag', 'assigned', 'changeOnly', 'perPage', 'sortField', 'sortDirection'];
+        $filters = ['search', 'status', 'marketplace', 'assigned', 'perPage'];
 
         if (in_array($property, $filters, true)) {
             $this->resetPage();
@@ -134,13 +120,8 @@ class SupportTickets extends Component
     {
         $this->search = '';
         $this->status = '';
-        $this->priority = '';
         $this->marketplace = '';
-        $this->tag = '';
         $this->assigned = '';
-        $this->changeOnly = false;
-        $this->sortField = 'last_external_activity_at';
-        $this->sortDirection = 'desc';
         $this->perPage = 25;
         $this->selectedThreadId = null;
         $this->messageTranslations = [];
@@ -202,6 +183,139 @@ class SupportTickets extends Component
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
         $this->hydrateCareFolder();
+    }
+
+    public function fetchCareFolder(): void
+    {
+        $this->hydrateCareFolder();
+    }
+
+    public function fetchCareFolderById(): void
+    {
+        $this->careFolderFetchError = null;
+        $this->careFolderFetchSuccess = null;
+        $this->careFolderApiRequest = null;
+        $this->careFolderApiResponse = null;
+
+        $folderId = trim($this->careFolderIdInput);
+
+        if ($folderId === '') {
+            $this->careFolderFetchError = 'Please enter a Care folder ID.';
+            return;
+        }
+
+        // Capture request details
+        $baseUrl = config('services.backmarket.base_url', 'https://www.backmarket.fr/ws/');
+        $endpoint = 'sav/' . $folderId;
+        $fullUrl = $baseUrl . $endpoint;
+
+        $this->careFolderApiRequest = [
+            'method' => 'GET',
+            'url' => $fullUrl,
+            'endpoint' => $endpoint,
+            'folder_id' => $folderId,
+            'headers' => [
+                'Accept' => 'application/json',
+                'Accept-Language' => 'en',
+                'Authorization' => 'Basic [REDACTED]',
+                'User-Agent' => 'NIB System',
+            ],
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        Log::info('Back Market Care API Request', [
+            'folder_id' => $folderId,
+            'url' => $fullUrl,
+            'method' => 'GET',
+        ]);
+
+        try {
+            $controller = app(BackMarketAPIController::class);
+            $folder = $controller->getCare($folderId);
+        } catch (\Throwable $e) {
+            $this->careFolderApiResponse = [
+                'status' => 'error',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'timestamp' => now()->toIso8601String(),
+            ];
+
+            Log::warning('Manual Care folder fetch failed', [
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->careFolderFetchError = 'Failed to fetch folder: ' . $e->getMessage();
+            return;
+        }
+
+        if (!$folder) {
+            $this->careFolderFetchError = 'Care API returned empty response for ID: ' . $folderId;
+            return;
+        }
+
+        if (isset($folder->results)) {
+            $folder = $folder->results;
+        }
+
+        $folderArray = $this->convertToArray($folder);
+
+        $this->careFolderApiResponse = [
+            'status' => 'success',
+            'data' => $folderArray,
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        Log::info('Back Market Care API Response', [
+            'folder_id' => $folderId,
+            'response' => $folderArray,
+        ]);
+
+        if (empty($folderArray)) {
+            $this->careFolderFetchError = 'Could not parse Care API response.';
+            return;
+        }
+
+        // Prime UI preview data before saving
+        $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
+        $messages = data_get($folderArray, 'messages', []);
+        if (!is_array($messages)) {
+            $messages = $this->convertToArray($messages);
+        }
+        $this->careFolderMessages = collect($messages)
+            ->filter()
+            ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
+            ->values()
+            ->all();
+
+        // Persist into support storage (thread + messages)
+        try {
+            $syncService = app(\App\Services\Support\BackMarketCareSyncService::class);
+            $thread = $syncService->importCase($folderArray);
+        } catch (\Throwable $e) {
+            Log::warning('Care folder save failed', [
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->careFolderFetchError = 'Fetched folder but failed to save to DB: ' . $e->getMessage();
+            return;
+        }
+
+        $this->selectThread($thread->id);
+        $stateLabel = $this->careFolderDetails['state_label'] ?? ($this->careFolderDetails['state'] ?? 'N/A');
+        $orderId = $this->careFolderDetails['order_id'] ?? 'N/A';
+        $buyerEmail = $this->careFolderDetails['buyer_email'] ?? 'N/A';
+
+        $this->careFolderFetchSuccess = sprintf(
+            'Care folder #%s saved and ticket selected (Order: %s, State: %s, Email: %s).',
+            $folderId,
+            $orderId,
+            $stateLabel,
+            $buyerEmail
+        );
+
+        $this->careFolderIdInput = '';
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void
@@ -332,13 +446,6 @@ class SupportTickets extends Component
 
     public function getThreadsProperty(): LengthAwarePaginator
     {
-        $sortable = ['last_external_activity_at', 'priority', 'status', 'created_at'];
-        $sortField = in_array($this->sortField, $sortable, true)
-            ? $this->sortField
-            : 'last_external_activity_at';
-
-        $sortDirection = $this->sortDirection === 'asc' ? 'asc' : 'desc';
-
         return SupportThread::query()
             ->with([
                 'tags',
@@ -360,14 +467,9 @@ class SupportTickets extends Component
                 });
             })
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
-            ->when($this->priority !== '', fn ($query) => $query->where('priority', $this->priority))
             ->when($this->marketplace !== '', fn ($query) => $query->where('marketplace_id', $this->marketplace))
             ->when($this->assigned !== '', fn ($query) => $query->where('assigned_to', $this->assigned))
-            ->when($this->changeOnly, fn ($query) => $query->where('change_of_mind', true))
-            ->when($this->tag !== '', function ($query) {
-                $query->whereHas('tags', fn ($tagQuery) => $tagQuery->where('support_tags.id', $this->tag));
-            })
-            ->orderBy($sortField, $sortDirection)
+            ->orderByDesc('last_external_activity_at')
             ->orderByDesc('id')
             ->paginate($this->perPage);
     }
@@ -412,18 +514,6 @@ class SupportTickets extends Component
         }
 
         return $value;
-    }
-
-    protected function sanitizeSortField(?string $field): string
-    {
-        $allowed = ['last_external_activity_at', 'priority', 'status', 'created_at'];
-
-        return in_array($field, $allowed, true) ? $field : 'last_external_activity_at';
-    }
-
-    protected function sanitizeSortDirection(?string $direction): string
-    {
-        return $direction === 'asc' ? 'asc' : 'desc';
     }
 
     protected function prepareTextForTranslation(SupportMessage $message): string
@@ -563,6 +653,9 @@ class SupportTickets extends Component
     {
         $this->replyStatus = null;
         $this->replyError = null;
+        $this->aiError = null;
+        $this->careReplyRequest = null;
+        $this->careReplyResponse = null;
 
         if (! $this->selectedThreadId) {
             $this->replyError = 'Select a thread before replying.';
@@ -583,13 +676,8 @@ class SupportTickets extends Component
             return;
         }
 
+        $isCareThread = $thread->marketplace_source === 'backmarket_care';
         $recipient = $this->replyRecipientEmail ?: ($thread->reply_email ?? $thread->buyer_email);
-
-        if (! $recipient) {
-            $this->replyError = 'This ticket does not have a valid recipient email.';
-
-            return;
-        }
 
         $subject = $this->replySubject ?: $this->defaultReplySubject($thread);
         $body = trim($this->replyBody ?? '');
@@ -600,17 +688,70 @@ class SupportTickets extends Component
             return;
         }
 
-        try {
-            app(SupportEmailSender::class)->sendHtml($recipient, $subject, $this->formatReplyHtml($body));
-        } catch (\Throwable $exception) {
-            Log::error('Support reply failed', [
-                'thread_id' => $thread->id,
-                'recipient' => $recipient,
-                'error' => $exception->getMessage(),
-            ]);
-            $this->replyError = $exception->getMessage();
+        $careFolderId = null;
+        $careApiResponse = null;
 
-            return;
+        if ($isCareThread) {
+            $careFolderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+            if (! $careFolderId) {
+                $this->replyError = 'Back Market Care folder id is missing for this ticket.';
+
+                return;
+            }
+
+            try {
+                $this->careReplyRequest = [
+                    'folder_id' => $careFolderId,
+                    'message' => $body,
+                ];
+
+                $careApiResponseRaw = app(BackMarketAPIController::class)
+                    ->apiPost('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
+
+                $careApiResponse = $this->convertToArray($careApiResponseRaw);
+
+                // Care API may return 200/201 with an empty body; treat that as success.
+                if ($careApiResponse === [] && $careApiResponseRaw !== null) {
+                    $careApiResponse = ['status' => 'accepted'];
+                }
+
+                if ($careApiResponse === [] && $careApiResponseRaw === null) {
+                    $this->replyError = 'Care API did not return a valid response.';
+
+                    return;
+                }
+
+                $this->careReplyResponse = $careApiResponse;
+            } catch (\Throwable $exception) {
+                Log::error('Support reply via Care API failed', [
+                    'thread_id' => $thread->id,
+                    'folder_id' => $careFolderId,
+                    'error' => $exception->getMessage(),
+                ]);
+                $this->replyError = 'Care API rejected the reply: ' . $exception->getMessage();
+
+                return;
+            }
+        } else {
+            if (! $recipient) {
+                $this->replyError = 'This ticket does not have a valid recipient email.';
+
+                return;
+            }
+
+            try {
+                app(SupportEmailSender::class)->sendHtml($recipient, $subject, $this->formatReplyHtml($body));
+            } catch (\Throwable $exception) {
+                Log::error('Support reply failed', [
+                    'thread_id' => $thread->id,
+                    'recipient' => $recipient,
+                    'error' => $exception->getMessage(),
+                ]);
+                $this->replyError = $exception->getMessage();
+
+                return;
+            }
         }
 
         $author = Admin_model::find(session('user_id'));
@@ -627,7 +768,9 @@ class SupportTickets extends Component
             'sent_at' => now(),
             'is_internal_note' => false,
             'metadata' => [
-                'source' => 'support_portal',
+                'source' => $isCareThread ? 'backmarket_care_api' : 'support_portal',
+                'care_folder_id' => $careFolderId,
+                'care_api_response' => $careApiResponse,
             ],
         ]);
 
@@ -638,11 +781,17 @@ class SupportTickets extends Component
         $thread->save();
 
         $this->replyBody = '';
-        $this->replyStatus = 'Reply sent via Gmail.';
+        $this->replyStatus = $isCareThread
+            ? 'Reply sent via Back Market Care API.'
+            : 'Reply sent via Gmail.';
         $this->messageTranslations = [];
         $this->expandedMessages = [];
         $this->replyFormThreadId = $thread->id;
         $this->emitSelf('supportThreadsUpdated');
+
+        if ($isCareThread) {
+            $this->hydrateCareFolder($thread);
+        }
     }
 
     protected function hydrateReplyDefaults(?SupportThread $thread = null): void
@@ -670,15 +819,18 @@ class SupportTickets extends Component
     {
         $thread = $thread ?: $this->selectedThread;
 
-        if (! $thread) {
-            $this->marketplaceOrderUrl = null;
-            $this->canCancelOrder = false;
-            $this->orderActionStatus = null;
-            $this->orderActionError = null;
-            $this->orderActionPayload = null;
-            $this->invoiceActionStatus = null;
-            $this->invoiceActionError = null;
+        $this->aiSummary = null;
+        $this->aiDraft = null;
+        $this->aiError = null;
+        $this->marketplaceOrderUrl = null;
+        $this->canCancelOrder = false;
+        $this->orderActionStatus = null;
+        $this->orderActionError = null;
+        $this->orderActionPayload = null;
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
 
+        if (! $thread) {
             return;
         }
 
@@ -761,6 +913,11 @@ class SupportTickets extends Component
             data_get($folder, 'orderline.order_id'),
             data_get($folder, 'orderline.order.order_id'),
             data_get($folder, 'lines.0.order_id'),
+            data_get($folder, 'order'),
+            data_get($folder, 'order_number'),
+            data_get($folder, 'orderNumber'),
+            data_get($folder, 'lines.0.order'),
+            data_get($folder, 'lines.0.order_number'),
         ]);
 
         $orderline = $this->preferCareValue([
@@ -842,17 +999,40 @@ class SupportTickets extends Component
             data_get($folder, 'order.billing_address.email'),
         ]);
 
+        $sellerName = $this->preferCareScalar([
+            data_get($folder, 'seller_name'),
+            data_get($folder, 'seller.name'),
+            data_get($folder, 'merchant_name'),
+            data_get($folder, 'merchant.name'),
+        ]);
+
+        $trackingNumber = $this->preferCareScalar([
+            data_get($folder, 'tracking_number'),
+            data_get($folder, 'tracking'),
+            data_get($folder, 'shipment.tracking_number'),
+        ]);
+
+        $messagesCount = data_get($folder, 'messages_count') ?? data_get($folder, 'message_count') ?? (is_array(data_get($folder, 'messages')) ? count(data_get($folder, 'messages')) : null);
+
         return [
             'id' => $this->stringifyCareValue(data_get($folder, 'id')),
             'order_id' => $orderId,
             'orderline' => $orderline,
+            'orderline_id' => $this->stringifyCareValue(data_get($folder, 'orderline_id') ?? data_get($folder, 'orderline.id') ?? data_get($folder, 'lines.0.id')),
             'topic' => $topic,
             'state' => $state,
+            'state_label' => $this->decodeCareState($state),
             'priority' => $priority,
             'summary' => $summary,
             'reason_code' => $reason,
             'buyer_email' => $buyerEmail,
             'buyer_name' => $buyerName !== '' ? $buyerName : null,
+            'seller_name' => $sellerName,
+            'tracking_number' => $trackingNumber,
+            'messages_count' => $messagesCount,
+            'type' => $this->stringifyCareValue(data_get($folder, 'type')),
+            'source' => $this->stringifyCareValue(data_get($folder, 'source')),
+            'channel' => $this->stringifyCareValue(data_get($folder, 'channel')),
             'created_at' => $createdAt,
             'created_at_human' => $this->formatCareDate($createdAt),
             'last_message_at' => $lastMessageAt,
@@ -862,6 +1042,29 @@ class SupportTickets extends Component
             'portal_url' => $this->stringifyCareValue(data_get($folder, 'portal_url')),
             'raw' => $folder,
         ];
+    }
+
+    protected function decodeCareState(?string $state): string
+    {
+        if (!$state) {
+            return 'Unknown';
+        }
+
+        // Back Market Care state codes
+        $states = [
+            '1' => 'Open',
+            '2' => 'In Progress',
+            '3' => 'Waiting Customer',
+            '4' => 'Waiting Seller',
+            '5' => 'Pending',
+            '6' => 'Solved',
+            '7' => 'Closed',
+            '8' => 'Cancelled',
+            '9' => 'Waiting Seller Response',
+            '10' => 'Escalated',
+        ];
+
+        return $states[$state] ?? "State $state";
     }
 
     protected function normalizeCareMessage(array $message): array
@@ -1082,6 +1285,7 @@ class SupportTickets extends Component
             $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
             $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
+            $this->maybeSendBackmarketPartialRefundAttachment($thread, $order, $payload, $isPartial);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -1362,6 +1566,161 @@ class SupportTickets extends Component
         }
     }
 
+    protected function maybeSendBackmarketPartialRefundAttachment(SupportThread $thread, Order_model $order, array $payload, bool $isPartial): void
+    {
+        if (! $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial)) {
+            return;
+        }
+
+        $folderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+        if (! $folderId) {
+            Log::warning('Back Market attachment skipped: missing folder id', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+            ]);
+
+            return;
+        }
+
+        $orderLabel = $order->reference_id ?? $order->reference ?? ('#' . $order->id);
+        $message = 'Partial refund invoice attached for order ' . $orderLabel . '.';
+
+        try {
+            $pdf = $this->buildPartialRefundPdf($payload);
+
+            app(BackMarketAPIController::class)->sendCareMessageWithAttachment($folderId, $message, $pdf);
+
+            Log::info('Back Market partial refund invoice posted', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'folder_id' => $folderId,
+            ]);
+        } catch (\Throwable $exception) {
+            Log::warning('Back Market Care attachment failed', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'folder_id' => $folderId,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    protected function shouldSendBackmarketInvoiceAttachment(SupportThread $thread, bool $isPartial): bool
+    {
+        return $isPartial
+            && $thread->marketplace_source === 'backmarket_care'
+            && config('services.backmarket.care_send_attachments', false);
+    }
+
+    protected function buildPartialRefundPdf(array $payload): array
+    {
+        $pdf = new TCPDF();
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetTitle('Partial Refund Invoice');
+        $pdf->AddPage();
+        $pdf->SetFont('dejavusans', '', 12);
+
+        $html = view('export.partial_refund_invoice', $payload)->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        $pdfOutput = $pdf->Output('partial-refund-invoice.pdf', 'S');
+
+        return [
+            'data' => $pdfOutput,
+            'name' => 'partial-refund-invoice.pdf',
+            'mime' => 'application/pdf',
+        ];
+    }
+
+    public function generateAiAssist(): void
+    {
+        $this->aiError = null;
+        $this->aiSummary = null;
+        $this->aiDraft = null;
+
+        if (! $this->selectedThreadId) {
+            $this->aiError = 'Select a ticket first.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->aiError = 'Thread not found.';
+
+            return;
+        }
+
+        $thread->loadMissing('messages');
+
+        $messages = collect($thread->messages ?? [])
+            ->sortByDesc(function ($message) {
+                return $message->sent_at ?: $message->created_at ?: $message->id;
+            })
+            ->values();
+
+        if ($messages->isEmpty()) {
+            $this->aiError = 'No messages to summarize yet.';
+
+            return;
+        }
+
+        $recent = $messages->take(8);
+
+        $context = $recent->map(function ($message) {
+            $role = $message->is_internal_note ? 'Note' : ($message->direction === 'outbound' ? 'Support' : 'Customer');
+
+            $text = $message->body_text
+                ?: ($message->clean_body_html ?? '')
+                ?: ($message->body_html ?? '');
+
+            if ($text && $message->body_html) {
+                $text = $this->plainTextFromHtml($message->body_html);
+            }
+
+            $clean = trim(preg_replace('/\s+/', ' ', $text ?? ''));
+
+            return $role . ': ' . $this->shorten($clean ?: '[no content]', 180);
+        })->filter()->values();
+
+        if ($context->isEmpty()) {
+            $this->aiError = 'Could not derive text from recent messages.';
+
+            return;
+        }
+
+        $summary = 'Recent activity — ' . $context->implode(' | ');
+        $this->aiSummary = $this->shorten($summary, 480);
+
+        $name = $thread->buyer_name ?: 'there';
+        $orderRef = $thread->order_reference
+            ?: ($thread->external_thread_id ? ltrim($thread->external_thread_id, '#') : 'your order');
+        $channelNote = $thread->marketplace_source === 'backmarket_care'
+            ? "We'll post this via Back Market Care."
+            : 'We will reply by email.';
+
+        $this->aiDraft = sprintf(
+            "Hi %s,\n\nThanks for your message about %s. I reviewed the recent updates: %s\n\nSuggested reply:\n- Acknowledge their concern in one line.\n- Share the current status or the action we just took.\n- Provide the next step and expected timing.\n\n%s\n\nBest regards,\nSupport Team",
+            $name,
+            $orderRef,
+            $this->aiSummary,
+            $channelNote
+        );
+    }
+
+    public function useAiDraft(): void
+    {
+        if (! $this->aiDraft) {
+            $this->aiError = 'Generate a draft first.';
+
+            return;
+        }
+
+        $this->replyBody = $this->aiDraft;
+    }
+
     protected function defaultReplySubject(SupportThread $thread): string
     {
         $base = $thread->order_reference
@@ -1376,6 +1735,16 @@ class SupportTickets extends Component
         $withBreaks = nl2br($escaped);
 
         return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4;">' . $withBreaks . '</div>';
+    }
+
+    protected function shorten(string $text, int $limit = 180): string
+    {
+        $clean = trim(preg_replace('/\s+/', ' ', $text));
+        if (strlen($clean) <= $limit) {
+            return $clean;
+        }
+
+        return substr($clean, 0, $limit - 3) . '...';
     }
 
     protected function buildSyncSources(): array
@@ -1409,45 +1778,18 @@ class SupportTickets extends Component
             '--care-last-id' => $this->careLastId,
         ];
 
-        foreach ($filters as $flag => $value) {
-            $value = is_string($value) ? trim($value) : $value;
+        foreach ($filters as $flag => $raw) {
+            if (is_string($raw)) {
+                $raw = trim($raw);
+            }
 
-            if ($value === null || $value === '') {
+            if ($raw === null || $raw === '') {
                 continue;
             }
 
-            $options[$flag] = (string) $value;
-        }
-
-        $pageSize = $this->sanitizeCarePageSize($this->carePageSize);
-        if ($pageSize !== '') {
-            $options['--care-page-size'] = $pageSize;
-        }
-
-        $extra = trim((string) $this->careExtraQuery);
-        if ($extra !== '') {
-            $options['--care-extra'] = ltrim($extra, '&?');
+            $options[$flag] = (string) $raw;
         }
 
         return $options;
-    }
-
-    protected function sanitizeCarePageSize($value): string
-    {
-        if ($value === null || $value === '' || ! is_numeric($value)) {
-            $value = 50;
-        }
-
-        $value = (int) $value;
-
-        if ($value < 1) {
-            $value = 1;
-        }
-
-        if ($value > 200) {
-            $value = 200;
-        }
-
-        return (string) $value;
     }
 }
