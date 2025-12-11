@@ -309,8 +309,9 @@ class BackMarketAPIController extends Controller
                 'Accept' => 'application/json',
                 'Authorization' => 'Basic ' . $authToken,
             ])
+            // Back Market docs show a single part named "attachment"; avoid array syntax to ensure the file is linked.
             ->attach(
-                'attachments[]',
+                'attachment',
                 $attachment['data'] ?? '',
                 $attachment['name'] ?? 'invoice.pdf',
                 isset($attachment['mime']) && $attachment['mime'] ? ['Content-Type' => $attachment['mime']] : []
