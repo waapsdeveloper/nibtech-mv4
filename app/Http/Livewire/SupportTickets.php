@@ -61,6 +61,9 @@ class SupportTickets extends Component
     public $careFolderDetails = null;
     public $careFolderMessages = [];
     public $careFolderError = null;
+    public $careFolderIdInput = '';
+    public $careFolderFetchError = null;
+    public $careFolderFetchSuccess = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -169,6 +172,80 @@ class SupportTickets extends Component
     public function fetchCareFolder(): void
     {
         $this->hydrateCareFolder();
+    }
+
+    public function fetchCareFolderById(): void
+    {
+        $this->careFolderFetchError = null;
+        $this->careFolderFetchSuccess = null;
+
+        $folderId = trim($this->careFolderIdInput);
+
+        if ($folderId === '') {
+            $this->careFolderFetchError = 'Please enter a Care folder ID.';
+            return;
+        }
+
+        try {
+            $controller = app(BackMarketAPIController::class);
+            $folder = $controller->getCare($folderId);
+        } catch (\Throwable $e) {
+            Log::warning('Manual Care folder fetch failed', [
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+            ]);
+            $this->careFolderFetchError = 'Failed to fetch folder: ' . $e->getMessage();
+            return;
+        }
+
+        if (!$folder) {
+            $this->careFolderFetchError = 'Care API returned empty response for ID: ' . $folderId;
+            return;
+        }
+
+        if (isset($folder->results)) {
+            $folder = $folder->results;
+        }
+
+        $folderArray = $this->convertToArray($folder);
+
+        if (empty($folderArray)) {
+            $this->careFolderFetchError = 'Could not parse Care API response.';
+            return;
+        }
+
+        // Try to find or create a support thread for this folder
+        $externalThreadId = (string) data_get($folderArray, 'id');
+        $orderId = $this->preferCareValue([
+            data_get($folderArray, 'order_id'),
+            data_get($folderArray, 'order.order_id'),
+            data_get($folderArray, 'orderline.order_id'),
+        ]);
+
+        $thread = SupportThread::where('external_thread_id', $externalThreadId)
+            ->where('marketplace_source', 'backmarket_care')
+            ->first();
+
+        if ($thread) {
+            $this->selectThread($thread->id);
+            $this->careFolderFetchSuccess = 'Care folder loaded successfully! Ticket selected.';
+        } else {
+            // Display the folder details without a thread
+            $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
+            $messages = data_get($folderArray, 'messages', []);
+            if (!is_array($messages)) {
+                $messages = $this->convertToArray($messages);
+            }
+            $this->careFolderMessages = collect($messages)
+                ->filter()
+                ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
+                ->values()
+                ->all();
+
+            $this->careFolderFetchSuccess = 'Care folder fetched (Order: ' . ($orderId ?? 'N/A') . '). No existing ticket found in system.';
+        }
+
+        $this->careFolderIdInput = '';
     }
 
     public function translateMessage(int $messageId, string $target = 'en'): void

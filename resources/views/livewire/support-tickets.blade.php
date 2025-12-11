@@ -51,6 +51,33 @@
             <div class="alert alert-success mb-3">{{ $syncStatus }}</div>
         @endif
 
+        <div class="bg-light border rounded p-3 mb-3">
+            <div class="row g-2 align-items-end">
+                <div class="col-md-8">
+                    <label class="form-label fw-semibold mb-1">Fetch Care Folder by ID</label>
+                    <input type="text" class="form-control" placeholder="Enter Care folder ID" wire:model="careFolderIdInput">
+                </div>
+                <div class="col-md-4">
+                    <button type="button" class="btn btn-primary w-100" wire:click="fetchCareFolderById" wire:loading.attr="disabled">
+                        <span wire:loading.remove wire:target="fetchCareFolderById">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                            Fetch Folder
+                        </span>
+                        <span wire:loading wire:target="fetchCareFolderById">
+                            <span class="spinner-border spinner-border-sm me-1" role="status"></span>
+                            Fetching...
+                        </span>
+                    </button>
+                </div>
+            </div>
+            @if ($careFolderFetchError)
+                <div class="alert alert-danger mt-2 mb-0">{{ $careFolderFetchError }}</div>
+            @endif
+            @if ($careFolderFetchSuccess)
+                <div class="alert alert-success mt-2 mb-0">{{ $careFolderFetchSuccess }}</div>
+            @endif
+        </div>
+
         <div class="support-filters">
             <div>
                 <label class="form-label fw-semibold">Search</label>
