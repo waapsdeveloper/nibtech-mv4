@@ -163,8 +163,17 @@
                  */
                 window.ensureQzConnection = function(timeout = 5000) {
                     return new Promise(function(resolve, reject) {
-                        // Already connected
-                        if (typeof qz !== 'undefined' && qz.websocket && qz.websocket.isActive()) {
+                        // Check if connection is fully ready (not just active, but sendData method is available)
+                        function isConnectionReady() {
+                            return typeof qz !== 'undefined'
+                                && qz.websocket
+                                && qz.websocket.isActive()
+                                && qz.websocket.connection
+                                && typeof qz.websocket.connection.sendData === 'function';
+                        }
+
+                        // Already connected and ready
+                        if (isConnectionReady()) {
                             console.log('✓ Using existing global QZ Tray connection');
                             resolve();
                             return;
@@ -186,10 +195,10 @@
                             }
                         }
 
-                        // Wait for connection
+                        // Wait for connection to be fully ready
                         const startTime = Date.now();
                         const checkInterval = setInterval(function() {
-                            if (qz.websocket.isActive()) {
+                            if (isConnectionReady()) {
                                 clearInterval(checkInterval);
                                 console.log('✓ QZ Tray connection ready');
                                 resolve();
@@ -207,7 +216,9 @@
                 window.isQzConnected = function() {
                     return typeof qz !== 'undefined' &&
                            qz.websocket &&
-                           qz.websocket.isActive();
+                           qz.websocket.isActive() &&
+                           qz.websocket.connection &&
+                           typeof qz.websocket.connection.sendData === 'function';
                 };
 
                 // Initialize connection when page loads
