@@ -405,7 +405,7 @@
                                                 <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
                                             </svg>
                                         </summary>
-                                        <div class="care-details-collapsible mt-2">a">
+                                        <div class="care-details-collapsible mt-2">
                                         <div class="meta-pill">
                                             <div class="text-muted small">State</div>
                                             <div class="fw-semibold">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</div>
