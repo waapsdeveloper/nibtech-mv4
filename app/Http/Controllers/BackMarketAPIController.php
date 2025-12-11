@@ -226,15 +226,18 @@ class BackMarketAPIController extends Controller
             throw new RuntimeException('Care folder id is required to post messages.');
         }
 
-        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/messages';
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/msg';
+
+        // Use config('backmarket.api_key_2') if available (for Care API), otherwise fall back to main token
+        $authToken = config('backmarket.api_key_2') ?: self::$YOUR_ACCESS_TOKEN;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . self::$YOUR_ACCESS_TOKEN,
+            'Authorization' => 'Basic ' . $authToken,
             'Accept-Language' => $country_code,
             'User-Agent' => self::$YOUR_USER_AGENT,
-        ])->asJson()->post($url, [
-            'message' => $message,
+        ])->asMultipart()->post($url, [
+            ['name' => 'message', 'contents' => $message],
         ]);
 
         return [
@@ -242,6 +245,8 @@ class BackMarketAPIController extends Controller
             'decoded' => $response->json(),
             'raw' => $response->body(),
             'error' => $response->successful() ? null : ($response->body() ?: 'HTTP '.$response->status()),
+            'url' => $url,
+            'token_source' => config('backmarket.api_key_2') ? 'config(backmarket.api_key_2)' : 'BM_API1',
         ];
     }
 
@@ -294,11 +299,14 @@ class BackMarketAPIController extends Controller
             throw new RuntimeException('Care folder id is required to post attachments.');
         }
 
-        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/messages';
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/msg';
+
+        // Use config('backmarket.api_key_2') if available (for Care API), otherwise fall back to main token
+        $authToken = config('backmarket.api_key_2') ?: self::$YOUR_ACCESS_TOKEN;
 
         $response = Http::withHeaders([
             'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . self::$YOUR_ACCESS_TOKEN,
+            'Authorization' => 'Basic ' . $authToken,
         ])->attach(
             'attachment',
             $attachment['data'] ?? '',
