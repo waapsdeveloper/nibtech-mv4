@@ -263,46 +263,44 @@ class SupportTickets extends Component
             return;
         }
 
-        // Try to find or create a support thread for this folder
-        $externalThreadId = (string) data_get($folderArray, 'id');
-        $orderId = $this->preferCareValue([
-            data_get($folderArray, 'order_id'),
-            data_get($folderArray, 'order.order_id'),
-            data_get($folderArray, 'orderline.order_id'),
-        ]);
-
-        $thread = SupportThread::where('external_thread_id', $externalThreadId)
-            ->where('marketplace_source', 'backmarket_care')
-            ->first();
-
-        if ($thread) {
-            $this->selectThread($thread->id);
-            $this->careFolderFetchSuccess = 'Care folder loaded successfully! Ticket selected.';
-        } else {
-            // Display the folder details without a thread
-            $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
-            $messages = data_get($folderArray, 'messages', []);
-            if (!is_array($messages)) {
-                $messages = $this->convertToArray($messages);
-            }
-            $this->careFolderMessages = collect($messages)
-                ->filter()
-                ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
-                ->values()
-                ->all();
-
-            $summary = $this->careFolderDetails['summary'] ?? 'N/A';
-            $stateLabel = $this->careFolderDetails['state_label'] ?? ($this->careFolderDetails['state'] ?? 'N/A');
-            $buyerEmail = $this->careFolderDetails['buyer_email'] ?? 'N/A';
-
-            $this->careFolderFetchSuccess = sprintf(
-                'Care folder #%s fetched (Order: %s, State: %s, Email: %s). No existing ticket found - showing preview below.',
-                $folderId,
-                $orderId ?? 'N/A',
-                $stateLabel,
-                $buyerEmail
-            );
+        // Prime UI preview data before saving
+        $this->careFolderDetails = $this->normalizeCareFolder($folderArray);
+        $messages = data_get($folderArray, 'messages', []);
+        if (!is_array($messages)) {
+            $messages = $this->convertToArray($messages);
         }
+        $this->careFolderMessages = collect($messages)
+            ->filter()
+            ->map(fn ($message) => $this->normalizeCareMessage($this->convertToArray($message)))
+            ->values()
+            ->all();
+
+        // Persist into support storage (thread + messages)
+        try {
+            $syncService = app(\App\Services\Support\BackMarketCareSyncService::class);
+            $thread = $syncService->importCase($folderArray);
+        } catch (\Throwable $e) {
+            Log::warning('Care folder save failed', [
+                'folder_id' => $folderId,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            $this->careFolderFetchError = 'Fetched folder but failed to save to DB: ' . $e->getMessage();
+            return;
+        }
+
+        $this->selectThread($thread->id);
+        $stateLabel = $this->careFolderDetails['state_label'] ?? ($this->careFolderDetails['state'] ?? 'N/A');
+        $orderId = $this->careFolderDetails['order_id'] ?? 'N/A';
+        $buyerEmail = $this->careFolderDetails['buyer_email'] ?? 'N/A';
+
+        $this->careFolderFetchSuccess = sprintf(
+            'Care folder #%s saved and ticket selected (Order: %s, State: %s, Email: %s).',
+            $folderId,
+            $orderId,
+            $stateLabel,
+            $buyerEmail
+        );
 
         $this->careFolderIdInput = '';
     }
