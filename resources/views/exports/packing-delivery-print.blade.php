@@ -539,11 +539,25 @@
                 updatePrinterStatus('Sending to printer...', 'info');
 
                 // Ensure QZ Tray API version is available before printing (avoids undefined version errors)
-                try {
-                    await qz.api.getVersion();
-                } catch (e) {
-                    console.debug('Unable to read QZ version, continuing with print:', e);
+                async function ensureQzVersion() {
+                    try {
+                        const v = await qz.api.getVersion();
+                        if (v) {
+                            qz.api.setVersion(v);
+                            return v;
+                        }
+                    } catch (e) {
+                        console.debug('Unable to read QZ version, falling back:', e);
+                    }
+                    // Fallback to a safe default; prevents versionCompare from reading undefined
+                    const fallback = '2.1.0';
+                    if (qz.api && typeof qz.api.setVersion === 'function') {
+                        qz.api.setVersion(fallback);
+                    }
+                    return fallback;
                 }
+
+                await ensureQzVersion();
 
                 if (!pdfBase64 || pdfBase64.length < 10) {
                     throw new Error('Delivery note PDF is empty or failed to load');
