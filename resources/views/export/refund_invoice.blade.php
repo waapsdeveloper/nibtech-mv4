@@ -273,10 +273,19 @@
                         <td></td>
                         <td colspan="3">
                             <table cellpadding="5">
+                                    @php
+                                        $partialAmount = isset($partialRefundAmount) ? (float) $partialRefundAmount : null;
+                                    @endphp
                                     <tr>
                                         <td>Sub Total:</td>
                                         <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
                                     </tr>
+                                    @if(! is_null($partialAmount))
+                                    <tr>
+                                        <td>Partial Refund Amount:</td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($partialAmount, 2) }}</strong></td>
+                                    </tr>
+                                    @endif
                                     <br>
                                     <br>
                                     <hr>
