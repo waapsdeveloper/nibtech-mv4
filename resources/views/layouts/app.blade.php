@@ -115,7 +115,11 @@
         <script>
 
             $(document).ready(function() {
-                $('.select2').select2();
+                if ($.fn.select2) {
+                    $('.select2').select2();
+                } else {
+                    console.warn('select2 is not loaded');
+                }
             });
         </script>
         @if (request('autoprint') == 1)
@@ -136,8 +140,7 @@
 
         {{-- Global QZ Tray Connection Manager --}}
         {{-- Note: qz-tray.js is already loaded in layouts.components.scripts --}}
-            @php($isQzEnabled = filter_var(env('QZ_TRAY_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
-            @if($isQzEnabled)
+            @php($isQzEnabled = true)
         <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
@@ -169,6 +172,21 @@
                     if (typeof qz === 'undefined' || !qz.websocket) {
                         console.log('QZ Tray library not loaded - skipping global connection');
                         return;
+                    }
+
+                    // Ensure connection options include localhost/127.0.0.1 and allow insecure fallback
+                    try {
+                        qz.websocket.connectConfig.host = ['localhost', '127.0.0.1'];
+                        qz.websocket.connectConfig.usingSecure = false;
+                        qz.websocket.connectConfig.port = {
+                            secure: [8181, 8282, 8383, 8484],
+                            insecure: [8182, 8283, 8384, 8485],
+                            portIndex: 0
+                        };
+                        qz.websocket.connectConfig.retries = 2;
+                        qz.websocket.connectConfig.delay = 0.5;
+                    } catch (e) {
+                        console.debug('Unable to set QZ connection config', e);
                     }
 
                     // Helper to check if connection is fully ready
@@ -330,18 +348,6 @@
 
                 console.log('Global QZ Tray Connection Manager initialized');
             })();
-        </script>
-        @else
-        <script>
-            // QZ Tray is disabled - provide stub functions for compatibility
-            window.qzConnectionManager = {
-                isConnected: function() { return false; },
-                ensureConnection: function() { return Promise.reject(new Error('QZ Tray is disabled')); },
-                reconnect: function() { console.log('QZ Tray is disabled'); }
-            };
-            window.isQzConnected = function() { return false; };
-            window.ensureQzConnection = function() { return Promise.reject(new Error('QZ Tray is disabled')); };
-            console.log('QZ Tray is disabled via QZ_TRAY_ENABLED environment variable');
         </script>
         @endif
     </body>
