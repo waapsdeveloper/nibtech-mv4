@@ -6,7 +6,7 @@ use App\Models\Country_model;
 use App\Models\Marketplace_model;
 use Exception;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Http;
+// use Illuminate\Support\Facades\Http; // This line is already present
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
 use RuntimeException;
@@ -212,6 +212,37 @@ class BackMarketAPIController extends Controller
         $meta = $this->apiPostWithMeta($end_point, $request, $country_code);
 
         return $meta['decoded'];
+    }
+
+    public function sendCareMessageMeta($folderId, string $message, $country_code = null): array
+    {
+        if($country_code == null){
+            $country_code = self::$COUNTRY_CODE;
+        }
+
+        $folderId = trim((string) $folderId);
+
+        if ($folderId === '') {
+            throw new RuntimeException('Care folder id is required to post messages.');
+        }
+
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/messages';
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic ' . self::$YOUR_ACCESS_TOKEN,
+            'Accept-Language' => $country_code,
+            'User-Agent' => self::$YOUR_USER_AGENT,
+        ])->asJson()->post($url, [
+            'message' => $message,
+        ]);
+
+        return [
+            'status' => $response->status(),
+            'decoded' => $response->json(),
+            'raw' => $response->body(),
+            'error' => $response->successful() ? null : ($response->body() ?: 'HTTP '.$response->status()),
+        ];
     }
 
     public function apiPatch($end_point, $request = '', $content_type='application/json') {
