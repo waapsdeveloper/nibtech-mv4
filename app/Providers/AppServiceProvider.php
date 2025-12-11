@@ -8,6 +8,9 @@ use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Session;
+use Illuminate\Database\Migrations\Migrator;
+use Illuminate\Filesystem\Filesystem;
+use Illuminate\Database\Migrations\MigrationRepositoryInterface;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -34,6 +37,30 @@ class AppServiceProvider extends ServiceProvider
         if ($this->app->environment('testing')) {
             return;
         }
+
+        // Exclude live_migrations folder from automatic migration runs
+        $this->app->bind('migrator', function ($app) {
+            $repository = $app['migration.repository'];
+            $files = $app['files'];
+            
+            return new class($repository, $app['db'], $files) extends Migrator {
+                public function getMigrationFiles($paths)
+                {
+                    // Get all migration files using parent logic
+                    $allFiles = parent::getMigrationFiles($paths);
+                    
+                    // Filter out files in live_migrations folder
+                    $filteredFiles = [];
+                    foreach ($allFiles as $key => $file) {
+                        if (strpos($file, 'live_migrations') === false) {
+                            $filteredFiles[$key] = $file;
+                        }
+                    }
+                    
+                    return $filteredFiles;
+                }
+            };
+        });
 
         // Handle locale settings
         view()->composer('*', function ($view) {

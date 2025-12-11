@@ -19,9 +19,5 @@
         <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
         <span class="text-success small" id="success_total_{{ $variationId }}"></span>
     </form>
-    <!-- Dropdown chevron for marketplace and stocks -->
-    <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_stocks_dropdown_{{ $variationId }}" aria-expanded="false" aria-controls="marketplace_stocks_dropdown_{{ $variationId }}" style="min-width: 24px;">
-        <i class="fas fa-chevron-down"></i>
-    </button>
 </div>
 
