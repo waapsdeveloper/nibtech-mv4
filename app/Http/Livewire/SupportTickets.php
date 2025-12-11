@@ -1364,7 +1364,4 @@ class SupportTickets extends Component
 
         return $options;
     }
-
-        return (string) $value;
-    }
 }
