@@ -69,22 +69,12 @@
     $pendingBmCount = $pendingBmOrders->count();
     $difference = $availableCount - $pendingCount;
     
-    // State
-    $state = 'Unknown';
-    switch($variation->state ?? null) {
-        case 0: $state = 'Missing price or comment'; break;
-        case 1: $state = 'Pending validation'; break;
-        case 2: $state = 'Online'; break;
-        case 3: $state = 'Offline'; break;
-        case 4: $state = 'Deactivated'; break;
-    }
-    
     // Get withoutBuybox HTML from variation data
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
 
-<div class="card">
-    <div class="card-header py-0 d-flex justify-content-between">
+<div class="card" style="padding-left: 5px; padding-right: 5px; width: 100%;">
+    <div class="card-header py-0 d-flex justify-content-between" style="padding-left: 5px; padding-right: 5px;">
         <div>
             <h5>
                 <a href="{{url('inventory')}}?sku={{ $sku }}" title="View Inventory" target="_blank">
@@ -95,12 +85,6 @@
                     - {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}
                 </a>
             </h5>
-            <span id="sales_{{ $variationId }}">{!! $variation->sales_data ?? '' !!}</span>
-            
-        </div>
-
-        <div class="d-flex flex-column align-items-end gap-2">
-            
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
                     <h6 class="mb-0">
@@ -117,63 +101,67 @@
                     <span class="text-muted">|</span>
                     <h6 class="mb-0">Difference: {{ $difference }}</h6>
                 </div>
-                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
-                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
-                    {{ $state }}
-                </span>
                 <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal">
                     <i class="fas fa-history"></i>
                 </a>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_total_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
-                    @csrf
-                    @if($process_id)
-                        <input type="hidden" name="process_id" value="{{ $process_id }}">
-                    @endif
-                    <div class="form-floating">
-                        <input type="text" class="form-control" id="total_stock_{{ $variationId }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
-                        <label for="">Total Stock</label>
-                    </div>
-                    <div class="form-floating" style="width: 60px;">
-                        <input type="number" class="form-control form-control-sm" name="stock" id="add_total_{{ $variationId }}" value="" style="width:60px; height: 31px;">
-                        <label for="" class="small">Add</label>
-                    </div>
-                    <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
-                    <span class="text-success small" id="success_total_{{ $variationId }}"></span>
-                </form>
-            </div>
+        </div>
+
+        <div class="d-flex flex-column align-items-end gap-2">
+            @include('v2.listing.partials.total-stock-form', [
+                'variationId' => $variationId,
+                'totalStock' => $totalStock,
+                'process_id' => $process_id ?? null
+            ])
         </div>
 
         
 
         {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
     </div>
-    {{-- Details section removed - tables now shown in marketplace toggle sections --}}
-    {{-- Marketplace Bars Section - Card Footer --}}
-    @if(isset($marketplaces) && count($marketplaces) > 0)
-        <div class="card-footer p-0 border-top mt-2">
-            @foreach($marketplaces as $marketplaceId => $marketplace)
-                @php
-                    $marketplaceIdInt = (int)$marketplaceId;
-                    $isFirst = $loop->first;
-                @endphp
-                <div class="marketplace-bar-container" id="marketplace_bar_{{ $variationId }}_{{ $marketplaceIdInt }}" style="display: {{ $isFirst ? 'block' : 'none' }};">
-                    @include('v2.listing.partials.marketplace-bar', [
-                        'variation' => $variation,
+    
+    {{-- Marketplace & Stocks Dropdown Section --}}
+    <div class="collapse" id="marketplace_stocks_dropdown_{{ $variationId }}">
+        <div class="card-body border-top p-0" style="width: 100%;">
+            <div class="row g-0" style="width: 100%; margin: 0;">
+                {{-- Left Column: Marketplace Bars --}}
+                <div class="col-md-8 border-end" style="max-height: 600px; overflow-y: auto;">
+                    <div class="">
+                        @if(isset($marketplaces) && count($marketplaces) > 0)
+                            @foreach($marketplaces as $marketplaceId => $marketplace)
+                                @php
+                                    $marketplaceIdInt = (int)$marketplaceId;
+                                    $isFirst = $loop->first;
+                                @endphp
+                                <div class="marketplace-bar-container" id="marketplace_bar_{{ $variationId }}_{{ $marketplaceIdInt }}" style="display: {{ $isFirst ? 'block' : 'none' }};">
+                                    @include('v2.listing.partials.marketplace-bar', [
+                                        'variation' => $variation,
+                                        'variationId' => $variationId,
+                                        'marketplace' => $marketplace,
+                                        'marketplaceId' => $marketplaceId,
+                                        'process_id' => $process_id ?? null
+                                    ])
+                                </div>
+                            @endforeach
+                        @else
+                            <div class="text-center text-muted p-3">
+                                <small>No marketplaces available</small>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
+                {{-- Right Column: Stocks Section --}}
+                <div class="col-md-4" style="max-height: 600px; overflow-y: auto;">
+                    @include('v2.listing.partials.marketplace-stocks-section', [
                         'variationId' => $variationId,
-                        'marketplace' => $marketplace,
-                        'marketplaceId' => $marketplaceId,
+                        'marketplaces' => $marketplaces ?? [],
                         'process_id' => $process_id ?? null
                     ])
                 </div>
-            @endforeach
+            </div>
         </div>
-    @else
-        <div class="card-footer mt-3 p-2 text-center text-muted border-top">
-            <small>No marketplaces available</small>
-        </div>
-    @endif
+    </div>
 </div>
 
 

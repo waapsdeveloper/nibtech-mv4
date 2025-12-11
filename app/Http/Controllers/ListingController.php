@@ -21,13 +21,21 @@ use App\Models\Products_model;
 use App\Models\Stock_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
+use App\Events\VariationStockUpdated;
+use App\Services\Marketplace\StockDistributionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class ListingController extends Controller
 {
-    //
+    protected $stockDistributionService;
+
+    public function __construct(StockDistributionService $stockDistributionService)
+    {
+        $this->stockDistributionService = $stockDistributionService;
+    }
+
     public function index()
     {
 
@@ -802,6 +810,11 @@ class ListingController extends Controller
         if($stock == 'no'){
             $stock = request('stock');
         }
+        
+        // Check if this is an exact stock set request (from stock formula page)
+        $setExactStock = request('set_exact_stock', false);
+        $exactStockValue = request('exact_stock_value', null);
+        
         if($process_id == null && request('process_id') != null){
             $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
             if($process != null){
@@ -821,37 +834,102 @@ class ListingController extends Controller
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
-        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
-        if($check_active_verification != null){
-            $new_quantity = $stock - $pending_orders;
-            // $new_quantity = $stock;
-        }else{
-            if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
-                $new_quantity = $stock;
+        // If setting exact stock, use the exact value directly
+        if($setExactStock && $exactStockValue !== null){
+            $new_quantity = (int)$exactStockValue;
+        } else {
+            // Normal flow: calculate based on addition
+            $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
+            if($check_active_verification != null){
+                $new_quantity = $stock - $pending_orders;
+                // $new_quantity = $stock;
             }else{
-                $new_quantity = $stock + $previous_qty;
+                if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
+                    $new_quantity = $stock;
+                }else{
+                    $new_quantity = $stock + $previous_qty;
+                }
             }
         }
+        
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
             return $response;
         }
-        if($response->quantity != null){
-            $variation->listed_stock = $response->quantity;
-            $variation->save();
+        
+        // Check if response is valid object and has quantity property
+        $responseQuantity = null;
+        if($response && is_object($response) && isset($response->quantity)){
+            $responseQuantity = $response->quantity;
+        } else {
+            // If API response doesn't have quantity, use the new_quantity we sent
+            $responseQuantity = $new_quantity;
+            Log::warning("API response missing quantity property for variation ID $id, using calculated value: $new_quantity");
         }
+        
+        if($responseQuantity != null){
+            $oldStock = $variation->listed_stock;
+            $variation->listed_stock = $responseQuantity;
+            $variation->save();
+            
+            // Calculate stock change
+            if($setExactStock && $exactStockValue !== null){
+                // For exact stock set: calculate the difference
+                $stockChange = $responseQuantity - $oldStock;
+            } else {
+                // For normal addition: use the stock parameter
+                $stockChange = (int)$stock;
+            }
+            
+            // Distribute stock to marketplaces based on formulas (synchronously)
+            if($stockChange != 0){
+                // Call distribution service directly to ensure it completes before response
+                // Pass flag to ignore remaining stock if it's an exact set
+                $this->stockDistributionService->distributeStock(
+                    $variation->id,
+                    $stockChange,
+                    $responseQuantity, // Pass total stock for formulas that use apply_to: total
+                    $setExactStock // Pass flag to ignore remaining stock
+                );
+                
+                // Note: Event listener is disabled to prevent double distribution
+                // Distribution is done synchronously above to ensure it completes before response
+                // If you need event logging, add it here without triggering distribution
+            }
+            
+            // Get updated marketplace stocks after distribution
+            $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variation->id)
+                ->get()
+                ->mapWithKeys(function($stock) {
+                    return [$stock->marketplace_id => $stock->listed_stock];
+                });
+        } else {
+            $marketplaceStocks = collect();
+        }
+        
         $listed_stock_verification = new Listed_stock_verification_model();
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
         $listed_stock_verification->pending_orders = $pending_orders;
         $listed_stock_verification->qty_from = $previous_qty;
         $listed_stock_verification->qty_change = $stock;
-        $listed_stock_verification->qty_to = $response->quantity;
+        $listed_stock_verification->qty_to = $responseQuantity ?? 0;
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
 
-        return $response->quantity;
+        // Return JSON response with total stock and marketplace stocks
+        // Check if request is AJAX by checking headers
+        if(request()->ajax() || request()->expectsJson() || request()->wantsJson() || request()->header('X-Requested-With') == 'XMLHttpRequest'){
+            return response()->json([
+                'quantity' => (int)($responseQuantity ?? 0),
+                'total_stock' => (int)($responseQuantity ?? 0),
+                'marketplace_stocks' => $marketplaceStocks->toArray()
+            ]);
+        }
+        
+        // For non-AJAX requests, return plain text (backward compatibility)
+        return (string)($responseQuantity ?? 0);
     }
     
     /**
