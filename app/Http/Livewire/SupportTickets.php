@@ -243,14 +243,14 @@ class SupportTickets extends Component
                 ->all();
 
             $summary = $this->careFolderDetails['summary'] ?? 'N/A';
-            $state = $this->careFolderDetails['state'] ?? 'N/A';
+            $stateLabel = $this->careFolderDetails['state_label'] ?? ($this->careFolderDetails['state'] ?? 'N/A');
             $buyerEmail = $this->careFolderDetails['buyer_email'] ?? 'N/A';
 
             $this->careFolderFetchSuccess = sprintf(
                 'Care folder #%s fetched (Order: %s, State: %s, Email: %s). No existing ticket found - showing preview below.',
                 $folderId,
                 $orderId ?? 'N/A',
-                $state,
+                $stateLabel,
                 $buyerEmail
             );
         }
@@ -791,6 +791,11 @@ class SupportTickets extends Component
             data_get($folder, 'orderline.order_id'),
             data_get($folder, 'orderline.order.order_id'),
             data_get($folder, 'lines.0.order_id'),
+            data_get($folder, 'order'),
+            data_get($folder, 'order_number'),
+            data_get($folder, 'orderNumber'),
+            data_get($folder, 'lines.0.order'),
+            data_get($folder, 'lines.0.order_number'),
         ]);
 
         $orderline = $this->preferCareValue([
@@ -878,6 +883,7 @@ class SupportTickets extends Component
             'orderline' => $orderline,
             'topic' => $topic,
             'state' => $state,
+            'state_label' => $this->decodeCareState($state),
             'priority' => $priority,
             'summary' => $summary,
             'reason_code' => $reason,
@@ -892,6 +898,29 @@ class SupportTickets extends Component
             'portal_url' => $this->stringifyCareValue(data_get($folder, 'portal_url')),
             'raw' => $folder,
         ];
+    }
+
+    protected function decodeCareState(?string $state): string
+    {
+        if (!$state) {
+            return 'Unknown';
+        }
+
+        // Back Market Care state codes
+        $states = [
+            '1' => 'Open',
+            '2' => 'In Progress',
+            '3' => 'Waiting Customer',
+            '4' => 'Waiting Seller',
+            '5' => 'Pending',
+            '6' => 'Solved',
+            '7' => 'Closed',
+            '8' => 'Cancelled',
+            '9' => 'Waiting Seller Response',
+            '10' => 'Escalated',
+        ];
+
+        return $states[$state] ?? "State $state";
     }
 
     protected function normalizeCareMessage(array $message): array
