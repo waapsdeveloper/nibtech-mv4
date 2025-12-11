@@ -315,6 +315,17 @@
                             @if ($orderActionStatus || $invoiceActionStatus)
                                 <div class="alert alert-success py-0 px-1 mb-1" style="font-size: 0.75rem;">{{ $orderActionStatus ?: $invoiceActionStatus }}</div>
                             @endif
+                            @if ($careAttachmentRequest || $careAttachmentResponse)
+                                <div class="alert alert-secondary py-0 px-1 mb-1" style="font-size: 0.7rem;">
+                                    <div class="fw-semibold mb-1">Care Attachment Debug</div>
+                                    @if ($careAttachmentRequest)
+                                        <div class="mb-1"><span class="text-muted">Request:</span> <code style="font-size: 0.65rem;">{{ json_encode($careAttachmentRequest) }}</code></div>
+                                    @endif
+                                    @if ($careAttachmentResponse)
+                                        <div><span class="text-muted">Response:</span> <code style="font-size: 0.65rem;">{{ json_encode($careAttachmentResponse) }}</code></div>
+                                    @endif
+                                </div>
+                            @endif
 
                             @if ($orderActionPayload)
                                 @php
