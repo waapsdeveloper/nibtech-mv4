@@ -596,11 +596,12 @@
                     @endforeach
                 </div>
 
+                @php $isCareThread = optional($selectedThread)->marketplace_source === 'backmarket_care'; @endphp
                 <div class="support-reply-panel mt-4">
                     <div class="d-flex justify-content-between align-items-center mb-3">
                         <div>
                             <h6 class="mb-0">Compose reply</h6>
-                            <small class="text-muted">Message sends through the connected Gmail API</small>
+                            <small class="text-muted">{{ $isCareThread ? 'Message sends through the Back Market Care API' : 'Message sends through the connected Gmail API' }}</small>
                         </div>
                         <div class="text-muted small" wire:loading wire:target="sendReply">Sending…</div>
                     </div>
@@ -611,9 +612,9 @@
                         <div class="alert alert-danger py-2 px-3">{{ $replyError }}</div>
                     @endif
                     <div class="mb-3">
-                        <label class="form-label">To</label>
-                        <input type="text" class="form-control" value="{{ $replyRecipient ?: 'No recipient available' }}" disabled>
-                        @if (! $replyRecipientEmail)
+                        <label class="form-label">{{ $isCareThread ? 'Care folder' : 'To' }}</label>
+                        <input type="text" class="form-control" value="{{ $isCareThread ? ($selectedThread->external_thread_id ?? 'No folder id') : ($replyRecipient ?: 'No recipient available') }}" disabled>
+                        @if (! $replyRecipientEmail && ! $isCareThread)
                             <small class="text-danger">Recipient email missing for this ticket.</small>
                         @endif
                     </div>
@@ -632,10 +633,10 @@
                         @enderror
                     </div>
                     <div class="d-flex justify-content-between align-items-center">
-                        <small class="text-muted">Replies are logged here and emailed instantly.</small>
-                        <button type="button" class="btn btn-primary" wire:click="sendReply" wire:loading.attr="disabled" wire:target="sendReply" @if (! $replyRecipientEmail) disabled @endif>
+                        <small class="text-muted">{{ $isCareThread ? 'Replies post directly to Back Market Care.' : 'Replies are logged here and emailed instantly.' }}</small>
+                        <button type="button" class="btn btn-primary" wire:click="sendReply" wire:loading.attr="disabled" wire:target="sendReply" @if (! $replyRecipientEmail && ! $isCareThread) disabled @endif>
                             <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendReply"></span>
-                            Send via Gmail
+                            {{ $isCareThread ? 'Send via Care API' : 'Send via Gmail' }}
                         </button>
                     </div>
                 </div>
