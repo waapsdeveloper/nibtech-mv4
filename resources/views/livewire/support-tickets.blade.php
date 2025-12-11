@@ -428,6 +428,18 @@
 
                             <div class="support-order-meta mt-3">
                                 <div class="meta-pill">
+                                    <div class="text-muted small">Care Folder ID</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['id'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Order ID</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Orderline ID</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['orderline_id'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
                                     <div class="text-muted small">Topic</div>
                                     <div class="fw-semibold">{{ $careFolderDetails['topic'] ?? 'n/a' }}</div>
                                 </div>
@@ -436,18 +448,40 @@
                                     <div class="fw-semibold">{{ $careFolderDetails['reason_code'] ?? 'n/a' }}</div>
                                 </div>
                                 <div class="meta-pill">
-                                    <div class="text-muted small">Order ID</div>
-                                    <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                    <div class="text-muted small">Type</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['type'] ?? 'n/a' }}</div>
                                 </div>
                                 <div class="meta-pill">
-                                    <div class="text-muted small">Orderline</div>
-                                    <div class="fw-semibold">{{ $careFolderDetails['orderline'] ?? 'n/a' }}</div>
+                                    <div class="text-muted small">Source</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['source'] ?? 'n/a' }}</div>
+                                </div>
+                                <div class="meta-pill">
+                                    <div class="text-muted small">Channel</div>
+                                    <div class="fw-semibold">{{ $careFolderDetails['channel'] ?? 'n/a' }}</div>
                                 </div>
                                 <div class="meta-pill">
                                     <div class="text-muted small">Buyer</div>
                                     <div class="fw-semibold">{{ $careFolderDetails['buyer_name'] ?? 'Unknown' }}</div>
                                     <small class="text-muted">{{ $careFolderDetails['buyer_email'] ?? 'n/a' }}</small>
                                 </div>
+                                @if (!empty($careFolderDetails['seller_name']))
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Seller</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['seller_name'] }}</div>
+                                    </div>
+                                @endif
+                                @if (!empty($careFolderDetails['tracking_number']))
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Tracking</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['tracking_number'] }}</div>
+                                    </div>
+                                @endif
+                                @if (!empty($careFolderDetails['messages_count']))
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Messages</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['messages_count'] }}</div>
+                                    </div>
+                                @endif
                                 <div class="meta-pill">
                                     <div class="text-muted small">Created</div>
                                     <div class="fw-semibold">{{ $careFolderDetails['created_at_human'] ?? ($careFolderDetails['created_at'] ?? 'n/a') }}</div>
@@ -462,6 +496,14 @@
                                 </div>
                             </div>
                         </div>
+
+                        @if (!empty($careFolderDetails['portal_url']))
+                            <div class="mt-3">
+                                <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
+                                    Open in Back Market Portal
+                                </a>
+                            </div>
+                        @endif
 
                         @if (!empty($careFolderDetails['raw']))
                             <details class="mt-3">
@@ -663,6 +705,18 @@
 
                                 <div class="support-order-meta mt-3">
                                     <div class="meta-pill">
+                                        <div class="text-muted small">Care Folder ID</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['id'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Order ID</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Orderline ID</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['orderline_id'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
                                         <div class="text-muted small">Topic</div>
                                         <div class="fw-semibold">{{ $careFolderDetails['topic'] ?? 'n/a' }}</div>
                                     </div>
@@ -671,18 +725,40 @@
                                         <div class="fw-semibold">{{ $careFolderDetails['reason_code'] ?? 'n/a' }}</div>
                                     </div>
                                     <div class="meta-pill">
-                                        <div class="text-muted small">Order ID</div>
-                                        <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                        <div class="text-muted small">Type</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['type'] ?? 'n/a' }}</div>
                                     </div>
                                     <div class="meta-pill">
-                                        <div class="text-muted small">Orderline</div>
-                                        <div class="fw-semibold">{{ $careFolderDetails['orderline'] ?? 'n/a' }}</div>
+                                        <div class="text-muted small">Source</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['source'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Channel</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['channel'] ?? 'n/a' }}</div>
                                     </div>
                                     <div class="meta-pill">
                                         <div class="text-muted small">Buyer</div>
                                         <div class="fw-semibold">{{ $careFolderDetails['buyer_name'] ?? 'Unknown' }}</div>
                                         <small class="text-muted">{{ $careFolderDetails['buyer_email'] ?? 'n/a' }}</small>
                                     </div>
+                                    @if (!empty($careFolderDetails['seller_name']))
+                                        <div class="meta-pill">
+                                            <div class="text-muted small">Seller</div>
+                                            <div class="fw-semibold">{{ $careFolderDetails['seller_name'] }}</div>
+                                        </div>
+                                    @endif
+                                    @if (!empty($careFolderDetails['tracking_number']))
+                                        <div class="meta-pill">
+                                            <div class="text-muted small">Tracking</div>
+                                            <div class="fw-semibold">{{ $careFolderDetails['tracking_number'] }}</div>
+                                        </div>
+                                    @endif
+                                    @if (!empty($careFolderDetails['messages_count']))
+                                        <div class="meta-pill">
+                                            <div class="text-muted small">Messages</div>
+                                            <div class="fw-semibold">{{ $careFolderDetails['messages_count'] }}</div>
+                                        </div>
+                                    @endif
                                     <div class="meta-pill">
                                         <div class="text-muted small">Created</div>
                                         <div class="fw-semibold">{{ $careFolderDetails['created_at_human'] ?? ($careFolderDetails['created_at'] ?? 'n/a') }}</div>
@@ -697,6 +773,14 @@
                                     </div>
                                 </div>
                             </div>
+
+                            @if (!empty($careFolderDetails['portal_url']))
+                                <div class="mt-3">
+                                    <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
+                                        Open in Back Market Portal
+                                    </a>
+                                </div>
+                            @endif
 
                             @if (!empty($careFolderDetails['raw']))
                                 <details class="mt-3">
