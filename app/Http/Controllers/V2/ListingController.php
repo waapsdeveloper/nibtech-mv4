@@ -83,13 +83,13 @@ class ListingController extends Controller
         $data['exchange_rates'] = ExchangeRate::pluck('rate','target_currency');
         $data['currencies'] = Currency_model::pluck('code','id');
         $data['currency_sign'] = Currency_model::pluck('sign','id');
-        
+
         // Filter data
         $data['categories'] = Category_model::all();
         $data['brands'] = Brand_model::all();
         $data['products'] = Products_model::all();
         $data['marketplaces_dropdown'] = Marketplace_model::pluck('name','id')->toArray();
-        
+
         $countries = Country_model::all();
         foreach($countries as $country){
             $data['countries'][$country->id] = $country;
@@ -102,7 +102,7 @@ class ListingController extends Controller
         // Get variations using the same logic as original ListingController
         $perPage = $request->input('per_page', 10);
         $variations = $this->buildVariationQuery($request)->paginate($perPage)->appends($request->except('page'));
-        
+
         // Calculate global marketplace listing counts across all variations
         $globalMarketplaceCounts = [];
         foreach($data['marketplaces'] as $marketplaceId => $marketplace) {
@@ -111,15 +111,15 @@ class ListingController extends Controller
                 'total_count' => 0
             ];
         }
-        
+
         // Calculate sales data, withoutBuybox HTML, and marketplace data for each variation
         foreach($variations as $variation) {
             $variation->sales_data = $this->calculationService->calculateSalesData($variation->id);
-            
+
             // Build withoutBuybox HTML (listings without buybox from marketplace_id == 1)
             $withoutBuybox = '';
             $listingsWithoutBuybox = $variation->listings->where('buybox', '!=', 1)->where('marketplace_id', 1);
-            
+
             foreach($listingsWithoutBuybox as $listing) {
                 $country = $listing->country_id ?? null;
                 if ($country && is_object($country)) {
@@ -127,7 +127,7 @@ class ListingController extends Controller
                     $marketUrl = $country->market_url ?? '';
                     $marketCode = $country->market_code ?? '';
                     $referenceUuid2 = $listing->reference_uuid_2 ?? '';
-                    
+
                     if ($countryCode && $marketUrl && $marketCode && $referenceUuid2) {
                         $withoutBuybox .= '<a href="https://www.backmarket.' . $marketUrl . '/' . $marketCode . '/p/gb/' . $referenceUuid2 . '" target="_blank" class="btn btn-link text-danger border border-danger p-1 m-1">';
                         $withoutBuybox .= '<img src="' . asset('assets/img/flags/' . $countryCode . '.svg') . '" height="10">';
@@ -135,9 +135,9 @@ class ListingController extends Controller
                     }
                 }
             }
-            
+
             $variation->withoutBuybox = $withoutBuybox;
-            
+
             // Calculate marketplace data for each variation
             // Group listings by marketplace and calculate counts
             // Use the same logic as original - filter listings by marketplace_id
@@ -145,28 +145,28 @@ class ListingController extends Controller
             foreach($data['marketplaces'] as $marketplaceId => $marketplace) {
                 // Ensure marketplaceId is integer for consistent key matching
                 $marketplaceIdInt = (int)$marketplaceId;
-                
+
                 // Filter listings exactly as original does - using strict comparison
                 $marketplaceListings = $variation->listings->filter(function($listing) use ($marketplaceIdInt) {
                     // Get marketplace_id from listing
                     $listingMarketplaceId = $listing->marketplace_id;
-                    
+
                     // Only include listings with non-null marketplace_id that exactly matches
                     if ($listingMarketplaceId === null) {
                         return false;
                     }
-                    
+
                     // Use strict integer comparison (same as original JavaScript: listing.marketplace_id == marketplaceId)
                     return (int)$listingMarketplaceId === $marketplaceIdInt;
                 })->values(); // Reset keys to ensure proper collection
-                
+
                 $listingCount = $marketplaceListings->count();
 
-                Log::info('Marketplace listings by id : ', ['marketplace_id' => $marketplaceIdInt, 'listing_count' => $listingCount]);
-                
+                // Log::info('Marketplace listings by id : ', ['marketplace_id' => $marketplaceIdInt, 'listing_count' => $listingCount]);
+
                 // Calculate order summary for this marketplace
                 $orderSummary = $this->calculateMarketplaceOrderSummary($variation->id, $marketplaceIdInt);
-                
+
                 // Use integer key to ensure consistent access
                 $marketplaceData[$marketplaceIdInt] = [
                     'name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
@@ -174,17 +174,17 @@ class ListingController extends Controller
                     'listings' => $marketplaceListings,
                     'order_summary' => $orderSummary
                 ];
-                
+
                 // Add to global counts
                 if (isset($globalMarketplaceCounts[$marketplaceIdInt])) {
                     $globalMarketplaceCounts[$marketplaceIdInt]['total_count'] += $listingCount;
                 }
             }
-            
+
             // Attach marketplace data to variation
             $variation->marketplace_data = $marketplaceData;
         }
-        
+
         $data['variations'] = $variations;
         $data['global_marketplace_counts'] = $globalMarketplaceCounts;
 
@@ -376,17 +376,17 @@ class ListingController extends Controller
         try {
             // Increase execution time limit for this operation
             set_time_limit(120);
-            
+
             $perPage = $request->input('per_page', 10);
-            
+
             // Build query using service
             $query = $this->queryService->buildVariationQuery($request);
-            
+
             $page = $request->input('page', 1);
-            
+
             // Get total count - use distinct count if joins might cause duplicates
             $total = $query->count();
-            
+
             // Get paginated variations with ALL relationships eager loaded (like original)
             // This is faster than lazy loading because everything is loaded in one query
             $variations = $query->skip(($page - 1) * $perPage)
@@ -397,27 +397,27 @@ class ListingController extends Controller
 
             // Get exchange rate data for calculations
             $exchangeData = $this->calculationService->getExchangeRateData();
-            
+
             // Pre-calculate stats for all variations (batch processing is faster)
             $variationData = $variations->map(function($variation) use ($exchangeData) {
                 // Calculate stats using service
                 $stats = $this->calculationService->calculateVariationStats($variation);
-                
+
                 // Calculate pricing info
                 $pricingInfo = $this->calculationService->calculatePricingInfo(
                     $variation->listings ?? collect(),
                     $exchangeData['exchange_rates'],
                     $exchangeData['eur_gbp']
                 );
-                
+
                 // Calculate average cost
                 $averageCost = $this->calculationService->calculateAverageCost(
                     $variation->available_stocks ?? collect()
                 );
-                
+
                 // Calculate total orders count
                 $totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($variation->id);
-                
+
                 // Get buybox listings
                 $buyboxListings = ($variation->listings ?? collect())
                     ->where('buybox', 1)
@@ -431,16 +431,16 @@ class ListingController extends Controller
                     })
                     ->values()
                     ->toArray();
-                
+
                 // Calculate marketplace summaries
                 $marketplaceSummaries = $this->calculationService->calculateMarketplaceSummaries(
                     $variation->id,
                     $variation->listings ?? collect()
                 );
-                
+
                 // Calculate sales data (preload it so it displays immediately)
                 $salesData = $this->calculationService->calculateSalesData($variation->id);
-                
+
                 return [
                     'id' => $variation->id,
                     'variation_data' => $variation->toArray(),
@@ -462,18 +462,18 @@ class ListingController extends Controller
 
             // Generate links array for pagination (matching Laravel paginator format)
             $links = [];
-            
+
             // Previous link
             $links[] = [
                 'url' => $page > 1 ? $request->fullUrlWithQuery(['page' => $page - 1]) : null,
                 'label' => '&laquo; Previous',
                 'active' => false,
             ];
-            
+
             // Page number links (show up to 7 pages around current page)
             $startPage = max(1, $page - 3);
             $endPage = min($lastPage, $page + 3);
-            
+
             if ($startPage > 1) {
                 $links[] = [
                     'url' => $request->fullUrlWithQuery(['page' => 1]),
@@ -488,7 +488,7 @@ class ListingController extends Controller
                     ];
                 }
             }
-            
+
             for ($i = $startPage; $i <= $endPage; $i++) {
                 $links[] = [
                     'url' => $request->fullUrlWithQuery(['page' => $i]),
@@ -496,7 +496,7 @@ class ListingController extends Controller
                     'active' => $i == $page,
                 ];
             }
-            
+
             if ($endPage < $lastPage) {
                 if ($endPage < $lastPage - 1) {
                     $links[] = [
@@ -511,7 +511,7 @@ class ListingController extends Controller
                     'active' => false,
                 ];
             }
-            
+
             // Next link
             $links[] = [
                 'url' => $page < $lastPage ? $request->fullUrlWithQuery(['page' => $page + 1]) : null,
@@ -537,7 +537,7 @@ class ListingController extends Controller
             Log::error("Error fetching variations: " . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'error' => 'Error fetching variations',
                 'message' => $e->getMessage()
@@ -618,22 +618,22 @@ class ListingController extends Controller
 
                     // Calculate stats using service
                     $stats = $this->calculationService->calculateVariationStats($variation);
-                    
+
                     // Calculate pricing info
                     $pricingInfo = $this->calculationService->calculatePricingInfo(
                         $variation->listings ?? collect(),
                         $exchangeData['exchange_rates'],
                         $exchangeData['eur_gbp']
                     );
-                    
+
                     // Calculate average cost
                     $averageCost = $this->calculationService->calculateAverageCost(
                         $variation->available_stocks ?? collect()
                     );
-                    
+
                     // Calculate total orders count
                     $totalOrdersCount = $this->calculationService->calculateTotalOrdersCount($variation->id);
-                    
+
                     // Get buybox listings
                     $buyboxListings = ($variation->listings ?? collect())
                         ->where('buybox', 1)
@@ -647,16 +647,16 @@ class ListingController extends Controller
                         })
                         ->values()
                         ->toArray();
-                    
+
                     // Calculate marketplace summaries
                     $marketplaceSummaries = $this->calculationService->calculateMarketplaceSummaries(
                         $variation->id,
                         $variation->listings ?? collect()
                     );
-                    
+
                     // Calculate sales data (preload it so it displays immediately)
                     $salesData = $this->calculationService->calculateSalesData($variation->id);
-                    
+
                     return [
                         'id' => $variation->id,
                         'variation_data' => $variation->toArray(),
@@ -701,11 +701,11 @@ class ListingController extends Controller
             // Get reference data
             $referenceData = $this->dataService->getReferenceData();
             $exchangeData = $this->calculationService->getExchangeRateData();
-            
+
             // Render ONE item at a time (even if multiple IDs provided, render separately)
             // This allows frontend to display items progressively
             $htmlParts = [];
-            
+
             foreach ($variationData as $index => $variationItem) {
                 $component = \Livewire\Livewire::mount('v2.listing.listing-item', [
                     'variationId' => $variationItem['id'],
@@ -722,7 +722,7 @@ class ListingController extends Controller
                     'marketplaces' => $referenceData['marketplaces'],
                     'processId' => $request->input('process_id'),
                 ]);
-                
+
                 $htmlParts[] = $component->html();
             }
 
@@ -732,9 +732,9 @@ class ListingController extends Controller
             Log::error("Error rendering listing items: " . $e->getMessage(), [
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
-                'html' => '<p class="text-center text-danger">Error rendering components: ' . 
+                'html' => '<p class="text-center text-danger">Error rendering components: ' .
                     htmlspecialchars($e->getMessage()) . ' Please refresh the page.</p>',
                 'error' => $e->getMessage()
             ], 500);
@@ -786,17 +786,17 @@ class ListingController extends Controller
     public function get_listings($variationId, Request $request)
     {
         $marketplaceId = $request->input('marketplace_id');
-        
+
         $query = Listing_model::with(['marketplace', 'country_id', 'currency'])
             ->where('variation_id', $variationId);
-        
+
         // Filter by marketplace_id if provided
         if ($marketplaceId !== null) {
             $query->where('marketplace_id', $marketplaceId);
         }
-        
+
         $listings = $query->get();
-        
+
         return response()->json(['listings' => $listings]);
     }
 
@@ -822,7 +822,7 @@ class ListingController extends Controller
                   ->where('marketplace_id', $marketplaceId);
             })
             ->avg('price');
-        
+
         $todayCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 $q->whereBetween('created_at', [now()->startOfDay(), now()])
@@ -839,7 +839,7 @@ class ListingController extends Controller
                   ->where('marketplace_id', $marketplaceId);
             })
             ->avg('price');
-        
+
         $yesterdayCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
@@ -856,7 +856,7 @@ class ListingController extends Controller
                   ->where('marketplace_id', $marketplaceId);
             })
             ->avg('price');
-        
+
         $last7DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
@@ -873,7 +873,7 @@ class ListingController extends Controller
                   ->where('marketplace_id', $marketplaceId);
             })
             ->avg('price');
-        
+
         $last14DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
@@ -890,7 +890,7 @@ class ListingController extends Controller
                   ->where('marketplace_id', $marketplaceId);
             })
             ->avg('price');
-        
+
         $last30DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
@@ -924,11 +924,11 @@ class ListingController extends Controller
         if($stock == 'no'){
             $stock = request('stock');
         }
-        
+
         // Check if this is an exact stock set request (from stock formula page)
         $setExactStock = request('set_exact_stock', false);
         $exactStockValue = request('exact_stock_value', null);
-        
+
         if($process_id == null && request('process_id') != null){
             $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
             if($process != null){
@@ -966,7 +966,7 @@ class ListingController extends Controller
                 }
             }
         }
-        
+
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
@@ -975,7 +975,7 @@ class ListingController extends Controller
                 'message' => is_string($response) ? $response : 'Unknown error'
             ], 500);
         }
-        
+
         // Check if response is valid object and has quantity property
         $responseQuantity = null;
         if($response && is_object($response) && isset($response->quantity)){
@@ -989,12 +989,12 @@ class ListingController extends Controller
                 'calculated_quantity' => $new_quantity,
             ]);
         }
-        
+
         if($responseQuantity != null){
             $oldStock = $variation->listed_stock;
             $variation->listed_stock = $responseQuantity;
             $variation->save();
-            
+
             // Calculate stock change
             if($setExactStock && $exactStockValue !== null){
                 // For exact stock set: calculate the difference
@@ -1003,7 +1003,7 @@ class ListingController extends Controller
                 // For normal addition: use the stock parameter
                 $stockChange = (int)$stock;
             }
-            
+
             // Distribute stock to marketplaces based on formulas (synchronously)
             if($stockChange != 0){
                 // Call distribution service directly to ensure it completes before response
@@ -1014,12 +1014,12 @@ class ListingController extends Controller
                     $responseQuantity, // Pass total stock for formulas that use apply_to: total
                     $setExactStock // Pass flag to ignore remaining stock
                 );
-                
+
                 // Note: Event listener is disabled to prevent double distribution
                 // Distribution is done synchronously above to ensure it completes before response
                 // If you need event logging, add it here without triggering distribution
             }
-            
+
             // Get updated marketplace stocks after distribution
             $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variation->id)
                 ->get()
@@ -1029,7 +1029,7 @@ class ListingController extends Controller
         } else {
             $marketplaceStocks = collect();
         }
-        
+
         $listed_stock_verification = new Listed_stock_verification_model();
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
