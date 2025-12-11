@@ -66,6 +66,9 @@ class SupportTickets extends Component
     public $careFolderFetchSuccess = null;
     public $careFolderApiRequest = null;
     public $careFolderApiResponse = null;
+    public $aiSummary = null;
+    public $aiDraft = null;
+    public $aiError = null;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -639,6 +642,7 @@ class SupportTickets extends Component
     {
         $this->replyStatus = null;
         $this->replyError = null;
+        $this->aiError = null;
 
         if (! $this->selectedThreadId) {
             $this->replyError = 'Select a thread before replying.';
@@ -788,9 +792,9 @@ class SupportTickets extends Component
 
     protected function hydrateOrderContext(?SupportThread $thread = null): void
     {
-        $thread = $thread ?: $this->selectedThread;
-
-        if (! $thread) {
+                $this->aiSummary = null; // Initialize AI summary
+                $this->aiDraft = null;   // Initialize AI draft
+                $this->aiError = null;   // Initialize AI error
             $this->marketplaceOrderUrl = null;
             $this->canCancelOrder = false;
             $this->orderActionStatus = null;
@@ -1533,6 +1537,17 @@ class SupportTickets extends Component
         }
     }
 
+    public function useAiDraft(): void
+    {
+        if (! $this->aiDraft) {
+            $this->aiError = 'Generate a draft first.';
+
+            return;
+        }
+
+        $this->replyBody = $this->aiDraft;
+    }
+
     protected function defaultReplySubject(SupportThread $thread): string
     {
         $base = $thread->order_reference
@@ -1547,6 +1562,16 @@ class SupportTickets extends Component
         $withBreaks = nl2br($escaped);
 
         return '<div style="font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.4;">' . $withBreaks . '</div>';
+    }
+
+    protected function shorten(string $text, int $limit = 180): string
+    {
+        $clean = trim(preg_replace('/\s+/', ' ', $text));
+        if (strlen($clean) <= $limit) {
+            return $clean;
+        }
+
+        return substr($clean, 0, $limit - 3) . '...';
     }
 
     protected function buildSyncSources(): array

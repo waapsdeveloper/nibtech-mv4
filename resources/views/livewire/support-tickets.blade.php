@@ -641,6 +641,40 @@
                     </div>
                 </div>
 
+                <div class="card mt-3">
+                    <div class="card-body">
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <h6 class="mb-0">Free AI helper</h6>
+                                <small class="text-muted">Summarizes recent messages and drafts a reply locally.</small>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline-primary" wire:click="generateAiAssist" wire:loading.attr="disabled" wire:target="generateAiAssist">
+                                <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="generateAiAssist"></span>
+                                Generate summary & draft
+                            </button>
+                        </div>
+                        @if ($aiError)
+                            <div class="alert alert-danger py-2 px-3">{{ $aiError }}</div>
+                        @endif
+                        @if ($aiSummary)
+                            <div class="mb-2">
+                                <div class="text-muted small">Summary</div>
+                                <div class="fw-semibold">{{ $aiSummary }}</div>
+                            </div>
+                        @endif
+                        @if ($aiDraft)
+                            <div class="mb-2">
+                                <div class="text-muted small">Draft reply</div>
+                                <pre class="bg-light p-2 border rounded small" style="white-space: pre-wrap;">{{ $aiDraft }}</pre>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-secondary" wire:click="useAiDraft">Use this draft</button>
+                        @endif
+                        @if (! $aiSummary && ! $aiDraft)
+                            <small class="text-muted">No AI summary yet. Click the button to generate.</small>
+                        @endif
+                    </div>
+                </div>
+
                 <div class="message-feed">
                     @forelse ($selectedThread->messages as $message)
                         @php
