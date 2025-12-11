@@ -77,14 +77,24 @@ class Marketplace extends Component
             return redirect('v2/marketplace');
         }
 
-        $marketplace->update([
+        $updateData = [
             'name' => request('name'),
             'description' => request('description'),
             'status' => request('status', 1),
-            'api_key' => request('api_key'),
-            'api_secret' => request('api_secret'),
             'api_url' => request('api_url'),
-        ]);
+        ];
+
+        // Only update API key if provided (not empty)
+        if (request()->has('api_key') && request('api_key') !== '') {
+            $updateData['api_key'] = request('api_key');
+        }
+
+        // Only update API secret if provided (not empty)
+        if (request()->has('api_secret') && request('api_secret') !== '') {
+            $updateData['api_secret'] = request('api_secret');
+        }
+
+        $marketplace->update($updateData);
 
         session()->put('success', "Marketplace has been updated successfully");
         return redirect('v2/marketplace');

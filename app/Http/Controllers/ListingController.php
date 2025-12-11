@@ -857,15 +857,26 @@ class ListingController extends Controller
             Log::error("Error updating quantity for variation ID $id: $response");
             return $response;
         }
-        if($response->quantity != null){
+        
+        // Check if response is valid object and has quantity property
+        $responseQuantity = null;
+        if($response && is_object($response) && isset($response->quantity)){
+            $responseQuantity = $response->quantity;
+        } else {
+            // If API response doesn't have quantity, use the new_quantity we sent
+            $responseQuantity = $new_quantity;
+            Log::warning("API response missing quantity property for variation ID $id, using calculated value: $new_quantity");
+        }
+        
+        if($responseQuantity != null){
             $oldStock = $variation->listed_stock;
-            $variation->listed_stock = $response->quantity;
+            $variation->listed_stock = $responseQuantity;
             $variation->save();
             
             // Calculate stock change
             if($setExactStock && $exactStockValue !== null){
                 // For exact stock set: calculate the difference
-                $stockChange = $response->quantity - $oldStock;
+                $stockChange = $responseQuantity - $oldStock;
             } else {
                 // For normal addition: use the stock parameter
                 $stockChange = (int)$stock;
@@ -878,18 +889,13 @@ class ListingController extends Controller
                 $this->stockDistributionService->distributeStock(
                     $variation->id,
                     $stockChange,
-                    $response->quantity, // Pass total stock for formulas that use apply_to: total
+                    $responseQuantity, // Pass total stock for formulas that use apply_to: total
                     $setExactStock // Pass flag to ignore remaining stock
                 );
                 
-                // Also fire event for logging/audit purposes (but distribution already done)
-                event(new VariationStockUpdated(
-                    $variation->id,
-                    $oldStock,
-                    $response->quantity,
-                    $stockChange,
-                    session('user_id')
-                ));
+                // Note: Event listener is disabled to prevent double distribution
+                // Distribution is done synchronously above to ensure it completes before response
+                // If you need event logging, add it here without triggering distribution
             }
             
             // Get updated marketplace stocks after distribution
@@ -908,7 +914,7 @@ class ListingController extends Controller
         $listed_stock_verification->pending_orders = $pending_orders;
         $listed_stock_verification->qty_from = $previous_qty;
         $listed_stock_verification->qty_change = $stock;
-        $listed_stock_verification->qty_to = $response->quantity ?? 0;
+        $listed_stock_verification->qty_to = $responseQuantity ?? 0;
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
 
@@ -916,14 +922,14 @@ class ListingController extends Controller
         // Check if request is AJAX by checking headers
         if(request()->ajax() || request()->expectsJson() || request()->wantsJson() || request()->header('X-Requested-With') == 'XMLHttpRequest'){
             return response()->json([
-                'quantity' => (int)($response->quantity ?? 0),
-                'total_stock' => (int)($response->quantity ?? 0),
+                'quantity' => (int)($responseQuantity ?? 0),
+                'total_stock' => (int)($responseQuantity ?? 0),
                 'marketplace_stocks' => $marketplaceStocks->toArray()
             ]);
         }
         
         // For non-AJAX requests, return plain text (backward compatibility)
-        return (string)($response->quantity ?? 0);
+        return (string)($responseQuantity ?? 0);
     }
     
     /**

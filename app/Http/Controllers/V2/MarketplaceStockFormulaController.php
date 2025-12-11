@@ -114,6 +114,14 @@ class MarketplaceStockFormulaController extends Controller
      */
     public function saveFormula(Request $request, $variationId, $marketplaceId)
     {
+        // Prevent saving formula for first marketplace (ID = 1)
+        if ($marketplaceId == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formula cannot be changed for the first marketplace. Remaining stock is automatically allocated here.'
+            ], 403);
+        }
+        
         $request->validate([
             'value' => 'required|numeric|min:0',
             'type' => 'required|in:percentage,fixed',
@@ -155,6 +163,14 @@ class MarketplaceStockFormulaController extends Controller
      */
     public function deleteFormula($variationId, $marketplaceId)
     {
+        // Prevent deleting formula for first marketplace (ID = 1)
+        if ($marketplaceId == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Formula cannot be deleted for the first marketplace. Remaining stock is automatically allocated here.'
+            ], 403);
+        }
+        
         $marketplaceStock = MarketplaceStockModel::where('variation_id', $variationId)
             ->where('marketplace_id', $marketplaceId)
             ->first();
@@ -205,9 +221,17 @@ class MarketplaceStockFormulaController extends Controller
         $marketplaceStock->admin_id = session('user_id');
         $marketplaceStock->save();
 
-        // Get current total stock from variation (don't update it - total stock is source of truth)
+        // Recalculate and update the variation's total stock based on sum of all marketplace stocks
         $variation = Variation_model::find($variationId);
-        $totalStock = $variation ? $variation->listed_stock : 0;
+        if ($variation) {
+            // Recalculate total from all marketplace stocks
+            $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
+                ->sum('listed_stock');
+            $variation->listed_stock = $totalStock;
+            $variation->save();
+        } else {
+            $totalStock = 0;
+        }
 
         return response()->json([
             'success' => true,

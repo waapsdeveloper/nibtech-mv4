@@ -194,15 +194,17 @@
                 </div>
                 @if($selectedVariation)
                 <div class="ms-3">
-                    <form class="form-inline d-inline-flex gap-1 align-items-center" id="total_stock_form_formula_{{ $selectedVariation->id }}" action="{{url('listing/add_quantity')}}/{{ $selectedVariation->id }}">
+                    <form class="form-inline d-inline-flex gap-1 align-items-center" id="add_qty_total_formula_{{ $selectedVariation->id }}" action="{{url('v2/listings/add_quantity')}}/{{ $selectedVariation->id }}">
                         @csrf
                         <div class="form-floating">
-                            <input type="number" class="form-control" id="total_stock_stock_formula_{{ $selectedVariation->id }}" value="{{ $totalStock }}" style="width:120px;" min="0" step="1">
+                            <input type="text" class="form-control" id="total_stock_stock_formula_{{ $selectedVariation->id }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
                             <label for="" class="small">Total Stock</label>
                         </div>
-                        <button type="button" id="save_total_stock_formula_{{ $selectedVariation->id }}" class="btn btn-sm btn-primary" style="height: 31px; line-height: 1;" title="Update total stock and distribute to marketplaces">
-                            <i class="fe fe-save"></i> Update
-                        </button>
+                        <div class="form-floating" style="width: 60px;">
+                            <input type="number" class="form-control form-control-sm" name="stock" id="add_total_formula_{{ $selectedVariation->id }}" value="" style="width:60px; height: 31px;">
+                            <label for="" class="small">Add</label>
+                        </div>
+                        <button id="send_total_formula_{{ $selectedVariation->id }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
                         <span class="text-success small" id="success_total_stock_formula_{{ $selectedVariation->id }}"></span>
                     </form>
                 </div>
@@ -254,6 +256,13 @@
                         
                         <!-- Right Side: Formula Form -->
                         <div class="flex-shrink-0">
+                            @php $isFirstMarketplace = $marketplaceStock['marketplace_id'] == 1; @endphp
+                            @if($isFirstMarketplace)
+                            <div class="text-muted small d-flex align-items-center gap-2">
+                                <i class="fe fe-lock"></i>
+                                <span>Formula locked - remaining stock goes here</span>
+                            </div>
+                            @else
                             <form class="formula-inline-form" id="formula_form_{{ $marketplaceStock['marketplace_id'] }}" data-variation-id="{{ $selectedVariation->id }}" data-marketplace-id="{{ $marketplaceStock['marketplace_id'] }}">
                                 <div class="d-flex align-items-center gap-2">
                                     <input type="number" 
@@ -284,6 +293,7 @@
                                     @endif
                                 </div>
                             </form>
+                            @endif
                         </div>
                     </div>
                 </div>

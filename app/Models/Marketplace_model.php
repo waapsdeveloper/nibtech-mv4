@@ -13,10 +13,12 @@ class Marketplace_model extends Model
     protected $primaryKey = 'id';
     // public $timestamps = FALSE;
     protected $fillable = [
-        // other fields...
-        // 'reference_id',
         'name',
+        'description',
+        'status',
         'api_key',
+        'api_secret',
+        'api_url',
     ];
 
     public function listings()

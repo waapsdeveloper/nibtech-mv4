@@ -24,15 +24,19 @@ class StockDistributionService
             return ['success' => false, 'message' => 'No stock change to distribute'];
         }
 
-        // Get all marketplace stocks for this variation
-        $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variationId)
-            ->with('marketplace')
-            ->get();
-
-        if ($marketplaceStocks->isEmpty()) {
-            Log::info("No marketplace stocks found for variation {$variationId}");
-            return ['success' => false, 'message' => 'No marketplace stocks found'];
+        // Get all marketplaces
+        $allMarketplaces = Marketplace_model::orderBy('id', 'ASC')->get();
+        
+        if ($allMarketplaces->isEmpty()) {
+            Log::info("No marketplaces found for variation {$variationId}");
+            return ['success' => false, 'message' => 'No marketplaces found'];
         }
+
+        // Get existing marketplace stocks for this variation
+        $existingStocks = MarketplaceStockModel::where('variation_id', $variationId)
+            ->with('marketplace')
+            ->get()
+            ->keyBy('marketplace_id');
 
         $distributionResults = [];
         $totalDistributed = 0;
@@ -44,10 +48,31 @@ class StockDistributionService
             $totalStock = $variation->listed_stock;
         }
 
-        // Apply each marketplace's formula
-        foreach ($marketplaceStocks as $marketplaceStock) {
+        // Get admin ID for creating new records
+        $adminId = auth()->id() ?? session('user_id') ?? 1;
+
+        // Apply each marketplace's formula (skip marketplace 1 as it gets remaining stock)
+        foreach ($allMarketplaces as $marketplace) {
+            // Skip marketplace 1 - it will get remaining stock at the end
+            if ($marketplace->id == 1) {
+                continue;
+            }
+
+            // Get or create marketplace stock record
+            $marketplaceStock = $existingStocks->get($marketplace->id);
+            if (!$marketplaceStock) {
+                $marketplaceStock = MarketplaceStockModel::create([
+                    'variation_id' => $variationId,
+                    'marketplace_id' => $marketplace->id,
+                    'listed_stock' => 0,
+                    'admin_id' => $adminId,
+                ]);
+                $existingStocks->put($marketplace->id, $marketplaceStock);
+            }
+
             $formula = $marketplaceStock->formula;
 
+            // Skip if no formula
             if (!$formula || !isset($formula['value']) || !isset($formula['type'])) {
                 continue;
             }
@@ -55,12 +80,27 @@ class StockDistributionService
             // Determine base value to apply formula to
             $baseValue = ($formula['apply_to'] ?? 'pushed') === 'total' ? $totalStock : $stockChange;
 
+            // Log formula details for debugging
+            Log::info("Calculating distribution for marketplace {$marketplace->id} ({$marketplace->name})", [
+                'variation_id' => $variationId,
+                'formula_type' => $formula['type'],
+                'formula_value' => $formula['value'],
+                'apply_to' => $formula['apply_to'] ?? 'pushed',
+                'base_value' => $baseValue,
+                'stock_change' => $stockChange,
+                'total_stock' => $totalStock,
+            ]);
+
             // Calculate distribution based on formula
             $distribution = $this->calculateDistribution(
                 $baseValue,
                 $formula['type'],
                 $formula['value']
             );
+            
+            Log::info("Distribution calculated for marketplace {$marketplace->id}", [
+                'calculated_distribution' => $distribution,
+            ]);
 
             if ($distribution > 0 && $remainingStock > 0) {
                 $oldValue = $marketplaceStock->listed_stock;
@@ -78,43 +118,52 @@ class StockDistributionService
 
                 $distributionResults[] = [
                     'marketplace_id' => $marketplaceStock->marketplace_id,
-                    'marketplace_name' => $marketplaceStock->marketplace->name ?? 'Unknown',
+                    'marketplace_name' => $marketplace->name ?? 'Unknown',
                     'old_value' => $oldValue,
                     'new_value' => $newValue,
                     'distribution' => $actualDistribution,
                 ];
 
-                Log::info("Distributed {$actualDistribution} units to marketplace {$marketplaceStock->marketplace_id} for variation {$variationId}");
+                Log::info("Distributed {$actualDistribution} units to marketplace {$marketplaceStock->marketplace_id} ({$marketplace->name}) for variation {$variationId}");
             }
         }
 
         // Distribute remaining stock to marketplace 1 if there's any left (unless ignoreRemaining is true)
         if ($remainingStock > 0 && !$ignoreRemaining) {
-            $marketplace1Stock = $marketplaceStocks->firstWhere('marketplace_id', 1);
-
-            if ($marketplace1Stock) {
-                $oldValue = $marketplace1Stock->listed_stock;
-                $newValue = $oldValue + $remainingStock;
-
-                $marketplace1Stock->reserve_old_value = $oldValue;
-                $marketplace1Stock->listed_stock = $newValue;
-                $marketplace1Stock->reserve_new_value = $newValue;
-                $marketplace1Stock->save();
-
-                $totalDistributed += $remainingStock;
-
-                $distributionResults[] = [
+            // Get or create marketplace 1 stock record
+            $marketplace1Stock = $existingStocks->get(1);
+            if (!$marketplace1Stock) {
+                $marketplace1 = Marketplace_model::find(1);
+                $marketplace1Stock = MarketplaceStockModel::create([
+                    'variation_id' => $variationId,
                     'marketplace_id' => 1,
-                    'marketplace_name' => $marketplace1Stock->marketplace->name ?? 'Marketplace 1',
-                    'old_value' => $oldValue,
-                    'new_value' => $newValue,
-                    'distribution' => $remainingStock,
-                    'is_remaining' => true,
-                ];
-
-                Log::info("Distributed remaining {$remainingStock} units to marketplace 1 for variation {$variationId}");
-                $remainingStock = 0;
+                    'listed_stock' => 0,
+                    'admin_id' => $adminId,
+                ]);
             }
+
+            $oldValue = $marketplace1Stock->listed_stock;
+            $newValue = $oldValue + $remainingStock;
+
+            $marketplace1Stock->reserve_old_value = $oldValue;
+            $marketplace1Stock->listed_stock = $newValue;
+            $marketplace1Stock->reserve_new_value = $newValue;
+            $marketplace1Stock->save();
+
+            $totalDistributed += $remainingStock;
+
+            $marketplace1Name = $marketplace1Stock->marketplace->name ?? 'Marketplace 1';
+            $distributionResults[] = [
+                'marketplace_id' => 1,
+                'marketplace_name' => $marketplace1Name,
+                'old_value' => $oldValue,
+                'new_value' => $newValue,
+                'distribution' => $remainingStock,
+                'is_remaining' => true,
+            ];
+
+            Log::info("Distributed remaining {$remainingStock} units to marketplace 1 ({$marketplace1Name}) for variation {$variationId}");
+            $remainingStock = 0;
         } else if ($remainingStock > 0 && $ignoreRemaining) {
             Log::info("Ignoring remaining {$remainingStock} units for variation {$variationId} (exact stock set mode)");
         }
@@ -141,7 +190,17 @@ class StockDistributionService
     {
         if ($type === 'percentage') {
             // Calculate percentage of the base value
-            return (int) round(($baseValue * $value) / 100);
+            // Value should be stored as a number like 5 for 5%, not 0.05
+            $result = (int) round(($baseValue * $value) / 100);
+            
+            Log::info("Percentage calculation", [
+                'base_value' => $baseValue,
+                'percentage_value' => $value,
+                'calculation' => "($baseValue * $value) / 100",
+                'result' => $result,
+            ]);
+            
+            return $result;
         } elseif ($type === 'fixed') {
             // Fixed amount (value is the exact number to distribute)
             return (int) $value;

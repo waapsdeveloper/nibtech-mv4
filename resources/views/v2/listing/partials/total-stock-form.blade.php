@@ -3,7 +3,7 @@
 @endphp
 
 <div class="d-flex align-items-center gap-2">
-    <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_total_{{ $variationId }}" action="{{url('listing/add_quantity')}}/{{ $variationId }}">
+    <form class="form-inline d-inline-flex gap-1 align-items-center" method="POST" id="add_qty_total_{{ $variationId }}" action="{{url('v2/listings/add_quantity')}}/{{ $variationId }}">
         @csrf
         @if(isset($process_id) && $process_id)
             <input type="hidden" name="process_id" value="{{ $process_id }}">

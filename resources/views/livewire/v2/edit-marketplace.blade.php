@@ -72,7 +72,28 @@
                                     <label class="form-label mg-b-0">API Key</label>
                                 </div>
                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
-                                    <input class="form-control" placeholder="Enter API Key" name="api_key" value="{{$marketplace->api_key ?? ''}}" type="text">
+                                    <div class="input-group">
+                                        <input class="form-control" 
+                                               placeholder="{{$marketplace->api_key ? 'Enter new API Key or leave unchanged' : 'Enter API Key'}}" 
+                                               name="api_key" 
+                                               id="edit_api_key" 
+                                               value="" 
+                                               type="password"
+                                               autocomplete="new-password">
+                                        <button type="button" 
+                                                class="btn btn-outline-secondary toggle-edit-api-key" 
+                                                data-target="edit_api_key"
+                                                title="Show/Hide">
+                                            <i class="fe fe-eye"></i>
+                                        </button>
+                                    </div>
+                                    @if($marketplace->api_key)
+                                        <small class="text-info">
+                                            <i class="fe fe-info"></i> Current API Key is set. Leave blank to keep current value or enter new value to update.
+                                        </small>
+                                    @else
+                                        <small class="text-muted">No API Key currently set</small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -83,7 +104,28 @@
                                     <label class="form-label mg-b-0">API Secret</label>
                                 </div>
                                 <div class="col-md-8 mg-t-5 mg-md-t-0">
-                                    <input class="form-control" placeholder="Enter API Secret" name="api_secret" value="{{$marketplace->api_secret ?? ''}}" type="password">
+                                    <div class="input-group">
+                                        <input class="form-control" 
+                                               placeholder="{{$marketplace->api_secret ? 'Enter new API Secret or leave unchanged' : 'Enter API Secret'}}" 
+                                               name="api_secret" 
+                                               id="edit_api_secret" 
+                                               value="" 
+                                               type="password"
+                                               autocomplete="new-password">
+                                        <button type="button" 
+                                                class="btn btn-outline-secondary toggle-edit-api-secret" 
+                                                data-target="edit_api_secret"
+                                                title="Show/Hide">
+                                            <i class="fe fe-eye"></i>
+                                        </button>
+                                    </div>
+                                    @if($marketplace->api_secret)
+                                        <small class="text-info">
+                                            <i class="fe fe-info"></i> Current API Secret is set. Leave blank to keep current value or enter new value to update.
+                                        </small>
+                                    @else
+                                        <small class="text-muted">No API Secret currently set</small>
+                                    @endif
                                 </div>
                             </div>
                         </div>
@@ -115,6 +157,51 @@
 
                 <!--Internal  Select2 js -->
                 <script src="{{asset('assets/plugins/select2/js/select2.min.js')}}"></script>
+
+                <script>
+                    // Toggle API Key visibility in edit form
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Handle API Key toggle
+                        const toggleApiKeyBtn = document.querySelector('.toggle-edit-api-key');
+                        if (toggleApiKeyBtn) {
+                            toggleApiKeyBtn.addEventListener('click', function() {
+                                const targetId = this.getAttribute('data-target');
+                                const input = document.getElementById(targetId);
+                                const icon = this.querySelector('i');
+                                
+                                if (input.type === 'password') {
+                                    input.type = 'text';
+                                    icon.classList.remove('fe-eye');
+                                    icon.classList.add('fe-eye-off');
+                                } else {
+                                    input.type = 'password';
+                                    icon.classList.remove('fe-eye-off');
+                                    icon.classList.add('fe-eye');
+                                }
+                            });
+                        }
+
+                        // Handle API Secret toggle
+                        const toggleApiSecretBtn = document.querySelector('.toggle-edit-api-secret');
+                        if (toggleApiSecretBtn) {
+                            toggleApiSecretBtn.addEventListener('click', function() {
+                                const targetId = this.getAttribute('data-target');
+                                const input = document.getElementById(targetId);
+                                const icon = this.querySelector('i');
+                                
+                                if (input.type === 'password') {
+                                    input.type = 'text';
+                                    icon.classList.remove('fe-eye');
+                                    icon.classList.add('fe-eye-off');
+                                } else {
+                                    input.type = 'password';
+                                    icon.classList.remove('fe-eye-off');
+                                    icon.classList.add('fe-eye');
+                                }
+                            });
+                        }
+                    });
+                </script>
 
     @endsection
 

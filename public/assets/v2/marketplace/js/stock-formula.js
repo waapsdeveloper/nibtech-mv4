@@ -136,6 +136,12 @@
         const variationId = form.data('variation-id');
         const marketplaceId = form.data('marketplace-id');
         
+        // Prevent saving formula for first marketplace (ID = 1)
+        if (marketplaceId == 1) {
+            showAlert('Formula cannot be changed for the first marketplace. Remaining stock is automatically allocated here.', 'warning');
+            return;
+        }
+        
         const value = parseFloat(form.find(`#formula_value_${marketplaceId}`).val());
         const type = form.find(`#formula_type_${marketplaceId}`).val();
         const applyTo = form.find(`#formula_apply_to_${marketplaceId}`).val();
@@ -191,6 +197,12 @@
      * Delete formula
      */
     window.deleteFormula = function(variationId, marketplaceId) {
+        // Prevent deleting formula for first marketplace (ID = 1)
+        if (marketplaceId == 1) {
+            showAlert('Formula cannot be deleted for the first marketplace. Remaining stock is automatically allocated here.', 'warning');
+            return;
+        }
+        
         if (!confirm('Are you sure you want to delete this formula?')) {
             return;
         }
@@ -313,6 +325,17 @@
                     $(`#stock_${marketplaceId}`).text(response.stock);
                     // Update the input value to match
                     form.find(`#reset_stock_value_${marketplaceId}`).val(response.stock);
+                    
+                    // Update total stock input field dynamically
+                    if (response.total_stock !== undefined) {
+                        const totalStockInput = $(`#total_stock_stock_formula_${variationId}`);
+                        if (totalStockInput.length) {
+                            totalStockInput.val(response.total_stock);
+                            // Update the original value data attribute as well
+                            totalStockInput.data('original-value', response.total_stock);
+                        }
+                    }
+                    
                     showAlert(response.message + ' (Stock: ' + response.stock + ', Total: ' + response.total_stock + ')', 'success');
                     // Re-enable button
                     submitBtn.prop('disabled', false).html(originalHtml);
@@ -338,78 +361,110 @@
     }
 
     /**
-     * Setup total stock form for stock formula page
+     * Setup total stock form for stock formula page (push mechanism like listing page)
      */
     function setupTotalStockForm() {
-        // Store original value on page load
-        $(document).ready(function() {
-            $('[id^="total_stock_stock_formula_"]').each(function() {
-                const currentValue = parseFloat($(this).val()) || 0;
-                $(this).data('original-value', currentValue);
-            });
-        });
-
-        // Handle Update button click
-        $(document).on('click', '[id^="save_total_stock_formula_"]', function() {
-            const buttonId = $(this).attr('id');
-            const matches = buttonId.match(/save_total_stock_formula_(\d+)/);
+        // Show/hide Push button based on input value
+        $(document).on('input', '[id^="add_total_formula_"]', function() {
+            const inputId = $(this).attr('id');
+            const matches = inputId.match(/add_total_formula_(\d+)/);
             
             if (!matches) {
                 return;
             }
             
             const variationId = matches[1];
-            const totalStockInput = $('#total_stock_stock_formula_' + variationId);
-            const newTotalStock = parseFloat(totalStockInput.val());
-            const originalTotalStock = parseFloat(totalStockInput.data('original-value')) || parseFloat(totalStockInput.attr('value')) || 0;
+            const value = $(this).val();
             
-            if (isNaN(newTotalStock) || newTotalStock < 0) {
-                showAlert('Please enter a valid stock value (0 or greater)', 'warning');
+            if (value && parseFloat(value) !== 0) {
+                $('#send_total_formula_' + variationId).removeClass('d-none');
+            } else {
+                $('#send_total_formula_' + variationId).addClass('d-none');
+            }
+        });
+
+        // Handle form submission
+        $(document).on('submit', '[id^="add_qty_total_formula_"]', function(e) {
+            e.preventDefault();
+            
+            const formId = $(this).attr('id');
+            const matches = formId.match(/add_qty_total_formula_(\d+)/);
+            
+            if (!matches) {
                 return;
             }
-
-            if (newTotalStock === originalTotalStock) {
-                showAlert('No change in stock value', 'info');
+            
+            const variationId = matches[1];
+            const form = $(this);
+            const quantity = parseFloat($('#add_total_formula_' + variationId).val());
+            const currentTotal = parseFloat($('#total_stock_stock_formula_' + variationId).val()) || 0;
+            
+            // Validate quantity
+            if (!quantity || quantity === 0 || isNaN(quantity)) {
                 return;
             }
-
-            // Show loading
-            const saveButton = $(this);
-            const originalHtml = saveButton.html();
-            saveButton.prop('disabled', true).html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+            
+            // Show loading state on button
+            const pushButton = $('#send_total_formula_' + variationId);
+            const originalButtonText = pushButton.html();
+            pushButton.prop('disabled', true);
+            pushButton.html('<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>');
+            pushButton.removeClass('d-none');
             
             // Clear success message
             $('#success_total_stock_formula_' + variationId).text('');
-
-            // Submit via AJAX - send exact stock value
-            const form = $('#total_stock_form_formula_' + variationId);
+            
+            // Submit via AJAX
             $.ajax({
                 type: "POST",
                 url: form.attr('action'),
-                data: {
-                    set_exact_stock: true,
-                    exact_stock_value: newTotalStock,
-                    _token: window.StockFormulaConfig.csrfToken
-                },
+                data: form.serialize(),
                 dataType: 'json',
                 headers: {
                     'X-Requested-With': 'XMLHttpRequest',
                     'Accept': 'application/json'
                 },
                 success: function(response) {
+                    // Handle both JSON and plain text responses
                     let totalStock, marketplaceStocks = {};
                     
                     if (typeof response === 'object' && response !== null) {
+                        // JSON response - should contain total_stock or quantity
                         totalStock = parseFloat(response.total_stock) || parseFloat(response.quantity) || 0;
                         marketplaceStocks = response.marketplace_stocks || {};
+                        
+                        // Safety check: if totalStock seems wrong (less than current total), recalculate
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                    } else if (typeof response === 'string' || typeof response === 'number') {
+                        // Plain text or number response (backward compatibility)
+                        totalStock = parseFloat(response) || 0;
+                        // If the response is less than current total, it's likely just the added quantity
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                        // Fetch marketplace stocks separately
+                        fetchMarketplaceStocksForFormula(variationId);
+                        // Reset form and return early
+                        resetTotalStockForm(variationId, originalButtonText);
+                        $('#total_stock_stock_formula_' + variationId).val(totalStock);
+                        $('#success_total_stock_formula_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        return;
                     } else {
-                        totalStock = parseFloat(response) || newTotalStock;
+                        // Fallback: calculate from current total + quantity added
+                        totalStock = currentTotal + quantity;
+                        marketplaceStocks = {};
+                    }
+                    
+                    // Final safety check
+                    if (isNaN(totalStock) || totalStock < 0) {
+                        totalStock = currentTotal + quantity;
                     }
                     
                     // Update the total stock display
                     $('#total_stock_stock_formula_' + variationId).val(totalStock);
-                    $('#total_stock_stock_formula_' + variationId).data('original-value', totalStock);
-                    $('#success_total_stock_formula_' + variationId).text("Stock updated to " + totalStock);
+                    $('#success_total_stock_formula_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
                     
                     // Update marketplace stock displays
                     if (Object.keys(marketplaceStocks).length > 0) {
@@ -418,15 +473,25 @@
                         fetchMarketplaceStocksForFormula(variationId);
                     }
                     
-                    // Re-enable button (keep it visible)
-                    saveButton.prop('disabled', false).html(originalHtml);
-                    
-                    // Clear success message after 3 seconds
-                    setTimeout(function() {
-                        $('#success_total_stock_formula_' + variationId).text('');
-                    }, 3000);
+                    // Reset form
+                    resetTotalStockForm(variationId, originalButtonText);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
+                    // Try to parse as text if JSON fails (backward compatibility)
+                    if (jqXHR.responseText && !isNaN(jqXHR.responseText.trim())) {
+                        let totalStock = parseFloat(jqXHR.responseText.trim());
+                        // If response is less than current total, it's likely just the added quantity
+                        if (totalStock < currentTotal || isNaN(totalStock)) {
+                            totalStock = currentTotal + quantity;
+                        }
+                        $('#total_stock_stock_formula_' + variationId).val(totalStock);
+                        $('#success_total_stock_formula_' + variationId).text("Quantity changed by " + quantity + " to " + totalStock);
+                        resetTotalStockForm(variationId, originalButtonText);
+                        // Fetch marketplace stocks
+                        fetchMarketplaceStocksForFormula(variationId);
+                        return;
+                    }
+                    
                     let errorMsg = "Error: " + textStatus;
                     if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                         errorMsg = jqXHR.responseJSON.error;
@@ -434,10 +499,29 @@
                         errorMsg = jqXHR.responseText;
                     }
                     showAlert(errorMsg, 'danger');
-                    saveButton.prop('disabled', false).html(originalHtml);
+                    resetTotalStockForm(variationId, originalButtonText);
                 }
             });
         });
+    }
+
+    /**
+     * Reset total stock form after successful submission
+     */
+    function resetTotalStockForm(variationId, originalButtonText) {
+        // Clear input
+        $('#add_total_formula_' + variationId).val('');
+        // Restore button and hide it
+        const pushButton = $('#send_total_formula_' + variationId);
+        pushButton.prop('disabled', false);
+        if (originalButtonText) {
+            pushButton.html(originalButtonText);
+        }
+        pushButton.addClass('d-none');
+        // Clear success message after 3 seconds
+        setTimeout(function() {
+            $('#success_total_stock_formula_' + variationId).text('');
+        }, 3000);
     }
 
     /**

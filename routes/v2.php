@@ -39,5 +39,8 @@ Route::prefix('v2')->group(function () {
     Route::post('marketplace/stock-formula/{variationId}/formula/{marketplaceId}', [MarketplaceStockFormulaController::class, 'saveFormula'])->name('v2.marketplace.stock_formula.save');
     Route::delete('marketplace/stock-formula/{variationId}/formula/{marketplaceId}', [MarketplaceStockFormulaController::class, 'deleteFormula'])->name('v2.marketplace.stock_formula.delete');
     Route::post('marketplace/stock-formula/{variationId}/stock/{marketplaceId}/reset', [MarketplaceStockFormulaController::class, 'resetStock'])->name('v2.marketplace.stock_formula.reset_stock');
+    
+    // V2 Listing API routes
+    Route::post('listings/add_quantity/{id}', [V2ListingController::class, 'add_quantity'])->name('v2.listing.add_quantity');
 });
 

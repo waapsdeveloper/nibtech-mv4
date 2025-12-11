@@ -80,6 +80,9 @@
                                         <th><small><b>Name</b></small></th>
                                         <th><small><b>Description</b></small></th>
                                         <th><small><b>Status</b></small></th>
+                                        <th><small><b>API Key</b></small></th>
+                                        <th><small><b>API Secret</b></small></th>
+                                        <th><small><b>API URL</b></small></th>
                                         <th><small><b>Actions</b></small></th>
                                     </tr>
                                 </thead>
@@ -100,6 +103,53 @@
                                                     <span class="badge bg-success">Active</span>
                                                 @else
                                                     <span class="badge bg-danger">Inactive</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($marketplace->api_key)
+                                                    <div class="input-group">
+                                                        <input type="password" 
+                                                               class="form-control form-control-sm api-key-field" 
+                                                               id="api_key_{{$marketplace->id}}" 
+                                                               value="{{$marketplace->api_key}}" 
+                                                               readonly 
+                                                               style="font-size: 0.75rem;">
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-secondary toggle-api-key" 
+                                                                data-target="api_key_{{$marketplace->id}}"
+                                                                title="Show/Hide">
+                                                            <i class="fe fe-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($marketplace->api_secret)
+                                                    <div class="input-group">
+                                                        <input type="password" 
+                                                               class="form-control form-control-sm api-secret-field" 
+                                                               id="api_secret_{{$marketplace->id}}" 
+                                                               value="{{$marketplace->api_secret}}" 
+                                                               readonly 
+                                                               style="font-size: 0.75rem;">
+                                                        <button type="button" 
+                                                                class="btn btn-sm btn-outline-secondary toggle-api-secret" 
+                                                                data-target="api_secret_{{$marketplace->id}}"
+                                                                title="Show/Hide">
+                                                            <i class="fe fe-eye"></i>
+                                                        </button>
+                                                    </div>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td>
+                                                @if($marketplace->api_url)
+                                                    <small>{{$marketplace->api_url}}</small>
+                                                @else
+                                                    <span class="text-muted">-</span>
                                                 @endif
                                             </td>
                                             <td>
@@ -132,6 +182,49 @@
 
                 <!-- Internal Chart js -->
                 <script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
+
+                <script>
+                    // Toggle API Key visibility
+                    document.addEventListener('DOMContentLoaded', function() {
+                        // Handle API Key toggle
+                        document.querySelectorAll('.toggle-api-key').forEach(function(button) {
+                            button.addEventListener('click', function() {
+                                const targetId = this.getAttribute('data-target');
+                                const input = document.getElementById(targetId);
+                                const icon = this.querySelector('i');
+                                
+                                if (input.type === 'password') {
+                                    input.type = 'text';
+                                    icon.classList.remove('fe-eye');
+                                    icon.classList.add('fe-eye-off');
+                                } else {
+                                    input.type = 'password';
+                                    icon.classList.remove('fe-eye-off');
+                                    icon.classList.add('fe-eye');
+                                }
+                            });
+                        });
+
+                        // Handle API Secret toggle
+                        document.querySelectorAll('.toggle-api-secret').forEach(function(button) {
+                            button.addEventListener('click', function() {
+                                const targetId = this.getAttribute('data-target');
+                                const input = document.getElementById(targetId);
+                                const icon = this.querySelector('i');
+                                
+                                if (input.type === 'password') {
+                                    input.type = 'text';
+                                    icon.classList.remove('fe-eye');
+                                    icon.classList.add('fe-eye-off');
+                                } else {
+                                    input.type = 'password';
+                                    icon.classList.remove('fe-eye-off');
+                                    icon.classList.add('fe-eye');
+                                }
+                            });
+                        });
+                    });
+                </script>
 
     @endsection
 
