@@ -18,6 +18,8 @@
         grid-template-columns: 360px 1fr;
         gap: 1.5rem;
         margin-top: 1rem;
+        height: calc(100vh - 280px);
+        min-height: 600px;
     }
 
     .support-panel {
@@ -28,6 +30,7 @@
         display: flex;
         flex-direction: column;
         min-height: 0;
+        overflow-y: auto;
     }
 
     .support-filters {
@@ -86,12 +89,13 @@
     }
 
     .message-feed {
-        margin-top: 1.25rem;
-        padding: 1rem;
+        margin-top: 1rem;
+        padding: 0.75rem;
         border-radius: 1rem;
         background: #f6f7fb;
         overflow-y: auto;
-        flex: 1;
+        max-height: calc(100vh - 550px);
+        min-height: 300px;
     }
 
     .message {
@@ -160,22 +164,36 @@
 
     .support-meta-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-        gap: 0.75rem;
-        margin-top: 1rem;
+        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+        gap: 0.5rem;
+        margin-top: 0.75rem;
     }
 
     .meta-pill {
         background: #eef2ff;
-        border-radius: 0.75rem;
-        padding: 0.65rem 0.85rem;
-        font-size: 0.9rem;
+        border-radius: 0.65rem;
+        padding: 0.45rem 0.65rem;
+        font-size: 0.85rem;
+    }
+
+    .care-details-collapsible {
+        max-height: 400px;
+        overflow-y: auto;
+        padding-right: 0.5rem;
+    }
+
+    .support-sidebar-section {
+        margin-bottom: 1rem;
+    }
+
+    .support-sidebar-section:last-child {
+        margin-bottom: 0;
     }
 
     .support-reply-panel {
         border: 1px solid #e0e7ff;
         border-radius: 1rem;
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 1rem;
         background: #fdfdff;
     }
 
@@ -186,7 +204,7 @@
     .support-order-panel {
         border: 1px solid #e2e8f0;
         border-radius: 1rem;
-        padding: 1rem 1.25rem;
+        padding: 0.75rem 1rem;
         background: #f8fafc;
     }
 

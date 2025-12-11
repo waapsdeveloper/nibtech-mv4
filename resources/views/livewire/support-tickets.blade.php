@@ -302,78 +302,77 @@
                                 ?? ($order->reference_id ?? $order->reference ?? null);
                         @endphp
 
-                        <div class="support-order-panel mb-3">
-                            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-                                <div>
-                                    <h6 class="mb-1">Order information</h6>
-                                    <small class="text-muted">Internal order data synced with marketplace.</small>
-                                </div>
-                                <div class="d-flex flex-wrap gap-2">
-                                    @if ($marketplaceOrderUrl)
-                                        <a href="{{ $marketplaceOrderUrl }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
-                                            View in marketplace
-                                        </a>
-                                    @endif
-                                    <button type="button" class="btn btn-outline-danger btn-sm" wire:click="cancelMarketplaceOrder" wire:loading.attr="disabled" wire:target="cancelMarketplaceOrder" @if (! $canCancelOrder) disabled @endif>
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="cancelMarketplaceOrder"></span>
-                                        Cancel marketplace order
-                                    </button>
-                                </div>
-                            </div>
-
-                            @if ($order)
-                                @php
-                                    $customerEmail = $customer?->email;
-                                    $canSendInvoice = $customerEmail !== null && $customerEmail !== '';
-                                @endphp
-                                <div class="d-flex flex-wrap gap-2 mt-2">
-                                    <button type="button" class="btn btn-outline-success btn-sm" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendOrderInvoice"></span>
-                                        Send invoice
-                                    </button>
-                                    <button type="button" class="btn btn-outline-info btn-sm" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="sendRefundInvoice"></span>
-                                        Send refund invoice
-                                    </button>
-                                    <button type="button" class="btn btn-outline-warning btn-sm" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>
-                                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="openPartialRefundModal"></span>
-                                        Send partial refund invoice
-                                    </button>
-                                </div>
-                                @if (! $canSendInvoice)
-                                    <small class="text-danger d-block mt-1">Customer email missing for invoice delivery.</small>
-                                @endif
-                            @endif
-
-                            @if ($orderActionError)
-                                <div class="alert alert-danger py-2 px-3 mt-3 mb-0">{{ $orderActionError }}</div>
-                            @endif
-                            @if ($orderActionStatus)
-                                <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $orderActionStatus }}</div>
-                            @endif
-                            @if ($invoiceActionError)
-                                <div class="alert alert-danger py-2 px-3 mt-3 mb-0">{{ $invoiceActionError }}</div>
-                            @endif
-                            @if ($invoiceActionStatus)
-                                <div class="alert alert-success py-2 px-3 mt-3 mb-0">{{ $invoiceActionStatus }}</div>
-                            @endif
-
-                            @if ($orderActionPayload)
-                                @php
-                                    $payloadJson = is_string($orderActionPayload)
-                                        ? $orderActionPayload
-                                        : json_encode($orderActionPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
-                                @endphp
-                                <div class="support-order-payload mt-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-1">
-                                        <span class="fw-semibold">API response</span>
-                                        <small class="text-muted">Last cancellation attempt</small>
+                        <div class="support-sidebar-section">
+                            <details class="support-order-panel mb-0" open>
+                                <summary class="d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
+                                    <div>
+                                        <h6 class="mb-0">Order information</h6>
+                                        <small class="text-muted">{{ $order ? 'Order #' . $order->id : 'No order linked' }}</small>
                                     </div>
-                                    <pre class="mb-0">{{ $payloadJson }}</pre>
-                                </div>
-                            @endif
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="transition: transform 0.2s;">
+                                        <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                    </svg>
+                                </summary>
+                                <div class="mt-2">
+                                    <div class="d-flex flex-wrap gap-2 mb-2">
+                                        @if ($marketplaceOrderUrl)
+                                            <a href="{{ $marketplaceOrderUrl }}" class="btn btn-outline-secondary btn-sm" target="_blank" rel="noopener">
+                                                View in marketplace
+                                            </a>
+                                        @endif
+                                        <button type="button" class="btn btn-outline-danger btn-sm" wire:click="cancelMarketplaceOrder" wire:loading.attr="disabled" wire:target="cancelMarketplaceOrder" @if (! $canCancelOrder) disabled @endif>
+                                            <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" wire:loading wire:target="cancelMarketplaceOrder"></span>
+                                            Cancel order
+                                        </button>
+                                    </div>
 
-                            <div class="support-order-meta mt-3">
+                                @if ($order)
+                                    @php
+                                        $customerEmail = $customer?->email;
+                                        $canSendInvoice = $customerEmail !== null && $customerEmail !== '';
+                                    @endphp
+                                    <div class="d-flex flex-wrap gap-1">
+                                        <button type="button" class="btn btn-outline-success btn-sm" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>
+                                            Invoice
+                                        </button>
+                                        <button type="button" class="btn btn-outline-info btn-sm" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>
+                                            Refund
+                                        </button>
+                                        <button type="button" class="btn btn-outline-warning btn-sm" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>
+                                            Partial
+                                        </button>
+                                    </div>
+                                    @if (! $canSendInvoice)
+                                        <small class="text-danger d-block">No customer email.</small>
+                                    @endif
+                                @endif
+
+                                @if ($orderActionError)
+                                    <div class="alert alert-danger py-1 px-2 mb-0 small">{{ $orderActionError }}</div>
+                                @endif
+                                @if ($orderActionStatus)
+                                    <div class="alert alert-success py-1 px-2 mb-0 small">{{ $orderActionStatus }}</div>
+                                @endif
+                                @if ($invoiceActionError)
+                                    <div class="alert alert-danger py-1 px-2 mb-0 small">{{ $invoiceActionError }}</div>
+                                @endif
+                                @if ($invoiceActionStatus)
+                                    <div class="alert alert-success py-1 px-2 mb-0 small">{{ $invoiceActionStatus }}</div>
+                                @endif
+
+                                @if ($orderActionPayload)
+                                    @php
+                                        $payloadJson = is_string($orderActionPayload)
+                                            ? $orderActionPayload
+                                            : json_encode($orderActionPayload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
+                                    @endphp
+                                    <details class="mt-2">
+                                        <summary class="btn btn-sm btn-outline-secondary">API response</summary>
+                                        <pre class="bg-dark text-light p-2 rounded small mt-1" style="max-height: 150px; overflow: auto;">{{ $payloadJson }}</pre>
+                                    </details>
+                                @endif
+
+                                <div class="support-order-meta mt-2">
                                 <div class="meta-pill">
                                     <div class="text-muted small">Internal order</div>
                                     <div class="fw-semibold">{{ $order ? '#' . $order->id : 'n/a' }}</div>
@@ -436,47 +435,42 @@
                                 @else
                                     <div class="text-muted small mt-3">No order items captured for this order.</div>
                                 @endif
-                            @else
-                                <div class="text-muted small mt-3">No internal order is linked to this ticket yet.</div>
-                            @endif
-                        </div>
+                                @else
+                                    <div class="text-muted small">No internal order is linked to this ticket yet.</div>
+                                @endif
+                            </div>
+                        </details>
+                    </div>
 
                         @if ($selectedThread && $selectedThread->marketplace_source === 'backmarket_care')
-                            <div class="mb-3">
-                                <button type="button" class="btn btn-outline-primary btn-sm" wire:click="fetchCareFolder" wire:loading.attr="disabled">
+                            <div class="support-sidebar-section">
+                                <button type="button" class="btn btn-outline-primary btn-sm w-100 mb-2" wire:click="fetchCareFolder" wire:loading.attr="disabled">
                                     <span wire:loading.remove wire:target="fetchCareFolder">
-                                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
-                                        Fetch Back Market Care Folder
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="me-1"><path d="M21 2v6h-6M3 12a9 9 0 0 1 15-6.7L21 8M3 22v-6h6M21 12a9 9 0 0 1-15 6.7L3 16"></path></svg>
+                                        Refresh Care Folder
                                     </span>
                                     <span wire:loading wire:target="fetchCareFolder">
                                         <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                                         Fetching...
                                     </span>
                                 </button>
-                            </div>
 
-                            @if ($careFolderError)
-                                <div class="alert alert-warning">{{ $careFolderError }}</div>
-                            @endif
+                                @if ($careFolderError)
+                                    <div class="alert alert-warning py-1 px-2 small">{{ $careFolderError }}</div>
+                                @endif
 
-                            @if ($careFolderDetails)
-                                <div class="support-order-panel">
-                                    <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
-                                        <div>
-                                            <h6 class="mb-1">Back Market Care folder #{{ $careFolderDetails['id'] ?? 'n/a' }}</h6>
-                                            <small class="text-muted">Live snapshot loaded directly from the Care API.</small>
-                                        </div>
-                                        <div class="d-flex flex-wrap gap-2">
-                                            <span class="badge bg-dark text-uppercase">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</span>
-                                            <span class="badge bg-primary text-uppercase">{{ $careFolderDetails['priority'] ?? 'n/a' }}</span>
-                                        </div>
-                                    </div>
-
-                                    @if (! empty($careFolderDetails['summary']))
-                                        <p class="mt-3 mb-0">{{ $careFolderDetails['summary'] }}</p>
-                                    @endif
-
-                                    <div class="support-order-meta mt-3">
+                                @if ($careFolderDetails)
+                                    <details class="support-order-panel mb-0">
+                                        <summary class="d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
+                                            <div>
+                                                <h6 class="mb-0">Care folder #{{ $careFolderDetails['id'] ?? 'n/a' }}</h6>
+                                                <small class="text-muted">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</small>
+                                            </div>
+                                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="transition: transform 0.2s;">
+                                                <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                            </svg>
+                                        </summary>
+                                        <div class="care-details-collapsible mt-2">a">
                                         <div class="meta-pill">
                                             <div class="text-muted small">Care Folder ID</div>
                                             <div class="fw-semibold">{{ $careFolderDetails['id'] ?? 'n/a' }}</div>
@@ -540,87 +534,83 @@
                                             <div class="text-muted small">Last message</div>
                                             <div class="fw-semibold">{{ $careFolderDetails['last_message_at_human'] ?? ($careFolderDetails['last_message_at'] ?? 'n/a') }}</div>
                                         </div>
-                                        <div class="meta-pill">
-                                            <div class="text-muted small">Last update</div>
-                                            <div class="fw-semibold">{{ $careFolderDetails['last_modification_at_human'] ?? ($careFolderDetails['last_modification_at'] ?? 'n/a') }}</div>
-                                        </div>
-                                    </div>
-                                </div>
+                                                <div class="meta-pill">
+                                                    <div class="text-muted small">Last update</div>
+                                                    <div class="fw-semibold">{{ $careFolderDetails['last_modification_at_human'] ?? ($careFolderDetails['last_modification_at'] ?? 'n/a') }}</div>
+                                                </div>
+                                            </div>
 
-                                @if (!empty($careFolderDetails['portal_url']))
-                                    <div class="mt-3">
-                                        <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary" target="_blank" rel="noopener">
-                                            Open in Back Market Portal
-                                        </a>
-                                    </div>
-                                @endif
-
-                                @if ($careFolderApiRequest || $careFolderApiResponse)
-                                    <details class="mt-3">
-                                        <summary class="btn btn-sm btn-outline-info">📡 View API Request & Response</summary>
-                                        <div class="bg-light border rounded p-3 mt-2">
-                                            @if ($careFolderApiRequest)
-                                                <h6 class="text-primary mb-2">Request Details</h6>
-                                                <pre class="small mb-3" style="max-height: 300px; overflow: auto;"><code>{{ json_encode($careFolderApiRequest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                            @if (!empty($careFolderDetails['portal_url']))
+                                                <div class="mt-2">
+                                                    <a href="{{ $careFolderDetails['portal_url'] }}" class="btn btn-sm btn-outline-primary w-100" target="_blank" rel="noopener">
+                                                        Open in Back Market Portal
+                                                    </a>
+                                                </div>
                                             @endif
 
-                                            @if ($careFolderApiResponse)
-                                                <h6 class="text-success mb-2">Response Details</h6>
-                                                <pre class="small mb-0" style="max-height: 400px; overflow: auto;"><code>{{ json_encode($careFolderApiResponse, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                                            @endif
-                                        </div>
-                                    </details>
-                                @endif
+                                            @if ($careFolderApiRequest || $careFolderApiResponse)
+                                                <details class="mt-2">
+                                                    <summary class="btn btn-sm btn-outline-info">📡 API Request & Response</summary>
+                                                    <div class="bg-light border rounded p-2 mt-1" style="max-height: 200px; overflow: auto;">
+                                                        @if ($careFolderApiRequest)
+                                                            <h6 class="text-primary mb-1 small">Request</h6>
+                                                            <pre class="small mb-2" style="font-size: 0.7rem;"><code>{{ json_encode($careFolderApiRequest, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                                        @endif
 
-                                @if (!empty($careFolderDetails['raw']))
-                                    <details class="mt-3">
-                                        <summary class="btn btn-sm btn-outline-secondary">🔍 View Raw API Response</summary>
-                                        <pre class="bg-light border rounded p-3 mt-2 small" style="max-height: 400px; overflow: auto;"><code>{{ json_encode($careFolderDetails['raw'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                                    </details>
-                                @endif
-                            @endif
-
-                            @if (! empty($careFolderMessages))
-                                <div class="support-reply-panel mt-3">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <div>
-                                            <h6 class="mb-0">Care conversation</h6>
-                                            <small class="text-muted">Messages returned from the Care API in real time.</small>
-                                        </div>
-                                        <div class="text-muted small">{{ count($careFolderMessages) }} messages</div>
-                                    </div>
-                                    <div class="care-message-feed">
-                                        @foreach ($careFolderMessages as $careMessage)
-                                            <div class="care-message border rounded p-3 mb-2 {{ $careMessage['direction'] }}">
-                                                <div class="d-flex justify-content-between align-items-start">
-                                                    <div>
-                                                        <div class="fw-semibold">{{ $careMessage['author'] ?? 'Unknown author' }}</div>
-                                                        <small class="text-muted text-uppercase">{{ $careMessage['author_type'] ?? 'n/a' }}</small>
+                                                        @if ($careFolderApiResponse)
+                                                            <h6 class="text-success mb-1 small">Response</h6>
+                                                            <pre class="small mb-0" style="font-size: 0.7rem;"><code>{{ json_encode($careFolderApiResponse, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                                        @endif
                                                     </div>
-                                                    <div class="text-end">
-                                                        <small class="text-muted">{{ $careMessage['sent_at_human'] ?? ($careMessage['sent_at'] ?? 'n/a') }}</small>
-                                                        <div>
-                                                            <span class="badge bg-light text-dark text-uppercase">{{ $careMessage['direction'] }}</span>
-                                                            @if ($careMessage['internal'])
-                                                                <span class="badge bg-warning text-dark">Internal</span>
+                                                </details>
+                                            @endif
+
+                                            @if (!empty($careFolderDetails['raw']))
+                                                <details class="mt-2">
+                                                    <summary class="btn btn-sm btn-outline-secondary">🔍 Raw Response</summary>
+                                                    <pre class="bg-light border rounded p-2 mt-1 small" style="max-height: 200px; overflow: auto; font-size: 0.7rem;"><code>{{ json_encode($careFolderDetails['raw'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                                </details>
+                                            @endif
+                                        </div>
+                                    </details>
+                                @endif                                @if (! empty($careFolderMessages))
+                                    <div class="support-sidebar-section">
+                                        <details class="support-reply-panel mb-0" open>
+                                            <summary class="d-flex justify-content-between align-items-center" style="cursor: pointer; list-style: none;">
+                                                <div>
+                                                    <h6 class="mb-0">Care conversation</h6>
+                                                    <small class="text-muted">{{ count($careFolderMessages) }} messages</small>
+                                                </div>
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="transition: transform 0.2s;">
+                                                    <path fill-rule="evenodd" d="M1.646 4.646a.5.5 0 0 1 .708 0L8 10.293l5.646-5.647a.5.5 0 0 1 .708.708l-6 6a.5.5 0 0 1-.708 0l-6-6a.5.5 0 0 1 0-.708z"/>
+                                                </svg>
+                                            </summary>
+                                            <div class="care-details-collapsible mt-2">
+                                                @foreach ($careFolderMessages as $careMessage)
+                                                    <div class="border rounded p-2 mb-2 {{ $careMessage['direction'] }}">
+                                                        <div class="d-flex justify-content-between align-items-start mb-1">
+                                                            <div>
+                                                                <div class="fw-semibold small">{{ $careMessage['author'] ?? 'Unknown' }}</div>
+                                                                <small class="text-muted" style="font-size: 0.7rem;">{{ $careMessage['sent_at_human'] ?? 'n/a' }}</small>
+                                                            </div>
+                                                            <span class="badge bg-light text-dark text-uppercase" style="font-size: 0.65rem;">{{ $careMessage['direction'] }}</span>
+                                                        </div>
+                                                        <div class="small">
+                                                            @if (! empty($careMessage['body_html']))
+                                                                {!! Str::limit(strip_tags($careMessage['body_html']), 200) !!}
+                                                            @else
+                                                                {{ Str::limit($careMessage['body'] ?? '', 200) }}
                                                             @endif
                                                         </div>
                                                     </div>
-                                                </div>
-                                                <div class="mt-2">
-                                                    @if (! empty($careMessage['body_html']))
-                                                        {!! $careMessage['body_html'] !!}
-                                                    @else
-                                                        {!! nl2br(e($careMessage['body'] ?? '')) !!}
-                                                    @endif
-                                                </div>
+                                                @endforeach
                                             </div>
-                                        @endforeach
+                                        </details>
                                     </div>
-                                </div>
-                            @elseif ($careFolderDetails && ! $careFolderError)
-                                <small class="text-muted d-block">No live messages were returned for this Care folder.</small>
-                            @endif
+                                @elseif ($careFolderDetails && ! $careFolderError)
+                                    <small class="text-muted d-block">No live messages were returned for this Care folder.</small>
+                                @endif
+                            </div>
                         @endif
                     </div>
 
