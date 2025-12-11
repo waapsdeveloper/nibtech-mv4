@@ -417,7 +417,7 @@
                                     <small class="text-muted">Live snapshot loaded directly from the Care API.</small>
                                 </div>
                                 <div class="d-flex flex-wrap gap-2">
-                                    <span class="badge bg-dark text-uppercase">{{ $careFolderDetails['state'] ?? 'n/a' }}</span>
+                                    <span class="badge bg-dark text-uppercase">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</span>
                                     <span class="badge bg-primary text-uppercase">{{ $careFolderDetails['priority'] ?? 'n/a' }}</span>
                                 </div>
                             </div>
