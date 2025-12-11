@@ -278,8 +278,11 @@
                                     @endphp
                                     <tr>
                                         <td>Sub Total:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                                     </tr>
+                                    @php
+                                        $refundTotal = ! is_null($partialAmount) ? $partialAmount : $totalAmount;
+                                    @endphp
                                     @if(! is_null($partialAmount))
                                     <tr>
                                         <td>Partial Refund Amount:</td>
@@ -291,7 +294,7 @@
                                     <hr>
                                     <tr>
                                         <td>Amount Due:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($refundTotal, 2) }}</strong></td>
                                     </tr>
                                     @php
                                         $marketplaceLabel = optional($order->marketplace)->name;
@@ -303,7 +306,7 @@
                                     @endphp
                                     <tr>
                                         <td>{{ $marketplaceLabel }}:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{number_format( $totalAmount,2) }}</strong></td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($refundTotal, 2) }}</strong></td>
                                     </tr>
                                     <hr>
                                     <tr>
