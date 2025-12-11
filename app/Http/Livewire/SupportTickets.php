@@ -707,7 +707,7 @@ class SupportTickets extends Component
                 ];
 
                 $careMeta = app(BackMarketAPIController::class)
-                    ->apiPostWithMeta('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
+                    ->sendCareMessageMeta($careFolderId, $body);
 
                 $careApiResponse = $this->convertToArray($careMeta['decoded'] ?? []);
 
