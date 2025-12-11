@@ -1548,6 +1548,83 @@ class SupportTickets extends Component
         }
     }
 
+    public function generateAiAssist(): void
+    {
+        $this->aiError = null;
+        $this->aiSummary = null;
+        $this->aiDraft = null;
+
+        if (! $this->selectedThreadId) {
+            $this->aiError = 'Select a ticket first.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->aiError = 'Thread not found.';
+
+            return;
+        }
+
+        $thread->loadMissing('messages');
+
+        $messages = collect($thread->messages ?? [])
+            ->sortByDesc(function ($message) {
+                return $message->sent_at ?: $message->created_at ?: $message->id;
+            })
+            ->values();
+
+        if ($messages->isEmpty()) {
+            $this->aiError = 'No messages to summarize yet.';
+
+            return;
+        }
+
+        $recent = $messages->take(8);
+
+        $context = $recent->map(function ($message) {
+            $role = $message->is_internal_note ? 'Note' : ($message->direction === 'outbound' ? 'Support' : 'Customer');
+
+            $text = $message->body_text
+                ?: ($message->clean_body_html ?? '')
+                ?: ($message->body_html ?? '');
+
+            if ($text && $message->body_html) {
+                $text = $this->plainTextFromHtml($message->body_html);
+            }
+
+            $clean = trim(preg_replace('/\s+/', ' ', $text ?? ''));
+
+            return $role . ': ' . $this->shorten($clean ?: '[no content]', 180);
+        })->filter()->values();
+
+        if ($context->isEmpty()) {
+            $this->aiError = 'Could not derive text from recent messages.';
+
+            return;
+        }
+
+        $summary = 'Recent activity — ' . $context->implode(' | ');
+        $this->aiSummary = $this->shorten($summary, 480);
+
+        $name = $thread->buyer_name ?: 'there';
+        $orderRef = $thread->order_reference
+            ?: ($thread->external_thread_id ? ltrim($thread->external_thread_id, '#') : 'your order');
+        $channelNote = $thread->marketplace_source === 'backmarket_care'
+            ? "We'll post this via Back Market Care."
+            : 'We will reply by email.';
+
+        $this->aiDraft = sprintf(
+            "Hi %s,\n\nThanks for your message about %s. I reviewed the recent updates: %s\n\nSuggested reply:\n- Acknowledge their concern in one line.\n- Share the current status or the action we just took.\n- Provide the next step and expected timing.\n\n%s\n\nBest regards,\nSupport Team",
+            $name,
+            $orderRef,
+            $this->aiSummary,
+            $channelNote
+        );
+    }
+
     public function useAiDraft(): void
     {
         if (! $this->aiDraft) {
