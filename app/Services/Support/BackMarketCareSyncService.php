@@ -18,6 +18,18 @@ class BackMarketCareSyncService
     }
 
     /**
+     * Import a single Back Market Care case into local storage (thread + messages).
+     */
+    public function importCase(object|array $case): SupportThread
+    {
+        $case = $this->ensureCaseDetails($case);
+        $thread = $this->upsertThread($case);
+        $this->syncMessages($thread, $case);
+
+        return $thread;
+    }
+
+    /**
      * Synchronize Back Market Care help requests into local support storage.
      *
      * @param  array{since?: string, params?: array<string, mixed>}  $options
