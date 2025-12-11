@@ -1210,7 +1210,11 @@
         console.log('Marketplaces loaded:', window.marketplaces);
 
         $(document).ready(function() {
-            $('.select2').select2();
+            if ($.fn.select2) {
+                $('.select2').select2();
+            } else {
+                console.warn('select2 is not loaded');
+            }
 
 
             let storages = {!! json_encode($storages) !!};
