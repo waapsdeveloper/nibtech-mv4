@@ -642,7 +642,112 @@
                 </div>
             @else
                 <div class="text-center text-muted my-auto">
-                    <h5>Select a support thread to view details.</h5>
+                    @if ($careFolderDetails)
+                        {{-- Standalone Care Folder Preview (when no thread selected) --}}
+                        <div class="text-start">
+                            <div class="support-order-panel">
+                                <div class="d-flex flex-wrap justify-content-between align-items-start gap-2">
+                                    <div>
+                                        <h6 class="mb-1">Back Market Care folder #{{ $careFolderDetails['id'] ?? 'n/a' }}</h6>
+                                        <small class="text-muted">Live snapshot loaded directly from the Care API.</small>
+                                    </div>
+                                    <div class="d-flex flex-wrap gap-2">
+                                        <span class="badge bg-dark text-uppercase">{{ $careFolderDetails['state_label'] ?? ($careFolderDetails['state'] ?? 'n/a') }}</span>
+                                        <span class="badge bg-primary text-uppercase">{{ $careFolderDetails['priority'] ?? 'n/a' }}</span>
+                                    </div>
+                                </div>
+
+                                @if (! empty($careFolderDetails['summary']))
+                                    <p class="mt-3 mb-0">{{ $careFolderDetails['summary'] }}</p>
+                                @endif
+
+                                <div class="support-order-meta mt-3">
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Topic</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['topic'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Reason</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['reason_code'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Order ID</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['order_id'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Orderline</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['orderline'] ?? 'n/a' }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Buyer</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['buyer_name'] ?? 'Unknown' }}</div>
+                                        <small class="text-muted">{{ $careFolderDetails['buyer_email'] ?? 'n/a' }}</small>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Created</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['created_at_human'] ?? ($careFolderDetails['created_at'] ?? 'n/a') }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Last message</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['last_message_at_human'] ?? ($careFolderDetails['last_message_at'] ?? 'n/a') }}</div>
+                                    </div>
+                                    <div class="meta-pill">
+                                        <div class="text-muted small">Last update</div>
+                                        <div class="fw-semibold">{{ $careFolderDetails['last_modification_at_human'] ?? ($careFolderDetails['last_modification_at'] ?? 'n/a') }}</div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (!empty($careFolderDetails['raw']))
+                                <details class="mt-3">
+                                    <summary class="btn btn-sm btn-outline-secondary">🔍 View Raw API Response</summary>
+                                    <pre class="bg-light border rounded p-3 mt-2 small" style="max-height: 400px; overflow: auto;"><code>{{ json_encode($careFolderDetails['raw'], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
+                                </details>
+                            @endif
+
+                            @if (! empty($careFolderMessages))
+                                <div class="support-reply-panel mt-3">
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <h6 class="mb-0">Care conversation</h6>
+                                            <small class="text-muted">Messages from the Care API</small>
+                                        </div>
+                                        <div class="text-muted small">{{ count($careFolderMessages) }} messages</div>
+                                    </div>
+                                    <div class="care-message-feed">
+                                        @foreach ($careFolderMessages as $careMessage)
+                                            <div class="care-message border rounded p-3 mb-2 {{ $careMessage['direction'] }}">
+                                                <div class="d-flex justify-content-between align-items-start">
+                                                    <div>
+                                                        <div class="fw-semibold">{{ $careMessage['author'] ?? 'Unknown author' }}</div>
+                                                        <small class="text-muted text-uppercase">{{ $careMessage['author_type'] ?? 'n/a' }}</small>
+                                                    </div>
+                                                    <div class="text-end">
+                                                        <small class="text-muted">{{ $careMessage['sent_at_human'] ?? ($careMessage['sent_at'] ?? 'n/a') }}</small>
+                                                        <div>
+                                                            <span class="badge bg-light text-dark text-uppercase">{{ $careMessage['direction'] }}</span>
+                                                            @if ($careMessage['internal'])
+                                                                <span class="badge bg-warning text-dark">Internal</span>
+                                                            @endif
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="mt-2">
+                                                    @if ($careMessage['body_html'])
+                                                        {!! $careMessage['body_html'] !!}
+                                                    @else
+                                                        {!! nl2br(e($careMessage['body'] ?? '')) !!}
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                </div>
+                            @endif
+                        </div>
+                    @else
+                        <h5>Select a support thread to view details.</h5>
+                    @endif
                 </div>
             @endif
         </div>
