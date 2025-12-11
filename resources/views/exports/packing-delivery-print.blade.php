@@ -537,6 +537,18 @@
 
                 updateStatus('Sending delivery note to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
+
+                // Ensure QZ Tray API version is available before printing (avoids undefined version errors)
+                try {
+                    await qz.api.getVersion();
+                } catch (e) {
+                    console.debug('Unable to read QZ version, continuing with print:', e);
+                }
+
+                if (!pdfBase64 || pdfBase64.length < 10) {
+                    throw new Error('Delivery note PDF is empty or failed to load');
+                }
+
                 const config = qz.configs.create(printer, {
                     orientation: 'portrait',
                     margins: { top: 5, right: 5, bottom: 5, left: 5 },

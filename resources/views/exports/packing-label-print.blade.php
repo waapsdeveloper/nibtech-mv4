@@ -582,6 +582,16 @@
                 updateStatus('Sending label to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
 
+                    try {
+                        await qz.api.getVersion();
+                    } catch (e) {
+                        console.debug('Unable to read QZ version, continuing with print:', e);
+                    }
+
+                    if (!pdfBase64 || pdfBase64.length < 10) {
+                        throw new Error('Label PDF is empty or failed to load');
+                    }
+
                 const config = qz.configs.create(printer, {
                     size: { width: 80, height: 170 },
                     units: 'mm'
