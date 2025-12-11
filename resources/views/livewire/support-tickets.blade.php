@@ -468,7 +468,10 @@
                                         <div class="mb-1"><span class="text-muted">Request:</span> <code>{{ json_encode($careReplyRequest) }}</code></div>
                                     @endif
                                     @if ($careReplyResponse)
-                                        <div><span class="text-muted">Response:</span> <code>{{ json_encode($careReplyResponse) }}</code></div>
+                                        <div class="mb-1"><span class="text-muted">Response:</span> <code>{{ json_encode($careReplyResponse) }}</code></div>
+                                        @if (is_array($careReplyResponse) && isset($careReplyResponse['status']))
+                                            <div class="small text-muted">HTTP {{ $careReplyResponse['status'] }} | Raw: {{ $careReplyResponse['raw'] ?? 'empty' }} | Error: {{ $careReplyResponse['error'] ?? 'none' }}</div>
+                                        @endif
                                     @endif
                                 </div>
                             @endif

@@ -160,7 +160,7 @@ class BackMarketAPIController extends Controller
         return json_decode($get_result);
     }
 
-    public function apiPost($end_point, $request = '', $country_code = null) {
+    public function apiPostWithMeta($end_point, $request = '', $country_code = null): array {
         if($country_code == null){
             $country_code = self::$COUNTRY_CODE;
         }
@@ -181,7 +181,6 @@ class BackMarketAPIController extends Controller
 
         $target_url = self::$base_url . $end_point;
 
-        // Send the POST request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $target_url);
         curl_setopt($ch, CURLOPT_HEADER, false);
@@ -195,13 +194,24 @@ class BackMarketAPIController extends Controller
         }
 
         $post_result = curl_exec($ch);
-
-        $error = (curl_error($ch));
-        echo $error;
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
         curl_close($ch);
 
-        return json_decode($post_result);
+        $decoded = json_decode($post_result, true);
+
+        return [
+            'status' => $http_code,
+            'decoded' => $decoded,
+            'raw' => $post_result,
+            'error' => $curl_error ?: null,
+        ];
+    }
+
+    public function apiPost($end_point, $request = '', $country_code = null) {
+        $meta = $this->apiPostWithMeta($end_point, $request, $country_code);
+
+        return $meta['decoded'];
     }
 
     public function apiPatch($end_point, $request = '', $content_type='application/json') {
