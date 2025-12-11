@@ -218,18 +218,6 @@ class SupportTickets extends Component
         try {
             $controller = app(BackMarketAPIController::class);
             $folder = $controller->getCare($folderId);
-
-            // Capture raw response
-            $this->careFolderApiResponse = [
-                'status' => 'success',
-                'data' => $folder,
-                'timestamp' => now()->toIso8601String(),
-            ];
-
-            Log::info('Back Market Care API Response', [
-                'folder_id' => $folderId,
-                'response' => $folder,
-            ]);
         } catch (\Throwable $e) {
             $this->careFolderApiResponse = [
                 'status' => 'error',
@@ -257,6 +245,17 @@ class SupportTickets extends Component
         }
 
         $folderArray = $this->convertToArray($folder);
+
+        $this->careFolderApiResponse = [
+            'status' => 'success',
+            'data' => $folderArray,
+            'timestamp' => now()->toIso8601String(),
+        ];
+
+        Log::info('Back Market Care API Response', [
+            'folder_id' => $folderId,
+            'response' => $folderArray,
+        ]);
 
         if (empty($folderArray)) {
             $this->careFolderFetchError = 'Could not parse Care API response.';
