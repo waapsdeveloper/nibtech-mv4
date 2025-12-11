@@ -1644,9 +1644,8 @@ class SupportTickets extends Component
 
     protected function shouldSendBackmarketInvoiceAttachment(SupportThread $thread, bool $isPartial): bool
     {
-        return $isPartial
-            && $thread->marketplace_source === 'backmarket_care'
-            && config('services.backmarket.care_send_attachments', false);
+        // Always send partial refund invoices with Care attachments for Back Market threads.
+        return $isPartial && $thread->marketplace_source === 'backmarket_care';
     }
 
     protected function buildPartialRefundPdf(array $payload): array
