@@ -92,6 +92,19 @@
                 window.qzGlobalConnectionEstablished = false;
                 window.qzGlobalConnectionInProgress = false;
 
+                // Preferred connection configuration (force ws:// and known hosts)
+                const connectionConfig = {
+                    host: ['localhost', '127.0.0.1', 'localhost.qz.io'],
+                    usingSecure: false,
+                    port: {
+                        secure: [8181, 8282, 8383, 8484],
+                        insecure: [8182, 8283, 8384, 8485],
+                        portIndex: 0
+                    },
+                    retries: 3,
+                    delay: 0.5
+                };
+
                 /**
                  * Initialize QZ Tray connection once per session
                  * This will be called automatically when the page loads
@@ -105,15 +118,11 @@
 
                     // Ensure connection options include localhost/127.0.0.1 and allow insecure fallback
                     try {
-                        qz.websocket.connectConfig.host = ['localhost', '127.0.0.1'];
-                        qz.websocket.connectConfig.usingSecure = false; // prefer ws:// to avoid cert issues
-                        qz.websocket.connectConfig.port = {
-                            secure: [8181, 8282, 8383, 8484],
-                            insecure: [8182, 8283, 8384, 8485],
-                            portIndex: 0
-                        };
-                        qz.websocket.connectConfig.retries = 2;
-                        qz.websocket.connectConfig.delay = 0.5;
+                        qz.websocket.connectConfig = Object.assign(
+                            {},
+                            qz.websocket.connectConfig || {},
+                            connectionConfig
+                        );
                     } catch (e) {
                         console.debug('Unable to set QZ connection config', e);
                     }
@@ -143,7 +152,7 @@
 
                     // Use existing startConnection from functions.js
                     if (typeof startConnection === 'function') {
-                        startConnection({ retries: 3, delay: 1 });
+                        startConnection(connectionConfig);
 
                         // Monitor connection success - check for full readiness
                         var checkInterval = setInterval(function() {
@@ -224,7 +233,7 @@
                         // Use existing startConnection from functions.js
                         if (typeof startConnection === 'function' && !qz.websocket.isActive()) {
                             try {
-                                startConnection({ retries: 2, delay: 1 });
+                                startConnection(Object.assign({}, connectionConfig, { retries: 2, delay: 1 }));
                             } catch (error) {
                                 console.debug('Connection attempt failed:', error);
                             }
