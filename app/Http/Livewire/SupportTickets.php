@@ -22,6 +22,7 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Livewire\Component;
 use Livewire\WithPagination;
+use TCPDF;
 
 class SupportTickets extends Component
 {
@@ -696,12 +697,17 @@ class SupportTickets extends Component
             }
 
             try {
-                $careApiResponse = app(BackMarketAPIController::class)
+                $careApiResponseRaw = app(BackMarketAPIController::class)
                     ->apiPost('sav/' . $careFolderId . '/messages', json_encode(['message' => $body]));
 
-                $careApiResponse = $this->convertToArray($careApiResponse) ?: null;
+                $careApiResponse = $this->convertToArray($careApiResponseRaw);
 
-                if (! $careApiResponse) {
+                // Care API may return 200/201 with an empty body; treat that as success.
+                if ($careApiResponse === [] && $careApiResponseRaw !== null) {
+                    $careApiResponse = ['status' => 'accepted'];
+                }
+
+                if ($careApiResponse === [] && $careApiResponseRaw === null) {
                     $this->replyError = 'Care API did not return a valid response.';
 
                     return;
@@ -1268,6 +1274,7 @@ class SupportTickets extends Component
             $this->sendInvoiceMail($order, $customer->email, $payload, $isRefund, $isPartial);
             $this->logInvoiceThreadEntry($thread, $order, $customer->email, $isRefund, $emailHtml, $isPartial);
             $this->sendInvoiceNotificationEmail($thread, $order, $customer->email, $isRefund, $isPartial);
+            $this->maybeSendBackmarketPartialRefundAttachment($thread, $order, $payload, $isPartial);
         } catch (\Throwable $exception) {
             $this->invoiceActionError = 'Failed to send invoice: ' . $exception->getMessage();
             Log::error('Support invoice dispatch failed', [
@@ -1546,6 +1553,73 @@ class SupportTickets extends Component
                 'error' => $exception->getMessage(),
             ]);
         }
+    }
+
+    protected function maybeSendBackmarketPartialRefundAttachment(SupportThread $thread, Order_model $order, array $payload, bool $isPartial): void
+    {
+        if (! $this->shouldSendBackmarketInvoiceAttachment($thread, $isPartial)) {
+            return;
+        }
+
+        $folderId = $thread->external_thread_id ?: data_get($thread->metadata, 'id');
+
+        if (! $folderId) {
+            Log::warning('Back Market attachment skipped: missing folder id', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+            ]);
+
+            return;
+        }
+
+        $orderLabel = $order->reference_id ?? $order->reference ?? ('#' . $order->id);
+        $message = 'Partial refund invoice attached for order ' . $orderLabel . '.';
+
+        try {
+            $pdf = $this->buildPartialRefundPdf($payload);
+
+            app(BackMarketAPIController::class)->sendCareMessageWithAttachment($folderId, $message, $pdf);
+
+            Log::info('Back Market partial refund invoice posted', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'folder_id' => $folderId,
+            ]);
+        } catch (\Throwable $exception) {
+            Log::warning('Back Market Care attachment failed', [
+                'thread_id' => $thread->id,
+                'order_id' => $order->id,
+                'folder_id' => $folderId,
+                'error' => $exception->getMessage(),
+            ]);
+        }
+    }
+
+    protected function shouldSendBackmarketInvoiceAttachment(SupportThread $thread, bool $isPartial): bool
+    {
+        return $isPartial
+            && $thread->marketplace_source === 'backmarket_care'
+            && config('services.backmarket.care_send_attachments', false);
+    }
+
+    protected function buildPartialRefundPdf(array $payload): array
+    {
+        $pdf = new TCPDF();
+        $pdf->SetCreator(PDF_CREATOR);
+        $pdf->SetTitle('Partial Refund Invoice');
+        $pdf->AddPage();
+        $pdf->SetFont('dejavusans', '', 12);
+
+        $html = view('export.partial_refund_invoice', $payload)->render();
+        $pdf->writeHTML($html, true, false, true, false, '');
+
+        $pdfOutput = $pdf->Output('partial-refund-invoice.pdf', 'S');
+
+        return [
+            'data' => $pdfOutput,
+            'name' => 'partial-refund-invoice.pdf',
+            'mime' => 'application/pdf',
+        ];
     }
 
     public function generateAiAssist(): void
