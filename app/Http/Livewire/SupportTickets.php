@@ -29,15 +29,10 @@ class SupportTickets extends Component
 
     public $search = '';
     public $status = '';
-    public $priority = '';
     public $marketplace = '';
-    public $tag = '';
     public $assigned = '';
-    public $changeOnly = false;
     public $perPage = 25;
     public $selectedThreadId;
-    public $sortField = 'last_external_activity_at';
-    public $sortDirection = 'desc';
     public array $messageTranslations = [];
     public array $expandedMessages = [];
     public $replySubject = '';
@@ -63,14 +58,6 @@ class SupportTickets extends Component
     public $syncLookback = '6';
     public $syncBackmarket = true;
     public $syncRefurbed = true;
-    public $careState = '';
-    public $carePriority = '';
-    public $careTopic = '';
-    public $careOrderline = '';
-    public $careOrderId = '';
-    public $careLastId = '';
-    public $carePageSize = '50';
-    public $careExtraQuery = '';
     public $careFolderDetails = null;
     public $careFolderMessages = [];
     public $careFolderError = null;
@@ -79,14 +66,9 @@ class SupportTickets extends Component
     protected $queryString = [
         'search' => ['except' => ''],
         'status' => ['except' => ''],
-        'priority' => ['except' => ''],
         'marketplace' => ['except' => ''],
-        'tag' => ['except' => ''],
         'assigned' => ['except' => ''],
-        'changeOnly' => ['except' => false],
         'perPage' => ['except' => 25],
-        'sortField' => ['except' => 'last_external_activity_at'],
-        'sortDirection' => ['except' => 'desc'],
         'page' => ['except' => 1],
     ];
 
@@ -95,10 +77,7 @@ class SupportTickets extends Component
     public function mount(): void
     {
         $this->perPage = $this->sanitizePerPage($this->perPage);
-        $this->sortField = $this->sanitizeSortField($this->sortField);
-        $this->sortDirection = $this->sanitizeSortDirection($this->sortDirection);
         $this->syncLookback = $this->sanitizeSyncLookback($this->syncLookback);
-        $this->carePageSize = $this->sanitizeCarePageSize($this->carePageSize);
     }
 
     public function updated($property, $value): void
@@ -107,23 +86,11 @@ class SupportTickets extends Component
             $this->perPage = $this->sanitizePerPage($value);
         }
 
-        if ($property === 'sortField') {
-            $this->sortField = $this->sanitizeSortField($value);
-        }
-
-        if ($property === 'sortDirection') {
-            $this->sortDirection = $this->sanitizeSortDirection($value);
-        }
-
         if ($property === 'syncLookback') {
             $this->syncLookback = $this->sanitizeSyncLookback($value);
         }
 
-        if ($property === 'carePageSize') {
-            $this->carePageSize = $this->sanitizeCarePageSize($value);
-        }
-
-        $filters = ['search', 'status', 'priority', 'marketplace', 'tag', 'assigned', 'changeOnly', 'perPage', 'sortField', 'sortDirection'];
+        $filters = ['search', 'status', 'marketplace', 'assigned', 'perPage'];
 
         if (in_array($property, $filters, true)) {
             $this->resetPage();
@@ -134,13 +101,8 @@ class SupportTickets extends Component
     {
         $this->search = '';
         $this->status = '';
-        $this->priority = '';
         $this->marketplace = '';
-        $this->tag = '';
         $this->assigned = '';
-        $this->changeOnly = false;
-        $this->sortField = 'last_external_activity_at';
-        $this->sortDirection = 'desc';
         $this->perPage = 25;
         $this->selectedThreadId = null;
         $this->messageTranslations = [];
@@ -201,6 +163,11 @@ class SupportTickets extends Component
         $this->careFolderError = null;
         $this->hydrateReplyDefaults();
         $this->hydrateOrderContext();
+        $this->hydrateCareFolder();
+    }
+
+    public function fetchCareFolder(): void
+    {
         $this->hydrateCareFolder();
     }
 
@@ -332,13 +299,6 @@ class SupportTickets extends Component
 
     public function getThreadsProperty(): LengthAwarePaginator
     {
-        $sortable = ['last_external_activity_at', 'priority', 'status', 'created_at'];
-        $sortField = in_array($this->sortField, $sortable, true)
-            ? $this->sortField
-            : 'last_external_activity_at';
-
-        $sortDirection = $this->sortDirection === 'asc' ? 'asc' : 'desc';
-
         return SupportThread::query()
             ->with([
                 'tags',
@@ -360,14 +320,9 @@ class SupportTickets extends Component
                 });
             })
             ->when($this->status !== '', fn ($query) => $query->where('status', $this->status))
-            ->when($this->priority !== '', fn ($query) => $query->where('priority', $this->priority))
             ->when($this->marketplace !== '', fn ($query) => $query->where('marketplace_id', $this->marketplace))
             ->when($this->assigned !== '', fn ($query) => $query->where('assigned_to', $this->assigned))
-            ->when($this->changeOnly, fn ($query) => $query->where('change_of_mind', true))
-            ->when($this->tag !== '', function ($query) {
-                $query->whereHas('tags', fn ($tagQuery) => $tagQuery->where('support_tags.id', $this->tag));
-            })
-            ->orderBy($sortField, $sortDirection)
+            ->orderByDesc('last_external_activity_at')
             ->orderByDesc('id')
             ->paginate($this->perPage);
     }
@@ -412,18 +367,6 @@ class SupportTickets extends Component
         }
 
         return $value;
-    }
-
-    protected function sanitizeSortField(?string $field): string
-    {
-        $allowed = ['last_external_activity_at', 'priority', 'status', 'created_at'];
-
-        return in_array($field, $allowed, true) ? $field : 'last_external_activity_at';
-    }
-
-    protected function sanitizeSortDirection(?string $direction): string
-    {
-        return $direction === 'asc' ? 'asc' : 'desc';
     }
 
     protected function prepareTextForTranslation(SupportMessage $message): string
@@ -1419,34 +1362,8 @@ class SupportTickets extends Component
             $options[$flag] = (string) $value;
         }
 
-        $pageSize = $this->sanitizeCarePageSize($this->carePageSize);
-        if ($pageSize !== '') {
-            $options['--care-page-size'] = $pageSize;
-        }
-
-        $extra = trim((string) $this->careExtraQuery);
-        if ($extra !== '') {
-            $options['--care-extra'] = ltrim($extra, '&?');
-        }
-
         return $options;
     }
-
-    protected function sanitizeCarePageSize($value): string
-    {
-        if ($value === null || $value === '' || ! is_numeric($value)) {
-            $value = 50;
-        }
-
-        $value = (int) $value;
-
-        if ($value < 1) {
-            $value = 1;
-        }
-
-        if ($value > 200) {
-            $value = 200;
-        }
 
         return (string) $value;
     }
