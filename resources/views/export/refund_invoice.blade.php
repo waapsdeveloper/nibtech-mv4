@@ -286,9 +286,28 @@
                                     @if(! is_null($partialAmount))
                                     <tr>
                                         <td>Partial Refund Amount:</td>
-                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($partialAmount, 2) }}</strong></td>
+                                        <td align="right"> <strong>{{ $order->currency_id->sign }}{{ number_format($partialAmount, 2) }}</strong></td>
                                     </tr>
-                                    @endif
+                                    <br>
+                                    <br>
+                                    <hr>
+                                    <tr>
+                                        <td>Amount Due:</td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($refundTotal-$partialAmount, 2) }}</strong></td>
+                                    </tr>
+                                    @php
+                                        $marketplaceLabel = optional($order->marketplace)->name;
+                                        if (! $marketplaceLabel) {
+                                            $marketplaceLabel = ((int) ($order->marketplace_id ?? 0) === 4)
+                                                ? 'Refurbed'
+                                                : 'Back Market';
+                                        }
+                                    @endphp
+                                    <tr>
+                                        <td>{{ $marketplaceLabel }}:</td>
+                                        <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($refundTotal-$partialAmount, 2) }}</strong></td>
+                                    </tr>
+                                    @else
                                     <br>
                                     <br>
                                     <hr>
@@ -308,6 +327,7 @@
                                         <td>{{ $marketplaceLabel }}:</td>
                                         <td align="right"> <strong>-{{ $order->currency_id->sign }}{{ number_format($refundTotal, 2) }}</strong></td>
                                     </tr>
+                                    @endif
                                     <hr>
                                     <tr>
                                         <td>Change:</td>
