@@ -1652,18 +1652,19 @@ class SupportTickets extends Component
     {
         $pdf = new TCPDF();
         $pdf->SetCreator(PDF_CREATOR);
-        $pdf->SetTitle('Partial Refund Invoice');
+        // Reuse the original refund invoice template for partials to keep styling consistent.
+        $pdf->SetTitle('Refund Invoice');
         $pdf->AddPage();
         $pdf->SetFont('dejavusans', '', 12);
 
-        $html = view('export.partial_refund_invoice', $payload)->render();
+        $html = view('export.refund_invoice', $payload)->render();
         $pdf->writeHTML($html, true, false, true, false, '');
 
-        $pdfOutput = $pdf->Output('partial-refund-invoice.pdf', 'S');
+        $pdfOutput = $pdf->Output('refund-invoice.pdf', 'S');
 
         return [
             'data' => $pdfOutput,
-            'name' => 'partial-refund-invoice.pdf',
+            'name' => 'refund-invoice.pdf',
             'mime' => 'application/pdf',
         ];
     }
