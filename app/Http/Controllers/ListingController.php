@@ -31,7 +31,7 @@ class ListingController extends Controller
 {
     protected $stockDistributionService;
 
-    public function __construct(StockDistributionService $stockDistributionService)
+    public function __construct(?StockDistributionService $stockDistributionService = null)
     {
         $this->stockDistributionService = $stockDistributionService;
     }
@@ -883,7 +883,7 @@ class ListingController extends Controller
             }
             
             // Distribute stock to marketplaces based on formulas (synchronously)
-            if($stockChange != 0){
+            if($stockChange != 0 && $this->stockDistributionService !== null){
                 // Call distribution service directly to ensure it completes before response
                 // Pass flag to ignore remaining stock if it's an exact set
                 $this->stockDistributionService->distributeStock(
