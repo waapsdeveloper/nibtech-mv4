@@ -937,11 +937,12 @@ class ListingController extends Controller
                 $process_id = null;
             }
         }
-        $variation = Variation_model::find($id);
+        $variation = Variation_model::with('available_stocks')->find($id);
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
 
-        $variation = Variation_model::find($id);
+        // Reload variation with relationships after update_qty
+        $variation = Variation_model::with('available_stocks')->find($id);
 
         if(!in_array($variation->state, [0,1,2,3])){
             return response()->json([
@@ -949,6 +950,9 @@ class ListingController extends Controller
             ], 400);
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
+
+        // Get available stock count (physical inventory)
+        $availableCount = $variation->available_stocks->count();
 
         // If setting exact stock, use the exact value directly
         if($setExactStock && $exactStockValue !== null){
@@ -965,6 +969,20 @@ class ListingController extends Controller
                     $new_quantity = $stock + $previous_qty;
                 }
             }
+        }
+        
+        // Validate: Cannot list more stock than physically available
+        if($new_quantity > $availableCount){
+            $excess = $new_quantity - $availableCount;
+            $maxPushable = max(0, $availableCount - $previous_qty);
+            return response()->json([
+                'error' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Available: ' . $availableCount . ', Current listed: ' . $previous_qty . ', Max pushable: ' . $maxPushable,
+                'message' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Maximum pushable: ' . $maxPushable,
+                'available_count' => $availableCount,
+                'current_listed' => $previous_qty,
+                'requested_total' => $new_quantity,
+                'max_pushable' => $maxPushable
+            ], 400);
         }
         
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));

@@ -10,7 +10,7 @@
      * Initialize total stock form handlers
      */
     function initializeTotalStockForm() {
-        // Show/hide Push button based on input value
+        // Show/hide Push button based on input value and validate against available stock
         $(document).on('input', '[id^="add_total_"]', function() {
             const inputId = $(this).attr('id');
             const matches = inputId.match(/add_total_(\d+)/);
@@ -20,13 +20,45 @@
             }
             
             const variationId = matches[1];
-            const value = $(this).val();
+            const input = $(this);
+            const value = parseFloat(input.val()) || 0;
+            const availableCount = parseFloat(input.data('available-count')) || 0;
+            const currentTotal = parseFloat(input.data('current-total')) || 0;
+            const maxPushable = parseFloat(input.data('max-pushable')) || 0;
+            const errorElement = $('#error_total_' + variationId);
+            const pushButton = $('#send_total_' + variationId);
             
-            if (value && parseFloat(value) !== 0) {
-                $('#send_total_' + variationId).removeClass('d-none');
-            } else {
-                $('#send_total_' + variationId).addClass('d-none');
+            // Clear previous errors
+            errorElement.addClass('d-none').text('');
+            input.removeClass('is-invalid');
+            
+            if (!value || value === 0) {
+                pushButton.addClass('d-none');
+                return;
             }
+            
+            // Validate: Can't push more than available stock
+            const newTotal = currentTotal + value;
+            if (newTotal > availableCount) {
+                const excess = newTotal - availableCount;
+                errorElement.removeClass('d-none')
+                    .text('Exceeds available by ' + excess + '. Max: ' + maxPushable);
+                input.addClass('is-invalid');
+                pushButton.addClass('d-none');
+                return;
+            }
+            
+            // Validate: Can't push more than max pushable
+            if (value > maxPushable) {
+                errorElement.removeClass('d-none')
+                    .text('Max pushable: ' + maxPushable);
+                input.addClass('is-invalid');
+                pushButton.addClass('d-none');
+                return;
+            }
+            
+            // Valid input - show push button
+            pushButton.removeClass('d-none');
         });
 
         // Handle form submission
@@ -42,11 +74,34 @@
             
             const variationId = matches[1];
             const form = $(this);
-            const quantity = parseFloat($('#add_total_' + variationId).val());
+            const input = $('#add_total_' + variationId);
+            const quantity = parseFloat(input.val());
             const currentTotal = parseFloat($('#total_stock_' + variationId).val()) || 0;
+            const availableCount = parseFloat(input.data('available-count')) || 0;
+            const maxPushable = parseFloat(input.data('max-pushable')) || 0;
+            const errorElement = $('#error_total_' + variationId);
             
             // Validate quantity
             if (!quantity || quantity === 0 || isNaN(quantity)) {
+                return;
+            }
+            
+            // Final validation before submission: Check if pushing would exceed available stock
+            const newTotal = currentTotal + quantity;
+            if (newTotal > availableCount) {
+                const excess = newTotal - availableCount;
+                errorElement.removeClass('d-none')
+                    .text('Cannot push: Would exceed available stock by ' + excess + '. Max pushable: ' + maxPushable);
+                input.addClass('is-invalid');
+                alert('Cannot push stock: Would exceed available stock by ' + excess + '. Maximum pushable: ' + maxPushable);
+                return;
+            }
+            
+            if (quantity > maxPushable) {
+                errorElement.removeClass('d-none')
+                    .text('Cannot push: Maximum pushable is ' + maxPushable);
+                input.addClass('is-invalid');
+                alert('Cannot push stock: Maximum pushable is ' + maxPushable);
                 return;
             }
             
@@ -127,6 +182,14 @@
                     // Update marketplace stock displays
                     updateMarketplaceStockDisplays(variationId, marketplaceStocks);
                     
+                    // Update max pushable value for next push
+                    const input = $('#add_total_' + variationId);
+                    const availableCount = parseFloat(input.data('available-count')) || 0;
+                    const newMaxPushable = Math.max(0, availableCount - totalStock);
+                    input.attr('max', newMaxPushable);
+                    input.data('current-total', totalStock);
+                    input.data('max-pushable', newMaxPushable);
+                    
                     // Reset form
                     resetForm(variationId, originalButtonText);
                 },
@@ -156,10 +219,20 @@
                     let errorMsg = "Error: " + textStatus;
                     if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                         errorMsg = jqXHR.responseJSON.error;
+                    } else if (jqXHR.responseJSON && jqXHR.responseJSON.message) {
+                        errorMsg = jqXHR.responseJSON.message;
                     } else if (jqXHR.responseText) {
                         errorMsg = jqXHR.responseText;
                     }
-                    alert(errorMsg);
+                    
+                    // Show error in error element if it exists
+                    const errorElement = $('#error_total_' + variationId);
+                    if (errorElement.length) {
+                        errorElement.removeClass('d-none').text(errorMsg);
+                        $('#add_total_' + variationId).addClass('is-invalid');
+                    } else {
+                        alert(errorMsg);
+                    }
                     resetForm(variationId, originalButtonText);
                 }
             });
@@ -230,8 +303,13 @@
      * Reset form after successful submission
      */
     function resetForm(variationId, originalButtonText) {
-        // Clear input
-        $('#add_total_' + variationId).val('');
+        // Clear input and remove validation classes
+        const input = $('#add_total_' + variationId);
+        input.val('').removeClass('is-invalid');
+        
+        // Clear error message
+        $('#error_total_' + variationId).addClass('d-none').text('');
+        
         // Restore button and hide it
         const pushButton = $('#send_total_' + variationId);
         pushButton.prop('disabled', false);
