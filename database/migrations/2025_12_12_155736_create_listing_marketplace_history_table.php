@@ -16,10 +16,10 @@ return new class extends Migration
         Schema::create('listing_marketplace_history', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('state_id')->nullable()->comment('Reference to listing_marketplace_state');
-            $table->unsignedBigInteger('variation_id');
-            $table->unsignedInteger('marketplace_id');
-            $table->unsignedBigInteger('listing_id')->nullable()->comment('NULL for marketplace-level, set for listing-level');
-            $table->unsignedInteger('country_id')->nullable()->comment('For listing-level changes');
+            $table->integer('variation_id');
+            $table->integer('marketplace_id');
+            $table->integer('listing_id')->nullable()->comment('NULL for marketplace-level, set for listing-level');
+            $table->integer('country_id')->nullable()->comment('For listing-level changes');
             
             // Field that changed
             $table->string('field_name', 50)->comment('min_handler, price_handler, buybox, buybox_price, min_price, price');
@@ -29,7 +29,7 @@ return new class extends Migration
             // Change metadata
             $table->enum('change_type', ['marketplace', 'listing', 'bulk', 'auto'])->default('listing');
             $table->string('change_reason', 255)->nullable();
-            $table->unsignedInteger('admin_id')->nullable();
+            $table->integer('admin_id')->nullable();
             $table->timestamp('changed_at')->useCurrent();
             $table->string('ip_address', 45)->nullable();
             $table->text('user_agent')->nullable();

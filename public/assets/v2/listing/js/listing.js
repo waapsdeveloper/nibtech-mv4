@@ -60,6 +60,103 @@ function show_variation_history(variationId, variationName) {
 }
 
 /**
+ * Show listing history modal
+ */
+function show_listing_history(listingId, variationId, marketplaceId, countryId, countryCode) {
+    $('#listingHistoryModal').modal('show');
+    
+    // Build listing info text
+    const listingInfo = `Listing ID: ${listingId} | Variation: ${variationId} | Marketplace: ${marketplaceId}${countryCode ? ' | Country: ' + countryCode : ''}`;
+    $('#listing_info').text(listingInfo);
+    
+    // Show loading state
+    $('#listingHistoryTable').html('<tr><td colspan="7" class="text-center text-muted">Loading history...</td></tr>');
+    
+    // Load listing history
+    $.ajax({
+        url: window.ListingConfig.urls.getListingHistory + '/' + listingId,
+        type: 'GET',
+        dataType: 'json',
+        data: {
+            variation_id: variationId,
+            marketplace_id: marketplaceId,
+            country_id: countryId
+        },
+        success: function(data) {
+            let historyTable = '';
+            if (data.history && data.history.length > 0) {
+                data.history.forEach(function(item) {
+                    // Format date
+                    const changedDate = item.changed_at ? new Date(item.changed_at).toLocaleString('en-GB', { 
+                        timeZone: 'Europe/London', 
+                        hour12: true,
+                        day: '2-digit',
+                        month: '2-digit',
+                        year: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        second: '2-digit'
+                    }) : '';
+                    
+                    // Format field name
+                    const fieldLabels = {
+                        'min_handler': 'Min Handler',
+                        'price_handler': 'Price Handler',
+                        'buybox': 'BuyBox',
+                        'buybox_price': 'BuyBox Price',
+                        'min_price': 'Min Price',
+                        'price': 'Price'
+                    };
+                    const fieldLabel = fieldLabels[item.field_name] || item.field_name;
+                    
+                    // Format values based on field type
+                    let oldValue = item.old_value !== null && item.old_value !== '' ? item.old_value : 'N/A';
+                    let newValue = item.new_value !== null && item.new_value !== '' ? item.new_value : 'N/A';
+                    
+                    // Format boolean values
+                    if (item.field_name === 'buybox') {
+                        oldValue = oldValue === '1' || oldValue === 1 || oldValue === true ? 'Yes' : (oldValue === '0' || oldValue === 0 || oldValue === false ? 'No' : oldValue);
+                        newValue = newValue === '1' || newValue === 1 || newValue === true ? 'Yes' : (newValue === '0' || newValue === 0 || newValue === false ? 'No' : newValue);
+                    }
+                    
+                    // Format decimal values
+                    if (['min_handler', 'price_handler', 'buybox_price', 'min_price', 'price'].includes(item.field_name)) {
+                        if (oldValue !== 'N/A' && !isNaN(oldValue)) {
+                            oldValue = parseFloat(oldValue).toFixed(2);
+                        }
+                        if (newValue !== 'N/A' && !isNaN(newValue)) {
+                            newValue = parseFloat(newValue).toFixed(2);
+                        }
+                    }
+                    
+                    // Highlight changed values
+                    const oldValueClass = oldValue !== newValue ? 'text-danger' : '';
+                    const newValueClass = oldValue !== newValue ? 'text-success' : '';
+                    
+                    historyTable += `
+                        <tr>
+                            <td>${changedDate}</td>
+                            <td><strong>${fieldLabel}</strong></td>
+                            <td class="${oldValueClass}">${oldValue}</td>
+                            <td class="${newValueClass}">${newValue}</td>
+                            <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
+                            <td>${item.admin_name || item.admin_id || 'System'}</td>
+                            <td>${item.change_reason || '-'}</td>
+                        </tr>`;
+                });
+            } else {
+                historyTable = '<tr><td colspan="7" class="text-center text-muted">No history found for this listing</td></tr>';
+            }
+            $('#listingHistoryTable').html(historyTable);
+        },
+        error: function(xhr) {
+            console.error('Error loading listing history:', xhr.responseText);
+            $('#listingHistoryTable').html('<tr><td colspan="7" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
+        }
+    });
+}
+
+/**
  * Load marketplace tables when toggle is opened
  */
 $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
@@ -225,16 +322,27 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                             </td>
                             <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
                             <td class="text-center">
-                                <div class="form-check form-switch d-inline-block">
-                                    <input 
-                                        class="form-check-input toggle-listing-enable" 
-                                        type="checkbox" 
-                                        role="switch"
-                                        id="toggle_listing_${listing.id}"
-                                        data-listing-id="${listing.id}"
-                                        ${listing.is_enabled !== undefined && listing.is_enabled == 1 ? 'checked' : ''}
-                                        style="cursor: pointer;">
-                                    <label class="form-check-label" for="toggle_listing_${listing.id}"></label>
+                                <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <div class="form-check form-switch d-inline-block">
+                                        <input 
+                                            class="form-check-input toggle-listing-enable" 
+                                            type="checkbox" 
+                                            role="switch"
+                                            id="toggle_listing_${listing.id}"
+                                            data-listing-id="${listing.id}"
+                                            ${listing.is_enabled !== undefined && listing.is_enabled == 1 ? 'checked' : ''}
+                                            style="cursor: pointer;">
+                                        <label class="form-check-label" for="toggle_listing_${listing.id}"></label>
+                                    </div>
+                                    <a href="javascript:void(0)" 
+                                       class="btn btn-link btn-sm p-0" 
+                                       id="listing_history_${listing.id}" 
+                                       onclick="show_listing_history(${listing.id}, ${variationId}, ${marketplaceId}, ${listing.country || (country && country.id) || 'null'}, '${country ? country.code : ''}')" 
+                                       data-bs-toggle="modal" 
+                                       data-bs-target="#listingHistoryModal"
+                                       title="View listing history">
+                                        <i class="fas fa-history"></i>
+                                    </a>
                                 </div>
                             </td>
                         </tr>`;
@@ -704,5 +812,271 @@ function restoreMarketplaceState() {
 // Restore state when DOM is ready
 $(document).ready(function() {
     restoreMarketplaceState();
+});
+
+/**
+ * Handle listing price form submissions (min_price and price)
+ */
+$(document).on('submit', '[id^="change_min_price_"], [id^="change_price_"]', function(e) {
+    e.preventDefault();
+    
+    const formId = $(this).attr('id');
+    const matches = formId.match(/change_(min_)?price_(\d+)/);
+    if (!matches) return;
+    
+    const listingId = matches[2];
+    const isMinPrice = matches[1] === 'min_';
+    const form = $(this);
+    const input = isMinPrice ? $(`#min_price_${listingId}`) : $(`#price_${listingId}`);
+    const value = parseFloat(input.val());
+    
+    // Don't submit if value is empty or invalid
+    if (!value || isNaN(value)) {
+        return;
+    }
+    
+    // Show loading state
+    input.prop('disabled', true);
+    
+    const url = window.ListingConfig.urls.updatePrice || `/v2/listings/update_price/${listingId}`;
+    const data = {
+        _token: window.ListingConfig.csrfToken,
+    };
+    
+    if (isMinPrice) {
+        data.min_price = value;
+    } else {
+        data.price = value;
+    }
+    
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Show success feedback
+                const row = input.closest('tr');
+                row.addClass('table-success');
+                setTimeout(function() {
+                    row.removeClass('table-success');
+                }, 2000);
+            }
+            input.prop('disabled', false);
+        },
+        error: function(jqXHR) {
+            let errorMsg = "Error updating price";
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMsg = jqXHR.responseJSON.error;
+            }
+            alert(errorMsg);
+            input.prop('disabled', false);
+        }
+    });
+});
+
+/**
+ * Handle listing limit form submission (min_price_limit and price_limit - handlers)
+ */
+$(document).on('submit', '[id^="change_limit_"]', function(e) {
+    e.preventDefault();
+    
+    const formId = $(this).attr('id');
+    const matches = formId.match(/change_limit_(\d+)/);
+    if (!matches) return;
+    
+    const listingId = matches[1];
+    const form = $(this);
+    const minLimitInput = $(`#min_price_limit_${listingId}`);
+    const priceLimitInput = $(`#price_limit_${listingId}`);
+    
+    const minLimit = minLimitInput.val() ? parseFloat(minLimitInput.val()) : null;
+    const priceLimit = priceLimitInput.val() ? parseFloat(priceLimitInput.val()) : null;
+    
+    // Show loading state
+    minLimitInput.prop('disabled', true);
+    priceLimitInput.prop('disabled', true);
+    
+    const url = window.ListingConfig.urls.updateLimit || `/v2/listings/update_limit/${listingId}`;
+    const data = {
+        _token: window.ListingConfig.csrfToken,
+        min_price_limit: minLimit,
+        price_limit: priceLimit
+    };
+    
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Show success feedback
+                const row = minLimitInput.closest('tr');
+                row.addClass('table-success');
+                setTimeout(function() {
+                    row.removeClass('table-success');
+                }, 2000);
+            }
+            minLimitInput.prop('disabled', false);
+            priceLimitInput.prop('disabled', false);
+        },
+        error: function(jqXHR) {
+            let errorMsg = "Error updating limits";
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMsg = jqXHR.responseJSON.error;
+            }
+            alert(errorMsg);
+            minLimitInput.prop('disabled', false);
+            priceLimitInput.prop('disabled', false);
+        }
+    });
+});
+
+/**
+ * Handle Enter key on listing input fields
+ */
+$(document).on('keypress', '[id^="min_price_"], [id^="price_"], [id^="min_price_limit_"], [id^="price_limit_"]', function(e) {
+    if (e.which === 13) {
+        e.preventDefault();
+        const inputId = $(this).attr('id');
+        
+        // Determine which form to submit
+        if (inputId.startsWith('min_price_limit_') || inputId.startsWith('price_limit_')) {
+            const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
+            $(`#change_limit_${listingId}`).submit();
+        } else if (inputId.startsWith('min_price_')) {
+            const listingId = inputId.replace('min_price_', '');
+            $(`#change_min_price_${listingId}`).submit();
+        } else if (inputId.startsWith('price_')) {
+            const listingId = inputId.replace('price_', '');
+            $(`#change_price_${listingId}`).submit();
+        }
+    }
+});
+
+/**
+ * Handle marketplace-level handler form submission (bulk update)
+ */
+$(document).on('click', '[id^="change_all_handler_"] button[type="button"]', function(e) {
+    e.preventDefault();
+    
+    const form = $(this).closest('form');
+    const formId = form.attr('id');
+    const matches = formId.match(/change_all_handler_(\d+)_(\d+)/);
+    if (!matches) return;
+    
+    const variationId = matches[1];
+    const marketplaceId = matches[2];
+    const minHandler = parseFloat($(`#all_min_handler_${variationId}_${marketplaceId}`).val());
+    const priceHandler = parseFloat($(`#all_handler_${variationId}_${marketplaceId}`).val());
+    
+    // Validate at least one value provided
+    if (isNaN(minHandler) && isNaN(priceHandler)) {
+        alert('Please enter at least one handler value');
+        return;
+    }
+    
+    const button = $(this);
+    const originalText = button.html();
+    button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+    
+    const url = window.ListingConfig.urls.updateMarketplaceHandlers || `/v2/listings/update_marketplace_handlers/${variationId}/${marketplaceId}`;
+    const data = {
+        _token: window.ListingConfig.csrfToken,
+    };
+    
+    if (!isNaN(minHandler)) {
+        data.all_min_handler = minHandler;
+    }
+    if (!isNaN(priceHandler)) {
+        data.all_handler = priceHandler;
+    }
+    
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Reload the listings table to show updated values
+                loadMarketplaceTables(variationId, marketplaceId);
+                alert(response.message || 'Handlers updated successfully');
+            }
+            button.prop('disabled', false).html(originalText);
+        },
+        error: function(jqXHR) {
+            let errorMsg = "Error updating handlers";
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMsg = jqXHR.responseJSON.error;
+            }
+            alert(errorMsg);
+            button.prop('disabled', false).html(originalText);
+        }
+    });
+});
+
+/**
+ * Handle marketplace-level price form submission (bulk update)
+ */
+$(document).on('click', '[id^="change_all_price_"] button[type="button"]', function(e) {
+    e.preventDefault();
+    
+    const form = $(this).closest('form');
+    const formId = form.attr('id');
+    const matches = formId.match(/change_all_price_(\d+)_(\d+)/);
+    if (!matches) return;
+    
+    const variationId = matches[1];
+    const marketplaceId = matches[2];
+    const minPrice = parseFloat($(`#all_min_price_${variationId}_${marketplaceId}`).val());
+    const price = parseFloat($(`#all_price_${variationId}_${marketplaceId}`).val());
+    
+    // Validate at least one value provided
+    if (isNaN(minPrice) && isNaN(price)) {
+        alert('Please enter at least one price value');
+        return;
+    }
+    
+    const button = $(this);
+    const originalText = button.html();
+    button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
+    
+    const url = window.ListingConfig.urls.updateMarketplacePrices || `/v2/listings/update_marketplace_prices/${variationId}/${marketplaceId}`;
+    const data = {
+        _token: window.ListingConfig.csrfToken,
+    };
+    
+    if (!isNaN(minPrice)) {
+        data.all_min_price = minPrice;
+    }
+    if (!isNaN(price)) {
+        data.all_price = price;
+    }
+    
+    $.ajax({
+        type: "POST",
+        url: url,
+        data: data,
+        dataType: 'json',
+        success: function(response) {
+            if (response.success) {
+                // Reload the listings table to show updated values
+                loadMarketplaceTables(variationId, marketplaceId);
+                alert(response.message || 'Prices updated successfully');
+            }
+            button.prop('disabled', false).html(originalText);
+        },
+        error: function(jqXHR) {
+            let errorMsg = "Error updating prices";
+            if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
+                errorMsg = jqXHR.responseJSON.error;
+            }
+            alert(errorMsg);
+            button.prop('disabled', false).html(originalText);
+        }
+    });
 });
 

@@ -79,6 +79,44 @@
         </div>
     </div>
     {{-- /Variation History Modal --}}
+
+    {{-- Listing History Modal --}}
+    <div class="modal fade" id="listingHistoryModal" tabindex="-1" aria-labelledby="listingHistoryModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 id="listing_info"></h5>
+                    <h5 class="modal-title" id="listingHistoryModalLabel"> &nbsp; History</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <i data-feather="x" class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
+                        <table class="table table-bordered table-striped table-hover">
+                            <thead class="table-light sticky-top">
+                                <tr>
+                                    <th width="15%">Date</th>
+                                    <th width="12%">Field</th>
+                                    <th width="15%">Old Value</th>
+                                    <th width="15%">New Value</th>
+                                    <th width="10%">Change Type</th>
+                                    <th width="13%">Changed By</th>
+                                    <th width="20%">Reason</th>
+                                </tr>
+                            </thead>
+                            <tbody id="listingHistoryTable">
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">Loading history...</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{-- /Listing History Modal --}}
 @endsection
 
 @section('scripts')
@@ -97,6 +135,11 @@
     window.ListingConfig = {
         urls: {
             getVariationHistory: "{{ url('v2/listings/get_variation_history') }}",
+            getListingHistory: "{{ url('v2/listings/get_listing_history') }}",
+            updatePrice: "{{ url('v2/listings/update_price') }}",
+            updateLimit: "{{ url('v2/listings/update_limit') }}",
+            updateMarketplaceHandlers: "{{ url('v2/listings/update_marketplace_handlers') }}",
+            updateMarketplacePrices: "{{ url('v2/listings/update_marketplace_prices') }}",
             getListings: "{{ url('v2/listings/get_listings') }}",
             getVariationStocks: "{{ url('listing/get_variation_available_stocks') }}",
             toggleEnable: "{{ url('listing/toggle_enable') }}",

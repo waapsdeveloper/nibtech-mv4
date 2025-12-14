@@ -15,10 +15,10 @@ return new class extends Migration
     {
         Schema::create('listing_marketplace_state', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('variation_id');
-            $table->unsignedInteger('marketplace_id');
-            $table->unsignedBigInteger('listing_id')->nullable()->comment('NULL for marketplace-level, set for listing-level');
-            $table->unsignedInteger('country_id')->nullable()->comment('For listing-level changes');
+            $table->integer('variation_id');
+            $table->integer('marketplace_id');
+            $table->integer('listing_id')->nullable()->comment('NULL for marketplace-level, set for listing-level');
+            $table->integer('country_id')->nullable()->comment('For listing-level changes');
             
             // Current Values
             $table->decimal('min_handler', 10, 2)->nullable()->comment('Min handler value (marketplace level)');
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->decimal('price', 10, 2)->nullable()->comment('Price (listing level)');
             
             // Metadata
-            $table->unsignedInteger('last_updated_by')->nullable()->comment('Who last updated this record');
+            $table->integer('last_updated_by')->nullable()->comment('Who last updated this record');
             $table->timestamp('last_updated_at')->nullable();
             $table->timestamps();
             
