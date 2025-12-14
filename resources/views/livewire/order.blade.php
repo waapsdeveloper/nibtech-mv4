@@ -1654,9 +1654,13 @@
             modal.find('.modal-body #item_id').val(item)
             })
 
-        $('.select2').select2({
-            placeholder: "Exclude Topups",
-        });
+        if ($.fn.select2) {
+            $('.select2').select2({
+                placeholder: "Exclude Topups",
+            });
+        } else {
+            console.warn('select2 is not loaded');
+        }
 
         document.addEventListener('DOMContentLoaded', function () {
             const dispatchForms = document.querySelectorAll('form.dispatch-form');

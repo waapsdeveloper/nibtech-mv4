@@ -582,6 +582,28 @@
                 updateStatus('Sending label to printer...');
                 updatePrinterStatus('Sending to printer...', 'info');
 
+                if (!pdfBase64 || pdfBase64.length < 10) {
+                    throw new Error('Label PDF is empty or failed to load');
+                }
+
+                // Ensure version is populated before qz.print checks it
+                if (qz.websocket.connection && !qz.websocket.connection.semver) {
+                    try {
+                        const version = await qz.api.getVersion();
+                        if (version && typeof version === 'string') {
+                            qz.websocket.connection.semver = version.split('.').map(n => parseInt(n, 10) || 0);
+                            qz.websocket.connection.version = version;
+                        } else {
+                            qz.websocket.connection.semver = [2, 2, 0];
+                            qz.websocket.connection.version = '2.2.0';
+                        }
+                    } catch (e) {
+                        console.debug('Unable to read QZ version, using fallback:', e);
+                        qz.websocket.connection.semver = [2, 2, 0];
+                        qz.websocket.connection.version = '2.2.0';
+                    }
+                }
+
                 const config = qz.configs.create(printer, {
                     size: { width: 80, height: 170 },
                     units: 'mm'
@@ -610,19 +632,35 @@
                 // Small delay to ensure all resources are loaded
                 await new Promise(resolve => setTimeout(resolve, 300));
 
-                try {
-                    await sendToPrinter();
-                    updateStatus('Label sent to printer.', 'success');
-                    updatePrinterStatus('Print completed - closing in 1s', 'success');
-                    setTimeout(() => {
-                        window.close();
-                    }, 1000);
-                } catch (error) {
-                    console.error('Automatic label printing failed:', error);
-                    updateStatus('Printing failed - use buttons to retry or change printer', 'error');
-                    updatePrinterStatus('Print failed: ' + error.message, 'error');
-                    // Don't auto-close or redirect on error - let user interact with the panel
+                let retryCount = 0;
+                const maxRetries = 2;
+
+                async function attemptPrint() {
+                    try {
+                        await sendToPrinter();
+                        updateStatus('Label sent to printer.', 'success');
+                        updatePrinterStatus('Print completed - closing in 1s', 'success');
+                        setTimeout(() => {
+                            window.close();
+                        }, 1000);
+                    } catch (error) {
+                        console.error('Automatic label printing failed:', error);
+
+                        if (retryCount < maxRetries) {
+                            retryCount++;
+                            updateStatus(`Print attempt ${retryCount} failed - retrying...`, 'warning');
+                            updatePrinterStatus(`Retrying (${retryCount}/${maxRetries})...`, 'warning');
+
+                            await new Promise(resolve => setTimeout(resolve, 1000));
+                            await attemptPrint();
+                        } else {
+                            updateStatus('Printing failed after ' + maxRetries + ' attempts - use buttons to retry or change printer', 'error');
+                            updatePrinterStatus('Print failed: ' + error.message, 'error');
+                        }
+                    }
                 }
+
+                await attemptPrint();
             });
 
             // Prevent QZ Tray disconnection when window closes - keep connection alive for other tabs

@@ -160,7 +160,7 @@ class BackMarketAPIController extends Controller
         return json_decode($get_result);
     }
 
-    public function apiPost($end_point, $request = '', $country_code = null) {
+    public function apiPostWithMeta($end_point, $request = '', $country_code = null): array {
         if($country_code == null){
             $country_code = self::$COUNTRY_CODE;
         }
@@ -181,7 +181,6 @@ class BackMarketAPIController extends Controller
 
         $target_url = self::$base_url . $end_point;
 
-        // Send the POST request
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $target_url);
         curl_setopt($ch, CURLOPT_HEADER, false);
@@ -195,13 +194,60 @@ class BackMarketAPIController extends Controller
         }
 
         $post_result = curl_exec($ch);
-
-        $error = (curl_error($ch));
-        echo $error;
         $http_code = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curl_error = curl_error($ch);
         curl_close($ch);
 
-        return json_decode($post_result);
+        $decoded = json_decode($post_result, true);
+
+        return [
+            'status' => $http_code,
+            'decoded' => $decoded,
+            'raw' => $post_result,
+            'error' => $curl_error ?: null,
+        ];
+    }
+
+    public function apiPost($end_point, $request = '', $country_code = null) {
+        $meta = $this->apiPostWithMeta($end_point, $request, $country_code);
+
+        return $meta['decoded'];
+    }
+
+    public function sendCareMessageMeta($folderId, string $message, $country_code = null): array
+    {
+        if($country_code == null){
+            $country_code = self::$COUNTRY_CODE;
+        }
+
+        $folderId = trim((string) $folderId);
+
+        if ($folderId === '') {
+            throw new RuntimeException('Care folder id is required to post messages.');
+        }
+
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/msg';
+
+        // Use config('backmarket.api_key_2') if available (for Care API), otherwise fall back to main token
+        $authToken = config('backmarket.api_key_2') ?: self::$YOUR_ACCESS_TOKEN;
+
+        $response = Http::withHeaders([
+            'Accept' => 'application/json',
+            'Authorization' => 'Basic ' . $authToken,
+            'Accept-Language' => $country_code,
+            'User-Agent' => self::$YOUR_USER_AGENT,
+        ])->asMultipart()->post($url, [
+            ['name' => 'message', 'contents' => $message],
+        ]);
+
+        return [
+            'status' => $response->status(),
+            'decoded' => $response->json(),
+            'raw' => $response->body(),
+            'error' => $response->successful() ? null : ($response->body() ?: 'HTTP '.$response->status()),
+            'url' => $url,
+            'token_source' => config('backmarket.api_key_2') ? 'config(backmarket.api_key_2)' : 'BM_API1',
+        ];
     }
 
     public function apiPatch($end_point, $request = '', $content_type='application/json') {
@@ -253,22 +299,34 @@ class BackMarketAPIController extends Controller
             throw new RuntimeException('Care folder id is required to post attachments.');
         }
 
-        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/messages';
+        $url = rtrim(self::$base_url, '/') . '/sav/' . $folderId . '/msg';
 
-        $response = Http::withHeaders([
-            'Accept' => 'application/json',
-            'Authorization' => 'Basic ' . self::$YOUR_ACCESS_TOKEN,
-        ])->attach(
-            'attachment',
-            $attachment['data'] ?? '',
-            $attachment['name'] ?? 'invoice.pdf',
-            ['Content-Type' => $attachment['mime'] ?? 'application/pdf']
-        )->post($url, [
-            'message' => $message,
-        ]);
+        // Use config('backmarket.api_key_2') if available (for Care API), otherwise fall back to main token
+        $authToken = config('backmarket.api_key_2') ?: self::$YOUR_ACCESS_TOKEN;
+
+        $response = Http::asMultipart()
+            ->withHeaders([
+                'Accept' => 'application/json',
+                'Authorization' => 'Basic ' . $authToken,
+            ])
+            // Back Market docs show a single part named "attachment"; avoid array syntax to ensure the file is linked.
+            ->attach(
+                'attachment',
+                $attachment['data'] ?? '',
+                $attachment['name'] ?? 'invoice.pdf',
+                isset($attachment['mime']) && $attachment['mime'] ? ['Content-Type' => $attachment['mime']] : []
+            )
+            ->post($url, [
+                'message' => $message,
+            ]);
 
         if ($response->failed()) {
-            throw new RuntimeException('Care API attachment post failed: ' . $response->body());
+            Log::error('Care API attachment post failed', [
+                'folder_id' => $folderId,
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+            throw new RuntimeException('Care API attachment post failed (HTTP ' . $response->status() . '): ' . $response->body());
         }
 
         return $response->json() ?? [];

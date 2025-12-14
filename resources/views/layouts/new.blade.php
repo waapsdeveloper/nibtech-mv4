@@ -69,8 +69,7 @@
 
         {{-- Global QZ Tray Connection Manager --}}
         {{-- Note: qz-tray.js is already loaded in layouts.components.scripts --}}
-        @php($isQzEnabled = filter_var(env('QZ_TRAY_ENABLED', false), FILTER_VALIDATE_BOOLEAN))
-        @if($isQzEnabled)
+        @php($isQzEnabled = true)
         <script src="{{ asset('assets/js/functions.js') }}"></script>
         <script>
             /**
@@ -93,6 +92,19 @@
                 window.qzGlobalConnectionEstablished = false;
                 window.qzGlobalConnectionInProgress = false;
 
+                // Preferred connection configuration (force ws:// and known hosts)
+                const connectionConfig = {
+                    host: ['localhost', '127.0.0.1', 'localhost.qz.io'],
+                    usingSecure: (window.location && window.location.protocol === 'https:'),
+                    port: {
+                        secure: [8181, 8282, 8383, 8484],
+                        insecure: [8182, 8283, 8384, 8485],
+                        portIndex: 0
+                    },
+                    retries: 3,
+                    delay: 0.5
+                };
+
                 /**
                  * Initialize QZ Tray connection once per session
                  * This will be called automatically when the page loads
@@ -104,8 +116,24 @@
                         return;
                     }
 
-                    // Skip if already connected
-                    if (qz.websocket.isActive()) {
+                    // Ensure connection options include localhost/127.0.0.1 and allow insecure fallback
+                    try {
+                        qz.websocket.connectConfig = Object.assign(
+                            {},
+                            qz.websocket.connectConfig || {},
+                            connectionConfig
+                        );
+                    } catch (e) {
+                        console.debug('Unable to set QZ connection config', e);
+                    }
+
+                    // Helper to check if connection is ready (active socket)
+                    function isConnectionReady() {
+                        return qz.websocket.isActive();
+                    }
+
+                    // Skip if already connected and fully ready
+                    if (isConnectionReady()) {
                         console.log('✓ QZ Tray already connected globally');
                         window.qzGlobalConnectionEstablished = true;
                         return;
@@ -122,11 +150,11 @@
 
                     // Use existing startConnection from functions.js
                     if (typeof startConnection === 'function') {
-                        startConnection({ retries: 3, delay: 1 });
+                        startConnection(connectionConfig);
 
-                        // Monitor connection success
+                        // Monitor connection success - check for full readiness
                         var checkInterval = setInterval(function() {
-                            if (qz.websocket.isActive()) {
+                            if (isConnectionReady()) {
                                 clearInterval(checkInterval);
                                 window.qzGlobalConnectionEstablished = true;
                                 window.qzGlobalConnectionInProgress = false;
@@ -134,21 +162,35 @@
                             }
                         }, 500);
 
-                        // Timeout after 10 seconds
+                        // Timeout after 15 seconds
                         setTimeout(function() {
                             clearInterval(checkInterval);
-                            if (!qz.websocket.isActive()) {
+                            if (!isConnectionReady()) {
                                 window.qzGlobalConnectionInProgress = false;
                                 console.log('⚠ Global QZ Tray connection timeout (will retry when needed)');
                             }
-                        }, 10000);
+                        }, 15000);
                     } else {
                         // Fallback to direct connection
                         qz.websocket.connect()
                             .then(function() {
-                                window.qzGlobalConnectionEstablished = true;
-                                window.qzGlobalConnectionInProgress = false;
-                                console.log('✓ Global QZ Tray connection established successfully');
+                                // Wait for sendData to be available
+                                var readyCheck = setInterval(function() {
+                                    if (isConnectionReady()) {
+                                        clearInterval(readyCheck);
+                                        window.qzGlobalConnectionEstablished = true;
+                                        window.qzGlobalConnectionInProgress = false;
+                                        console.log('✓ Global QZ Tray connection established successfully');
+                                    }
+                                }, 100);
+
+                                setTimeout(function() {
+                                    clearInterval(readyCheck);
+                                    if (!window.qzGlobalConnectionEstablished) {
+                                        window.qzGlobalConnectionInProgress = false;
+                                        console.log('⚠ QZ connection not ready after connect');
+                                    }
+                                }, 3000);
                             })
                             .catch(function(err) {
                                 window.qzGlobalConnectionInProgress = false;
@@ -163,8 +205,15 @@
                  */
                 window.ensureQzConnection = function(timeout = 5000) {
                     return new Promise(function(resolve, reject) {
-                        // Already connected
-                        if (typeof qz !== 'undefined' && qz.websocket && qz.websocket.isActive()) {
+                        // Check if connection is fully ready (not just active, but sendData method is available)
+                        function isConnectionReady() {
+                            return typeof qz !== 'undefined'
+                                && qz.websocket
+                                && qz.websocket.isActive();
+                        }
+
+                        // Already connected and ready
+                        if (isConnectionReady()) {
                             console.log('✓ Using existing global QZ Tray connection');
                             resolve();
                             return;
@@ -180,16 +229,16 @@
                         // Use existing startConnection from functions.js
                         if (typeof startConnection === 'function' && !qz.websocket.isActive()) {
                             try {
-                                startConnection({ retries: 2, delay: 1 });
+                                startConnection(Object.assign({}, connectionConfig, { retries: 2, delay: 1 }));
                             } catch (error) {
                                 console.debug('Connection attempt failed:', error);
                             }
                         }
 
-                        // Wait for connection
+                        // Wait for connection to be fully ready
                         const startTime = Date.now();
                         const checkInterval = setInterval(function() {
-                            if (qz.websocket.isActive()) {
+                            if (isConnectionReady()) {
                                 clearInterval(checkInterval);
                                 console.log('✓ QZ Tray connection ready');
                                 resolve();
@@ -207,7 +256,9 @@
                 window.isQzConnected = function() {
                     return typeof qz !== 'undefined' &&
                            qz.websocket &&
-                           qz.websocket.isActive();
+                           qz.websocket.isActive() &&
+                           qz.websocket.connection &&
+                           typeof qz.websocket.connection.sendData === 'function';
                 };
 
                 // Initialize connection when page loads
@@ -234,18 +285,5 @@
                 console.log('Global QZ Tray Connection Manager initialized');
             })();
         </script>
-        @else
-        <script>
-            // QZ Tray is disabled - provide stub functions for compatibility
-            window.qzConnectionManager = {
-                isConnected: function() { return false; },
-                ensureConnection: function() { return Promise.reject(new Error('QZ Tray is disabled')); },
-                reconnect: function() { console.log('QZ Tray is disabled'); }
-            };
-            window.isQzConnected = function() { return false; };
-            window.ensureQzConnection = function() { return Promise.reject(new Error('QZ Tray is disabled')); };
-            console.log('QZ Tray is disabled via QZ_TRAY_ENABLED environment variable');
-        </script>
-        @endif
     </body>
 </html>

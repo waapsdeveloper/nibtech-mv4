@@ -63,6 +63,28 @@
         var host = "localhost"; // Default host
         var usingSecure = $("#connectionUsingSecure").prop('checked');
 
+        // Default to page protocol (use wss on https to avoid mixed-content blocks)
+        if (typeof usingSecure === 'undefined') {
+            usingSecure = (window.location && window.location.protocol === 'https:');
+        }
+
+        // Always supply a host list and protocol preference
+        var hostList = ["localhost", "127.0.0.1", "localhost.qz.io"];
+        if (!config) {
+            config = {};
+        }
+        if (!config.host) {
+            config.host = hostList;
+        }
+        config.usingSecure = usingSecure;
+        if (!config.port) {
+            config.port = {
+                secure: [8181, 8282, 8383, 8484],
+                insecure: [8182, 8283, 8384, 8485],
+                portIndex: 0
+            };
+        }
+
         // Connect to a print-server instance, if specified
         if (host != "" && host != 'localhost') {
             if (config) {
