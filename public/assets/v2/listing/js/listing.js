@@ -1372,7 +1372,9 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
     
-    const url = window.ListingConfig.urls.updateMarketplacePrices || `/v2/listings/update_marketplace_prices/${variationId}/${marketplaceId}`;
+    // Construct URL with parameters (similar to handlers form)
+    const baseUrl = window.ListingConfig.urls.updateMarketplacePrices || '/v2/listings/update_marketplace_prices';
+    const url = `${baseUrl}/${variationId}/${marketplaceId}`;
     const data = {
         _token: window.ListingConfig.csrfToken,
     };
