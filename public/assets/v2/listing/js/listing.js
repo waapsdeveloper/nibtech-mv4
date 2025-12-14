@@ -1384,6 +1384,9 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         data.all_price = price;
     }
     
+    console.log('Price update URL:', url);
+    console.log('Request data:', data);
+    
     $.ajax({
         type: "POST",
         url: url,

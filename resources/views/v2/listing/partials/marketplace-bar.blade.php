@@ -93,7 +93,7 @@
                     </div>
                     <button type="button" class="btn btn-sm btn-primary" style="height: 31px; line-height: 1;">Change</button>
                 </form>
-                <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}">
+                <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_price_{{ $variationId }}_{{ $marketplaceId }}" onsubmit="return false;">
                     @csrf
                     <div class="form-floating" style="width: 75px;">
                         <input type="number" class="form-control form-control-sm" id="all_min_price_{{ $variationId }}_{{ $marketplaceId }}" name="all_min_price" step="0.01" value="{{ $minPriceValue }}" placeholder="Min Price" style="height: 31px;">
