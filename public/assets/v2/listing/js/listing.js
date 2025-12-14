@@ -1071,6 +1071,7 @@ function initializeChangeDetection() {
     
     // Store original values on focus (before user changes)
     // All four main inputs: min_price_limit, price_limit, min_price, price
+    // Marketplace-level inputs: all_min_handler, all_handler, all_min_price, all_price
     // Note: buybox_price is not user-editable, it's updated programmatically
     $(document).on('focus', '[id^="min_price_limit_"], [id^="price_limit_"], [id^="min_price_"], [id^="price_"], [id^="all_min_handler_"], [id^="all_handler_"], [id^="all_min_price_"], [id^="all_price_"]', function() {
         window.ChangeDetection.storeOriginalValue(this);
@@ -1078,12 +1079,18 @@ function initializeChangeDetection() {
     
     // Detect changes on blur event (when user finishes editing and tabs out)
     // All four main inputs: min_price_limit, price_limit, min_price, price
+    // Marketplace-level inputs: all_min_handler, all_handler, all_min_price, all_price
     // Note: buybox_price is not user-editable, it's updated programmatically
     // Using only blur to avoid duplicate alerts from both change and blur events
     $(document).on('blur', '[id^="min_price_limit_"], [id^="price_limit_"], [id^="min_price_"], [id^="price_"], [id^="all_min_handler_"], [id^="all_handler_"], [id^="all_min_price_"], [id^="all_price_"]', function(e) {
         const elementId = $(this).attr('id');
         console.log('Blur event fired for:', elementId);
-        window.ChangeDetection.detectChange(this);
+        
+        // For marketplace-level inputs, we don't track individual changes
+        // They are tracked when the form is submitted (bulk update)
+        if (!elementId.includes('all_')) {
+            window.ChangeDetection.detectChange(this);
+        }
     });
     
     // Handle checkbox/toggle changes
@@ -1290,7 +1297,13 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
     
-    const url = window.ListingConfig.urls.updateMarketplaceHandlers || `/v2/listings/update_marketplace_handlers/${variationId}/${marketplaceId}`;
+    // Build URL with required parameters
+    const baseUrl = window.ListingConfig.urls.updateMarketplaceHandlers || '/v2/listings/update_marketplace_handlers';
+    const url = `${baseUrl}/${variationId}/${marketplaceId}`;
+    
+    console.log('Submitting to URL:', url);
+    console.log('Variation ID:', variationId, 'Marketplace ID:', marketplaceId);
+    
     const data = {
         _token: window.ListingConfig.csrfToken,
     };
@@ -1302,6 +1315,8 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
         data.all_handler = priceHandler;
     }
     
+    console.log('Request data:', data);
+    
     $.ajax({
         type: "POST",
         url: url,
@@ -1311,7 +1326,9 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
             if (response.success) {
                 // Reload the listings table to show updated values
                 loadMarketplaceTables(variationId, marketplaceId);
-                alert(response.message || 'Handlers updated successfully');
+                
+                // Log success (no alert to avoid disturbance)
+                console.log('Handlers updated successfully:', response.message || `Updated ${response.updated_count || 0} listing(s)`);
             }
             button.prop('disabled', false).html(originalText);
         },
@@ -1319,7 +1336,10 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
             let errorMsg = "Error updating handlers";
             if (jqXHR.responseJSON && jqXHR.responseJSON.error) {
                 errorMsg = jqXHR.responseJSON.error;
+            } else if (jqXHR.status === 404) {
+                errorMsg = "Route not found. Please check if the route is registered correctly.";
             }
+            console.error('Error updating handlers:', jqXHR);
             alert(errorMsg);
             button.prop('disabled', false).html(originalText);
         }
@@ -1352,7 +1372,9 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
     
-    const url = window.ListingConfig.urls.updateMarketplacePrices || `/v2/listings/update_marketplace_prices/${variationId}/${marketplaceId}`;
+    // Construct URL with parameters (similar to handlers form)
+    const baseUrl = window.ListingConfig.urls.updateMarketplacePrices || '/v2/listings/update_marketplace_prices';
+    const url = `${baseUrl}/${variationId}/${marketplaceId}`;
     const data = {
         _token: window.ListingConfig.csrfToken,
     };
@@ -1364,6 +1386,9 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         data.all_price = price;
     }
     
+    console.log('Price update URL:', url);
+    console.log('Request data:', data);
+    
     $.ajax({
         type: "POST",
         url: url,
@@ -1373,7 +1398,8 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
             if (response.success) {
                 // Reload the listings table to show updated values
                 loadMarketplaceTables(variationId, marketplaceId);
-                alert(response.message || 'Prices updated successfully');
+                // Log success (no alert to avoid disturbance)
+                console.log('Prices updated successfully:', response.message || `Updated ${response.updated_count || 0} listing(s)`);
             }
             button.prop('disabled', false).html(originalText);
         },
