@@ -95,8 +95,12 @@ class ListingMarketplaceState extends Model
 
     /**
      * Update state and track changes
+     * @param array $data New values to update
+     * @param string $changeType Type of change (listing, bulk, etc.)
+     * @param string|null $reason Reason for change
+     * @param array|null $explicitOldValues Optional explicit old values to use (for first-time changes)
      */
-    public function updateState(array $data, $changeType = 'listing', $reason = null)
+    public function updateState(array $data, $changeType = 'listing', $reason = null, $explicitOldValues = null)
     {
         $changedFields = [];
         $oldValues = [];
@@ -105,7 +109,8 @@ class ListingMarketplaceState extends Model
 
         foreach ($trackableFields as $field) {
             if (isset($data[$field])) {
-                $oldValue = $this->$field;
+                // Use explicit old value if provided (for first-time changes), otherwise use current state value
+                $oldValue = isset($explicitOldValues[$field]) ? $explicitOldValues[$field] : $this->$field;
                 $newValue = $data[$field];
 
                 // Check if value actually changed

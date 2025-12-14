@@ -1214,12 +1214,17 @@ class ListingController extends Controller
             return response()->json(['error' => 'Invalid field name'], 400);
         }
 
-        // If this is the first change (state field is null), get the actual value from the listing
+        // Get the actual old value from listing table if state field is null (first change)
+        $actualOldValue = null;
         if ($state->$stateField === null && $listingField) {
-            $actualValue = $listing->$listingField;
-            // Set it in the state so we have the baseline
-            $state->$stateField = $actualValue;
+            // Get the actual value from the listing table (this is the true old value)
+            $actualOldValue = $listing->$listingField;
+            // Set it in the state so we have the baseline for future changes
+            $state->$stateField = $actualOldValue;
             $state->save();
+        } else {
+            // Use the current state value as old value
+            $actualOldValue = $state->$stateField;
         }
 
         // Prepare update data
@@ -1232,11 +1237,12 @@ class ListingController extends Controller
             $updateData[$stateField] = $request->new_value !== null && $request->new_value !== '' ? (float)$request->new_value : null;
         }
 
-        // Update state and track changes
+        // Update state and track changes with explicit old value
         $result = $state->updateState(
             $updateData,
             'listing', // change_type
-            $request->change_reason ?? 'User edit from listing page'
+            $request->change_reason ?? 'User edit from listing page',
+            [$stateField => $actualOldValue] // Pass explicit old value
         );
 
         if ($result) {
@@ -1437,26 +1443,35 @@ class ListingController extends Controller
         // For first-time changes, get actual values from listing table
         // This ensures old_value in history shows the actual database value, not null
         $needsSave = false;
+        $explicitOldValues = [];
+        
         foreach ($changes as $field => $values) {
             $stateField = $field;
             $listingField = $listingFieldMapping[$field] ?? null;
             
-            // If state field is null and we have a listing, get the actual value
-            // Prefer the 'old' value from changes array (from update_marketplace_handlers/update_marketplace_prices)
-            // Otherwise get from listing table (for cases where old value wasn't provided)
+            // Determine the actual old value to use
+            $actualOldValue = null;
+            
+            // If state field is null (first change), get the actual value from listing table
             if ($listing && $listingField && $state->$stateField === null) {
-                // Use 'old' value from changes array if available (most accurate)
+                // Prefer the 'old' value from changes array (from update_marketplace_handlers/update_marketplace_prices)
                 // Otherwise get from listing table
                 if (isset($values['old'])) {
-                    $actualValue = $values['old'];
+                    $actualOldValue = $values['old'];
                 } else {
-                    // Get from listing table (might be new value if listing was already saved)
-                    // But this is better than null
-                    $actualValue = $listing->$listingField;
+                    // Get from listing table - this is the true old value from database
+                    $actualOldValue = $listing->$listingField;
                 }
-                $state->$stateField = $actualValue;
+                // Set it in the state so we have the baseline for future changes
+                $state->$stateField = $actualOldValue;
                 $needsSave = true;
+            } else {
+                // Use current state value as old value
+                $actualOldValue = $state->$stateField;
             }
+            
+            // Store explicit old value for this field
+            $explicitOldValues[$stateField] = $actualOldValue;
         }
         
         // Save state if we updated any null values
@@ -1470,8 +1485,8 @@ class ListingController extends Controller
             $stateData[$field] = $values['new'];
         }
 
-        // Update state and track changes
-        $state->updateState($stateData, $changeType, $reason);
+        // Update state and track changes with explicit old values
+        $state->updateState($stateData, $changeType, $reason, $explicitOldValues);
     }
 
     /**
