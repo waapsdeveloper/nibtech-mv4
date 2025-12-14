@@ -1073,7 +1073,13 @@ class ListingController extends Controller
      */
     public function get_listing_history($listingId, Request $request)
     {
-        $listing = Listing_model::with(['variation', 'marketplace', 'country_id'])->find($listingId);
+        $listing = Listing_model::with([
+            'variation.product',
+            'variation.storage_id',
+            'variation.color_id',
+            'marketplace',
+            'country_id'
+        ])->find($listingId);
         
         if (!$listing) {
             return response()->json([
@@ -1107,15 +1113,144 @@ class ListingController extends Controller
                 ];
             });
 
+        // Get descriptive information
+        $variationName = 'N/A';
+        if ($listing->variation && $listing->variation->product) {
+            $product = $listing->variation->product;
+            $variationName = $product->model ?? ($product->name ?? 'Variation #' . $listing->variation_id);
+            // Add storage and color if available
+            if ($listing->variation->storage_id) {
+                $variationName .= ' - ' . ($listing->variation->storage_id->name ?? '');
+            }
+            if ($listing->variation->color_id) {
+                $variationName .= ' ' . ($listing->variation->color_id->name ?? '');
+            }
+        }
+        
+        $marketplaceName = 'N/A';
+        if ($listing->marketplace) {
+            $marketplaceName = $listing->marketplace->name ?? 'Marketplace #' . $listing->marketplace_id;
+        }
+        
+        $countryName = 'N/A';
+        if ($listing->country_id) {
+            $countryName = $listing->country_id->title ?? ($listing->country_id->code ?? 'Country #' . $listing->country);
+        }
+
         return response()->json([
             'listing' => [
                 'id' => $listing->id,
                 'variation_id' => $listing->variation_id,
+                'variation_name' => $variationName,
                 'marketplace_id' => $listing->marketplace_id,
+                'marketplace_name' => $marketplaceName,
                 'country_id' => $listing->country,
+                'country_name' => $countryName,
+                'country_code' => $listing->country_id ? $listing->country_id->code : null,
             ],
             'history' => $history
         ]);
+    }
+
+    /**
+     * Record a listing change to the database
+     * This is called when a user changes a field value in the listing table
+     */
+    public function record_listing_change(Request $request)
+    {
+        $request->validate([
+            'listing_id' => 'required|integer|exists:listings,id',
+            'field_name' => 'required|string|in:min_handler,price_handler,buybox,buybox_price,min_price,price',
+            'old_value' => 'nullable',
+            'new_value' => 'nullable',
+            'change_reason' => 'nullable|string|max:255',
+        ]);
+
+        $listing = Listing_model::find($request->listing_id);
+        
+        if (!$listing) {
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+        $listingId = $listing->id;
+
+        // Get or create state record
+        $state = ListingMarketplaceState::getOrCreateState(
+            $variationId,
+            $marketplaceId,
+            $listingId,
+            $countryId
+        );
+
+        // Map field names from database field names to listing table columns
+        // This is needed to get the actual value from the listing if state doesn't have it
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',  // min_handler in state = min_price_limit in listings
+            'price_handler' => 'price_limit',    // price_handler in state = price_limit in listings
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        // Map field names to state columns
+        $stateFieldMapping = [
+            'min_handler' => 'min_handler',
+            'price_handler' => 'price_handler',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        $fieldName = $request->field_name;
+        $stateField = $stateFieldMapping[$fieldName] ?? null;
+        $listingField = $listingFieldMapping[$fieldName] ?? null;
+
+        if (!$stateField || !$listingField) {
+            return response()->json(['error' => 'Invalid field name'], 400);
+        }
+
+        // If this is the first change (state field is null), get the actual value from the listing
+        if ($state->$stateField === null && $listingField) {
+            $actualValue = $listing->$listingField;
+            // Set it in the state so we have the baseline
+            $state->$stateField = $actualValue;
+            $state->save();
+        }
+
+        // Prepare update data
+        $updateData = [];
+        
+        // Convert value based on field type
+        if ($fieldName === 'buybox') {
+            $updateData[$stateField] = $request->new_value === '1' || $request->new_value === 1 || $request->new_value === true || $request->new_value === 'true' ? 1 : 0;
+        } else {
+            $updateData[$stateField] = $request->new_value !== null && $request->new_value !== '' ? (float)$request->new_value : null;
+        }
+
+        // Update state and track changes
+        $result = $state->updateState(
+            $updateData,
+            'listing', // change_type
+            $request->change_reason ?? 'User edit from listing page'
+        );
+
+        if ($result) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Change recorded successfully',
+                'state_id' => $state->id
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No changes detected or failed to record'
+            ], 400);
+        }
     }
 
     /**

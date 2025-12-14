@@ -85,8 +85,7 @@
         <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="listing_info"></h5>
-                    <h5 class="modal-title" id="listingHistoryModalLabel"> &nbsp; History</h5>
+                    <h5 class="modal-title" id="listingHistoryModalLabel"></h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                         <i data-feather="x" class="fas fa-times"></i>
                     </button>
@@ -136,6 +135,7 @@
         urls: {
             getVariationHistory: "{{ url('v2/listings/get_variation_history') }}",
             getListingHistory: "{{ url('v2/listings/get_listing_history') }}",
+            recordChange: "{{ url('v2/listings/record_change') }}",
             updatePrice: "{{ url('v2/listings/update_price') }}",
             updateLimit: "{{ url('v2/listings/update_limit') }}",
             updateMarketplaceHandlers: "{{ url('v2/listings/update_marketplace_handlers') }}",
