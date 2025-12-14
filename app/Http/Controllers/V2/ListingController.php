@@ -25,6 +25,8 @@ use App\Models\Order_item_model;
 use App\Models\Category_model;
 use App\Models\Brand_model;
 use App\Models\MarketplaceStockModel;
+use App\Models\ListingMarketplaceState;
+use App\Models\ListingMarketplaceHistory;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Events\VariationStockUpdated;
 use App\Services\Marketplace\StockDistributionService;
@@ -937,11 +939,12 @@ class ListingController extends Controller
                 $process_id = null;
             }
         }
-        $variation = Variation_model::find($id);
+        $variation = Variation_model::with('available_stocks')->find($id);
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
 
-        $variation = Variation_model::find($id);
+        // Reload variation with relationships after update_qty
+        $variation = Variation_model::with('available_stocks')->find($id);
 
         if(!in_array($variation->state, [0,1,2,3])){
             return response()->json([
@@ -949,6 +952,9 @@ class ListingController extends Controller
             ], 400);
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
+
+        // Get available stock count (physical inventory)
+        $availableCount = $variation->available_stocks->count();
 
         // If setting exact stock, use the exact value directly
         if($setExactStock && $exactStockValue !== null){
@@ -966,7 +972,21 @@ class ListingController extends Controller
                 }
             }
         }
-
+        
+        // Validate: Cannot list more stock than physically available
+        if($new_quantity > $availableCount){
+            $excess = $new_quantity - $availableCount;
+            $maxPushable = max(0, $availableCount - $previous_qty);
+            return response()->json([
+                'error' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Available: ' . $availableCount . ', Current listed: ' . $previous_qty . ', Max pushable: ' . $maxPushable,
+                'message' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Maximum pushable: ' . $maxPushable,
+                'available_count' => $availableCount,
+                'current_listed' => $previous_qty,
+                'requested_total' => $new_quantity,
+                'max_pushable' => $maxPushable
+            ], 400);
+        }
+        
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
@@ -1046,5 +1066,654 @@ class ListingController extends Controller
             'total_stock' => (int)($responseQuantity ?? 0),
             'marketplace_stocks' => $marketplaceStocks->toArray()
         ]);
+    }
+
+    /**
+     * Get listing history for a specific listing
+     */
+    public function get_listing_history($listingId, Request $request)
+    {
+        $listing = Listing_model::with([
+            'variation.product',
+            'variation.storage_id',
+            'variation.color_id',
+            'marketplace',
+            'country_id'
+        ])->find($listingId);
+        
+        if (!$listing) {
+            return response()->json([
+                'error' => 'Listing not found'
+            ], 404);
+        }
+
+        $variationId = $request->input('variation_id', $listing->variation_id);
+        $marketplaceId = $request->input('marketplace_id', $listing->marketplace_id);
+        $countryId = $request->input('country_id', $listing->country);
+
+        // Get history for this listing
+        $history = ListingMarketplaceHistory::where('listing_id', $listingId)
+            ->with(['admin'])
+            ->orderBy('changed_at', 'desc')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'id' => $item->id,
+                    'field_name' => $item->field_name,
+                    'field_label' => $item->field_label,
+                    'old_value' => $item->old_value,
+                    'new_value' => $item->new_value,
+                    'formatted_old_value' => $item->formatted_old_value,
+                    'formatted_new_value' => $item->formatted_new_value,
+                    'change_type' => $item->change_type,
+                    'change_reason' => $item->change_reason,
+                    'admin_id' => $item->admin_id,
+                    'admin_name' => $item->admin ? ($item->admin->name ?? 'Admin #' . $item->admin_id) : 'System',
+                    'changed_at' => $item->changed_at ? $item->changed_at->toDateTimeString() : null,
+                ];
+            });
+
+        // Get descriptive information
+        $variationName = 'N/A';
+        if ($listing->variation && $listing->variation->product) {
+            $product = $listing->variation->product;
+            $variationName = $product->model ?? ($product->name ?? 'Variation #' . $listing->variation_id);
+            // Add storage and color if available
+            if ($listing->variation->storage_id) {
+                $variationName .= ' - ' . ($listing->variation->storage_id->name ?? '');
+            }
+            if ($listing->variation->color_id) {
+                $variationName .= ' ' . ($listing->variation->color_id->name ?? '');
+            }
+        }
+        
+        $marketplaceName = 'N/A';
+        if ($listing->marketplace) {
+            $marketplaceName = $listing->marketplace->name ?? 'Marketplace #' . $listing->marketplace_id;
+        }
+        
+        $countryName = 'N/A';
+        if ($listing->country_id) {
+            $countryName = $listing->country_id->title ?? ($listing->country_id->code ?? 'Country #' . $listing->country);
+        }
+
+        return response()->json([
+            'listing' => [
+                'id' => $listing->id,
+                'variation_id' => $listing->variation_id,
+                'variation_name' => $variationName,
+                'marketplace_id' => $listing->marketplace_id,
+                'marketplace_name' => $marketplaceName,
+                'country_id' => $listing->country,
+                'country_name' => $countryName,
+                'country_code' => $listing->country_id ? $listing->country_id->code : null,
+            ],
+            'history' => $history
+        ]);
+    }
+
+    /**
+     * Record a listing change to the database
+     * This is called when a user changes a field value in the listing table
+     */
+    public function record_listing_change(Request $request)
+    {
+        $request->validate([
+            'listing_id' => 'required|integer|exists:listings,id',
+            'field_name' => 'required|string|in:min_handler,price_handler,buybox,buybox_price,min_price,price',
+            'old_value' => 'nullable',
+            'new_value' => 'nullable',
+            'change_reason' => 'nullable|string|max:255',
+        ]);
+
+        $listing = Listing_model::find($request->listing_id);
+        
+        if (!$listing) {
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+        $listingId = $listing->id;
+
+        // Get or create state record
+        $state = ListingMarketplaceState::getOrCreateState(
+            $variationId,
+            $marketplaceId,
+            $listingId,
+            $countryId
+        );
+
+        // Map field names from database field names to listing table columns
+        // This is needed to get the actual value from the listing if state doesn't have it
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',  // min_handler in state = min_price_limit in listings
+            'price_handler' => 'price_limit',    // price_handler in state = price_limit in listings
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        // Map field names to state columns
+        $stateFieldMapping = [
+            'min_handler' => 'min_handler',
+            'price_handler' => 'price_handler',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        $fieldName = $request->field_name;
+        $stateField = $stateFieldMapping[$fieldName] ?? null;
+        $listingField = $listingFieldMapping[$fieldName] ?? null;
+
+        if (!$stateField || !$listingField) {
+            return response()->json(['error' => 'Invalid field name'], 400);
+        }
+
+        // Get the actual old value from listing table if state field is null (first change)
+        $actualOldValue = null;
+        if ($state->$stateField === null && $listingField) {
+            // Get the actual value from the listing table (this is the true old value)
+            $actualOldValue = $listing->$listingField;
+            // Set it in the state so we have the baseline for future changes
+            $state->$stateField = $actualOldValue;
+            $state->save();
+        } else {
+            // Use the current state value as old value
+            $actualOldValue = $state->$stateField;
+        }
+
+        // Prepare update data
+        $updateData = [];
+        
+        // Convert value based on field type
+        if ($fieldName === 'buybox') {
+            $updateData[$stateField] = $request->new_value === '1' || $request->new_value === 1 || $request->new_value === true || $request->new_value === 'true' ? 1 : 0;
+        } else {
+            $updateData[$stateField] = $request->new_value !== null && $request->new_value !== '' ? (float)$request->new_value : null;
+        }
+
+        // Update state and track changes with explicit old value
+        $result = $state->updateState(
+            $updateData,
+            'listing', // change_type
+            $request->change_reason ?? 'User edit from listing page',
+            [$stateField => $actualOldValue] // Pass explicit old value
+        );
+
+        if ($result) {
+            return response()->json([
+                'success' => true,
+                'message' => 'Change recorded successfully',
+                'state_id' => $state->id
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'No changes detected or failed to record'
+            ], 400);
+        }
+    }
+
+    /**
+     * Update listing price (min_price or price)
+     * V2 version with change tracking
+     */
+    public function update_price($id, Request $request)
+    {
+        $listing = Listing_model::with(['variation', 'marketplace', 'country_id', 'currency'])->find($id);
+        
+        if (!$listing) {
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+        
+        $changes = [];
+        $updateData = [];
+
+        // Track min_price change
+        if ($request->has('min_price')) {
+            $newMinPrice = $request->input('min_price');
+            $oldMinPrice = $listing->min_price;
+            
+            if ($oldMinPrice != $newMinPrice) {
+                $updateData['min_price'] = $newMinPrice;
+                $changes['min_price'] = [
+                    'old' => $oldMinPrice,
+                    'new' => $newMinPrice
+                ];
+            }
+        }
+
+        // Track price change
+        if ($request->has('price')) {
+            $newPrice = $request->input('price');
+            $oldPrice = $listing->price;
+            
+            if ($oldPrice != $newPrice) {
+                $updateData['price'] = $newPrice;
+                $changes['price'] = [
+                    'old' => $oldPrice,
+                    'new' => $newPrice
+                ];
+            }
+        }
+
+        // Update listing if there are changes
+        if (!empty($updateData)) {
+            $listing->fill($updateData);
+            $listing->save();
+
+            // Update BackMarket API if needed
+            $bm = new BackMarketAPIController();
+            if ($listing->variation && $listing->variation->reference_id && $listing->country_id) {
+                $currencyCode = $listing->currency ? $listing->currency->code : 'EUR';
+                $marketCode = $listing->country_id->market_code ?? null;
+                
+                $apiPayload = [];
+                if (isset($updateData['min_price'])) {
+                    $apiPayload['min_price'] = $updateData['min_price'];
+                }
+                if (isset($updateData['price'])) {
+                    $apiPayload['price'] = $updateData['price'];
+                }
+                $apiPayload['currency'] = $currencyCode;
+                
+                if (!empty($apiPayload)) {
+                    $bm->updateOneListing($listing->variation->reference_id, json_encode($apiPayload), $marketCode);
+                }
+            }
+
+            // Track changes in history
+            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Price update via form');
+        }
+
+        return response()->json([
+            'success' => true,
+            'listing' => $listing,
+            'changes' => $changes
+        ]);
+    }
+
+    /**
+     * Update listing limits (min_price_limit and price_limit - handlers)
+     * V2 version with change tracking
+     */
+    public function update_limit($id, Request $request)
+    {
+        $listing = Listing_model::with(['variation', 'marketplace', 'country_id'])->find($id);
+        
+        if (!$listing) {
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+        
+        $changes = [];
+        $updateData = [];
+
+        // Track min_price_limit change (maps to min_handler in state)
+        if ($request->has('min_price_limit')) {
+            $newMinLimit = $request->input('min_price_limit');
+            $oldMinLimit = $listing->min_price_limit;
+            
+            if ($oldMinLimit != $newMinLimit) {
+                $updateData['min_price_limit'] = $newMinLimit;
+                $changes['min_handler'] = [
+                    'old' => $oldMinLimit,
+                    'new' => $newMinLimit
+                ];
+            }
+        }
+
+        // Track price_limit change (maps to price_handler in state)
+        if ($request->has('price_limit')) {
+            $newPriceLimit = $request->input('price_limit');
+            $oldPriceLimit = $listing->price_limit;
+            
+            if ($oldPriceLimit != $newPriceLimit) {
+                $updateData['price_limit'] = $newPriceLimit;
+                $changes['price_handler'] = [
+                    'old' => $oldPriceLimit,
+                    'new' => $newPriceLimit
+                ];
+            }
+        }
+
+        // Update handler_status based on limits
+        if (!empty($updateData)) {
+            if (($listing->min_price_limit === null || $listing->min_price_limit == 0) && 
+                ($listing->price_limit === null || $listing->price_limit == 0)) {
+                $updateData['handler_status'] = 0;
+            } else {
+                $updateData['handler_status'] = 1;
+            }
+        }
+
+        // Update listing if there are changes
+        if (!empty($updateData)) {
+            $listing->fill($updateData);
+            $listing->save();
+
+            // Track changes in history (using handler field names)
+            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Handler limit update via form');
+        }
+
+        return response()->json([
+            'success' => true,
+            'listing' => $listing,
+            'changes' => $changes
+        ]);
+    }
+
+    /**
+     * Track listing changes in history
+     */
+    private function trackListingChanges($variationId, $marketplaceId, $listingId, $countryId, $changes, $changeType = 'listing', $reason = null)
+    {
+        if (empty($changes)) {
+            return;
+        }
+
+        // Get or create state record
+        $state = ListingMarketplaceState::getOrCreateState($variationId, $marketplaceId, $listingId, $countryId);
+
+        // Get the listing to retrieve actual values for first-time changes
+        $listing = Listing_model::find($listingId);
+        
+        // Map field names from state fields to listing table columns
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',
+            'price_handler' => 'price_limit',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        // For first-time changes, get actual values from listing table
+        // This ensures old_value in history shows the actual database value, not null
+        $needsSave = false;
+        $explicitOldValues = [];
+        
+        foreach ($changes as $field => $values) {
+            $stateField = $field;
+            $listingField = $listingFieldMapping[$field] ?? null;
+            
+            // Determine the actual old value to use
+            $actualOldValue = null;
+            
+            // If state field is null (first change), get the actual value from listing table
+            if ($listing && $listingField && $state->$stateField === null) {
+                // Prefer the 'old' value from changes array (from update_marketplace_handlers/update_marketplace_prices)
+                // Otherwise get from listing table
+                if (isset($values['old'])) {
+                    $actualOldValue = $values['old'];
+                } else {
+                    // Get from listing table - this is the true old value from database
+                    $actualOldValue = $listing->$listingField;
+                }
+                // Set it in the state so we have the baseline for future changes
+                $state->$stateField = $actualOldValue;
+                $needsSave = true;
+            } else {
+                // Use current state value as old value
+                $actualOldValue = $state->$stateField;
+            }
+            
+            // Store explicit old value for this field
+            $explicitOldValues[$stateField] = $actualOldValue;
+        }
+        
+        // Save state if we updated any null values
+        if ($needsSave) {
+            $state->save();
+        }
+
+        // Prepare data for state update
+        $stateData = [];
+        foreach ($changes as $field => $values) {
+            $stateData[$field] = $values['new'];
+        }
+
+        // Update state and track changes with explicit old values
+        $state->updateState($stateData, $changeType, $reason, $explicitOldValues);
+    }
+
+    /**
+     * Update marketplace-level handlers (bulk update for all listings in a marketplace)
+     * V2 version with change tracking
+     */
+    public function update_marketplace_handlers($variationId, $marketplaceId, Request $request)
+    {
+        $variation = Variation_model::find($variationId);
+        if (!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+
+        $minHandler = $request->input('all_min_handler');
+        $priceHandler = $request->input('all_handler');
+
+        // Get all listings for this variation and marketplace
+        $listings = Listing_model::where('variation_id', $variationId)
+            ->where('marketplace_id', $marketplaceId)
+            ->get();
+
+        $updatedCount = 0;
+        $changes = [];
+
+        foreach ($listings as $listing) {
+            $listingChanges = [];
+            $updateData = [];
+            $countryId = $listing->country;
+
+            // Update min_price_limit (min_handler) if provided
+            if ($minHandler !== null) {
+                $oldMinLimit = $listing->min_price_limit;
+                if ($oldMinLimit != $minHandler) {
+                    $updateData['min_price_limit'] = $minHandler;
+                    $listingChanges['min_handler'] = [
+                        'old' => $oldMinLimit,
+                        'new' => $minHandler
+                    ];
+                }
+            }
+
+            // Update price_limit (price_handler) if provided
+            if ($priceHandler !== null) {
+                $oldPriceLimit = $listing->price_limit;
+                if ($oldPriceLimit != $priceHandler) {
+                    $updateData['price_limit'] = $priceHandler;
+                    $listingChanges['price_handler'] = [
+                        'old' => $oldPriceLimit,
+                        'new' => $priceHandler
+                    ];
+                }
+            }
+
+            // Update handler_status
+            if (!empty($updateData)) {
+                if (($updateData['min_price_limit'] ?? $listing->min_price_limit) == null && 
+                    ($updateData['price_limit'] ?? $listing->price_limit) == null) {
+                    $updateData['handler_status'] = 0;
+                } else {
+                    $updateData['handler_status'] = 1;
+                }
+
+                $listing->fill($updateData);
+                $listing->save();
+                $updatedCount++;
+
+                // Track changes for this listing
+                if (!empty($listingChanges)) {
+                    $this->trackListingChanges(
+                        $variationId, 
+                        $marketplaceId, 
+                        $listing->id, 
+                        $listing->country, 
+                        $listingChanges, 
+                        'bulk', 
+                        'Bulk handler update from marketplace bar'
+                    );
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
+            'message' => "Updated {$updatedCount} listing(s)"
+        ]);
+    }
+
+    /**
+     * Update marketplace-level prices (bulk update for all listings in a marketplace)
+     * V2 version with change tracking
+     */
+    public function update_marketplace_prices($variationId, $marketplaceId, Request $request)
+    {
+        $variation = Variation_model::find($variationId);
+        if (!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+
+        $minPrice = $request->input('all_min_price');
+        $price = $request->input('all_price');
+
+        // Get all listings for this variation and marketplace
+        $listings = Listing_model::where('variation_id', $variationId)
+            ->where('marketplace_id', $marketplaceId)
+            ->with(['currency', 'country_id'])
+            ->get();
+
+        $updatedCount = 0;
+        $bm = new BackMarketAPIController();
+
+        foreach ($listings as $listing) {
+            $listingChanges = [];
+            $updateData = [];
+
+            // Update min_price if provided
+            if ($minPrice !== null) {
+                $oldMinPrice = $listing->min_price;
+                if ($oldMinPrice != $minPrice) {
+                    $updateData['min_price'] = $minPrice;
+                    $listingChanges['min_price'] = [
+                        'old' => $oldMinPrice,
+                        'new' => $minPrice
+                    ];
+                }
+            }
+
+            // Update price if provided
+            if ($price !== null) {
+                $oldPrice = $listing->price;
+                if ($oldPrice != $price) {
+                    $updateData['price'] = $price;
+                    $listingChanges['price'] = [
+                        'old' => $oldPrice,
+                        'new' => $price
+                    ];
+                }
+            }
+
+            // Update listing if there are changes
+            if (!empty($updateData)) {
+                $listing->fill($updateData);
+                $listing->save();
+                $updatedCount++;
+
+                // Update BackMarket API
+                if ($variation->reference_id && $listing->country_id) {
+                    $currencyCode = $listing->currency ? $listing->currency->code : 'EUR';
+                    $marketCode = $listing->country_id->market_code ?? null;
+                    
+                    $apiPayload = [];
+                    if (isset($updateData['min_price'])) {
+                        $apiPayload['min_price'] = $updateData['min_price'];
+                    }
+                    if (isset($updateData['price'])) {
+                        $apiPayload['price'] = $updateData['price'];
+                    }
+                    $apiPayload['currency'] = $currencyCode;
+                    
+                    if (!empty($apiPayload)) {
+                        $bm->updateOneListing($variation->reference_id, json_encode($apiPayload), $marketCode);
+                    }
+                }
+
+                // Track changes for this listing
+                if (!empty($listingChanges)) {
+                    $this->trackListingChanges(
+                        $variationId, 
+                        $marketplaceId, 
+                        $listing->id, 
+                        $listing->country, 
+                        $listingChanges, 
+                        'bulk', 
+                        'Bulk price update from marketplace bar'
+                    );
+                }
+            }
+        }
+
+        return response()->json([
+            'success' => true,
+            'updated_count' => $updatedCount,
+            'message' => "Updated {$updatedCount} listing(s)"
+        ]);
+    }
+
+    /**
+     * Track buybox changes (called from API sync or other sources)
+     */
+    public function trackBuyboxChange($listingId, $buybox, $buyboxPrice = null)
+    {
+        $listing = Listing_model::find($listingId);
+        if (!$listing) {
+            return;
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+
+        $changes = [];
+
+        // Track buybox change
+        $oldBuybox = $listing->buybox;
+        if ($oldBuybox != $buybox) {
+            $changes['buybox'] = [
+                'old' => $oldBuybox,
+                'new' => $buybox
+            ];
+            $listing->buybox = $buybox;
+        }
+
+        // Track buybox_price change
+        if ($buyboxPrice !== null) {
+            $oldBuyboxPrice = $listing->buybox_price;
+            if ($oldBuyboxPrice != $buyboxPrice) {
+                $changes['buybox_price'] = [
+                    'old' => $oldBuyboxPrice,
+                    'new' => $buyboxPrice
+                ];
+                $listing->buybox_price = $buyboxPrice;
+            }
+        }
+
+        if (!empty($changes)) {
+            $listing->save();
+            $this->trackListingChanges($variationId, $marketplaceId, $listingId, $countryId, $changes, 'auto', 'Buybox update from API');
+        }
     }
 }

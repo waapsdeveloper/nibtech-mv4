@@ -1,5 +1,7 @@
 @php
-    // Expected variables: $variationId, $totalStock, $process_id (optional)
+    // Expected variables: $variationId, $totalStock, $availableCount, $process_id (optional)
+    $availableCount = $availableCount ?? 0;
+    $maxPushable = max(0, $availableCount - $totalStock); // Maximum that can be pushed
 @endphp
 
 <div class="d-flex align-items-center gap-2">
@@ -13,11 +15,26 @@
             <label for="">Total Stock</label>
         </div>
         <div class="form-floating" style="width: 60px;">
-            <input type="number" class="form-control form-control-sm" name="stock" id="add_total_{{ $variationId }}" value="" style="width:60px; height: 31px;">
+            <input type="number" 
+                   class="form-control form-control-sm" 
+                   name="stock" 
+                   id="add_total_{{ $variationId }}" 
+                   value="" 
+                   style="width:60px; height: 31px;"
+                   max="{{ $maxPushable }}"
+                   data-available-count="{{ $availableCount }}"
+                   data-current-total="{{ $totalStock }}"
+                   data-max-pushable="{{ $maxPushable }}">
             <label for="" class="small">Add</label>
         </div>
         <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
         <span class="text-success small" id="success_total_{{ $variationId }}"></span>
+        <span class="text-danger small d-none" id="error_total_{{ $variationId }}"></span>
     </form>
+    @if($maxPushable < $availableCount)
+        <small class="text-muted" style="font-size: 0.75rem;">
+            Max pushable: <strong>{{ $maxPushable }}</strong> (Available: {{ $availableCount }}, Listed: {{ $totalStock }})
+        </small>
+    @endif
 </div>
 
