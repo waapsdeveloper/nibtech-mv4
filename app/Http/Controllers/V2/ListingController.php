@@ -1421,6 +1421,49 @@ class ListingController extends Controller
         // Get or create state record
         $state = ListingMarketplaceState::getOrCreateState($variationId, $marketplaceId, $listingId, $countryId);
 
+        // Get the listing to retrieve actual values for first-time changes
+        $listing = Listing_model::find($listingId);
+        
+        // Map field names from state fields to listing table columns
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',
+            'price_handler' => 'price_limit',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        // For first-time changes, get actual values from listing table
+        // This ensures old_value in history shows the actual database value, not null
+        $needsSave = false;
+        foreach ($changes as $field => $values) {
+            $stateField = $field;
+            $listingField = $listingFieldMapping[$field] ?? null;
+            
+            // If state field is null and we have a listing, get the actual value
+            // Prefer the 'old' value from changes array (from update_marketplace_handlers/update_marketplace_prices)
+            // Otherwise get from listing table (for cases where old value wasn't provided)
+            if ($listing && $listingField && $state->$stateField === null) {
+                // Use 'old' value from changes array if available (most accurate)
+                // Otherwise get from listing table
+                if (isset($values['old'])) {
+                    $actualValue = $values['old'];
+                } else {
+                    // Get from listing table (might be new value if listing was already saved)
+                    // But this is better than null
+                    $actualValue = $listing->$listingField;
+                }
+                $state->$stateField = $actualValue;
+                $needsSave = true;
+            }
+        }
+        
+        // Save state if we updated any null values
+        if ($needsSave) {
+            $state->save();
+        }
+
         // Prepare data for state update
         $stateData = [];
         foreach ($changes as $field => $values) {
@@ -1456,6 +1499,7 @@ class ListingController extends Controller
         foreach ($listings as $listing) {
             $listingChanges = [];
             $updateData = [];
+            $countryId = $listing->country;
 
             // Update min_price_limit (min_handler) if provided
             if ($minHandler !== null) {
