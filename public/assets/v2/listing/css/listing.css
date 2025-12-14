@@ -141,3 +141,12 @@ tr.listing-disabled input[type="text"] {
     text-decoration: underline;
 }
 
+/* Buybox flags border - match listing row pink background color */
+.buybox-flag-link {
+    border-color: #ffc0cb !important;
+}
+
+.buybox-flag-link:hover {
+    border-color: #ffb6c1 !important;
+}
+

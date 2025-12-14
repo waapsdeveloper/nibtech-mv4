@@ -30,7 +30,7 @@
                 $referenceUuid2 = $listing->reference_uuid_2 ?? '';
                 
                 if ($countryCode) {
-                    $buyboxFlags .= '<a href="https://www.backmarket.' . $marketUrl . '/' . $marketCode . '/p/gb/' . $referenceUuid2 . '" target="_blank" class="btn btn-sm btn-link border p-1 m-1" title="View listing">
+                    $buyboxFlags .= '<a href="https://www.backmarket.' . $marketUrl . '/' . $marketCode . '/p/gb/' . $referenceUuid2 . '" target="_blank" class="btn btn-sm btn-link border p-1 m-1 buybox-flag-link" title="View listing" style="border-color: #ffc0cb !important;">
                         <img src="' . asset('assets/img/flags/' . strtolower($countryCode) . '.svg') . '" height="10" alt="' . $countryCode . '">
                         ' . $countryCode . '
                     </a>';
