@@ -61,7 +61,7 @@ class ListingController extends Controller
      */
     public function index(Request $request)
     {
-        \Log::info('V2 ListingController index called');
+        // Log::info('V2 ListingController index called');
         $data['title_page'] = "Listings V2";
         session()->put('page_title', $data['title_page']);
 

@@ -122,7 +122,7 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
 
-        Log::info("Result from getAllListingsBi: " . json_encode($listings));
+        // Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
         foreach($listings as $country => $lists){
             foreach($lists as $list){
