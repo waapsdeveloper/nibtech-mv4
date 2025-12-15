@@ -333,7 +333,7 @@ class Order extends Component
                     'orderItems' => $order->order_items,
                 ];
 
-                Mail::mailer('no-reply')->to($order->customer->email)->send(new InvoiceMail($data2));
+                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
                 sleep(2);
 
             }
