@@ -55,7 +55,7 @@ class MarketplaceStockFormulaController extends Controller
             }
         }
 
-        return view('v2.marketplace.stock-formula')->with($data);
+        return view('v2.marketplace.stock-formula.index')->with($data);
     }
 
     /**

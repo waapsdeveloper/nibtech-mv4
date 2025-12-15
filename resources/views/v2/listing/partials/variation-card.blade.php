@@ -124,6 +124,7 @@
             @include('v2.listing.partials.total-stock-form', [
                 'variationId' => $variationId,
                 'totalStock' => $totalStock,
+                'availableCount' => $availableCount,
                 'process_id' => $process_id ?? null
             ])
             
