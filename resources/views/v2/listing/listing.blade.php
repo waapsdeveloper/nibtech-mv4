@@ -22,6 +22,12 @@
 
     @include('v2.listing.partials.filters')
 
+    {{-- Page Controls --}}
+    @include('v2.listing.partials.page-controls', [
+        'variations' => $variations ?? null,
+        'special' => request('special')
+    ])
+
     @if(isset($variations) && $variations->count() > 0)
         @foreach($variations as $variation)
             @include('v2.listing.partials.variation-card', [
@@ -116,6 +122,10 @@
         </div>
     </div>
     {{-- /Listing History Modal --}}
+
+    {{-- Bulk Update Modal --}}
+    @include('v2.listing.partials.bulk-update-modal')
+    {{-- /Bulk Update Modal --}}
 @endsection
 
 @section('scripts')
@@ -143,6 +153,11 @@
             getListings: "{{ url('v2/listings/get_listings') }}",
             getVariationStocks: "{{ url('listing/get_variation_available_stocks') }}",
             toggleEnable: "{{ url('listing/toggle_enable') }}",
+            getSales: "{{ url('listing/get_sales') }}",
+            getBuybox: "{{ url('listing/get_buybox') }}",
+            export: "{{ url('listing/export') }}",
+            getTargetVariations: "{{ url('listing/get_target_variations') }}",
+            updateTarget: "{{ url('listing/update_target') }}",
             imei: "{{ url('imei') }}"
         },
         csrfToken: "{{ csrf_token() }}",
@@ -157,5 +172,9 @@
     };
 </script>
 <script src="{{asset('assets/v2/listing/js/total-stock-form.js')}}"></script>
+<script src="{{asset('assets/v2/listing/js/keyboard-navigation.js')}}"></script>
+<script src="{{asset('assets/v2/listing/js/price-validation.js')}}"></script>
+<script src="{{asset('assets/v2/listing/js/page-controls.js')}}"></script>
+<script src="{{asset('assets/v2/listing/js/bulk-updates.js')}}"></script>
 <script src="{{asset('assets/v2/listing/js/listing.js')}}"></script>
 @endsection
