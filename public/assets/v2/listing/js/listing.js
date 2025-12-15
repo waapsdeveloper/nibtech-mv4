@@ -21,6 +21,106 @@ let processId = window.processId || null;
 window.eur_listings = window.eur_listings || {};
 
 /**
+ * Get Buybox functionality
+ * @param {number} listingId - Listing ID
+ * @param {number} variationId - Variation ID
+ * @param {number} buyboxPrice - Buybox price
+ */
+window.getBuybox = function(listingId, variationId, buyboxPrice) {
+    if (!confirm(`Set price to ${buyboxPrice} to get buybox?`)) {
+        return;
+    }
+
+    const button = document.getElementById('get_buybox_' + listingId);
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    }
+
+    // Find marketplace ID from the listing row
+    const row = button?.closest('tr');
+    let marketplaceId = null;
+    if (row) {
+        // Try to find marketplace ID from row data or parent container
+        const marketplaceToggle = row.closest('.marketplace-toggle-content');
+        if (marketplaceToggle) {
+            const toggleId = marketplaceToggle.id;
+            const matches = toggleId.match(/marketplace_toggle_(\d+)_(\d+)/);
+            if (matches) {
+                marketplaceId = parseInt(matches[2]);
+            }
+        }
+    }
+
+    const updateUrl = window.ListingConfig?.urls?.updatePrice || '/v2/listings/update_price';
+    const data = {
+        _token: window.ListingConfig?.csrfToken || '',
+        price: buyboxPrice
+    };
+
+    fetch(updateUrl + '/' + listingId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Reload the listings table
+            if (marketplaceId) {
+                loadMarketplaceTables(variationId, marketplaceId);
+            }
+            alert('Price updated successfully!');
+        } else {
+            alert('Error: ' + (result.error || 'Failed to update price'));
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = 'Get Buybox';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error getting buybox:', error);
+        alert('Error updating price');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = 'Get Buybox';
+        }
+    });
+};
+
+/**
+ * Load sales data for variation
+ * @param {number} variationId - Variation ID
+ */
+function loadSalesData(variationId) {
+    const salesElement = document.getElementById('sales_' + variationId);
+    if (!salesElement) return;
+
+    const salesUrl = (window.ListingConfig?.urls?.getSales || '/listing/get_sales') + '/' + variationId;
+    
+    fetch(salesUrl + '?csrf=' + (window.ListingConfig?.csrfToken || ''), {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        salesElement.innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Error loading sales data:', error);
+        salesElement.innerHTML = '<span class="text-muted small">Error loading sales data</span>';
+    });
+}
+
+/**
  * Show variation history modal
  */
 function show_variation_history(variationId, variationName) {
@@ -328,7 +428,14 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                                 </div>
                                 ${p_append}
                             </td>
-                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
+                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
+                                ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
+                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                    return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
+                                                Get Buybox
+                                            </button>`;
+                                })() : ''}
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
                                     <div class="form-check form-switch d-inline-block">
@@ -850,6 +957,14 @@ function restoreMarketplaceState() {
 $(document).ready(function() {
     restoreMarketplaceState();
     initializeChangeDetection();
+    
+    // Load sales data for all variations on page
+    document.querySelectorAll('[id^="sales_"]').forEach(function(element) {
+        const variationId = element.id.replace('sales_', '');
+        if (variationId) {
+            loadSalesData(parseInt(variationId));
+        }
+    });
 });
 
 /**
@@ -1261,12 +1376,41 @@ $(document).on('keypress', '[id^="min_price_"], [id^="price_"], [id^="min_price_
         if (inputId.startsWith('min_price_limit_') || inputId.startsWith('price_limit_')) {
             const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
             $(`#change_limit_${listingId}`).submit();
-        } else if (inputId.startsWith('min_price_')) {
+        } else if (inputId.startsWith('min_price_') && !inputId.includes('limit') && !inputId.includes('all_')) {
             const listingId = inputId.replace('min_price_', '');
             $(`#change_min_price_${listingId}`).submit();
-        } else if (inputId.startsWith('price_')) {
+        } else if (inputId.startsWith('price_') && !inputId.includes('limit') && !inputId.includes('all_') && !inputId.includes('best_')) {
             const listingId = inputId.replace('price_', '');
             $(`#change_price_${listingId}`).submit();
+        }
+    }
+});
+
+/**
+ * Handle Enter key on marketplace-level inputs (bulk update)
+ */
+$(document).on('keypress', '[id^="all_min_handler_"], [id^="all_handler_"], [id^="all_min_price_"], [id^="all_price_"]', function(e) {
+    if (e.which === 13) {
+        e.preventDefault();
+        const inputId = $(this).attr('id');
+        const matches = inputId.match(/(\d+)_(\d+)$/);
+        if (!matches) return;
+        
+        const variationId = matches[1];
+        const marketplaceId = matches[2];
+        
+        if (inputId.startsWith('all_min_handler_') || inputId.startsWith('all_handler_')) {
+            // Submit handler form
+            const button = $(`#change_all_handler_${variationId}_${marketplaceId} button[type="button"]`);
+            if (button.length) {
+                button.click();
+            }
+        } else if (inputId.startsWith('all_min_price_') || inputId.startsWith('all_price_')) {
+            // Submit price form
+            const button = $(`#change_all_price_${variationId}_${marketplaceId} button[type="button"]`);
+            if (button.length) {
+                button.click();
+            }
         }
     }
 });
