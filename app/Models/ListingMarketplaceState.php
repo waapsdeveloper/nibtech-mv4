@@ -99,8 +99,9 @@ class ListingMarketplaceState extends Model
      * @param string $changeType Type of change (listing, bulk, etc.)
      * @param string|null $reason Reason for change
      * @param array|null $explicitOldValues Optional explicit old values to use (for first-time changes)
+     * @param array|null $rowSnapshot Optional full row snapshot to store with history
      */
-    public function updateState(array $data, $changeType = 'listing', $reason = null, $explicitOldValues = null)
+    public function updateState(array $data, $changeType = 'listing', $reason = null, $explicitOldValues = null, $rowSnapshot = null)
     {
         $changedFields = [];
         $oldValues = [];
@@ -142,6 +143,7 @@ class ListingMarketplaceState extends Model
                 'field_name' => $field,
                 'old_value' => $oldValues[$field] ?? null,
                 'new_value' => $data[$field],
+                'row_snapshot' => $rowSnapshot,
                 'change_type' => $changeType,
                 'change_reason' => $reason,
                 'admin_id' => session('user_id'),
