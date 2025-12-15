@@ -973,20 +973,6 @@ class ListingController extends Controller
             }
         }
 
-        // Validate: Cannot list more stock than physically available
-        if($new_quantity > $availableCount){
-            $excess = $new_quantity - $availableCount;
-            $maxPushable = max(0, $availableCount - $previous_qty);
-            return response()->json([
-                'error' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Available: ' . $availableCount . ', Current listed: ' . $previous_qty . ', Max pushable: ' . $maxPushable,
-                'message' => 'Cannot push stock: Would exceed available stock by ' . $excess . '. Maximum pushable: ' . $maxPushable,
-                'available_count' => $availableCount,
-                'current_listed' => $previous_qty,
-                'requested_total' => $new_quantity,
-                'max_pushable' => $maxPushable
-            ], 400);
-        }
-
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
@@ -1105,6 +1091,7 @@ class ListingController extends Controller
                     'new_value' => $item->new_value,
                     'formatted_old_value' => $item->formatted_old_value,
                     'formatted_new_value' => $item->formatted_new_value,
+                    'row_snapshot' => $item->row_snapshot,
                     'change_type' => $item->change_type,
                     'change_reason' => $item->change_reason,
                     'admin_id' => $item->admin_id,
@@ -1150,6 +1137,63 @@ class ListingController extends Controller
             ],
             'history' => $history
         ]);
+    }
+
+    /**
+     * Capture a full listing row snapshot as JSON
+     * @param Listing_model $listing
+     * @return array
+     */
+    private function captureListingSnapshot($listing)
+    {
+        if (!$listing) {
+            return null;
+        }
+
+        // Load relationships if not already loaded
+        $listing->load(['country_id', 'currency', 'marketplace', 'variation']);
+
+        // Capture all relevant listing fields
+        return [
+            'id' => $listing->id,
+            'variation_id' => $listing->variation_id,
+            'marketplace_id' => $listing->marketplace_id,
+            'country' => $listing->country,
+            'country_id' => [
+                'id' => $listing->country_id->id ?? null,
+                'code' => $listing->country_id->code ?? null,
+                'title' => $listing->country_id->title ?? null,
+            ],
+            'marketplace' => [
+                'id' => $listing->marketplace->id ?? null,
+                'name' => $listing->marketplace->name ?? null,
+            ],
+            'currency_id' => $listing->currency_id,
+            'currency' => [
+                'id' => $listing->currency->id ?? null,
+                'code' => $listing->currency->code ?? null,
+                'sign' => $listing->currency->sign ?? null,
+            ],
+            'reference_uuid' => $listing->reference_uuid,
+            'reference_uuid_2' => $listing->reference_uuid_2 ?? null,
+            'name' => $listing->name ?? null,
+            'min_price' => $listing->min_price,
+            'max_price' => $listing->max_price ?? null,
+            'price' => $listing->price,
+            'buybox' => $listing->buybox,
+            'buybox_price' => $listing->buybox_price,
+            'buybox_winner_price' => $listing->buybox_winner_price ?? null,
+            'min_price_limit' => $listing->min_price_limit,
+            'price_limit' => $listing->price_limit,
+            'handler_status' => $listing->handler_status,
+            'target_price' => $listing->target_price ?? null,
+            'target_percentage' => $listing->target_percentage ?? null,
+            'admin_id' => $listing->admin_id ?? null,
+            'status' => $listing->status ?? null,
+            'is_enabled' => $listing->is_enabled ?? null,
+            'created_at' => $listing->created_at ? $listing->created_at->toDateTimeString() : null,
+            'updated_at' => $listing->updated_at ? $listing->updated_at->toDateTimeString() : null,
+        ];
     }
 
     /**
@@ -1237,12 +1281,16 @@ class ListingController extends Controller
             $updateData[$stateField] = $request->new_value !== null && $request->new_value !== '' ? (float)$request->new_value : null;
         }
 
-        // Update state and track changes with explicit old value
+        // Capture full listing row snapshot before the change
+        $rowSnapshot = $this->captureListingSnapshot($listing);
+
+        // Update state and track changes with explicit old value and row snapshot
         $result = $state->updateState(
             $updateData,
             'listing', // change_type
             $request->change_reason ?? 'User edit from listing page',
-            [$stateField => $actualOldValue] // Pass explicit old value
+            [$stateField => $actualOldValue], // Pass explicit old value
+            $rowSnapshot // Pass row snapshot
         );
 
         if ($result) {
@@ -1308,6 +1356,9 @@ class ListingController extends Controller
 
         // Update listing if there are changes
         if (!empty($updateData)) {
+            // Capture snapshot BEFORE updating the listing
+            $rowSnapshot = $this->captureListingSnapshot($listing);
+            
             $listing->fill($updateData);
             $listing->save();
 
@@ -1331,8 +1382,8 @@ class ListingController extends Controller
                 }
             }
 
-            // Track changes in history
-            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Price update via form');
+            // Track changes in history with pre-captured snapshot
+            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Price update via form', $rowSnapshot);
         }
 
         return response()->json([
@@ -1401,11 +1452,14 @@ class ListingController extends Controller
 
         // Update listing if there are changes
         if (!empty($updateData)) {
+            // Capture snapshot BEFORE updating the listing
+            $rowSnapshot = $this->captureListingSnapshot($listing);
+            
             $listing->fill($updateData);
             $listing->save();
 
-            // Track changes in history (using handler field names)
-            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Handler limit update via form');
+            // Track changes in history (using handler field names) with pre-captured snapshot
+            $this->trackListingChanges($variationId, $marketplaceId, $listing->id, $countryId, $changes, 'listing', 'Handler limit update via form', $rowSnapshot);
         }
 
         return response()->json([
@@ -1417,8 +1471,16 @@ class ListingController extends Controller
 
     /**
      * Track listing changes in history
+     * @param int $variationId
+     * @param int $marketplaceId
+     * @param int $listingId
+     * @param int $countryId
+     * @param array $changes
+     * @param string $changeType
+     * @param string|null $reason
+     * @param array|null $rowSnapshot Optional pre-captured snapshot (if listing was already updated)
      */
-    private function trackListingChanges($variationId, $marketplaceId, $listingId, $countryId, $changes, $changeType = 'listing', $reason = null)
+    private function trackListingChanges($variationId, $marketplaceId, $listingId, $countryId, $changes, $changeType = 'listing', $reason = null, $rowSnapshot = null)
     {
         if (empty($changes)) {
             return;
@@ -1429,6 +1491,11 @@ class ListingController extends Controller
 
         // Get the listing to retrieve actual values for first-time changes
         $listing = Listing_model::find($listingId);
+        
+        // If snapshot not provided, capture it now (before any updates)
+        if ($rowSnapshot === null) {
+            $rowSnapshot = $this->captureListingSnapshot($listing);
+        }
 
         // Map field names from state fields to listing table columns
         $listingFieldMapping = [
@@ -1485,8 +1552,8 @@ class ListingController extends Controller
             $stateData[$field] = $values['new'];
         }
 
-        // Update state and track changes with explicit old values
-        $state->updateState($stateData, $changeType, $reason, $explicitOldValues);
+        // Update state and track changes with explicit old values and row snapshot
+        $state->updateState($stateData, $changeType, $reason, $explicitOldValues, $rowSnapshot);
     }
 
     /**
@@ -1549,11 +1616,14 @@ class ListingController extends Controller
                     $updateData['handler_status'] = 1;
                 }
 
+                // Capture snapshot BEFORE updating the listing
+                $rowSnapshot = $this->captureListingSnapshot($listing);
+
                 $listing->fill($updateData);
                 $listing->save();
                 $updatedCount++;
 
-                // Track changes for this listing
+                // Track changes for this listing with pre-captured snapshot
                 if (!empty($listingChanges)) {
                     $this->trackListingChanges(
                         $variationId,
@@ -1562,7 +1632,8 @@ class ListingController extends Controller
                         $listing->country,
                         $listingChanges,
                         'bulk',
-                        'Bulk handler update from marketplace bar'
+                        'Bulk handler update from marketplace bar',
+                        $rowSnapshot
                     );
                 }
             }
@@ -1628,6 +1699,9 @@ class ListingController extends Controller
 
             // Update listing if there are changes
             if (!empty($updateData)) {
+                // Capture snapshot BEFORE updating the listing
+                $rowSnapshot = $this->captureListingSnapshot($listing);
+
                 $listing->fill($updateData);
                 $listing->save();
                 $updatedCount++;
@@ -1651,7 +1725,7 @@ class ListingController extends Controller
                     }
                 }
 
-                // Track changes for this listing
+                // Track changes for this listing with pre-captured snapshot
                 if (!empty($listingChanges)) {
                     $this->trackListingChanges(
                         $variationId,
@@ -1660,7 +1734,8 @@ class ListingController extends Controller
                         $listing->country,
                         $listingChanges,
                         'bulk',
-                        'Bulk price update from marketplace bar'
+                        'Bulk price update from marketplace bar',
+                        $rowSnapshot
                     );
                 }
             }

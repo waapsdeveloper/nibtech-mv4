@@ -162,6 +162,157 @@ function show_variation_history(variationId, variationName) {
 /**
  * Show listing history modal
  */
+/**
+ * Show snapshot tooltip on hover
+ * @param {Event} event - Mouse event
+ * @param {string} snapshotId - Unique ID for the snapshot tooltip
+ */
+window.showSnapshotTooltip = function(event, snapshotId) {
+    // Get snapshot from global object
+    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+    if (!tooltip) return;
+        
+        // Format and set tooltip content
+        tooltip.innerHTML = formatSnapshotForTooltip(snapshot);
+        
+        // Position tooltip
+        const iconRect = icon.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const modalBody = document.querySelector('#listingHistoryModal .modal-body');
+        const modalBodyRect = modalBody ? modalBody.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+        
+        // Position to the left of the icon
+        let left = iconRect.left - tooltipRect.width - 10;
+        let top = iconRect.top + (iconRect.height / 2) - (tooltipRect.height / 2);
+        
+        // Adjust if tooltip goes off screen
+        if (left < modalBodyRect.left) {
+            left = iconRect.right + 10; // Show to the right instead
+        }
+        if (top + tooltipRect.height > modalBodyRect.top + modalBodyRect.height) {
+            top = modalBodyRect.top + modalBodyRect.height - tooltipRect.height - 10;
+        }
+        if (top < modalBodyRect.top) {
+            top = modalBodyRect.top + 10;
+        }
+        
+        tooltip.style.left = (left - modalBodyRect.left + modalBody.scrollLeft) + 'px';
+        tooltip.style.top = (top - modalBodyRect.top + modalBody.scrollTop) + 'px';
+        tooltip.style.display = 'block';
+    } catch (e) {
+        console.error('Error showing snapshot tooltip:', e);
+    }
+};
+
+/**
+ * Hide snapshot tooltip
+ * @param {string} snapshotId - Unique ID for the snapshot tooltip
+ */
+window.hideSnapshotTooltip = function(snapshotId) {
+    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+    if (tooltip) {
+        tooltip.style.display = 'none';
+    }
+};
+
+/**
+ * Format snapshot data for tooltip display
+ * @param {object} snapshot - The row snapshot object
+ * @returns {string} - HTML formatted snapshot
+ */
+function formatSnapshotForTooltip(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') {
+        return 'No snapshot data available';
+    }
+    
+    let html = '<div style="text-align: left; max-width: 400px; font-size: 0.9em;">';
+    html += '<strong style="display: block; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Row Snapshot:</strong>';
+    html += '<table style="width: 100%; border-collapse: collapse;">';
+    
+    // Helper function to format value
+    const formatValue = (value) => {
+        if (value === null || value === undefined) return '<em class="text-muted">null</em>';
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'number') {
+            // Check if it's a decimal
+            if (value % 1 !== 0) {
+                return parseFloat(value).toFixed(2);
+            }
+            return value.toString();
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    };
+    
+    // Display main fields
+    const mainFields = [
+        { key: 'id', label: 'ID' },
+        { key: 'variation_id', label: 'Variation ID' },
+        { key: 'marketplace_id', label: 'Marketplace ID' },
+        { key: 'country', label: 'Country' },
+        { key: 'reference_uuid', label: 'Reference UUID' },
+        { key: 'name', label: 'Name' },
+        { key: 'min_price', label: 'Min Price' },
+        { key: 'max_price', label: 'Max Price' },
+        { key: 'price', label: 'Price' },
+        { key: 'buybox', label: 'BuyBox' },
+        { key: 'buybox_price', label: 'BuyBox Price' },
+        { key: 'buybox_winner_price', label: 'BuyBox Winner Price' },
+        { key: 'min_price_limit', label: 'Min Price Limit' },
+        { key: 'price_limit', label: 'Price Limit' },
+        { key: 'handler_status', label: 'Handler Status' },
+        { key: 'target_price', label: 'Target Price' },
+        { key: 'target_percentage', label: 'Target Percentage' },
+        { key: 'status', label: 'Status' },
+        { key: 'is_enabled', label: 'Is Enabled' },
+        { key: 'created_at', label: 'Created At' },
+        { key: 'updated_at', label: 'Updated At' }
+    ];
+    
+    mainFields.forEach(field => {
+        if (snapshot.hasOwnProperty(field.key)) {
+            html += `<tr style="border-bottom: 1px solid #eee;">`;
+            html += `<td style="padding: 4px 8px; font-weight: 600; color: #666;">${field.label}:</td>`;
+            html += `<td style="padding: 4px 8px;">${formatValue(snapshot[field.key])}</td>`;
+            html += `</tr>`;
+        }
+    });
+    
+    // Display nested objects (country_id, marketplace, currency)
+    if (snapshot.country_id && typeof snapshot.country_id === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Country Details:</td></tr>`;
+        if (snapshot.country_id.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.country_id.id}</td></tr>`;
+        if (snapshot.country_id.code) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Code:</td><td style="padding: 4px 8px;">${snapshot.country_id.code}</td></tr>`;
+        if (snapshot.country_id.title) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Title:</td><td style="padding: 4px 8px;">${snapshot.country_id.title}</td></tr>`;
+    }
+    
+    if (snapshot.marketplace && typeof snapshot.marketplace === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Marketplace Details:</td></tr>`;
+        if (snapshot.marketplace.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.marketplace.id}</td></tr>`;
+        if (snapshot.marketplace.name) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Name:</td><td style="padding: 4px 8px;">${snapshot.marketplace.name}</td></tr>`;
+    }
+    
+    if (snapshot.currency && typeof snapshot.currency === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Currency Details:</td></tr>`;
+        if (snapshot.currency.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.currency.id}</td></tr>`;
+        if (snapshot.currency.code) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Code:</td><td style="padding: 4px 8px;">${snapshot.currency.code}</td></tr>`;
+        if (snapshot.currency.sign) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Sign:</td><td style="padding: 4px 8px;">${snapshot.currency.sign}</td></tr>`;
+    }
+    
+    html += '</table>';
+    html += '</div>';
+    
+    // Escape HTML for tooltip attribute
+    return html.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function show_listing_history(listingId, variationId, marketplaceId, countryId, countryCode) {
     $('#listingHistoryModal').modal('show');
     
@@ -189,6 +340,11 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                 const line1 = `Listing ID: ${listing.id} | ${listing.variation_name || 'Variation #' + listing.variation_id}`;
                 const line2 = `${listing.marketplace_name || 'Marketplace #' + listing.marketplace_id} | ${listing.country_name || listing.country_code || 'Country #' + listing.country_id}`;
                 $('#listingHistoryModalLabel').html(`<div>${line1}</div><div class="small text-muted">${line2}</div>`);
+            }
+            
+            // Store snapshots in a global object for tooltip access
+            if (!window.listingSnapshots) {
+                window.listingSnapshots = {};
             }
             
             let historyTable = '';
@@ -241,11 +397,28 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                     const oldValueClass = oldValue !== newValue ? 'text-danger' : '';
                     const newValueClass = oldValue !== newValue ? 'text-success' : '';
                     
+                    // Add snapshot icon if row_snapshot exists
+                    let snapshotIcon = '';
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        const snapshotId = `snapshot_${item.id}`;
+                        // Store snapshot in global object
+                        window.listingSnapshots[snapshotId] = item.row_snapshot;
+                        snapshotIcon = `
+                            <span class="snapshot-tooltip-wrapper" style="position: relative; display: inline-block;">
+                                <i class="fas fa-info-circle text-primary ms-1 snapshot-icon" 
+                                   style="cursor: pointer; font-size: 0.9em;" 
+                                   data-snapshot-id="${snapshotId}"
+                                   onmouseenter="showSnapshotTooltip(event, '${snapshotId}')"
+                                   onmouseleave="hideSnapshotTooltip('${snapshotId}')"></i>
+                                <div id="tooltip_${snapshotId}" class="snapshot-tooltip" style="display: none;"></div>
+                            </span>`;
+                    }
+                    
                     historyTable += `
                         <tr>
                             <td>${changedDate}</td>
                             <td><strong>${fieldLabel}</strong></td>
-                            <td class="${oldValueClass}">${oldValue}</td>
+                            <td class="${oldValueClass}">${oldValue}${snapshotIcon}</td>
                             <td class="${newValueClass}">${newValue}</td>
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
