@@ -22,37 +22,14 @@
             const variationId = matches[1];
             const input = $(this);
             const value = parseFloat(input.val()) || 0;
-            const availableCount = parseFloat(input.data('available-count')) || 0;
-            const currentTotal = parseFloat(input.data('current-total')) || 0;
-            const maxPushable = parseFloat(input.data('max-pushable')) || 0;
-            const errorElement = $('#error_total_' + variationId);
             const pushButton = $('#send_total_' + variationId);
             
             // Clear previous errors
+            const errorElement = $('#error_total_' + variationId);
             errorElement.addClass('d-none').text('');
             input.removeClass('is-invalid');
             
             if (!value || value === 0) {
-                pushButton.addClass('d-none');
-                return;
-            }
-            
-            // Validate: Can't push more than available stock
-            const newTotal = currentTotal + value;
-            if (newTotal > availableCount) {
-                const excess = newTotal - availableCount;
-                errorElement.removeClass('d-none')
-                    .text('Exceeds available by ' + excess + '. Max: ' + maxPushable);
-                input.addClass('is-invalid');
-                pushButton.addClass('d-none');
-                return;
-            }
-            
-            // Validate: Can't push more than max pushable
-            if (value > maxPushable) {
-                errorElement.removeClass('d-none')
-                    .text('Max pushable: ' + maxPushable);
-                input.addClass('is-invalid');
                 pushButton.addClass('d-none');
                 return;
             }
@@ -77,31 +54,9 @@
             const input = $('#add_total_' + variationId);
             const quantity = parseFloat(input.val());
             const currentTotal = parseFloat($('#total_stock_' + variationId).val()) || 0;
-            const availableCount = parseFloat(input.data('available-count')) || 0;
-            const maxPushable = parseFloat(input.data('max-pushable')) || 0;
-            const errorElement = $('#error_total_' + variationId);
             
             // Validate quantity
             if (!quantity || quantity === 0 || isNaN(quantity)) {
-                return;
-            }
-            
-            // Final validation before submission: Check if pushing would exceed available stock
-            const newTotal = currentTotal + quantity;
-            if (newTotal > availableCount) {
-                const excess = newTotal - availableCount;
-                errorElement.removeClass('d-none')
-                    .text('Cannot push: Would exceed available stock by ' + excess + '. Max pushable: ' + maxPushable);
-                input.addClass('is-invalid');
-                alert('Cannot push stock: Would exceed available stock by ' + excess + '. Maximum pushable: ' + maxPushable);
-                return;
-            }
-            
-            if (quantity > maxPushable) {
-                errorElement.removeClass('d-none')
-                    .text('Cannot push: Maximum pushable is ' + maxPushable);
-                input.addClass('is-invalid');
-                alert('Cannot push stock: Maximum pushable is ' + maxPushable);
                 return;
             }
             
@@ -182,13 +137,9 @@
                     // Update marketplace stock displays
                     updateMarketplaceStockDisplays(variationId, marketplaceStocks);
                     
-                    // Update max pushable value for next push
+                    // Update current total for next push
                     const input = $('#add_total_' + variationId);
-                    const availableCount = parseFloat(input.data('available-count')) || 0;
-                    const newMaxPushable = Math.max(0, availableCount - totalStock);
-                    input.attr('max', newMaxPushable);
                     input.data('current-total', totalStock);
-                    input.data('max-pushable', newMaxPushable);
                     
                     // Reset form
                     resetForm(variationId, originalButtonText);

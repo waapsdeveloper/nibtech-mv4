@@ -20,6 +20,7 @@ class ListingMarketplaceHistory extends Model
         'field_name',
         'old_value',
         'new_value',
+        'row_snapshot',
         'change_type',
         'change_reason',
         'admin_id',
@@ -31,6 +32,7 @@ class ListingMarketplaceHistory extends Model
         'changed_at' => 'datetime',
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
+        'row_snapshot' => 'array',
     ];
 
     // Use changed_at as the timestamp field

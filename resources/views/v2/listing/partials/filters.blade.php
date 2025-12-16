@@ -167,7 +167,7 @@
 
     <input type="hidden" name="page" value="{{ Request::get('page') }}">
     <input type="hidden" name="per_page" value="{{ Request::get('per_page') }}">
-    <input type="hidden" name="sort" value="{{ Request::get('sort') ?? 4 }}">
+    <input type="hidden" name="sort" value="{{ Request::get('sort') ?? 1 }}">
     @if(Request::get('process_id'))
         <input type="hidden" name="process_id" value="{{ Request::get('process_id') }}">
     @endif

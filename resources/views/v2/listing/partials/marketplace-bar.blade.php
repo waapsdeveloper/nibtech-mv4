@@ -81,6 +81,14 @@
                 </span>
             </div>
             <div class="d-flex align-items-center gap-2">
+                <div>{!! $buyboxFlags !!}</div>
+                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
+                    <i class="fas fa-chevron-down"></i>
+                </button>
+            </div>
+        </div>
+        <div class="d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center gap-2">
                 <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}" onsubmit="return false;">
                     @csrf
                     <div class="form-floating" style="width: 75px;">
@@ -105,14 +113,6 @@
                     </div>
                     <button type="button" class="btn btn-sm btn-success" style="height: 31px; line-height: 1;">Push</button>
                 </form>
-                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
-                    <i class="fas fa-chevron-down"></i>
-                </button>
-            </div>
-        </div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
-                <div>{!! $buyboxFlags !!}</div>
             </div>
             <div class="small fw-bold text-end">{{ $orderSummary }}</div>
         </div>

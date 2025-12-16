@@ -57,19 +57,15 @@ class ListingQueryService
                 return $q->where('id', $request->input('variation_id'));
             })
             ->when($request->filled('category'), function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('product_id', function ($subquery) use ($request) {
-                    $subquery->select('id')
-                        ->from('products')
-                        ->where('category', $request->input('category'));
+                // Use whereHas to match original implementation
+                return $q->whereHas('product', function ($productQuery) use ($request) {
+                    $productQuery->where('category', $request->input('category'));
                 });
             })
             ->when($request->filled('brand'), function ($q) use ($request) {
-                // Use subquery instead of whereHas to avoid join conflicts
-                return $q->whereIn('product_id', function ($subquery) use ($request) {
-                    $subquery->select('id')
-                        ->from('products')
-                        ->where('brand', $request->input('brand'));
+                // Use whereHas to match original implementation
+                return $q->whereHas('product', function ($productQuery) use ($request) {
+                    $productQuery->where('brand', $request->input('brand'));
                 });
             })
             ->when($request->filled('marketplace'), function ($q) use ($request) {
@@ -130,38 +126,42 @@ class ListingQueryService
                 return $q->whereHas('process_stocks', function ($processStockQuery) use ($request) {
                     $processStockQuery->where('process_id', $request->input('process_id'));
                 });
-            })
-            ->whereNotNull('sku')
-            ->when($request->filled('state'), function ($q) use ($request) {
-                $state = $request->input('state');
-                if ((int) $state !== 10) {
-                    return $q->where('state', $state);
-                }
-            }, function ($q) {
-                return $q->whereIn('state', [2, 3]);
-            })
-            ->when($request->filled('sale_40'), function ($q) {
-                return $q->withCount('today_orders as today_orders_count')
-                    ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
-            })
-            ->when((int) $request->input('handler_status') === 2, function ($q) use ($request) {
-                // Use whereHas - it's more efficient and works fine before joins
-                return $q->whereHas('listings', function ($listingQuery) use ($request) {
-                    $listingQuery->where('handler_status', $request->input('handler_status'))
-                        ->whereIn('country', [73, 199]);
-                });
-            })
-            ->when(in_array((int) $request->input('handler_status'), [1, 3], true), function ($q) use ($request) {
-                // Use whereHas - it's more efficient and works fine before joins
-                return $q->whereHas('listings', function ($listingQuery) use ($request) {
-                    $listingQuery->where('handler_status', $request->input('handler_status'));
-                });
             });
+        
+        // Apply state filter - matches original order (before sale_40, handler_status, whereNotNull)
+        $state = $request->input('state');
+        if ($state === null || $state === '') {
+            $query->whereIn('state', [2, 3]);
+        } elseif ((int) $state !== 10) {
+            $query->where('state', $state);
+        }
+        
+        // Apply sale_40 filter - matches original order
+        $query->when($request->filled('sale_40'), function ($q) {
+            return $q->withCount('today_orders as today_orders_count')
+                ->having('today_orders_count', '<', DB::raw('listed_stock * 0.05'));
+        })
+        // Apply handler_status filters - matches original order
+        ->when((int) $request->input('handler_status') === 2, function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'))
+                    ->whereIn('country', [73, 199]);
+            });
+        })
+        ->when(in_array((int) $request->input('handler_status'), [1, 3], true), function ($q) use ($request) {
+            return $q->whereHas('listings', function ($listingQuery) use ($request) {
+                $listingQuery->where('handler_status', $request->input('handler_status'));
+            });
+        })
+        // Apply whereNotNull('sku') at the end, before sorting - matches original
+        ->whereNotNull('sku');
+        
+        return $query;
     }
 
     /**
      * Apply sorting to the query
-     * Priority: Most recent listing/stock activity first, then by listed_stock, then by storage/color/grade
+     * Matches original ListingController sorting logic exactly
      */
     private function applySorting($query, Request $request)
     {
@@ -169,31 +169,25 @@ class ListingQueryService
 
         return match ((int) $sort) {
             4 => $query->join('products', 'variation.product_id', '=', 'products.id')
-                ->leftJoin('listings', 'variation.id', '=', 'listings.variation_id')
-                ->select('variation.*', DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at) as latest_activity'))
-                ->groupBy('variation.id')
                 ->orderBy('products.model', 'asc')
-                ->orderBy(DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at)'), 'desc') // Most recent activity first
                 ->orderBy('variation.storage', 'asc')
                 ->orderBy('variation.color', 'asc')
-                ->orderBy('variation.grade', 'asc'),
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*'),
             3 => $query->join('products', 'variation.product_id', '=', 'products.id')
-                ->leftJoin('listings', 'variation.id', '=', 'listings.variation_id')
-                ->select('variation.*', DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at) as latest_activity'))
-                ->groupBy('variation.id')
                 ->orderBy('products.model', 'desc')
-                ->orderBy(DB::raw('COALESCE(MAX(listings.updated_at), variation.created_at)'), 'desc') // Most recent activity first
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc')
+                ->select('variation.*'),
+            2 => $query->orderBy('listed_stock', 'asc')
                 ->orderBy('variation.storage', 'asc')
                 ->orderBy('variation.color', 'asc')
                 ->orderBy('variation.grade', 'asc'),
-            2 => $query->orderBy('listed_stock', 'asc')
-                ->orderBy('storage', 'asc')
-                ->orderBy('color', 'asc')
-                ->orderBy('grade', 'asc'),
             default => $query->orderBy('listed_stock', 'desc')
-                ->orderBy('storage', 'asc')
-                ->orderBy('color', 'asc')
-                ->orderBy('grade', 'asc'),
+                ->orderBy('variation.storage', 'asc')
+                ->orderBy('variation.color', 'asc')
+                ->orderBy('variation.grade', 'asc'),
         };
     }
 

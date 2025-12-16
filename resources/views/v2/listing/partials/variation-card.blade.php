@@ -98,6 +98,9 @@
                     - {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}
                 </a>
             </h5>
+            <div id="sales_{{ $variationId }}" class="small text-muted mb-1">
+                <span class="text-muted">Loading sales data...</span>
+            </div>
             <div class="d-flex align-items-center gap-2 flex-wrap">
                 <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
                     <h6 class="mb-0">
