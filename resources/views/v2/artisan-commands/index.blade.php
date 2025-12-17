@@ -236,9 +236,22 @@ document.querySelectorAll('.command-form').forEach(form => {
         .then(response => response.json())
         .then(data => {
             if (data.success) {
-                outputDiv.innerHTML = '<div class="text-success mb-2">✓ Command executed successfully</div>' +
-                                     '<div class="text-muted small mb-2">Command: <code>' + data.command + '</code></div>' +
-                                     '<pre class="mb-0">' + escapeHtml(data.output || 'No output') + '</pre>';
+                if (data.status === 'queued') {
+                    outputDiv.innerHTML = '<div class="alert alert-info mb-2">' +
+                                         '<i class="fe fe-clock me-2"></i><strong>Command queued successfully!</strong><br>' +
+                                         '<small>Job ID: <code>' + (data.job_id || 'N/A') + '</code></small><br>' +
+                                         '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
+                                         '<div class="small">' +
+                                         'The command is running in the background. Check the logs for output:<br>' +
+                                         '<code>tail -f storage/logs/laravel.log | grep "ExecuteArtisanCommandJob"</code><br><br>' +
+                                         'Or check queue status: <code>php artisan queue:work</code>' +
+                                         '</div>' +
+                                         '</div>';
+                } else {
+                    outputDiv.innerHTML = '<div class="text-success mb-2">✓ Command executed successfully</div>' +
+                                         '<div class="text-muted small mb-2">Command: <code>' + data.command + '</code></div>' +
+                                         '<pre class="mb-0">' + escapeHtml(data.output || 'No output') + '</pre>';
+                }
             } else {
                 outputDiv.innerHTML = '<div class="text-danger mb-2">✗ Command failed</div>' +
                                      '<div class="text-muted small mb-2">Command: <code>' + data.command + '</code></div>' +

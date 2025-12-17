@@ -31,7 +31,7 @@ class ArtisanCommandsController extends Controller
     }
 
     /**
-     * Execute an artisan command
+     * Execute an artisan command (dispatches to queue to prevent timeout)
      */
     public function execute(Request $request)
     {
@@ -53,10 +53,9 @@ class ArtisanCommandsController extends Controller
 
         try {
             // Clean options - Artisan::call() expects options with '--' prefix in array keys
-            // Option names with hyphens should be kept as-is (e.g., '--page-size')
             $cleanOptions = [];
             foreach ($options as $key => $value) {
-                // Skip empty values, but keep '0' and false values
+                // Skip empty values
                 if ($value === null || $value === '') {
                     continue;
                 }
@@ -72,18 +71,24 @@ class ArtisanCommandsController extends Controller
                 }
             }
 
-            // Execute command and capture output
-            $exitCode = Artisan::call($command, $cleanOptions);
-            $output = Artisan::output();
+            // Dispatch job to queue for asynchronous execution
+            $job = new ExecuteArtisanCommandJob($command, $cleanOptions);
+            $jobId = dispatch($job)->getJobId();
+
+            Log::info('Artisan command dispatched to queue', [
+                'command' => $commandString,
+                'job_id' => $jobId
+            ]);
 
             return response()->json([
-                'success' => $exitCode === 0,
-                'output' => $output ?: 'Command executed successfully (no output)',
+                'success' => true,
+                'message' => 'Command dispatched to queue. Check logs for output.',
                 'command' => $commandString,
-                'exit_code' => $exitCode
+                'job_id' => $jobId,
+                'status' => 'queued'
             ]);
         } catch (\Exception $e) {
-            Log::error('Artisan command execution failed', [
+            Log::error('Artisan command dispatch failed', [
                 'command' => $commandString,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
