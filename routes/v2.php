@@ -62,5 +62,8 @@ Route::prefix('v2')->group(function () {
     
     // Stock Locks API JSON (for backward compatibility)
     Route::get('stock-locks/api/json', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocksJson'])->name('v2.stock-locks.api.json');
+    
+    // Stock Locks Actions
+    Route::post('stock-locks/{lockId}/release', [\App\Http\Controllers\V2\StockLocksController::class, 'releaseLock'])->name('v2.stock-locks.release');
 });
 

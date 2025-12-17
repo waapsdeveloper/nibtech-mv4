@@ -4,9 +4,11 @@ namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
 use App\Models\V2\MarketplaceStockLock;
+use App\Services\V2\StockLockService;
 use Illuminate\Http\Request;
 use Illuminate\Http\JsonResponse;
 use Illuminate\View\View;
+use Illuminate\Support\Facades\Auth;
 
 class StockLocksController extends Controller
 {
@@ -142,6 +144,39 @@ class StockLocksController extends Controller
                 'summary' => $summary
             ]
         ]);
+    }
+
+    /**
+     * Release/unfreeze a stock lock
+     * 
+     * @param Request $request
+     * @param int $lockId
+     * @return JsonResponse
+     */
+    public function releaseLock(Request $request, int $lockId): JsonResponse
+    {
+        $request->validate([
+            'reason' => 'nullable|string|max:500'
+        ]);
+
+        $adminId = Auth::id() ?? session('user_id');
+        $reason = $request->input('reason');
+
+        $stockLockService = app(StockLockService::class);
+        $result = $stockLockService->releaseLock($lockId, $adminId, $reason);
+
+        if ($result['success']) {
+            return response()->json([
+                'success' => true,
+                'message' => $result['message'],
+                'data' => $result['data'] ?? null
+            ]);
+        }
+
+        return response()->json([
+            'success' => false,
+            'message' => $result['message']
+        ], 400);
     }
 }
 

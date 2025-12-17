@@ -78,6 +78,7 @@
                     <th class="text-start ps-0">Status</th>
                     <th class="text-start ps-0">Locked At</th>
                     <th class="text-start ps-0">Duration (min)</th>
+                    <th class="text-start ps-0">Actions</th>
                 </tr>
             </thead>
                 <tbody>
@@ -110,6 +111,19 @@
                                 {{ now()->diffInMinutes($lock->locked_at) }}
                             @else
                                 N/A
+                            @endif
+                        </td>
+                        <td>
+                            @if($lock->lock_status === 'locked')
+                                <button 
+                                    type="button" 
+                                    class="btn btn-sm btn-outline-danger" 
+                                    onclick="releaseLock({{ $lock->id }}, '{{ $lock->order->reference_id ?? 'N/A' }}', {{ $lock->quantity_locked }})"
+                                    title="Release/Unfreeze this stock lock">
+                                    <i class="fe fe-unlock"></i> Unfreeze
+                                </button>
+                            @else
+                                <span class="text-muted small">—</span>
                             @endif
                         </td>
                     </tr>
