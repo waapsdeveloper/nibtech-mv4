@@ -1,7 +1,7 @@
 <?php
 namespace App\Listeners;
 
-use App\Events\OrderCreated;
+use App\Events\V2\OrderCreated;
 use App\Models\MarketplaceStockModel;
 use App\Models\MarketplaceStockLock;
 use App\Models\MarketplaceStockHistory;
