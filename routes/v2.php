@@ -32,6 +32,11 @@ Route::prefix('v2')->group(function () {
     Route::post('marketplace/update/{id}', [Marketplace::class, 'update_marketplace'])->name('v2.update_marketplace');
     Route::get('marketplace/delete/{id}', [Marketplace::class, 'delete_marketplace'])->name('v2.delete_marketplace');
     
+    // Marketplace sync routes
+    Route::post('marketplace/sync/{id}', [Marketplace::class, 'sync_marketplace'])->name('v2.sync_marketplace');
+    Route::post('marketplace/sync-all', [Marketplace::class, 'sync_all_marketplaces'])->name('v2.sync_all_marketplaces');
+    Route::get('marketplace/sync-status/{id}', [Marketplace::class, 'get_sync_status'])->name('v2.get_sync_status');
+    
     // Stock Formula routes
     Route::get('marketplace/stock-formula', [MarketplaceStockFormulaController::class, 'index'])->name('v2.marketplace.stock_formula');
     Route::get('marketplace/stock-formula/search', [MarketplaceStockFormulaController::class, 'searchVariations'])->name('v2.marketplace.stock_formula.search');
@@ -48,5 +53,14 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/update_limit/{id}', [V2ListingController::class, 'update_limit'])->name('v2.listing.update_limit');
     Route::post('listings/update_marketplace_handlers/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_handlers'])->name('v2.listing.update_marketplace_handlers');
     Route::post('listings/update_marketplace_prices/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_prices'])->name('v2.listing.update_marketplace_prices');
+    
+    // Stock Locks Dashboard
+    Route::get('stock-locks', [\App\Http\Livewire\V2\StockLocks::class, 'index'])->name('v2.stock-locks');
+    
+    // Stock Locks API (returns HTML Blade template)
+    Route::get('stock-locks/api', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocks'])->name('v2.stock-locks.api');
+    
+    // Stock Locks API JSON (for backward compatibility)
+    Route::get('stock-locks/api/json', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocksJson'])->name('v2.stock-locks.api.json');
 });
 

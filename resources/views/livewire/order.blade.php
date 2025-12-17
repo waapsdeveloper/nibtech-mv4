@@ -889,6 +889,18 @@
                                     $j++;
                                 @endphp
                             @endforeach
+                            
+                            {{-- V2: Stock Locks Display for Marketplace Orders --}}
+                            @if($order->order_type_id == 3 && isset($order->id))
+                                <tr>
+                                    <td colspan="9" class="p-0">
+                                        <div class="p-3 bg-light">
+                                            @livewire('v2.stock-locks', ['orderId' => $order->id, 'showAll' => false], key('stock-locks-'.$order->id))
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endif
+                            
                             @if (!isset($hide) || !$hide)
 
                             @foreach ($items as $itemIndex => $item)
