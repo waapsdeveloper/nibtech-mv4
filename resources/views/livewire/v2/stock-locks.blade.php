@@ -1,64 +1,85 @@
-<div class="card">
-    <div class="card-header">
-        <h5 class="card-title mb-0">
-            <i class="fe fe-lock me-2"></i>Stock Locks
-            @if(isset($summary))
-                <span class="badge bg-primary ms-2">{{ $summary['active_locks_count'] }} Active</span>
-            @endif
-        </h5>
-    </div>
-    <div class="card-body">
-        @if(isset($summary) && ($summary['total_locked'] > 0 || $summary['total_consumed'] > 0))
-        <div class="row mb-3">
-            <div class="col-md-3">
-                <div class="card bg-warning bg-opacity-10">
-                    <div class="card-body p-2">
-                        <small class="text-muted">Locked</small>
-                        <h6 class="mb-0">{{ $summary['total_locked'] }}</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-success bg-opacity-10">
-                    <div class="card-body p-2">
-                        <small class="text-muted">Consumed</small>
-                        <h6 class="mb-0">{{ $summary['total_consumed'] }}</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-danger bg-opacity-10">
-                    <div class="card-body p-2">
-                        <small class="text-muted">Cancelled</small>
-                        <h6 class="mb-0">{{ $summary['total_cancelled'] }}</h6>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-3">
-                <div class="card bg-info bg-opacity-10">
-                    <div class="card-body p-2">
-                        <small class="text-muted">Active Locks</small>
-                        <h6 class="mb-0">{{ $summary['active_locks_count'] }}</h6>
+<div class="p-4">
+    {{-- Summary Cards --}}
+    @if(isset($summary) && ($summary['total_locked'] > 0 || $summary['total_consumed'] > 0 || $summary['total_cancelled'] > 0 || $summary['active_locks_count'] > 0))
+    <div class="row mb-4">
+        <div class="col-md-3 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <div>
+                            <h2 class="mb-1 fw-bold">{{ $summary['active_locks_count'] ?? 0 }}</h2>
+                            <div class="small" style="opacity: 0.9;">Active Locks</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fe fe-lock" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
-        @endif
+        <div class="col-md-3 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <div>
+                            <h2 class="mb-1 fw-bold">{{ $summary['total_locked'] ?? 0 }}</h2>
+                            <div class="small" style="opacity: 0.9;">Total Locked</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fe fe-package" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <div>
+                            <h2 class="mb-1 fw-bold">{{ $summary['total_consumed'] ?? 0 }}</h2>
+                            <div class="small" style="opacity: 0.9;">Consumed</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fe fe-check-circle" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3 mb-3">
+            <div class="card bg-danger text-white">
+                <div class="card-body p-4">
+                    <div class="d-flex justify-content-between align-items-start w-100">
+                        <div>
+                            <h2 class="mb-1 fw-bold">{{ $summary['total_cancelled'] ?? 0 }}</h2>
+                            <div class="small" style="opacity: 0.9;">Cancelled</div>
+                        </div>
+                        <div class="ms-3">
+                            <i class="fe fe-x-circle" style="font-size: 2.5rem; opacity: 0.7;"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 
-        @if($locks->count() > 0)
-        <div class="table-responsive">
-            <table class="table table-sm table-hover">
-                <thead>
-                    <tr>
-                        <th>Order</th>
-                        <th>Variation</th>
-                        <th>Marketplace</th>
-                        <th>Quantity</th>
-                        <th>Status</th>
-                        <th>Locked At</th>
-                        <th>Duration</th>
-                    </tr>
-                </thead>
+    {{-- Locks Table --}}
+    @if($locks->count() > 0)
+    <div class="table-responsive px-4 pb-4">
+        <table class="table table-bordered table-hover table-sm">
+            <thead class="table-light">
+                <tr>
+                    <th class="text-start ps-0">Order Reference</th>
+                    <th class="text-start ps-0">SKU</th>
+                    <th class="text-start ps-0">Marketplace</th>
+                    <th class="text-start ps-0">Quantity</th>
+                    <th class="text-start ps-0">Status</th>
+                    <th class="text-start ps-0">Locked At</th>
+                    <th class="text-start ps-0">Duration (min)</th>
+                </tr>
+            </thead>
                 <tbody>
                     @foreach($locks as $lock)
                     <tr>
@@ -68,62 +89,27 @@
                                     {{ $lock->order->reference_id }}
                                 </a>
                             @else
-                                <span class="text-muted">N/A</span>
+                                N/A
                             @endif
                         </td>
+                        <td>{{ $lock->orderItem->variation->sku ?? ($lock->marketplaceStock->variation->sku ?? 'N/A') }}</td>
+                        <td>{{ $lock->marketplaceStock->marketplace->name ?? 'N/A' }}</td>
+                        <td>{{ $lock->quantity_locked }}</td>
                         <td>
-                            @if($lock->marketplaceStock && $lock->marketplaceStock->variation)
-                                <small>
-                                    <strong>{{ $lock->marketplaceStock->variation->sku ?? 'N/A' }}</strong>
-                                    @if($lock->marketplaceStock->variation->product)
-                                        <br>{{ $lock->marketplaceStock->variation->product->model ?? '' }}
-                                    @endif
-                                </small>
-                            @else
-                                <span class="text-muted">N/A</span>
-                            @endif
+                            @php
+                                $statusClass = $lock->lock_status === 'locked' ? 'warning' : 
+                                               ($lock->lock_status === 'consumed' ? 'success' : 'danger');
+                            @endphp
+                            <span class="badge bg-{{ $statusClass }}">
+                                {{ strtoupper($lock->lock_status) }}
+                            </span>
                         </td>
-                        <td>
-                            @if($lock->marketplaceStock && $lock->marketplaceStock->marketplace)
-                                <span class="badge bg-secondary">
-                                    {{ $lock->marketplaceStock->marketplace->name }}
-                                </span>
-                            @else
-                                <span class="text-muted">N/A</span>
-                            @endif
-                        </td>
-                        <td>
-                            <strong>{{ $lock->quantity_locked }}</strong>
-                        </td>
-                        <td>
-                            @if($lock->lock_status === 'locked')
-                                <span class="badge bg-warning">Locked</span>
-                            @elseif($lock->lock_status === 'consumed')
-                                <span class="badge bg-success">Consumed</span>
-                            @elseif($lock->lock_status === 'cancelled')
-                                <span class="badge bg-danger">Cancelled</span>
-                            @else
-                                <span class="badge bg-secondary">{{ $lock->lock_status }}</span>
-                            @endif
-                        </td>
-                        <td>
-                            <small>{{ $lock->locked_at ? $lock->locked_at->format('Y-m-d H:i') : 'N/A' }}</small>
-                        </td>
+                        <td>{{ $lock->locked_at ? $lock->locked_at->format('Y-m-d H:i:s') : 'N/A' }}</td>
                         <td>
                             @if($lock->locked_at)
-                                @php
-                                    $endTime = $lock->consumed_at ?? $lock->released_at ?? now();
-                                    $duration = $lock->locked_at->diffInMinutes($endTime);
-                                @endphp
-                                @if($duration < 60)
-                                    <small>{{ $duration }}m</small>
-                                @elseif($duration < 1440)
-                                    <small>{{ round($duration / 60, 1) }}h</small>
-                                @else
-                                    <small>{{ round($duration / 1440, 1) }}d</small>
-                                @endif
+                                {{ now()->diffInMinutes($lock->locked_at) }}
                             @else
-                                <span class="text-muted">N/A</span>
+                                N/A
                             @endif
                         </td>
                     </tr>
@@ -131,11 +117,10 @@
                 </tbody>
             </table>
         </div>
-        @else
-        <div class="alert alert-info mb-0">
-            <i class="fe fe-info me-2"></i>No stock locks found.
-        </div>
-        @endif
+    @else
+    <div class="alert alert-info mx-4 mb-4">
+        No stock locks found.
     </div>
+    @endif
 </div>
 

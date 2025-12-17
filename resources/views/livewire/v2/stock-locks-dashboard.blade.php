@@ -32,17 +32,23 @@
     <div class="row">
         <div class="col-md-12">
             <div class="card">
-                <div class="card-header">
-                    <h5 class="card-title mb-0">
-                        <i class="fe fe-lock me-2"></i>All Stock Locks
-                    </h5>
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center">
+                        <h5 class="card-title mb-0 me-3">
+                            <i class="fe fe-lock me-2"></i>All Stock Locks
+                        </h5>
+                        @php
+                            $activeLocksCount = \App\Models\V2\MarketplaceStockLock::where('lock_status', 'locked')->count();
+                        @endphp
+                        <span class="badge bg-warning text-dark ms-2">{{ $activeLocksCount }} Active</span>
+                    </div>
                     <div class="card-options">
-                        <a href="javascript:void(0);" class="btn btn-sm btn-primary" onclick="refreshLocks()">
-                            <i class="fe fe-refresh-cw me-1"></i>Refresh
+                        <a href="javascript:void(0);" class="btn btn-sm btn-link text-muted" onclick="refreshLocks()" style="opacity: 0.7; border: none; background: transparent; padding: 0.25rem 0.5rem;">
+                            <i class="fe fe-refresh-cw"></i>
                         </a>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body p-0">
                     @livewire('v2.stock-locks', [
                         'orderId' => request('order_id'),
                         'variationId' => request('variation_id'),
