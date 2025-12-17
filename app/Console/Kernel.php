@@ -153,6 +153,36 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+
+        // V2: Unified Order Sync - Daily Schedule
+        // New orders sync - every 2 hours during business hours
+        $schedule->command('v2:sync-orders --type=new')
+            ->everyTwoHours()
+            ->between('06:00', '22:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Modified orders sync - daily at 2 AM
+        $schedule->command('v2:sync-orders --type=modified')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Care/replacement records sync - daily at 4 AM
+        $schedule->command('v2:sync-orders --type=care')
+            ->dailyAt('04:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Incomplete orders sync - every 4 hours
+        $schedule->command('v2:sync-orders --type=incomplete')
+            ->everyFourHours()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**
