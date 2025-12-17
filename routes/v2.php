@@ -65,5 +65,10 @@ Route::prefix('v2')->group(function () {
     
     // Stock Locks Actions
     Route::post('stock-locks/{lockId}/release', [\App\Http\Controllers\V2\StockLocksController::class, 'releaseLock'])->name('v2.stock-locks.release');
+    
+    // Artisan Commands Guide
+    Route::get('artisan-commands', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'index'])->name('v2.artisan-commands');
+    Route::post('artisan-commands/execute', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'execute'])->name('v2.artisan-commands.execute');
+    Route::get('artisan-commands/documentation', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getDocumentation'])->name('v2.artisan-commands.documentation');
 });
 
