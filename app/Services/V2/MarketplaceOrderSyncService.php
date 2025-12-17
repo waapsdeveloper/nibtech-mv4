@@ -54,7 +54,7 @@ class MarketplaceOrderSyncService
     {
         $marketplaces = $marketplaceId 
             ? [Marketplace_model::find($marketplaceId)]
-            : Marketplace_model::where('is_active', 1)->get();
+            : Marketplace_model::all();
 
         $totalSynced = 0;
         $totalErrors = 0;
@@ -126,7 +126,7 @@ class MarketplaceOrderSyncService
     {
         $marketplaces = $marketplaceId 
             ? [Marketplace_model::find($marketplaceId)]
-            : Marketplace_model::where('is_active', 1)->get();
+            : Marketplace_model::all();
 
         $totalSynced = 0;
         $totalErrors = 0;
@@ -196,7 +196,7 @@ class MarketplaceOrderSyncService
     {
         $marketplaces = $marketplaceId 
             ? [Marketplace_model::find($marketplaceId)]
-            : Marketplace_model::where('is_active', 1)->where('id', 1)->get(); // Only BackMarket for now
+            : Marketplace_model::where('id', 1)->get(); // Only BackMarket for now
 
         $totalSynced = 0;
         $totalErrors = 0;

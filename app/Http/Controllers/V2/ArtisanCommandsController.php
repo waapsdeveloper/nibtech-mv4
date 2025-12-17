@@ -46,14 +46,34 @@ class ArtisanCommandsController extends Controller
         // Build command string for display
         $commandString = $command;
         foreach ($options as $key => $value) {
-            if ($value !== null && $value !== '') {
+            if ($value !== null && $value !== '' && $value !== '0') {
                 $commandString .= " --{$key}=" . escapeshellarg($value);
             }
         }
 
         try {
+            // Clean options - remove empty values and ensure proper format for Artisan::call()
+            // Artisan::call() expects option names without '--' prefix
+            $cleanOptions = [];
+            foreach ($options as $key => $value) {
+                // Skip empty values, but keep '0' and false values
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                
+                // Remove '--' prefix if present
+                $cleanKey = str_replace('--', '', $key);
+                
+                // Convert string numbers to integers if the value is numeric
+                if (is_numeric($value) && !is_float($value)) {
+                    $cleanOptions[$cleanKey] = (int) $value;
+                } else {
+                    $cleanOptions[$cleanKey] = $value;
+                }
+            }
+
             // Execute command and capture output
-            $exitCode = Artisan::call($command, $options);
+            $exitCode = Artisan::call($command, $cleanOptions);
             $output = Artisan::output();
 
             return response()->json([

@@ -202,10 +202,15 @@ document.querySelectorAll('.command-form').forEach(form => {
         const formData = new FormData(this);
         const options = {};
         
-        // Build options object
+        // Build options object - only include non-empty values
         formData.forEach((value, key) => {
-            if (value !== '') {
-                options[key] = value;
+            if (value !== null && value !== '' && value !== '0') {
+                // Convert string numbers to actual numbers if needed
+                if (!isNaN(value) && value !== '') {
+                    options[key] = isNaN(parseFloat(value)) ? value : parseFloat(value);
+                } else {
+                    options[key] = value;
+                }
             }
         });
 
