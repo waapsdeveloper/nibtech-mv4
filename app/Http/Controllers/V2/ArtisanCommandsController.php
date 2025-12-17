@@ -52,8 +52,8 @@ class ArtisanCommandsController extends Controller
         }
 
         try {
-            // Clean options - remove empty values and ensure proper format for Artisan::call()
-            // Artisan::call() expects option names without '--' prefix
+            // Clean options - Artisan::call() expects options with '--' prefix in array keys
+            // Option names with hyphens should be kept as-is (e.g., '--page-size')
             $cleanOptions = [];
             foreach ($options as $key => $value) {
                 // Skip empty values, but keep '0' and false values
@@ -61,11 +61,11 @@ class ArtisanCommandsController extends Controller
                     continue;
                 }
                 
-                // Remove '--' prefix if present
-                $cleanKey = str_replace('--', '', $key);
+                // Ensure '--' prefix is present
+                $cleanKey = strpos($key, '--') === 0 ? $key : '--' . $key;
                 
-                // Convert string numbers to integers if the value is numeric
-                if (is_numeric($value) && !is_float($value)) {
+                // Convert string numbers to integers for numeric options
+                if (is_numeric($value) && !is_float($value) && strpos($value, '.') === false) {
                     $cleanOptions[$cleanKey] = (int) $value;
                 } else {
                     $cleanOptions[$cleanKey] = $value;
