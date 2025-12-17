@@ -239,12 +239,12 @@ document.querySelectorAll('.command-form').forEach(form => {
                 if (data.status === 'queued') {
                     outputDiv.innerHTML = '<div class="alert alert-info mb-2">' +
                                          '<i class="fe fe-clock me-2"></i><strong>Command queued successfully!</strong><br>' +
-                                         '<small>Job ID: <code>' + (data.job_id || 'N/A') + '</code></small><br>' +
                                          '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
                                          '<div class="small">' +
                                          'The command is running in the background. Check the logs for output:<br>' +
                                          '<code>tail -f storage/logs/laravel.log | grep "ExecuteArtisanCommandJob"</code><br><br>' +
-                                         'Or check queue status: <code>php artisan queue:work</code>' +
+                                         '<strong>Note:</strong> Make sure your queue worker is running:<br>' +
+                                         '<code>php artisan queue:work</code> or <code>php artisan queue:listen</code>' +
                                          '</div>' +
                                          '</div>';
                 } else {

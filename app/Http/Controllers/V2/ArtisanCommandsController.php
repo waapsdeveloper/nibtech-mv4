@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\ExecuteArtisanCommandJob;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
@@ -73,18 +74,17 @@ class ArtisanCommandsController extends Controller
 
             // Dispatch job to queue for asynchronous execution
             $job = new ExecuteArtisanCommandJob($command, $cleanOptions);
-            $jobId = dispatch($job)->getJobId();
+            dispatch($job);
 
             Log::info('Artisan command dispatched to queue', [
                 'command' => $commandString,
-                'job_id' => $jobId
+                'options' => $cleanOptions
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Command dispatched to queue. Check logs for output.',
                 'command' => $commandString,
-                'job_id' => $jobId,
                 'status' => 'queued'
             ]);
         } catch (\Exception $e) {
