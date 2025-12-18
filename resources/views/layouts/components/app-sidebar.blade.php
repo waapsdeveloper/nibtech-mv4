@@ -51,9 +51,6 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/listings')}}">Listings</a>
                                         </li>
-                                        <li class="slide">
-                                            <a class="side-menu__item ps-0" href="{{url('v2/sales')}}">Sales</a>
-                                        </li>
                                         @if ($user->hasPermission('view_marketplace'))
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/marketplace')}}">Marketplaces</a>

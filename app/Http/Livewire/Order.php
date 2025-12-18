@@ -57,10 +57,6 @@ class Order extends Component
 {
     protected const REFURBED_DEFAULT_CARRIER = 'DHL_EXPRESS';
     protected const REFURBED_MARKETPLACE_ID = 4;
-    /**
-     * Allow child components (V2) to reuse this logic but render a different view.
-     */
-    protected string $viewName = 'livewire.order';
 
     public function mount()
     {
@@ -367,7 +363,7 @@ class Order extends Component
             }
         }
         // dd($data['orders']);
-        return view($this->viewName)->with($data);
+        return view('livewire.order')->with($data);
     }
 
     public function get_b2c_orders_by_customer_json($customer_id, $exclude_order)
