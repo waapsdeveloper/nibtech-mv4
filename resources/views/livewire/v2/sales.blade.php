@@ -1064,7 +1064,7 @@
                                 @php
                                     $def = 0;
                                 @endphp
-                                @foreach ($customer->orders as $ins => $ord)
+                                @foreach (($customer?->orders ?? collect()) as $ins => $ord)
                                     @if ($ord->id != $order->id)
 
                                         @foreach ($ord->order_items as $ind => $itm)
