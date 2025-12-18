@@ -3,6 +3,7 @@
 use App\Http\Controllers\V2\ListingController as V2ListingController;
 use App\Http\Controllers\V2\MarketplaceStockFormulaController;
 use App\Http\Livewire\V2\Marketplace;
+use App\Http\Livewire\V2\Sales;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -56,6 +57,9 @@ Route::prefix('v2')->group(function () {
     
     // Stock Locks Dashboard
     Route::get('stock-locks', [\App\Http\Livewire\V2\StockLocks::class, 'index'])->name('v2.stock-locks');
+
+    // V2 Sales page (V2 wrapper for Sales with stock visualizations)
+    Route::get('sales', Sales::class)->name('v2.sales');
     
     // Stock Locks API (returns HTML Blade template)
     Route::get('stock-locks/api', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocks'])->name('v2.stock-locks.api');
