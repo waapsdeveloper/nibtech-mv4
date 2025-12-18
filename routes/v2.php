@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\V2\ListingController as V2ListingController;
 use App\Http\Controllers\V2\MarketplaceStockFormulaController;
+use App\Http\Controllers\V2\OrderController as V2OrderController;
 use App\Http\Livewire\V2\Marketplace;
 use App\Http\Livewire\V2\Sales;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,9 @@ Route::prefix('v2')->group(function () {
 
     // V2 Sales page (V2 wrapper for Sales with stock visualizations)
     Route::get('sales', Sales::class)->name('v2.sales');
+
+    // V2 Orders (plain blade, step 1)
+    Route::get('orders', [V2OrderController::class, 'index'])->name('v2.orders.index');
     
     // Stock Locks API (returns HTML Blade template)
     Route::get('stock-locks/api', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocks'])->name('v2.stock-locks.api');
