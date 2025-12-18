@@ -51,8 +51,8 @@
                 <div class="card-body p-4">
                     <div class="d-flex justify-content-between align-items-start w-100">
                         <div>
-                            <h2 class="mb-1 fw-bold">{{ $summary['total_cancelled'] ?? 0 }}</h2>
-                            <div class="small" style="opacity: 0.9;">Cancelled</div>
+                            <h2 class="mb-1 fw-bold">{{ $summary['total_released'] ?? 0 }}</h2>
+                            <div class="small" style="opacity: 0.9;">Released</div>
                         </div>
                         <div class="ms-3">
                             <i class="fe fe-x-circle" style="font-size: 2.5rem; opacity: 0.7;"></i>

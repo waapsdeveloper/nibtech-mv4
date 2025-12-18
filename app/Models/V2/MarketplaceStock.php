@@ -156,7 +156,7 @@ class MarketplaceStock extends BaseMarketplaceStockModel
         
         // Release locks
         foreach ($locks as $lock) {
-            $lock->lock_status = 'cancelled';
+            $lock->lock_status = 'released';
             $lock->released_at = now();
             $lock->save();
         }

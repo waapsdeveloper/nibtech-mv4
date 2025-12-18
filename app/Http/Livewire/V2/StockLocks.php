@@ -68,7 +68,7 @@ class StockLocks extends Component
         $summary = [
             'total_locked' => $locks->where('lock_status', 'locked')->sum('quantity_locked'),
             'total_consumed' => $locks->where('lock_status', 'consumed')->sum('quantity_locked'),
-            'total_cancelled' => $locks->where('lock_status', 'cancelled')->sum('quantity_locked'),
+            'total_released' => $locks->where('lock_status', 'released')->sum('quantity_locked'),
             'active_locks_count' => $locks->where('lock_status', 'locked')->count(),
         ];
 

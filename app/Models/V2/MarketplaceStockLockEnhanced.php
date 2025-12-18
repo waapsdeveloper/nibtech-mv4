@@ -37,7 +37,7 @@ class MarketplaceStockLockEnhanced extends BaseMarketplaceStockLock
      */
     public function isCancelled(): bool
     {
-        return $this->lock_status === 'cancelled';
+        return $this->lock_status === 'released';
     }
     
     /**

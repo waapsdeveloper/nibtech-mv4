@@ -74,8 +74,8 @@ class StockLockService
             $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
             $marketplaceStock->save();
 
-            // Update lock record: mark as cancelled/released
-            $lock->lock_status = 'cancelled';
+            // Update lock record: mark as released
+            $lock->lock_status = 'released';
             $lock->released_at = now();
             $lock->save();
 
