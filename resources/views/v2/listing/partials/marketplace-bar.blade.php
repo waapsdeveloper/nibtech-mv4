@@ -51,8 +51,16 @@
         ->where('marketplace_id', $marketplaceIdInt)
         ->first();
     
-    // Get stock value - if record exists use it, otherwise 0
-    $currentStock = $marketplaceStock ? ($marketplaceStock->listed_stock ?? 0) : 0;
+    // Show AVAILABLE stock (listed - locked) in the marketplace bar
+    // This keeps the number aligned with lock behavior (so UI reflects real sellable stock).
+    $currentStock = 0;
+    if ($marketplaceStock) {
+        if ($marketplaceStock->available_stock !== null) {
+            $currentStock = (int) $marketplaceStock->available_stock;
+        } else {
+            $currentStock = (int) max(0, ($marketplaceStock->listed_stock ?? 0) - ($marketplaceStock->locked_stock ?? 0));
+        }
+    }
     
     // Get locked stock for this variation and marketplace
     $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
