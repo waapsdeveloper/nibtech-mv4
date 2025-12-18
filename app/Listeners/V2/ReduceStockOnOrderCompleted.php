@@ -5,6 +5,7 @@ use App\Events\V2\OrderStatusChanged;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\V2\MarketplaceStockLock;
 use App\Models\V2\MarketplaceStockHistory;
+use App\Models\Stock_model;
 use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Support\Facades\Log;
 
@@ -66,6 +67,19 @@ class ReduceStockOnOrderCompleted
                 'order_item_id' => $orderItem->id,
                 'lock_status' => 'locked'
             ])->get();
+
+            // If there is no active lock, do NOT reduce stock. This keeps the flow idempotent and
+            // avoids accidental double-reduction.
+            if ($locks->isEmpty()) {
+                Log::info("V2: No active lock found on order completion; skipping stock consume", [
+                    'order_id' => $order->id,
+                    'order_reference' => $order->reference_id,
+                    'order_item_id' => $orderItem->id,
+                    'variation_id' => $variationId,
+                    'marketplace_id' => $marketplaceId,
+                ]);
+                continue;
+            }
             
             $totalLocked = $locks->sum('quantity_locked');
             
@@ -85,6 +99,24 @@ class ReduceStockOnOrderCompleted
                 $lock->lock_status = 'consumed';
                 $lock->consumed_at = now();
                 $lock->save();
+            }
+
+            // Mark physical stock unit as SOLD (if this order item has an inventory stock_id).
+            // This is separate from marketplace_stock which tracks marketplace listed/locked/available.
+            if (!empty($orderItem->stock_id)) {
+                try {
+                    $stock = Stock_model::withTrashed()->find($orderItem->stock_id);
+                    if ($stock) {
+                        $stock->mark_sold($orderItem->id, null, 'V2: Mark sold on order confirmed');
+                    }
+                } catch (\Throwable $e) {
+                    Log::warning('V2: Failed to mark stock as sold on order completion', [
+                        'order_id' => $order->id,
+                        'order_item_id' => $orderItem->id,
+                        'stock_id' => $orderItem->stock_id,
+                        'error' => $e->getMessage(),
+                    ]);
+                }
             }
             
             // Log to history
