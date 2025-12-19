@@ -150,3 +150,63 @@ tr.listing-disabled input[type="text"] {
     border-color: #ffb6c1 !important;
 }
 
+/* Snapshot tooltip styles */
+.snapshot-tooltip-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.snapshot-tooltip {
+    position: absolute;
+    z-index: 9999;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    padding: 12px;
+    max-width: 450px;
+    max-height: 500px;
+    overflow-y: auto;
+    font-size: 0.85em;
+    line-height: 1.5;
+    pointer-events: none;
+}
+
+.snapshot-tooltip table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 0;
+}
+
+.snapshot-tooltip table tr {
+    border-bottom: 1px solid #eee;
+}
+
+.snapshot-tooltip table td {
+    padding: 4px 8px;
+    vertical-align: top;
+}
+
+.snapshot-tooltip table td:first-child {
+    font-weight: 600;
+    color: #666;
+    width: 40%;
+}
+
+.snapshot-tooltip strong {
+    display: block;
+    margin-bottom: 8px;
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 4px;
+    color: #333;
+}
+
+.snapshot-icon {
+    transition: transform 0.2s, color 0.2s;
+}
+
+.snapshot-icon:hover {
+    transform: scale(1.2);
+    color: #0056b3 !important;
+}
+

@@ -21,6 +21,106 @@ let processId = window.processId || null;
 window.eur_listings = window.eur_listings || {};
 
 /**
+ * Get Buybox functionality
+ * @param {number} listingId - Listing ID
+ * @param {number} variationId - Variation ID
+ * @param {number} buyboxPrice - Buybox price
+ */
+window.getBuybox = function(listingId, variationId, buyboxPrice) {
+    if (!confirm(`Set price to ${buyboxPrice} to get buybox?`)) {
+        return;
+    }
+
+    const button = document.getElementById('get_buybox_' + listingId);
+    if (button) {
+        button.disabled = true;
+        button.innerHTML = '<span class="spinner-border spinner-border-sm"></span>';
+    }
+
+    // Find marketplace ID from the listing row
+    const row = button?.closest('tr');
+    let marketplaceId = null;
+    if (row) {
+        // Try to find marketplace ID from row data or parent container
+        const marketplaceToggle = row.closest('.marketplace-toggle-content');
+        if (marketplaceToggle) {
+            const toggleId = marketplaceToggle.id;
+            const matches = toggleId.match(/marketplace_toggle_(\d+)_(\d+)/);
+            if (matches) {
+                marketplaceId = parseInt(matches[2]);
+            }
+        }
+    }
+
+    const updateUrl = window.ListingConfig?.urls?.updatePrice || '/v2/listings/update_price';
+    const data = {
+        _token: window.ListingConfig?.csrfToken || '',
+        price: buyboxPrice
+    };
+
+    fetch(updateUrl + '/' + listingId, {
+        method: 'POST',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.success) {
+            // Reload the listings table
+            if (marketplaceId) {
+                loadMarketplaceTables(variationId, marketplaceId);
+            }
+            alert('Price updated successfully!');
+        } else {
+            alert('Error: ' + (result.error || 'Failed to update price'));
+            if (button) {
+                button.disabled = false;
+                button.innerHTML = 'Get Buybox';
+            }
+        }
+    })
+    .catch(error => {
+        console.error('Error getting buybox:', error);
+        alert('Error updating price');
+        if (button) {
+            button.disabled = false;
+            button.innerHTML = 'Get Buybox';
+        }
+    });
+};
+
+/**
+ * Load sales data for variation
+ * @param {number} variationId - Variation ID
+ */
+function loadSalesData(variationId) {
+    const salesElement = document.getElementById('sales_' + variationId);
+    if (!salesElement) return;
+
+    const salesUrl = (window.ListingConfig?.urls?.getSales || '/listing/get_sales') + '/' + variationId;
+    
+    fetch(salesUrl + '?csrf=' + (window.ListingConfig?.csrfToken || ''), {
+        method: 'GET',
+        headers: {
+            'X-Requested-With': 'XMLHttpRequest',
+            'Accept': 'text/html'
+        }
+    })
+    .then(response => response.text())
+    .then(html => {
+        salesElement.innerHTML = html;
+    })
+    .catch(error => {
+        console.error('Error loading sales data:', error);
+        salesElement.innerHTML = '<span class="text-muted small">Error loading sales data</span>';
+    });
+}
+
+/**
  * Show variation history modal
  */
 function show_variation_history(variationId, variationName) {
@@ -62,6 +162,157 @@ function show_variation_history(variationId, variationName) {
 /**
  * Show listing history modal
  */
+/**
+ * Show snapshot tooltip on hover
+ * @param {Event} event - Mouse event
+ * @param {string} snapshotId - Unique ID for the snapshot tooltip
+ */
+window.showSnapshotTooltip = function(event, snapshotId) {
+    // Get snapshot from global object
+    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+    if (!tooltip) return;
+        
+        // Format and set tooltip content
+        tooltip.innerHTML = formatSnapshotForTooltip(snapshot);
+        
+        // Position tooltip
+        const iconRect = icon.getBoundingClientRect();
+        const tooltipRect = tooltip.getBoundingClientRect();
+        const modalBody = document.querySelector('#listingHistoryModal .modal-body');
+        const modalBodyRect = modalBody ? modalBody.getBoundingClientRect() : { left: 0, top: 0, width: window.innerWidth, height: window.innerHeight };
+        
+        // Position to the left of the icon
+        let left = iconRect.left - tooltipRect.width - 10;
+        let top = iconRect.top + (iconRect.height / 2) - (tooltipRect.height / 2);
+        
+        // Adjust if tooltip goes off screen
+        if (left < modalBodyRect.left) {
+            left = iconRect.right + 10; // Show to the right instead
+        }
+        if (top + tooltipRect.height > modalBodyRect.top + modalBodyRect.height) {
+            top = modalBodyRect.top + modalBodyRect.height - tooltipRect.height - 10;
+        }
+        if (top < modalBodyRect.top) {
+            top = modalBodyRect.top + 10;
+        }
+        
+        tooltip.style.left = (left - modalBodyRect.left + modalBody.scrollLeft) + 'px';
+        tooltip.style.top = (top - modalBodyRect.top + modalBody.scrollTop) + 'px';
+        tooltip.style.display = 'block';
+    } catch (e) {
+        console.error('Error showing snapshot tooltip:', e);
+    }
+};
+
+/**
+ * Hide snapshot tooltip
+ * @param {string} snapshotId - Unique ID for the snapshot tooltip
+ */
+window.hideSnapshotTooltip = function(snapshotId) {
+    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+    if (tooltip) {
+        tooltip.style.display = 'none';
+    }
+};
+
+/**
+ * Format snapshot data for tooltip display
+ * @param {object} snapshot - The row snapshot object
+ * @returns {string} - HTML formatted snapshot
+ */
+function formatSnapshotForTooltip(snapshot) {
+    if (!snapshot || typeof snapshot !== 'object') {
+        return 'No snapshot data available';
+    }
+    
+    let html = '<div style="text-align: left; max-width: 400px; font-size: 0.9em;">';
+    html += '<strong style="display: block; margin-bottom: 8px; border-bottom: 1px solid #ddd; padding-bottom: 4px;">Row Snapshot:</strong>';
+    html += '<table style="width: 100%; border-collapse: collapse;">';
+    
+    // Helper function to format value
+    const formatValue = (value) => {
+        if (value === null || value === undefined) return '<em class="text-muted">null</em>';
+        if (typeof value === 'boolean') return value ? 'Yes' : 'No';
+        if (typeof value === 'number') {
+            // Check if it's a decimal
+            if (value % 1 !== 0) {
+                return parseFloat(value).toFixed(2);
+            }
+            return value.toString();
+        }
+        if (typeof value === 'object') {
+            return JSON.stringify(value);
+        }
+        return String(value);
+    };
+    
+    // Display main fields
+    const mainFields = [
+        { key: 'id', label: 'ID' },
+        { key: 'variation_id', label: 'Variation ID' },
+        { key: 'marketplace_id', label: 'Marketplace ID' },
+        { key: 'country', label: 'Country' },
+        { key: 'reference_uuid', label: 'Reference UUID' },
+        { key: 'name', label: 'Name' },
+        { key: 'min_price', label: 'Min Price' },
+        { key: 'max_price', label: 'Max Price' },
+        { key: 'price', label: 'Price' },
+        { key: 'buybox', label: 'BuyBox' },
+        { key: 'buybox_price', label: 'BuyBox Price' },
+        { key: 'buybox_winner_price', label: 'BuyBox Winner Price' },
+        { key: 'min_price_limit', label: 'Min Price Limit' },
+        { key: 'price_limit', label: 'Price Limit' },
+        { key: 'handler_status', label: 'Handler Status' },
+        { key: 'target_price', label: 'Target Price' },
+        { key: 'target_percentage', label: 'Target Percentage' },
+        { key: 'status', label: 'Status' },
+        { key: 'is_enabled', label: 'Is Enabled' },
+        { key: 'created_at', label: 'Created At' },
+        { key: 'updated_at', label: 'Updated At' }
+    ];
+    
+    mainFields.forEach(field => {
+        if (snapshot.hasOwnProperty(field.key)) {
+            html += `<tr style="border-bottom: 1px solid #eee;">`;
+            html += `<td style="padding: 4px 8px; font-weight: 600; color: #666;">${field.label}:</td>`;
+            html += `<td style="padding: 4px 8px;">${formatValue(snapshot[field.key])}</td>`;
+            html += `</tr>`;
+        }
+    });
+    
+    // Display nested objects (country_id, marketplace, currency)
+    if (snapshot.country_id && typeof snapshot.country_id === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Country Details:</td></tr>`;
+        if (snapshot.country_id.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.country_id.id}</td></tr>`;
+        if (snapshot.country_id.code) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Code:</td><td style="padding: 4px 8px;">${snapshot.country_id.code}</td></tr>`;
+        if (snapshot.country_id.title) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Title:</td><td style="padding: 4px 8px;">${snapshot.country_id.title}</td></tr>`;
+    }
+    
+    if (snapshot.marketplace && typeof snapshot.marketplace === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Marketplace Details:</td></tr>`;
+        if (snapshot.marketplace.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.marketplace.id}</td></tr>`;
+        if (snapshot.marketplace.name) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Name:</td><td style="padding: 4px 8px;">${snapshot.marketplace.name}</td></tr>`;
+    }
+    
+    if (snapshot.currency && typeof snapshot.currency === 'object') {
+        html += `<tr style="border-top: 2px solid #ddd; border-bottom: 1px solid #eee;"><td colspan="2" style="padding: 4px 8px; font-weight: 600; color: #333;">Currency Details:</td></tr>`;
+        if (snapshot.currency.id) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">ID:</td><td style="padding: 4px 8px;">${snapshot.currency.id}</td></tr>`;
+        if (snapshot.currency.code) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Code:</td><td style="padding: 4px 8px;">${snapshot.currency.code}</td></tr>`;
+        if (snapshot.currency.sign) html += `<tr><td style="padding-left: 20px; padding: 4px 8px;">Sign:</td><td style="padding: 4px 8px;">${snapshot.currency.sign}</td></tr>`;
+    }
+    
+    html += '</table>';
+    html += '</div>';
+    
+    // Escape HTML for tooltip attribute
+    return html.replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+}
+
 function show_listing_history(listingId, variationId, marketplaceId, countryId, countryCode) {
     $('#listingHistoryModal').modal('show');
     
@@ -89,6 +340,11 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                 const line1 = `Listing ID: ${listing.id} | ${listing.variation_name || 'Variation #' + listing.variation_id}`;
                 const line2 = `${listing.marketplace_name || 'Marketplace #' + listing.marketplace_id} | ${listing.country_name || listing.country_code || 'Country #' + listing.country_id}`;
                 $('#listingHistoryModalLabel').html(`<div>${line1}</div><div class="small text-muted">${line2}</div>`);
+            }
+            
+            // Store snapshots in a global object for tooltip access
+            if (!window.listingSnapshots) {
+                window.listingSnapshots = {};
             }
             
             let historyTable = '';
@@ -141,11 +397,28 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                     const oldValueClass = oldValue !== newValue ? 'text-danger' : '';
                     const newValueClass = oldValue !== newValue ? 'text-success' : '';
                     
+                    // Add snapshot icon if row_snapshot exists
+                    let snapshotIcon = '';
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        const snapshotId = `snapshot_${item.id}`;
+                        // Store snapshot in global object
+                        window.listingSnapshots[snapshotId] = item.row_snapshot;
+                        snapshotIcon = `
+                            <span class="snapshot-tooltip-wrapper" style="position: relative; display: inline-block;">
+                                <i class="fas fa-info-circle text-primary ms-1 snapshot-icon" 
+                                   style="cursor: pointer; font-size: 0.9em;" 
+                                   data-snapshot-id="${snapshotId}"
+                                   onmouseenter="showSnapshotTooltip(event, '${snapshotId}')"
+                                   onmouseleave="hideSnapshotTooltip('${snapshotId}')"></i>
+                                <div id="tooltip_${snapshotId}" class="snapshot-tooltip" style="display: none;"></div>
+                            </span>`;
+                    }
+                    
                     historyTable += `
                         <tr>
                             <td>${changedDate}</td>
                             <td><strong>${fieldLabel}</strong></td>
-                            <td class="${oldValueClass}">${oldValue}</td>
+                            <td class="${oldValueClass}">${oldValue}${snapshotIcon}</td>
                             <td class="${newValueClass}">${newValue}</td>
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
@@ -328,7 +601,14 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                                 </div>
                                 ${p_append}
                             </td>
-                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
+                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
+                                ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
+                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                    return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
+                                                Get Buybox
+                                            </button>`;
+                                })() : ''}
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
                                     <div class="form-check form-switch d-inline-block">
@@ -850,6 +1130,14 @@ function restoreMarketplaceState() {
 $(document).ready(function() {
     restoreMarketplaceState();
     initializeChangeDetection();
+    
+    // Load sales data for all variations on page
+    document.querySelectorAll('[id^="sales_"]').forEach(function(element) {
+        const variationId = element.id.replace('sales_', '');
+        if (variationId) {
+            loadSalesData(parseInt(variationId));
+        }
+    });
 });
 
 /**
@@ -1261,12 +1549,41 @@ $(document).on('keypress', '[id^="min_price_"], [id^="price_"], [id^="min_price_
         if (inputId.startsWith('min_price_limit_') || inputId.startsWith('price_limit_')) {
             const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
             $(`#change_limit_${listingId}`).submit();
-        } else if (inputId.startsWith('min_price_')) {
+        } else if (inputId.startsWith('min_price_') && !inputId.includes('limit') && !inputId.includes('all_')) {
             const listingId = inputId.replace('min_price_', '');
             $(`#change_min_price_${listingId}`).submit();
-        } else if (inputId.startsWith('price_')) {
+        } else if (inputId.startsWith('price_') && !inputId.includes('limit') && !inputId.includes('all_') && !inputId.includes('best_')) {
             const listingId = inputId.replace('price_', '');
             $(`#change_price_${listingId}`).submit();
+        }
+    }
+});
+
+/**
+ * Handle Enter key on marketplace-level inputs (bulk update)
+ */
+$(document).on('keypress', '[id^="all_min_handler_"], [id^="all_handler_"], [id^="all_min_price_"], [id^="all_price_"]', function(e) {
+    if (e.which === 13) {
+        e.preventDefault();
+        const inputId = $(this).attr('id');
+        const matches = inputId.match(/(\d+)_(\d+)$/);
+        if (!matches) return;
+        
+        const variationId = matches[1];
+        const marketplaceId = matches[2];
+        
+        if (inputId.startsWith('all_min_handler_') || inputId.startsWith('all_handler_')) {
+            // Submit handler form
+            const button = $(`#change_all_handler_${variationId}_${marketplaceId} button[type="button"]`);
+            if (button.length) {
+                button.click();
+            }
+        } else if (inputId.startsWith('all_min_price_') || inputId.startsWith('all_price_')) {
+            // Submit price form
+            const button = $(`#change_all_price_${variationId}_${marketplaceId} button[type="button"]`);
+            if (button.length) {
+                button.click();
+            }
         }
     }
 });
