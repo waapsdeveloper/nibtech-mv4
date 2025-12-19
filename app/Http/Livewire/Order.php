@@ -1836,6 +1836,13 @@ class Order extends Component
         $name = array_search('name', $arrayLower);
         // echo $name;
         $imei = array_search('imei', $arrayLower);
+        // if multiple imei columns exist, create an array of all their indexes
+        $imeiIndexes = [];
+        foreach ($arrayLower as $index => $value) {
+            if ($value === 'imei') {
+                $imeiIndexes[] = $index;
+            }
+        }
         // echo $imei;
         $cost = array_search('cost', $arrayLower);
         if(!in_array('name', $arrayLower)){
@@ -1898,33 +1905,77 @@ class Order extends Component
         // $variations = Variation_model::where('grade',$grade)->get();
 
         foreach($data as $dr => $d){
-            // $name = ;
-            // echo $dr." ";
-            // print_r($d);
-            $n = trim($d[$name]);
-            $n = str_replace('  ',' ',$n);
-            $n = str_replace('  ',' ',$n);
-            $c = $d[$cost];
-            $im = trim($d[$imei]);
-            if(ctype_digit(trim($im))){
-                $i = trim($im);
-                $s = null;
-            }else{
-                $i = null;
-                $s = trim($im);
-            }
-            $names = explode(" ",$n);
-            $last = end($names);
-            if(in_array($last, $storages)){
-                $gb = array_search($last,$storages);
-                array_pop($names);
-                $n = implode(" ", $names);
-            }else{
-                $gb = 0;
-            }
+            foreach ($imeiIndexes as $imeiIndex) {
+                $imei = $imeiIndex;
+                // $name = ;
+                // echo $dr." ";
+                // print_r($d);
+                $n = trim($d[$name]);
+                $n = str_replace('  ',' ',$n);
+                $n = str_replace('  ',' ',$n);
+                $c = $d[$cost];
+                $im = trim($d[$imei]);
+                if(ctype_digit(trim($im))){
+                    $i = trim($im);
+                    $s = null;
+                }else{
+                    $i = null;
+                    $s = trim($im);
+                }
+                $names = explode(" ",$n);
+                $last = end($names);
+                if(in_array($last, $storages)){
+                    $gb = array_search($last,$storages);
+                    array_pop($names);
+                    $n = implode(" ", $names);
+                }else{
+                    $gb = 0;
+                }
 
-            if(trim($d[$imei]) == ''){
-                if(trim($n) != '' || trim($c) != ''){
+                if(trim($d[$imei]) == ''){
+                    if(trim($n) != '' || trim($c) != ''){
+                        if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                        $issue[$dr]['data']['row'] = $dr;
+                        $issue[$dr]['data']['name'] = $n;
+                        $issue[$dr]['data']['storage'] = $st;
+                        if($color){
+                            $issue[$dr]['data']['color'] = $d[$color];
+                        }
+                        if($v_grade){
+                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                        }
+                        if($note){
+                            $issue[$dr]['data']['note'] = $d[$note];
+                        }
+                        $issue[$dr]['data']['imei'] = $i.$s;
+                        $issue[$dr]['data']['cost'] = $c;
+                        $issue[$dr]['message'] = 'IMEI not Provided';
+                    }
+                    continue;
+                }
+                if(trim($n) == ''){
+                    if(trim($n) != '' || trim($c) != ''){
+                        if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                        $issue[$dr]['data']['row'] = $dr;
+                        $issue[$dr]['data']['name'] = $n;
+                        $issue[$dr]['data']['storage'] = $st;
+                        if($color){
+                            $issue[$dr]['data']['color'] = $d[$color];
+                        }
+                        if($v_grade){
+                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                        }
+                        if($note){
+                            $issue[$dr]['data']['note'] = $d[$note];
+                        }
+                        $issue[$dr]['data']['imei'] = $i.$s;
+                        $issue[$dr]['data']['cost'] = $c;
+                        $issue[$dr]['message'] = 'Name not Provided';
+                    }
+                    continue;
+                }
+                if(trim($c) == ''){
+                    if(trim($n) != '' || trim($c) != ''){
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
                     $issue[$dr]['data']['row'] = $dr;
                     $issue[$dr]['data']['name'] = $n;
@@ -1940,214 +1991,167 @@ class Order extends Component
                     }
                     $issue[$dr]['data']['imei'] = $i.$s;
                     $issue[$dr]['data']['cost'] = $c;
-                    $issue[$dr]['message'] = 'IMEI not Provided';
-                }
-                continue;
-            }
-            if(trim($n) == ''){
-                if(trim($n) != '' || trim($c) != ''){
-                    if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['name'] = $n;
-                    $issue[$dr]['data']['storage'] = $st;
-                    if($color){
-                        $issue[$dr]['data']['color'] = $d[$color];
+                    $issue[$dr]['message'] = 'Cost not Provided';
+                    continue;
                     }
-                    if($v_grade){
-                        $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                    }
-                    if($note){
-                        $issue[$dr]['data']['note'] = $d[$note];
-                    }
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['data']['cost'] = $c;
-                    $issue[$dr]['message'] = 'Name not Provided';
                 }
-                continue;
-            }
-            if(trim($c) == ''){
-                if(trim($n) != '' || trim($c) != ''){
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                $issue[$dr]['data']['row'] = $dr;
-                $issue[$dr]['data']['name'] = $n;
-                $issue[$dr]['data']['storage'] = $st;
-                if($color){
-                    $issue[$dr]['data']['color'] = $d[$color];
-                }
-                if($v_grade){
-                    $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                }
-                if($note){
-                    $issue[$dr]['data']['note'] = $d[$note];
-                }
-                $issue[$dr]['data']['imei'] = $i.$s;
-                $issue[$dr]['data']['cost'] = $c;
-                $issue[$dr]['message'] = 'Cost not Provided';
-                continue;
-                }
-            }
-            // $last2 = end($names);
-            // if($last2 == "5G"){
-            //     array_pop($names);
-            //     $n = implode(" ", $names);
-            // }
-            if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
-                $product = array_search(strtolower($n), array_map('strtolower',$products));
-                $storage = $gb;
-                if ($color) {
-                    // Convert each color name to lowercase
-                    $lowercaseColors = array_map('strtolower', $colors);
-
-                    $colorName = strtolower($d[$color]); // Convert color name to lowercase
-
-                    if (in_array($colorName, $lowercaseColors)) {
-                        // If the color exists in the predefined colors array,
-                        // retrieve its index
-                        $clr = array_search($colorName, $lowercaseColors);
-                    } else {
-                        // If the color doesn't exist in the predefined colors array,
-                        // create a new color record in the database
-                        $newColor = Color_model::create([
-                            'name' => ucwords($colorName)
-                        ]);
-                        $colors = Color_model::pluck('name','id')->toArray();
+                if(in_array(strtolower($n), array_map('strtolower',$products)) && ($i != null || $s != null)){
+                    $product = array_search(strtolower($n), array_map('strtolower',$products));
+                    $storage = $gb;
+                    if ($color) {
+                        // Convert each color name to lowercase
                         $lowercaseColors = array_map('strtolower', $colors);
-                        // Retrieve the ID of the newly created color
-                        $clr = $newColor->id;
+
+                        $colorName = strtolower($d[$color]); // Convert color name to lowercase
+
+                        if (in_array($colorName, $lowercaseColors)) {
+                            // If the color exists in the predefined colors array,
+                            // retrieve its index
+                            $clr = array_search($colorName, $lowercaseColors);
+                        } else {
+                            // If the color doesn't exist in the predefined colors array,
+                            // create a new color record in the database
+                            $newColor = Color_model::create([
+                                'name' => ucwords($colorName)
+                            ]);
+                            $colors = Color_model::pluck('name','id')->toArray();
+                            $lowercaseColors = array_map('strtolower', $colors);
+                            // Retrieve the ID of the newly created color
+                            $clr = $newColor->id;
+                        }
+                        $check_merge_color = Product_color_merge_model::where(['product_id' => $product, 'color_from' => $clr])->first();
+                        if($check_merge_color != null){
+                            $clr = $check_merge_color->color_to;
+                        }
+                        $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage, 'color' => $clr]);
+
+                    }else{
+
+                    $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
                     }
-                    $check_merge_color = Product_color_merge_model::where(['product_id' => $product, 'color_from' => $clr])->first();
-                    if($check_merge_color != null){
-                        $clr = $check_merge_color->color_to;
+                    $grd = null;
+                    if ($v_grade) {
+                        // Convert each v_grade name to lowercase
+                        $lowercaseGrades = array_map('strtolower', $grades);
+
+                        $v_gradeName = strtolower($d[$v_grade]); // Convert v_grade name to lowercase
+
+                        $v_grd = Vendor_grade_model::firstOrNew(['name' => strtoupper($v_gradeName)]);
+                        $v_grd->save();
+
+                        $grd = $v_grd->id;
                     }
-                    $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage, 'color' => $clr]);
+
+                    // echo $product." ".$grade." ".$storage." | ";
+
+                    $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
+
+                    if($stock->id && $stock->status != null && $stock->order_id != null){
+                        if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                        $issue[$dr]['data']['row'] = $dr;
+                        $issue[$dr]['data']['name'] = $n;
+                        $issue[$dr]['data']['storage'] = $st;
+                        if($variation){
+                            $issue[$dr]['data']['variation'] = $variation->id;
+                        }
+                        if($color){
+                            $issue[$dr]['data']['color'] = $d[$color];
+                        }
+                        if($v_grade){
+                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                        }
+                        if($note){
+                            $issue[$dr]['data']['note'] = $d[$note];
+                        }
+                        $issue[$dr]['data']['imei'] = $i.$s;
+                        $issue[$dr]['data']['cost'] = $c;
+                        if($stock->order_id == $order->id && $stock->status == 1){
+                            $issue[$dr]['message'] = 'Item already added in this order';
+                        }else{
+                                $reference_id = $stock->order->reference_id ?? "Missing";
+                            if($stock->status != 2){
+                                $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
+                            }else{
+                                $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
+                            }
+
+                        }
+
+                    }else{
+                        $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
+                        if($stock2 != null){
+                            $stock2->restore();
+                            $stock2->order_id = $order->id;
+                            $stock2->status = 1;
+                            $stock2->save();
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                            $order_item->reference_id = $grd;
+                            if($note){
+                                $order_item->reference = $d[$note];
+                            }
+                            $order_item->quantity = 1;
+                            $order_item->price = $c;
+                            $order_item->status = 3;
+                            $order_item->save();
+
+                            $stock = $stock2;
+                        }else{
+                            $variation->stock += 1;
+                            $variation->status = 1;
+                            $variation->save();
+
+                            $stock->product_id = $product;
+                            $stock->variation_id = $variation->id;
+                            $stock->added_by = session('user_id');
+                            $stock->order_id = $order->id;
+                            $stock->status = 1;
+                            $stock->save();
+
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                            $order_item->reference_id = $grd;
+                            if($note){
+                                $order_item->reference = $d[$note];
+                            }
+                            $order_item->quantity = 1;
+                            $order_item->price = $c;
+                            $order_item->status = 3;
+                            $order_item->save();
+
+                        }
+
+                    }
 
                 }else{
-
-                $variation = Variation_model::firstOrNew(['product_id' => $product, 'grade' => $grade, 'storage' => $storage]);
-                }
-                $grd = null;
-                if ($v_grade) {
-                    // Convert each v_grade name to lowercase
-                    $lowercaseGrades = array_map('strtolower', $grades);
-
-                    $v_gradeName = strtolower($d[$v_grade]); // Convert v_grade name to lowercase
-
-                    $v_grd = Vendor_grade_model::firstOrNew(['name' => strtoupper($v_gradeName)]);
-                    $v_grd->save();
-
-                    $grd = $v_grd->id;
-                }
-
-                // echo $product." ".$grade." ".$storage." | ";
-
-                $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
-
-                if($stock->id && $stock->status != null && $stock->order_id != null){
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['name'] = $n;
-                    $issue[$dr]['data']['storage'] = $st;
-                    if($variation){
-                        $issue[$dr]['data']['variation'] = $variation->id;
-                    }
-                    if($color){
-                        $issue[$dr]['data']['color'] = $d[$color];
-                    }
-                    if($v_grade){
-                        $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                    }
-                    if($note){
-                        $issue[$dr]['data']['note'] = $d[$note];
-                    }
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['data']['cost'] = $c;
-                    if($stock->order_id == $order->id && $stock->status == 1){
-                        $issue[$dr]['message'] = 'Item already added in this order';
-                    }else{
-                            $reference_id = $stock->order->reference_id ?? "Missing";
-                        if($stock->status != 2){
-                            $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
-                        }else{
-                            $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
+                    if($n != null){
+                        $error .= $n . " " . $st . " " . $i.$s . " || ";
+                        $issue[$dr]['data']['row'] = $dr;
+                        $issue[$dr]['data']['name'] = $n;
+                        $issue[$dr]['data']['storage'] = $st;
+                        if($color){
+                            $issue[$dr]['data']['color'] = $d[$color];
                         }
-
-                    }
-
-                }else{
-                    $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
-                    if($stock2 != null){
-                        $stock2->restore();
-                        $stock2->order_id = $order->id;
-                        $stock2->status = 1;
-                        $stock2->save();
-                        $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
-                        $order_item->reference_id = $grd;
+                        if($v_grade){
+                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                        }
                         if($note){
-                            $order_item->reference = $d[$note];
+                            $issue[$dr]['data']['note'] = $d[$note];
                         }
-                        $order_item->quantity = 1;
-                        $order_item->price = $c;
-                        $order_item->status = 3;
-                        $order_item->save();
-
-                        $stock = $stock2;
-                    }else{
-                        $variation->stock += 1;
-                        $variation->status = 1;
-                        $variation->save();
-
-                        $stock->product_id = $product;
-                        $stock->variation_id = $variation->id;
-                        $stock->added_by = session('user_id');
-                        $stock->order_id = $order->id;
-                        $stock->status = 1;
-                        $stock->save();
-
-                        $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
-                        $order_item->reference_id = $grd;
-                        if($note){
-                            $order_item->reference = $d[$note];
-                        }
-                        $order_item->quantity = 1;
-                        $order_item->price = $c;
-                        $order_item->status = 3;
-                        $order_item->save();
-
-                    }
-
-                }
-
-            }else{
-                if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                if($n != null){
-                    $error .= $n . " " . $st . " " . $i.$s . " || ";
-                    $issue[$dr]['data']['row'] = $dr;
-                    $issue[$dr]['data']['name'] = $n;
-                    $issue[$dr]['data']['storage'] = $st;
-                    if($color){
-                        $issue[$dr]['data']['color'] = $d[$color];
-                    }
-                    if($v_grade){
-                        $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                    }
-                    if($note){
-                        $issue[$dr]['data']['note'] = $d[$note];
-                    }
-                    $issue[$dr]['data']['imei'] = $i.$s;
-                    $issue[$dr]['data']['cost'] = $c;
-                    if($i == null && $s == null){
-                        $issue[$dr]['message'] = 'IMEI/Serial Not Found';
-                    }else{
-                        if($st == null){
-                            $issue[$dr]['message'] = 'Product Variation Not Found';
+                        $issue[$dr]['data']['imei'] = $i.$s;
+                        $issue[$dr]['data']['cost'] = $c;
+                        if($i == null && $s == null){
+                            $issue[$dr]['message'] = 'IMEI/Serial Not Found';
                         }else{
-                            $issue[$dr]['message'] = 'Product Name Not Found';
+                            if($st == null){
+                                $issue[$dr]['message'] = 'Product Variation Not Found';
+                            }else{
+                                $issue[$dr]['message'] = 'Product Name Not Found';
+                            }
                         }
-                    }
 
+                    }
                 }
             }
-
         }
 
         // Delete the temporary file
