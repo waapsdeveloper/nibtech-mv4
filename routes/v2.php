@@ -69,6 +69,9 @@ Route::prefix('v2')->group(function () {
     // Artisan Commands Guide
     Route::get('artisan-commands', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'index'])->name('v2.artisan-commands');
     Route::post('artisan-commands/execute', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'execute'])->name('v2.artisan-commands.execute');
+    Route::post('artisan-commands/run-migrations', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'runMigrations'])->name('v2.artisan-commands.run-migrations');
+    Route::get('artisan-commands/migration-details', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getMigrationDetails'])->name('v2.artisan-commands.migration-details');
+    Route::post('artisan-commands/record-migration', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'recordMigration'])->name('v2.artisan-commands.record-migration');
     Route::get('artisan-commands/documentation', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getDocumentation'])->name('v2.artisan-commands.documentation');
 });
 

@@ -21,25 +21,9 @@
 							<div class="slide-left disabled" id="slide-left"><svg xmlns="http://www.w3.org/2000/svg" fill="#7b8191" width="24" height="24" viewBox="0 0 24 24"><path d="M13.293 6.293 7.586 12l5.707 5.707 1.414-1.414L10.414 12l4.293-4.293z"/></svg></div>
 							<ul class="side-menu">
 								<li class="side-item side-item-category">Main</li>
-								<li class="slide">
-                                    <a class="side-menu__item" href="{{url('index')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
-                                        <span class="side-menu__label">Dashboard</span></a>
-								</li>
                                 @php
                                 $user = session('user');
                                 @endphp
-                                @if($user->hasPermission('view_report'))
-								<li class="slide">
-									<a class="side-menu__item" href="{{url('report')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
-                                        <span class="side-menu__label">Reports</span></a>
-								</li>
-                                @endif
-                                @if($user->hasPermission('view_listing'))
-								<li class="slide">
-									<a class="side-menu__item" href="{{url('listing')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
-                                        <span class="side-menu__label">Listings</span></a>
-								</li>
-                                @endif
                                 @if($user->hasPermission('view_listing'))
                                 <li class="slide has-sub">
                                     <a class="side-menu__item" data-bs-toggle="collapse" href="#v2Menu" role="button" aria-expanded="false" aria-controls="v2Menu">
@@ -55,26 +39,52 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/marketplace')}}">Marketplaces</a>
                                         </li>
-                                        <li class="slide">
-                                            <a class="side-menu__item ps-0" href="{{url('v2/marketplace/stock-formula')}}">Stock Formula</a>
-                                        </li>
                                         @endif
-                                        @if ($user->hasPermission('view_listing'))
-                                        <li class="slide">
-                                            <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></svg>
-                                                Stock Locks
+                                        @if ($user->hasPermission('view_marketplace') || $user->hasPermission('view_listing'))
+                                        <li class="slide has-sub">
+                                            <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2OptionsMenu" role="button" aria-expanded="false" aria-controls="v2OptionsMenu">
+                                                Options
+                                                <i class="angle fe fe-chevron-down"></i>
                                             </a>
-                                        </li>
-                                        <li class="slide">
-                                            <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">
-                                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-right: 8px; vertical-align: middle;"><polyline points="4 17 10 11 4 5"></polyline><line x1="12" y1="19" x2="20" y2="19"></line></svg>
-                                                Artisan Commands
-                                            </a>
+                                            <ul class="collapse ps-3" id="v2OptionsMenu">
+                                                @if ($user->hasPermission('view_marketplace'))
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/marketplace/stock-formula')}}">Stock Formula</a>
+                                                </li>
+                                                @endif
+                                                @if ($user->hasPermission('view_listing'))
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">                                                        
+                                                        Stock Locks
+                                                    </a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">                                                        
+                                                        Artisan Commands
+                                                    </a>
+                                                </li>
+                                                @endif
+                                            </ul>
                                         </li>
                                         @endif
                                     </ul>
                                 </li>
+                                @endif
+								<li class="slide">
+                                    <a class="side-menu__item" href="{{url('index')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                                        <span class="side-menu__label">Dashboard</span></a>
+								</li>
+                                @if($user->hasPermission('view_report'))
+								<li class="slide">
+									<a class="side-menu__item" href="{{url('report')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"></line><line x1="12" y1="20" x2="12" y2="4"></line><line x1="6" y1="20" x2="6" y2="14"></line></svg>
+                                        <span class="side-menu__label">Reports</span></a>
+								</li>
+                                @endif
+                                @if($user->hasPermission('view_listing'))
+								<li class="slide">
+									<a class="side-menu__item" href="{{url('listing')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+                                        <span class="side-menu__label">Listings</span></a>
+								</li>
                                 @endif
                                 @if($user->hasPermission('view_topup'))
 								<li class="slide">
