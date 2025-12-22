@@ -47,12 +47,28 @@
     $orderSummary = $marketplaceData['order_summary'] ?? 'Today: €0.00 (0) - Yesterday: €0.00 (0) - 7 days: €0.00 (0) - 14 days: €0.00 (0) - 30 days: €0.00 (0)';
     
     // Get current listed stock from marketplace_stock table for this specific marketplace
-    $marketplaceStock = \App\Models\MarketplaceStockModel::where('variation_id', $variationId)
+    $marketplaceStock = \App\Models\V2\MarketplaceStockModel::where('variation_id', $variationId)
         ->where('marketplace_id', $marketplaceIdInt)
         ->first();
     
-    // Get stock value - if record exists use it, otherwise 0
-    $currentStock = $marketplaceStock ? ($marketplaceStock->listed_stock ?? 0) : 0;
+    // Show AVAILABLE stock (listed - locked) in the marketplace bar
+    // This keeps the number aligned with lock behavior (so UI reflects real sellable stock).
+    $currentStock = 0;
+    if ($marketplaceStock) {
+        if ($marketplaceStock->available_stock !== null) {
+            $currentStock = (int) $marketplaceStock->available_stock;
+        } else {
+            $currentStock = (int) max(0, ($marketplaceStock->listed_stock ?? 0) - ($marketplaceStock->locked_stock ?? 0));
+        }
+    }
+    
+    // Get locked stock for this variation and marketplace
+    $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
+        ->where('marketplace_id', $marketplaceIdInt)
+        ->where('lock_status', 'locked')
+        ->get();
+    $totalLocked = $activeLocks->sum('quantity_locked');
+    $lockedStockCount = $activeLocks->count();
     
     // Debug: Uncomment the line below to see what's being queried (remove after debugging)
     // {{-- Debug: variation_id={{ $variationId }}, marketplace_id={{ $marketplaceIdInt }}, found={{ $marketplaceStock ? 'yes' : 'no' }}, stock={{ $currentStock }} --}}
@@ -75,6 +91,15 @@
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
                 <span class="text-muted small">(<span id="stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $currentStock }}</span>)</span>
+                @if($totalLocked > 0)
+                    <span class="badge bg-warning text-dark cursor-pointer" 
+                          title="{{ $lockedStockCount }} active lock(s) - {{ $totalLocked }} units locked" 
+                          data-bs-toggle="tooltip"
+                          onclick="showStockLocksModal({{ $variationId }}, {{ $marketplaceIdInt }})"
+                          style="cursor: pointer;">
+                        <i class="fe fe-lock me-1"></i>{{ $totalLocked }} Locked
+                    </span>
+                @endif
                 <span class="badge bg-light text-dark d-flex align-items-center gap-1">
                     <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
                     {{ $state }}
@@ -126,6 +151,28 @@
                 <p class="mt-2 text-muted small">Click to load tables...</p>
             </div>
         </div>
+        
+        {{-- V2: Stock Locks Display --}}
+        @if($totalLocked > 0)
+        <div class="border-top p-3 bg-light">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h6 class="mb-0">
+                    <i class="fe fe-lock me-2"></i>Stock Locks ({{ $lockedStockCount }} active, {{ $totalLocked }} units)
+                </h6>
+                <button class="btn btn-sm btn-outline-primary" onclick="showStockLocksModal({{ $variationId }}, {{ $marketplaceIdInt }})">
+                    <i class="fe fe-eye me-1"></i>View Details
+                </button>
+            </div>
+            <div class="small text-muted mb-2">
+                Click "View Details" to see all lock information in a modal
+            </div>
+            @livewire('v2.stock-locks', [
+                'variationId' => $variationId, 
+                'marketplaceId' => $marketplaceIdInt,
+                'showAll' => false
+            ], key('stock-locks-'.$variationId.'-'.$marketplaceIdInt))
+        </div>
+        @endif
     </div>
 </div>
 

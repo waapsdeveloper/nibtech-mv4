@@ -129,6 +129,60 @@ class Kernel extends ConsoleKernel
             ->everyTenMinutes()
             ->withoutOverlapping()
             ->runInBackground();
+
+        // V2: Marketplace Stock Sync (6-hour interval per marketplace with staggered scheduling)
+        // Sync each marketplace at different times to avoid API rate limits
+        $schedule->command('v2:marketplace:sync-stock --marketplace=1')
+            ->everySixHours()
+            ->at('00:00') // Back Market at midnight
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        $schedule->command('v2:marketplace:sync-stock --marketplace=4')
+            ->everySixHours()
+            ->at('03:00') // Refurbed at 3 AM (staggered)
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Sync all other marketplaces every 6 hours starting at 6 AM
+        $schedule->command('v2:marketplace:sync-stock')
+            ->everySixHours()
+            ->at('06:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // V2: Unified Order Sync - Daily Schedule
+        // New orders sync - every 2 hours during business hours
+        $schedule->command('v2:sync-orders --type=new')
+            ->everyTwoHours()
+            ->between('06:00', '22:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Modified orders sync - daily at 2 AM
+        $schedule->command('v2:sync-orders --type=modified')
+            ->dailyAt('02:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Care/replacement records sync - daily at 4 AM
+        $schedule->command('v2:sync-orders --type=care')
+            ->dailyAt('04:00')
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
+
+        // Incomplete orders sync - every 4 hours
+        $schedule->command('v2:sync-orders --type=incomplete')
+            ->everyFourHours()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
     }
 
     /**

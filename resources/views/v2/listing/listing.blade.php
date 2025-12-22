@@ -126,6 +126,30 @@
     {{-- Bulk Update Modal --}}
     @include('v2.listing.partials.bulk-update-modal')
     {{-- /Bulk Update Modal --}}
+
+    {{-- Stock Locks Modal --}}
+    <div class="modal fade" id="stockLocksModal" tabindex="-1" aria-labelledby="stockLocksModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen-lg-down modal-dialog-centered" style="max-width: 90vw;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="stockLocksModalLabel">
+                        <i class="fe fe-lock me-2"></i>Stock Locks
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <i data-feather="x" class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body" id="stockLocksModalBody">
+                    <div class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    {{-- /Stock Locks Modal --}}
 @endsection
 
 @section('scripts')
@@ -158,7 +182,8 @@
             export: "{{ url('listing/export') }}",
             getTargetVariations: "{{ url('listing/get_target_variations') }}",
             updateTarget: "{{ url('listing/update_target') }}",
-            imei: "{{ url('imei') }}"
+            imei: "{{ url('imei') }}",
+            getStockLocks: "{{ url('v2/stock-locks/api') }}"
         },
         csrfToken: "{{ csrf_token() }}",
         flagsPath: "{{ asset('assets/img/flags') }}"
@@ -170,6 +195,34 @@
             {{ (int)$mpId }}: {{ $loop->first ? 'true' : 'false' }}, // Marketplace 1 is visible by default
         @endforeach
     };
+
+    // Function to show stock locks modal
+    function showStockLocksModal(variationId, marketplaceId) {
+        const modal = new bootstrap.Modal(document.getElementById('stockLocksModal'));
+        const modalBody = document.getElementById('stockLocksModalBody');
+        
+        // Show loading state
+        modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock locks...</p></div>';
+        modal.show();
+        
+        // Load stock locks via API (returns rendered Blade template)
+        $.ajax({
+            url: '{{ url("v2/stock-locks/api") }}',
+            type: 'GET',
+            data: {
+                variation_id: variationId,
+                marketplace_id: marketplaceId,
+                show_all: false
+            },
+            success: function(html) {
+                modalBody.innerHTML = html;
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading stock locks:', error);
+                modalBody.innerHTML = '<div class="alert alert-danger">Error loading stock locks: ' + error + '</div>';
+            }
+        });
+    }
 </script>
 <script src="{{asset('assets/v2/listing/js/total-stock-form.js')}}"></script>
 <script src="{{asset('assets/v2/listing/js/keyboard-navigation.js')}}"></script>

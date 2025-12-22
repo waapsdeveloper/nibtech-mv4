@@ -584,14 +584,14 @@
                                         $stock->availability();
                                     }
                                 @endphp
-                                <tr @if ($customer->orders->count() > 1) class="bg-light" @endif>
+                                <tr @if (($customer?->orders?->count() ?? 0) > 1) class="bg-light" @endif>
                                     @if ($itemIndex == 0)
                                         <td rowspan="{{ $items_count }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
                                         <td rowspan="{{ $items_count }}">{{ $i + 1 }}</td>
                                         <td rowspan="{{ $items_count }}">
                                             {{ $order->reference_id }}<br>
-                                            {{ $customer->company }}<br>
-                                            {{ $customer->first_name.' '.$customer->last_name }}
+                                            {{ $customer?->company }}<br>
+                                            {{ ($customer?->first_name ?? '').' '.($customer?->last_name ?? '') }}
 
                                         </td>
                                     @endif
@@ -910,7 +910,7 @@
                                         {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
                                         <tr class="bg-secondary text-white">
-                                            <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+                                            <td colspan="2">{{ ($customer?->first_name ?? '').' '.($customer?->last_name ?? '').' '.($customer?->phone ?? '') }}</td>
 
                                             <td>Exchanged With</td>
                                             <td>
@@ -951,7 +951,7 @@
                                             }
                                         @endphp
                                         <tr class="bg-secondary text-white">
-                                                <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+                                                <td colspan="2">{{ ($customer?->first_name ?? '').' '.($customer?->last_name ?? '').' '.($customer?->phone ?? '') }}</td>
 
                                             <td>Exchanged with</td>
                                             <td>
@@ -1005,7 +1005,7 @@
                                                     {{-- @foreach ($order->exchange_items as $ind => $itm) --}}
 
                                                     <tr class="bg-secondary text-white">
-                                                        <td colspan="2">{{ $customer->first_name." ".$customer->last_name." ".$customer->phone }}</td>
+                                                        <td colspan="2">{{ ($customer?->first_name ?? '').' '.($customer?->last_name ?? '').' '.($customer?->phone ?? '') }}</td>
 
                                                         <td>Exchanged With</td>
                                                         <td>
@@ -1038,7 +1038,7 @@
                                 @endif
 
                             @endforeach
-                            @if ($customer->orders->count() > 1)
+                            @if (($customer?->orders?->count() ?? 0) > 1)
                                 {{-- @if (session('user_id') == 1)
 
                                 <script>
@@ -1052,7 +1052,7 @@
                                 @php
                                     $def = 0;
                                 @endphp
-                                @foreach ($customer->orders as $ins => $ord)
+                                @foreach (($customer?->orders ?? collect()) as $ins => $ord)
                                     @if ($ord->id != $order->id)
 
                                         @foreach ($ord->order_items as $ind => $itm)
@@ -1062,7 +1062,7 @@
                                                     @php
                                                         $def = 1;
                                                     @endphp
-                                                    <td rowspan="{{ count($customer->orders)-1 }}" colspan="2">{{ $ord->customer->first_name." ".$ord->customer->last_name." ".$ord->customer->phone }}</td>
+                                                    <td rowspan="{{ count($customer->orders)-1 }}" colspan="2">{{ (optional($ord->customer)->first_name ?? '').' '.(optional($ord->customer)->last_name ?? '').' '.(optional($ord->customer)->phone ?? '') }}</td>
                                                 @endif
                                                 <td>{{ $ord->reference_id }}</td>
                                                 <td>

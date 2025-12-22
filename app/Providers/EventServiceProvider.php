@@ -21,6 +21,14 @@ class EventServiceProvider extends ServiceProvider
         \App\Events\VariationStockUpdated::class => [
             \App\Listeners\DistributeStockToMarketplaces::class,
         ],
+        // V2 Events (generic, uses MarketplaceAPIService)
+        // Keep ONLY V2 listeners here to avoid double-processing (double lock / double stock reduce).
+        \App\Events\V2\OrderCreated::class => [
+            \App\Listeners\V2\LockStockOnOrderCreated::class,
+        ],
+        \App\Events\V2\OrderStatusChanged::class => [
+            \App\Listeners\V2\ReduceStockOnOrderCompleted::class,
+        ],
     ];
 
     /**
