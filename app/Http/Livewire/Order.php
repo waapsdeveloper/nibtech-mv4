@@ -2908,6 +2908,11 @@ class Order extends Component
             session()->put('error', "Order Not Found");
             return redirect()->back();
         }
+        if($order->status != 2){
+
+            session()->put('error', "Order Status error");
+            return redirect()->back();
+        }
         $tester = request('tester');
         if (!is_array($tester)) {
             $tester = $tester !== null ? (array) $tester : [];
@@ -2930,7 +2935,7 @@ class Order extends Component
             }
     }
     // print_r(request('imei'));
-    $externalState = $isRefurbed ? 2 : $this->resolveExternalOrderState($orderObj, $order);
+    $externalState = $isRefurbed ? 3 : $this->resolveExternalOrderState($orderObj, $order);
 
     if (! $isRefurbed && $externalState === null) {
         Log::warning('Dispatch blocked: missing Back Market state data', [
@@ -2941,7 +2946,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    $canDispatch = $isRefurbed ? true : ((int) $externalState === 2);
+    $canDispatch = $isRefurbed ? true : ((int) $externalState === 3);
     if($canDispatch){
             foreach($imeis as $i => $imei){
 
