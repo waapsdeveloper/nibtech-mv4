@@ -2930,7 +2930,7 @@ class Order extends Component
             }
     }
     // print_r(request('imei'));
-    $externalState = $isRefurbed ? 3 : $this->resolveExternalOrderState($orderObj, $order);
+    $externalState = $isRefurbed ? 2 : $this->resolveExternalOrderState($orderObj, $order);
 
     if (! $isRefurbed && $externalState === null) {
         Log::warning('Dispatch blocked: missing Back Market state data', [
@@ -2941,7 +2941,7 @@ class Order extends Component
         return redirect()->back();
     }
 
-    $canDispatch = $isRefurbed ? true : ((int) $externalState === 3);
+    $canDispatch = $isRefurbed ? true : ((int) $externalState === 2);
     if($canDispatch){
             foreach($imeis as $i => $imei){
 
@@ -3044,6 +3044,14 @@ class Order extends Component
                 if($stock_movement == null && !session('user')->hasPermission('skip_stock_exit')){
                     session()->put('error', "Missing Exit Entry");
                     return redirect()->back();
+                }
+                if($stock_movement == null && session('user')->hasPermission('skip_stock_exit')){
+                    $stock_movement = Stock_movement_model::create([
+                        'stock_id' => $stock[$i]->id,
+                        'admin_id' => session('user_id'),
+                        'exit_at' => now(),
+                        'description' => 'Auto Exit by ' . session('user')->first_name . ' ' . session('user')->last_name,
+                    ]);
                 }
                 if($stock_variation->storage != null){
                     $storage = $stock_variation->storage_id->name . " - ";
