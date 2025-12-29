@@ -97,7 +97,9 @@ class ListedStockVerification extends Component
             $listed_stock_verification->save();
 
             $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
-
+            if(is_array($response)){
+                $response = (object)$response;
+            }
             if($response->quantity != null){
                 $variation->listed_stock = $response->quantity;
                 $variation->save();
