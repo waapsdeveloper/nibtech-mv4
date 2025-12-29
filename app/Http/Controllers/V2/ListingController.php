@@ -24,12 +24,13 @@ use App\Models\Listing_model;
 use App\Models\Order_item_model;
 use App\Models\Category_model;
 use App\Models\Brand_model;
-use App\Models\MarketplaceStockModel;
+use App\Models\V2\MarketplaceStockModel;
 use App\Models\ListingMarketplaceState;
 use App\Models\ListingMarketplaceHistory;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Events\VariationStockUpdated;
 use App\Services\Marketplace\StockDistributionService;
+use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -41,19 +42,22 @@ class ListingController extends Controller
     protected ListingCalculationService $calculationService;
     protected ListingCacheService $cacheService;
     protected StockDistributionService $stockDistributionService;
+    protected MarketplaceAPIService $marketplaceAPIService;
 
     public function __construct(
         ListingQueryService $queryService,
         ListingDataService $dataService,
         ListingCalculationService $calculationService,
         ListingCacheService $cacheService,
-        StockDistributionService $stockDistributionService
+        StockDistributionService $stockDistributionService,
+        MarketplaceAPIService $marketplaceAPIService
     ) {
         $this->queryService = $queryService;
         $this->dataService = $dataService;
         $this->calculationService = $calculationService;
         $this->cacheService = $cacheService;
         $this->stockDistributionService = $stockDistributionService;
+        $this->marketplaceAPIService = $marketplaceAPIService;
     }
 
     /**
@@ -973,7 +977,9 @@ class ListingController extends Controller
             }
         }
 
-        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
+        // Use V2 MarketplaceAPIService (applies buffer automatically)
+        // Default to Back Market (marketplace_id = 1) for backward compatibility
+        $response = $this->marketplaceAPIService->updateStock($variation->id, 1, $new_quantity);
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
             return response()->json([
@@ -986,10 +992,26 @@ class ListingController extends Controller
         $responseQuantity = null;
         if($response && is_object($response) && isset($response->quantity)){
             $responseQuantity = $response->quantity;
+        } elseif($response && is_array($response) && isset($response['offer']['stock'])){
+            // Refurbed response format
+            $responseQuantity = $response['offer']['stock'];
         } else {
-            // If API response doesn't have quantity, use the new_quantity we sent
-            $responseQuantity = $new_quantity;
-            Log::warning("API response missing quantity property for variation ID $id, using calculated value: $new_quantity", [
+            // If API response doesn't have quantity, use the buffered quantity
+            // Get the buffered quantity that was actually sent
+            $marketplaceStock = MarketplaceStockModel::where([
+                'variation_id' => $variation->id,
+                'marketplace_id' => 1
+            ])->first();
+            
+            if ($marketplaceStock && $marketplaceStock->last_api_quantity !== null) {
+                $responseQuantity = $marketplaceStock->last_api_quantity;
+            } else {
+                // Fallback: calculate buffered quantity
+                $bufferedQuantity = $this->marketplaceAPIService->getAvailableStockWithBuffer($variation->id, 1);
+                $responseQuantity = $bufferedQuantity > 0 ? $bufferedQuantity : $new_quantity;
+            }
+            
+            Log::warning("V2 ListingController: API response missing quantity property for variation ID $id, using calculated value: $responseQuantity", [
                 'api_response' => $response,
                 'response_type' => gettype($response),
                 'calculated_quantity' => $new_quantity,

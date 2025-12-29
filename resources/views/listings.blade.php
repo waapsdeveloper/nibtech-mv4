@@ -384,11 +384,15 @@
                 type: "POST",
                 url: actionUrl,
                 data: form.serialize(), // serializes the form's elements.
+                dataType: 'json', // Expect JSON response from server
                 success: function(data) {
-                    // alert("Success: Quantity changed to " + data); // show response from the PHP script.
+                    // Parse response - data is already parsed as JSON object
+                    var responseQuantity = (data && typeof data === 'object' && data.quantity !== undefined) ? data.quantity : data;
+                    
+                    // alert("Success: Quantity changed to " + responseQuantity); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
-                    $('#quantity_' + variationId).val(data)
-                    $('#success_' + variationId).text("Quantity changed by " + quantity + " to " + data);
+                    $('#quantity_' + variationId).val(responseQuantity);
+                    $('#success_' + variationId).text("Quantity changed by " + quantity + " to " + responseQuantity);
                     $('#add_' + variationId).val(0);
                 },
                 error: function(jqXHR, textStatus, errorThrown) {
