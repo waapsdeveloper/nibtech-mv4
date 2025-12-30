@@ -471,12 +471,16 @@
                             @php
                                 $i = 0;
                                 $ttl = 0;
+                                $ttl_avl = 0;
+                                $ttl_lst = 0;
                             @endphp
                             @foreach ($variations as $variation)
                                 @php
                                     $ttl += $listed_stock_totals_by_variation[$variation->id] ?? 0;
                                     $available_stock_count = $variation->available_stocks->count()-$variation->pending_orders->count();
                                     $listed_stock_count = $variation->listed_stock;
+                                    $ttl_avl += $available_stock_count;
+                                    $ttl_lst += $listed_stock_count;
                                 @endphp
                                 {{-- @if ($variation->listed_stock == 0)
                                     @continue
@@ -562,6 +566,8 @@
                                 <td colspan="3" class="text-center"><b>Total</b></td>
                                 <td><b>{{ $stocks->count() }}</b></td>
                                 <td><b>{{ $ttl }}</b></td>
+                                <td><b>{{ $ttl_avl }}</b></td>
+                                <td><b>{{ $ttl_lst }}</b></td>
                             </tr>
                         </tfoot>
                     </table>
