@@ -238,7 +238,7 @@ class ListedStockVerification extends Component
             $data['listed_stock_totals_by_variation'] = $listedStocks
                 ->groupBy('variation_id')
                 ->map(function ($items) {
-                    return $items->sum('qty_change');
+                    return $items->sum('qty_to');
                 })
                 ->toArray();
         }
