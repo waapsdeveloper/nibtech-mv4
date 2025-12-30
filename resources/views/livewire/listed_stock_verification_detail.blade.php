@@ -460,7 +460,10 @@
                                 <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>Qty</b></small></th>
-                                <th><small><b>New</b></small></th>
+                                @if ($process->status > 1)
+                                    <th><small><b>New</b></small></th>
+                                @endif
+                                <th><small><b>Listed</b></small></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -499,6 +502,9 @@
                                             {{ $listed_stock_totals_by_variation[$variation->id] ?? 0 }}
                                         </td>
                                     @endif
+                                    <td>
+                                        {{ $variation->listed_stock ?? 0 }}
+                                    </td>
                                 </tr>
                                 <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
                                     <td colspan="5">
