@@ -463,6 +463,7 @@
                                 @if ($process->status > 1)
                                     <th><small><b>New</b></small></th>
                                 @endif
+                                <th><small><b>Available</b></small></th>
                                 <th><small><b>Listed</b></small></th>
                             </tr>
                         </thead>
@@ -502,6 +503,9 @@
                                             {{ $listed_stock_totals_by_variation[$variation->id] ?? 0 }}
                                         </td>
                                     @endif
+                                    <td>
+                                        {{ $variation->stock ?? 0 }}
+                                    </td>
                                     <td>
                                         {{ $variation->listed_stock ?? 0 }}
                                     </td>
