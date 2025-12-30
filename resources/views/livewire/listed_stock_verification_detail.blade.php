@@ -475,6 +475,8 @@
                             @foreach ($variations as $variation)
                                 @php
                                     $ttl += $listed_stock_totals_by_variation[$variation->id] ?? 0;
+                                    $available_stock_count = $variation->available_stocks->count()-$variation->pending_orders->count();
+                                    $listed_stock_count = $variation->listed_stock;
                                 @endphp
                                 {{-- @if ($variation->listed_stock == 0)
                                     @continue
@@ -482,6 +484,8 @@
                                 @endif --}}
                                 <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
+                                @elseif ($available_stock_count != $listed_stock_count)
+                                    class="bg-warning"
                                 @endif>
                                     <td>{{ $i + 1 }}</td>
                                     <td>
@@ -504,10 +508,10 @@
                                         </td>
                                     @endif
                                     <td>
-                                        {{ $variation->available_stocks->count()-$variation->pending_orders->count() ?? 0 }}
+                                        {{ $available_stock_count ?? 0 }}
                                     </td>
                                     <td>
-                                        {{ $variation->listed_stock ?? 0 }}
+                                        {{ $listed_stock_count ?? 0 }}
                                     </td>
                                 </tr>
                                 <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
