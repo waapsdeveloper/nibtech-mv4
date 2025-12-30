@@ -460,6 +460,7 @@
                                 <th><small><b>SKU</b></small></th>
                                 <th><small><b>Variation</b></small></th>
                                 <th><small><b>Qty</b></small></th>
+                                <th><small><b>New</b></small></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -486,7 +487,11 @@
                                             {{ $stocks->where('variation_id', $variation->id)->count() }}
                                         </a>
                                     </td>
-                                    <td></td>
+                                    @if ($process->status > 1)
+                                        <td>
+                                            {{ $listed_stock_totals_by_variation[$variation->id] ?? 0 }}
+                                        </td>
+                                    @endif
                                 </tr>
                                 <tr class="collapse bg-lightgreen" id="stocks-{{ $variation->id }}">
                                     <td colspan="5">
