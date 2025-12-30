@@ -538,10 +538,10 @@ class Api_request_model extends Model
 
     protected static function flushDebugPoints(): void
     {
-        foreach(self::$debugBuffer as $requestId => $entries){
-            Log::debug('api_request push_testing combined debug', [
-                'api_request_id' => $requestId,
-                'debug_entries' => $entries,
+        if(!empty(self::$debugBuffer)){
+            Log::debug('api_request push_testing debug summary', [
+                'total_requests_with_issues' => count(self::$debugBuffer),
+                'debug_entries' => self::$debugBuffer,
             ]);
         }
 
