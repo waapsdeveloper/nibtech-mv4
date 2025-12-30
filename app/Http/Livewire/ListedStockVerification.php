@@ -190,6 +190,9 @@ class ListedStockVerification extends Component
         if($process->status == 2){
             $data['verified_total'] = Process_stock_model::where('process_id',$process_id)->where('verified_by',session('user_id'))->count();
         }
+        $listedStocks = Listed_stock_verification_model::where('process_id', $process_id)
+            ->with(['variation', 'admin'])
+            ->get();
 
         $changed_listed_stocks = Listed_stock_verification_model::where(['process_id'=>$process_id])
         // ->whereColumn('qty_from', '!=', 'qty_to')
@@ -232,6 +235,12 @@ class ListedStockVerification extends Component
             $data['variations'] = $variations;
             $data['stocks'] = $stocks;
 
+            $data['listed_stock_totals_by_variation'] = $listedStocks
+                ->groupBy('variation_id')
+                ->map(function ($items) {
+                    return $items->sum('qty_change');
+                })
+                ->toArray();
         }
 
         return view('livewire.listed_stock_verification_detail')->with($data);
