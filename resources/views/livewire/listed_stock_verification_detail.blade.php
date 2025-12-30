@@ -504,7 +504,7 @@
                                         </td>
                                     @endif
                                     <td>
-                                        {{ $variation->available_stocks->count() ?? 0 }}
+                                        {{ $variation->available_stocks->count()-$variation->pending_orders->count() ?? 0 }}
                                     </td>
                                     <td>
                                         {{ $variation->listed_stock ?? 0 }}
