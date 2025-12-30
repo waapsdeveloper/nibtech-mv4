@@ -466,8 +466,12 @@
                         <tbody>
                             @php
                                 $i = 0;
+                                $ttl = 0;
                             @endphp
                             @foreach ($variations as $variation)
+                                @php
+                                    $ttl += $listed_stock_totals_by_variation[$variation->id] ?? 0;
+                                @endphp
                                 {{-- @if ($variation->listed_stock == 0)
                                     @continue
 
@@ -543,7 +547,7 @@
                             <tr>
                                 <td colspan="3" class="text-center"><b>Total</b></td>
                                 <td><b>{{ $stocks->count() }}</b></td>
-                                <td></td>
+                                <td><b>{{ $ttl }}</b></td>
                             </tr>
                         </tfoot>
                     </table>
