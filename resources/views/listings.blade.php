@@ -1559,7 +1559,7 @@
                                                 Available: ${variation.available_stocks.length || 0}
                                             </a>
                                         </h6>
-                                        <h6 class="mb-0">Difference: ${variation.available_stocks.length - variation.pending_orders.length}</h6>
+                                        <h6 class="mb-0">Difference: ${(variation.available_stocks ? variation.available_stocks.length : 0) - ((variation.pending_orders && variation.pending_orders.length > 0) ? variation.pending_orders.reduce((sum, order) => sum + (order.quantity || 0), 0) : 0)}</h6>
                                     </div>
 
                                     <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">
