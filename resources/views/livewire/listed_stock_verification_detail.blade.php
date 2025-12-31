@@ -477,7 +477,7 @@
                             @foreach ($variations as $variation)
                                 @php
                                     $ttl += $listed_stock_totals_by_variation[$variation->id] ?? 0;
-                                    $available_stock_count = $variation->available_stocks->count()-$variation->pending_orders->count();
+                                    $available_stock_count = $variation->available_stocks->count() - $variation->pending_orders->sum('quantity');
                                     $listed_stock_count = $variation->listed_stock;
                                     $ttl_avl += $available_stock_count;
                                     $ttl_lst += $listed_stock_count;
