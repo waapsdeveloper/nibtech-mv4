@@ -962,6 +962,9 @@ class ListingController extends Controller
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
 
+        $variation->listed_stock = $responseQuantity ?? 0;
+        $variation->save();
+
         // Return JSON response with total stock and marketplace stocks
         // Check if request is AJAX by checking headers
         if(request()->ajax() || request()->expectsJson() || request()->wantsJson() || request()->header('X-Requested-With') == 'XMLHttpRequest'){
