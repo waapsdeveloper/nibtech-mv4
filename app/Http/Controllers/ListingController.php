@@ -943,11 +943,19 @@ class ListingController extends Controller
         
         // If active verification exists, use firstOrNew, otherwise create new
         if($check_active_verification != null){
-            $listed_stock_verification = Listed_stock_verification_model::firstOrNew([
-                'process_id' => $process_id,
-                'variation_id' => $variation->id,
-                
-            ])->whereNull('qty_to')->whereNotNull('qty_from');
+            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from
+            $listed_stock_verification = Listed_stock_verification_model::where('process_id', $process_id)
+                ->where('variation_id', $variation->id)
+                ->whereNull('qty_to')
+                ->whereNotNull('qty_from')
+                ->first();
+            
+            // If not found, create a new one
+            if (!$listed_stock_verification) {
+                $listed_stock_verification = new Listed_stock_verification_model();
+                $listed_stock_verification->process_id = $process_id;
+                $listed_stock_verification->variation_id = $variation->id;
+            }
         } else {
             $listed_stock_verification = new Listed_stock_verification_model();
             $listed_stock_verification->qty_from = $previous_qty;
