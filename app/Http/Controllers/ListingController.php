@@ -328,7 +328,7 @@ class ListingController extends Controller
     private function mapVariationListingRow($variation, $listing): array
     {
         $availableCount = $variation->available_stocks ? $variation->available_stocks->count() : 0;
-        $pendingCount = $variation->pending_orders ? $variation->pending_orders->count() : 0;
+        $pendingCount = $variation->pending_orders ? $variation->pending_orders->sum('quantity') : 0;
         $pendingBMCount = $variation->pending_bm_orders ? $variation->pending_bm_orders->count() : 0;
         return [
             $variation->id,

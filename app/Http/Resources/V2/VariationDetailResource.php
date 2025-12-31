@@ -13,7 +13,7 @@ class VariationDetailResource extends JsonResource
     public function toArray($request): array
     {
         $availableStocksCount = $this->available_stocks ? $this->available_stocks->count() : 0;
-        $pendingOrdersCount = $this->pending_orders ? $this->pending_orders->count() : 0;
+        $pendingOrdersCount = $this->pending_orders ? $this->pending_orders->sum('quantity') : 0;
         $stockDifference = $availableStocksCount - $pendingOrdersCount;
 
         return [
