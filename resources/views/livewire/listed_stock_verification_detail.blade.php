@@ -452,8 +452,19 @@
                 <h5 class="card-title mg-b-0">Created: {{ $process->created_at }}</h5>
             </div>
             <div class="card-body">
+                <!-- Filter Controls -->
+                <div class="mb-3 d-flex gap-2 align-items-center">
+                    <label for="filterWarning" class="form-label mb-0">Filter:</label>
+                    <select id="filterWarning" class="form-select" style="width: auto;">
+                        <option value="all">Show All</option>
+                        <option value="warning">Show Warnings Only</option>
+                        <option value="danger">Show Errors Only</option>
+                        <option value="normal">Show Normal Only</option>
+                    </select>
+                    <span id="filterCount" class="text-muted small ms-2"></span>
+                </div>
                 <div class="table-responsive">
-                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap" id="topupVariationsTable">
                         <thead>
                             <tr>
                                 <th><small><b>No</b></small></th>
@@ -486,11 +497,13 @@
                                     @continue
 
                                 @endif --}}
-                                <tr @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
+                                <tr 
+                                @if ($variation->listed_stock < 0 && $variation->listed_stock + $stocks->where('variation_id', $variation->id)->count() < 0)
                                     class="bg-danger"
                                 @elseif ($available_stock_count != $listed_stock_count)
                                     class="bg-warning"
-                                @endif>
+                                @endif
+                                >
                                     <td>{{ $i + 1 }}</td>
                                     <td>
                                         <a href="{{ url('listing').'?sku='.$variation->sku.'&process_id='.$process->id }}" target="_blank">
@@ -581,6 +594,55 @@
     @section('scripts')
 
         <script>
+            // Filter function for Topup Variations table
+            $(document).ready(function() {
+                const filterSelect = $('#filterWarning');
+                const table = $('#topupVariationsTable');
+                
+                function updateFilterCount() {
+                    const filterValue = filterSelect.val();
+                    let visibleCount = 0;
+                    let totalCount = 0;
+                    
+                    table.find('tbody tr').each(function() {
+                        totalCount++;
+                        const $row = $(this);
+                        const hasWarning = $row.hasClass('bg-warning');
+                        const hasDanger = $row.hasClass('bg-danger');
+                        const isNormal = !hasWarning && !hasDanger;
+                        
+                        let shouldShow = false;
+                        
+                        if (filterValue === 'all') {
+                            shouldShow = true;
+                        } else if (filterValue === 'warning' && hasWarning) {
+                            shouldShow = true;
+                        } else if (filterValue === 'danger' && hasDanger) {
+                            shouldShow = true;
+                        } else if (filterValue === 'normal' && isNormal) {
+                            shouldShow = true;
+                        }
+                        
+                        if (shouldShow) {
+                            $row.show();
+                            visibleCount++;
+                        } else {
+                            $row.hide();
+                        }
+                    });
+                    
+                    // Update count display
+                    $('#filterCount').text(`Showing ${visibleCount} of ${totalCount} rows`);
+                }
+                
+                // Initial count update
+                updateFilterCount();
+                
+                // Filter on change
+                filterSelect.on('change', function() {
+                    updateFilterCount();
+                });
+            });
 
             function PrintElem(elem)
             {
