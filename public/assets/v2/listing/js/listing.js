@@ -168,14 +168,19 @@ function show_variation_history(variationId, variationName) {
  * @param {string} snapshotId - Unique ID for the snapshot tooltip
  */
 window.showSnapshotTooltip = function(event, snapshotId) {
-    // Get snapshot from global object
-    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
-        return;
-    }
-    
-    const snapshot = window.listingSnapshots[snapshotId];
-    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
-    if (!tooltip) return;
+    try {
+        // Get snapshot from global object
+        if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+            return;
+        }
+        
+        const snapshot = window.listingSnapshots[snapshotId];
+        const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+        if (!tooltip) return;
+        
+        // Get the icon element from the event
+        const icon = event.target;
+        if (!icon) return;
         
         // Format and set tooltip content
         tooltip.innerHTML = formatSnapshotForTooltip(snapshot);
