@@ -795,12 +795,12 @@ class BackMarketAPIController extends Controller
         return $response;
     }
 
-    public function updateOneListing($listing_id, $request_JSON, $code = null) {
+    public function updateOneListing($listing_id, $request_JSON, $code = null, $skipBuffer = false) {
         // Parse request to get quantity
         $requestData = json_decode($request_JSON, true);
         
-        // If quantity is provided, apply buffer if needed
-        if (isset($requestData['quantity'])) {
+        // If quantity is provided, apply buffer if needed (skip buffer for V1 listing)
+        if (isset($requestData['quantity']) && !$skipBuffer) {
             $variation = \App\Models\Variation_model::where('reference_id', $listing_id)->first();
             
             if ($variation) {

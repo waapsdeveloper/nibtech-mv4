@@ -125,7 +125,8 @@ class MarketplaceAPIService
             // Get market code if provided in additional data
             $code = $additionalData['market_code'] ?? null;
             
-            $response = $bm->updateOneListing($variation->reference_id, $requestJson, $code);
+            // Skip buffer in updateOneListing since we already applied it in applyBuffer()
+            $response = $bm->updateOneListing($variation->reference_id, $requestJson, $code, true);
             
             // Update marketplace stock record
             if ($response && is_object($response) && isset($response->quantity)) {
