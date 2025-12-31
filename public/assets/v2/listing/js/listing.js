@@ -949,7 +949,7 @@ $(document).ready(function() {
 /**
  * Global marketplace toggle function
  */
-function toggleGlobalMarketplace(marketplaceId, badgeElement) {
+window.toggleGlobalMarketplace = function(marketplaceId, badgeElement) {
     // Initialize global state if not exists
     if (!window.globalMarketplaceState) {
         window.globalMarketplaceState = {};
@@ -1016,7 +1016,7 @@ function loadMarketplaceState() {
 /**
  * Clear marketplace state and reset to defaults
  */
-function clearMarketplaceState() {
+window.clearMarketplaceState = function() {
     // Clear localStorage
     localStorage.removeItem('globalMarketplaceState');
     
