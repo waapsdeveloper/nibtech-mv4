@@ -861,12 +861,14 @@ class ListingController extends Controller
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
+        // Check for active verification (needed for both quantity calculation and verification record creation)
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
+        
         // If setting exact stock, use the exact value directly
         if($setExactStock && $exactStockValue !== null){
             $new_quantity = (int)$exactStockValue;
         } else {
             // Normal flow: calculate based on addition
-            $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
             if($check_active_verification != null){
                 $new_quantity = $stock - $pending_orders;
                 // $new_quantity = $stock;
@@ -939,11 +941,22 @@ class ListingController extends Controller
             $marketplaceStocks = collect();
         }
         
-        $listed_stock_verification = new Listed_stock_verification_model();
+        // If active verification exists, use firstOrNew, otherwise create new
+        if($check_active_verification != null){
+            $listed_stock_verification = Listed_stock_verification_model::firstOrNew([
+                'process_id' => $process_id,
+                'variation_id' => $variation->id,
+                
+            ])->whereNull('qty_to')->whereNotNull('qty_from');
+        } else {
+            $listed_stock_verification = new Listed_stock_verification_model();
+            $listed_stock_verification->qty_from = $previous_qty;
+        }
+        
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
         $listed_stock_verification->pending_orders = $pending_orders;
-        $listed_stock_verification->qty_from = $previous_qty;
+        
         $listed_stock_verification->qty_change = $stock;
         $listed_stock_verification->qty_to = $responseQuantity ?? 0;
         $listed_stock_verification->admin_id = session('user_id');
