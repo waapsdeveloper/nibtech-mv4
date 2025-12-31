@@ -15,7 +15,7 @@ class ListingCalculationService
     public function calculateVariationStats(Variation_model $variation): array
     {
         $availableStocksCount = $variation->available_stocks ? $variation->available_stocks->count() : 0;
-        $pendingOrdersCount = $variation->pending_orders ? $variation->pending_orders->count() : 0;
+        $pendingOrdersCount = $variation->pending_orders ? $variation->pending_orders->sum('quantity') : 0;
         $stockDifference = $availableStocksCount - $pendingOrdersCount;
 
         return [
