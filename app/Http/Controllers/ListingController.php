@@ -125,7 +125,7 @@ class ListingController extends Controller
             'storage_id',
             'color_id',
             'grade_id',
-            'pending_orders_sum() as pending_orders_sum',
+            'pending_orders_sum',
         ]);
 
         $query->when($request->filled('reference_id'), function ($q) use ($request) {
