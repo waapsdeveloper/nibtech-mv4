@@ -820,13 +820,13 @@ class BackMarketAPIController extends Controller
                     $requestData['quantity'] = $bufferedQuantity;
                     $request_JSON = json_encode($requestData);
                     
-                    \Illuminate\Support\Facades\Log::info("Applied buffer to stock update", [
-                        'variation_id' => $variation->id,
-                        'listing_id' => $listing_id,
-                        'original_quantity' => $originalQuantity,
-                        'buffer_percentage' => $bufferPercentage,
-                        'buffered_quantity' => $bufferedQuantity
-                    ]);
+                    // \Illuminate\Support\Facades\Log::info("Applied buffer to stock update", [
+                    //     'variation_id' => $variation->id,
+                    //     'listing_id' => $listing_id,
+                    //     'original_quantity' => $originalQuantity,
+                    //     'buffer_percentage' => $bufferPercentage,
+                    //     'buffered_quantity' => $bufferedQuantity
+                    // ]);
                 }
             }
         }
