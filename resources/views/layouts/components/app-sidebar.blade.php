@@ -79,6 +79,11 @@
                                                         Stock Sync
                                                     </a>
                                                 </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/log-file')}}">                                                        
+                                                        Log File
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </li>
                                         @endif

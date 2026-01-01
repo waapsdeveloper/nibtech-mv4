@@ -13,13 +13,13 @@
             <input type="text" class="form-control" id="total_stock_{{ $variationId }}" value="{{ $totalStock }}" style="width:140px;" readonly disabled>
             <label for="">Total Stock</label>
         </div>
-        <div class="form-floating" style="width: 60px;">
+        <div class="form-floating" style="width: 160px;">
             <input type="number" 
                    class="form-control form-control-sm" 
                    name="stock" 
                    id="add_total_{{ $variationId }}" 
                    value="" 
-                   style="width:60px; height: 31px;"
+                   style="width:160px; height: 31px;"
                    data-available-count="{{ $availableCount }}"
                    data-current-total="{{ $totalStock }}">
             <label for="" class="small" title="Enter positive to add, negative to subtract">Add/Subtract</label>
