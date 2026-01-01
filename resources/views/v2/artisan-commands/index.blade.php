@@ -440,6 +440,13 @@
 </div>
 
 <script>
+// Escape HTML to prevent XSS
+function escapeHtml(text) {
+    const div = document.createElement('div');
+    div.textContent = text;
+    return div.innerHTML;
+}
+
 // Handle run migrations button
 document.addEventListener('DOMContentLoaded', function() {
     const runMigrationsBtn = document.getElementById('runMigrationsBtn');
@@ -559,7 +566,7 @@ function recordMigration(migrationName) {
 }
 
 // Check migration details
-function checkMigrationDetails(migrationName) {
+window.checkMigrationDetails = function(migrationName) {
     const modal = new bootstrap.Modal(document.getElementById('migrationDetailsModal'));
     const contentDiv = document.getElementById('migrationDetailsContent');
     
@@ -684,7 +691,7 @@ function checkMigrationDetails(migrationName) {
                 runBtn.style.display = 'none';
             }
         });
-}
+};
 
 // Run a single specific migration
 function runSingleMigration() {
@@ -1174,13 +1181,6 @@ function clearOutput(btn) {
     outputDiv.innerHTML = '';
     outputDiv.style.display = 'none';
     btn.closest('.command-output-container').style.display = 'none';
-}
-
-// Escape HTML
-function escapeHtml(text) {
-    const div = document.createElement('div');
-    div.textContent = text;
-    return div.innerHTML;
 }
 
 // Simple markdown to HTML converter
