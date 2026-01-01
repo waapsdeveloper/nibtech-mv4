@@ -727,7 +727,44 @@ class ArtisanCommandsController extends Controller
                 ], 400);
             }
 
-            // Read recent log entries
+            // For sync-all-marketplace-stock-from-api command, check StockSyncLog table
+            if ($command === 'v2:sync-all-marketplace-stock-from-api') {
+                $marketplaceId = $request->input('marketplace', 1);
+                
+                $logEntry = \App\Models\StockSyncLog::where('marketplace_id', $marketplaceId)
+                    ->orderBy('started_at', 'desc')
+                    ->first();
+                
+                if ($logEntry) {
+                    $status = $logEntry->status; // running, completed, failed, cancelled
+                    $startedAt = $logEntry->started_at ? $logEntry->started_at->format('Y-m-d H:i:s') : null;
+                    $completedAt = $logEntry->completed_at ? $logEntry->completed_at->format('Y-m-d H:i:s') : null;
+                    $exitCode = $status === 'completed' ? 0 : ($status === 'failed' ? 1 : null);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'status' => $status,
+                        'started_at' => $startedAt,
+                        'completed_at' => $completedAt,
+                        'exit_code' => $exitCode,
+                        'summary' => $logEntry->summary,
+                        'total_records' => $logEntry->total_records,
+                        'synced_count' => $logEntry->synced_count,
+                        'skipped_count' => $logEntry->skipped_count,
+                        'error_count' => $logEntry->error_count,
+                        'duration_seconds' => $logEntry->duration_seconds,
+                        'log_id' => $logEntry->id
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => true,
+                        'status' => 'not_found',
+                        'message' => 'No sync log found for this marketplace'
+                    ]);
+                }
+            }
+
+            // For other commands, read recent log entries
             $logPath = storage_path('logs/laravel.log');
             $status = 'not_found';
             $lastLogEntry = null;

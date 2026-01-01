@@ -763,16 +763,19 @@ document.querySelectorAll('.command-form').forEach(form => {
                                  '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
                                  '<div class="small">' +
                                  'The command is running in the background. ' +
-                                 '<strong>How to check if it\'s done:</strong><br>' +
-                                 '1. Check the logs: <code>tail -f storage/logs/laravel.log | grep "ExecuteArtisanCommandJob"</code><br>' +
-                                 '2. Look for "Command completed" in the logs<br><br>' +
-                                 '<strong>Note:</strong> Make sure your queue worker is running:<br>' +
-                                 '<code>php artisan queue:work</code> or <code>php artisan queue:listen</code><br><br>' +
-                                 '<em>If using sync queue (default), the command runs immediately.</em>' +
+                                 '<strong>Status will be checked automatically...</strong><br><br>' +
+                                 '<div id="command-status-check" class="text-muted">' +
+                                 '<i class="fe fe-loader me-1 spin"></i>Checking status...' +
+                                 '</div>' +
                                  '</div>' +
                                  '</div>';
                     
                     outputDiv.innerHTML = message;
+                    
+                    // Start polling for status updates
+                    const commandName = command;
+                    const marketplaceId = options.marketplace || 1;
+                    pollCommandStatus(commandName, outputDiv, marketplaceId);
                 } else if (data.status === 'completed') {
                     // Synchronous execution completed successfully
                     outputDiv.innerHTML = '<div class="alert alert-success mb-2">' +
@@ -815,6 +818,127 @@ document.querySelectorAll('.command-form').forEach(form => {
     });
 });
 
+// Poll command status automatically (for queued commands)
+function pollCommandStatus(command, outputDiv, marketplaceId = 1, pollCount = 0) {
+    const maxPolls = 120; // Poll for up to 10 minutes (120 * 5 seconds)
+    
+    if (pollCount >= maxPolls) {
+        const statusDiv = document.getElementById('command-status-check');
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="text-warning">Status check timeout. Please check logs manually or refresh the page.</div>';
+        }
+        return;
+    }
+    
+    let url = '{{ url("v2/artisan-commands/check-command-status") }}?command=' + encodeURIComponent(command);
+    if (command === 'v2:sync-all-marketplace-stock-from-api') {
+        url += '&marketplace=' + marketplaceId;
+    }
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const statusDiv = document.getElementById('command-status-check');
+        
+        if (data.success) {
+            if (data.status === 'completed') {
+                // Command completed - show success message
+                let successHtml = '<div class="alert alert-success mb-0">' +
+                                '<i class="fe fe-check-circle me-2"></i><strong>✓ Command Completed!</strong><br>';
+                
+                if (command === 'v2:sync-all-marketplace-stock-from-api' && data.summary) {
+                    successHtml += '<div class="mt-2 small">' +
+                                 '<strong>Summary:</strong> ' + escapeHtml(data.summary) + '<br>';
+                    if (data.total_records !== null) {
+                        successHtml += 'Total: ' + data.total_records + ' | ';
+                        successHtml += 'Synced: ' + data.synced_count + ' | ';
+                        successHtml += 'Skipped: ' + data.skipped_count + ' | ';
+                        successHtml += 'Errors: ' + data.error_count + '<br>';
+                    }
+                    if (data.duration_seconds !== null) {
+                        successHtml += 'Duration: ' + data.duration_seconds + ' seconds<br>';
+                    }
+                    if (data.log_id) {
+                        successHtml += '<a href="{{ url("v2/logs/stock-sync") }}/' + data.log_id + '" class="btn btn-sm btn-primary mt-2">View Full Log Details</a>';
+                    }
+                    successHtml += '</div>';
+                } else {
+                    if (data.completed_at) {
+                        successHtml += '<small>Completed at: ' + escapeHtml(data.completed_at) + '</small>';
+                    }
+                }
+                
+                successHtml += '</div>';
+                
+                if (statusDiv) {
+                    statusDiv.outerHTML = successHtml;
+                } else {
+                    outputDiv.innerHTML = successHtml;
+                }
+                
+                // Stop polling
+                return;
+            } else if (data.status === 'failed') {
+                // Command failed
+                let errorHtml = '<div class="alert alert-danger mb-0">' +
+                              '<i class="fe fe-x-circle me-2"></i><strong>✗ Command Failed</strong><br>';
+                if (data.completed_at) {
+                    errorHtml += '<small>Failed at: ' + escapeHtml(data.completed_at) + '</small>';
+                }
+                errorHtml += '</div>';
+                
+                if (statusDiv) {
+                    statusDiv.outerHTML = errorHtml;
+                } else {
+                    outputDiv.innerHTML = errorHtml;
+                }
+                
+                // Stop polling
+                return;
+            } else if (data.status === 'running') {
+                // Still running - update status and continue polling
+                if (statusDiv) {
+                    let runningText = '<i class="fe fe-loader me-1 spin"></i>Running...';
+                    if (command === 'v2:sync-all-marketplace-stock-from-api' && data.synced_count !== null) {
+                        runningText += ' (Synced: ' + data.synced_count + '/' + (data.total_records || '?') + ')';
+                    }
+                    statusDiv.innerHTML = runningText;
+                }
+            } else if (data.status === 'queued') {
+                // Still queued
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<i class="fe fe-clock me-1"></i>Queued...';
+                }
+            }
+        }
+        
+        // Continue polling if not completed or failed
+        if (data.status !== 'completed' && data.status !== 'failed') {
+            setTimeout(() => {
+                pollCommandStatus(command, outputDiv, marketplaceId, pollCount + 1);
+            }, 5000); // Poll every 5 seconds
+        }
+    })
+    .catch(error => {
+        const statusDiv = document.getElementById('command-status-check');
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="text-danger">Error checking status: ' + escapeHtml(error.message) + '</div>';
+        }
+        
+        // Continue polling even on error (might be temporary)
+        if (pollCount < maxPolls) {
+            setTimeout(() => {
+                pollCommandStatus(command, outputDiv, marketplaceId, pollCount + 1);
+            }, 5000);
+        }
+    });
+}
+
 // Check command status by looking at recent logs
 function checkCommandStatus(command, buttonElement) {
     if (!buttonElement) return;
@@ -823,7 +947,18 @@ function checkCommandStatus(command, buttonElement) {
     buttonElement.disabled = true;
     buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Checking...';
     
-    fetch('{{ url("v2/artisan-commands/check-command-status") }}?command=' + encodeURIComponent(command), {
+    // Get marketplace ID from form if it's the sync command
+    let url = '{{ url("v2/artisan-commands/check-command-status") }}?command=' + encodeURIComponent(command);
+    if (command === 'v2:sync-all-marketplace-stock-from-api') {
+        const commandForm = document.querySelector('[data-command="' + escapeHtml(command) + '"]');
+        if (commandForm) {
+            const marketplaceInput = commandForm.querySelector('input[name="options[marketplace]"]');
+            const marketplaceId = marketplaceInput ? (marketplaceInput.value || 1) : 1;
+            url += '&marketplace=' + marketplaceId;
+        }
+    }
+    
+    fetch(url, {
         method: 'GET',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
@@ -850,6 +985,24 @@ function checkCommandStatus(command, buttonElement) {
                                  '<small>Completed at: ' + (data.completed_at || 'Recently') + '</small><br>';
                     if (data.exit_code !== null) {
                         statusHtml += '<small>Exit Code: ' + data.exit_code + '</small><br>';
+                    }
+                    // Show sync log details if available
+                    if (command === 'v2:sync-all-marketplace-stock-from-api' && data.summary) {
+                        statusHtml += '<div class="mt-2 small">' +
+                                     '<strong>Summary:</strong> ' + escapeHtml(data.summary) + '<br>';
+                        if (data.total_records !== null) {
+                            statusHtml += 'Total: ' + data.total_records + ' | ';
+                            statusHtml += 'Synced: ' + data.synced_count + ' | ';
+                            statusHtml += 'Skipped: ' + data.skipped_count + ' | ';
+                            statusHtml += 'Errors: ' + data.error_count + '<br>';
+                        }
+                        if (data.duration_seconds !== null) {
+                            statusHtml += 'Duration: ' + data.duration_seconds + ' seconds<br>';
+                        }
+                        if (data.log_id) {
+                            statusHtml += '<a href="{{ url("v2/logs/stock-sync") }}/' + data.log_id + '" class="btn btn-sm btn-primary mt-2">View Full Log Details</a>';
+                        }
+                        statusHtml += '</div>';
                     }
                     statusHtml += '</div>';
                 } else if (data.status === 'running') {
