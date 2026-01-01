@@ -29,11 +29,15 @@ class ArtisanCommandsController extends Controller
 
         // Get migration status
         $migrationStatus = $this->getMigrationStatus();
+        
+        // Get running jobs
+        $runningJobs = $this->getRunningJobs();
 
         return view('v2.artisan-commands.index', [
             'commands' => $commands,
             'docs' => $docs,
-            'migrationStatus' => $migrationStatus
+            'migrationStatus' => $migrationStatus,
+            'runningJobs' => $runningJobs
         ])->with($data);
     }
 
@@ -86,18 +90,36 @@ class ArtisanCommandsController extends Controller
 
             // Dispatch job to queue for asynchronous execution
             $job = new ExecuteArtisanCommandJob($command, $cleanOptions);
-            dispatch($job);
+            $dispatchedJob = dispatch($job);
+            
+            // Get job ID if available (for database queue)
+            $jobId = null;
+            if (config('queue.default') === 'database') {
+                // For database queue, get the latest job ID
+                $latestJob = DB::table('jobs')
+                    ->orderBy('id', 'desc')
+                    ->first();
+                if ($latestJob) {
+                    $jobId = $latestJob->id;
+                }
+            } elseif (method_exists($dispatchedJob, 'getJobId')) {
+                $jobId = $dispatchedJob->getJobId();
+            } elseif (is_numeric($dispatchedJob)) {
+                $jobId = $dispatchedJob;
+            }
 
             Log::info('Artisan command dispatched to queue', [
                 'command' => $commandString,
-                'options' => $cleanOptions
+                'options' => $cleanOptions,
+                'job_id' => $jobId
             ]);
 
             return response()->json([
                 'success' => true,
                 'message' => 'Command dispatched to queue. Check logs for output.',
                 'command' => $commandString,
-                'status' => 'queued'
+                'status' => 'queued',
+                'job_id' => $jobId
             ]);
         } catch (\Exception $e) {
             Log::error('Artisan command dispatch failed', [
@@ -110,6 +132,155 @@ class ArtisanCommandsController extends Controller
                 'success' => false,
                 'error' => $e->getMessage(),
                 'command' => $commandString
+            ], 500);
+        }
+    }
+    
+    /**
+     * Kill a running command (delete from queue)
+     */
+    public function killCommand(Request $request)
+    {
+        $request->validate([
+            'job_id' => 'required|string',
+            'command' => 'required|string'
+        ]);
+        
+        $jobId = $request->input('job_id');
+        $command = $request->input('command');
+        
+        try {
+            // Try to delete the job from the queue
+            $deleted = false;
+            
+            // For database queue, delete from jobs table
+            if (config('queue.default') === 'database') {
+                $deleted = DB::table('jobs')
+                    ->where('id', $jobId)
+                    ->delete();
+            }
+            
+            // Also try to delete from failed_jobs if it failed
+            DB::table('failed_jobs')
+                ->where('uuid', $jobId)
+                ->orWhere('id', $jobId)
+                ->delete();
+            
+            Log::info('Artisan command kill requested', [
+                'command' => $command,
+                'job_id' => $jobId,
+                'deleted' => $deleted
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => $deleted ? 'Command job deleted from queue' : 'Command job marked for deletion (may have already completed)',
+                'deleted' => $deleted
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to kill command', [
+                'command' => $command,
+                'job_id' => $jobId,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to kill command: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+    
+    /**
+     * Restart a command (kill current and start new)
+     */
+    public function restartCommand(Request $request)
+    {
+        $request->validate([
+            'command' => 'required|string',
+            'options' => 'nullable|array',
+            'job_id' => 'nullable|string'
+        ]);
+        
+        $command = $request->input('command');
+        $options = $request->input('options', []);
+        $jobId = $request->input('job_id');
+        
+        try {
+            // Kill the existing job if job_id provided
+            if ($jobId) {
+                try {
+                    if (config('queue.default') === 'database') {
+                        DB::table('jobs')
+                            ->where('id', $jobId)
+                            ->delete();
+                    }
+                } catch (\Exception $e) {
+                    // Ignore if job doesn't exist
+                    Log::warning('Could not delete job for restart', [
+                        'job_id' => $jobId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+            
+            // Clean options
+            $cleanOptions = [];
+            foreach ($options as $key => $value) {
+                if ($value === null || $value === '') {
+                    continue;
+                }
+                $cleanKey = strpos($key, '--') === 0 ? $key : '--' . $key;
+                if (is_numeric($value) && !is_float($value) && strpos($value, '.') === false) {
+                    $cleanOptions[$cleanKey] = (int) $value;
+                } elseif ($value === '1' || $value === 1 || $value === true) {
+                    $cleanOptions[$cleanKey] = true;
+                } else {
+                    $cleanOptions[$cleanKey] = $value;
+                }
+            }
+            
+            // Dispatch new job
+            $job = new ExecuteArtisanCommandJob($command, $cleanOptions);
+            $dispatchedJob = dispatch($job);
+            
+            $newJobId = null;
+            if (config('queue.default') === 'database') {
+                // For database queue, get the latest job ID
+                $latestJob = DB::table('jobs')
+                    ->orderBy('id', 'desc')
+                    ->first();
+                if ($latestJob) {
+                    $newJobId = $latestJob->id;
+                }
+            } elseif (method_exists($dispatchedJob, 'getJobId')) {
+                $newJobId = $dispatchedJob->getJobId();
+            } elseif (is_numeric($dispatchedJob)) {
+                $newJobId = $dispatchedJob;
+            }
+            
+            Log::info('Artisan command restarted', [
+                'command' => $command,
+                'old_job_id' => $jobId,
+                'new_job_id' => $newJobId
+            ]);
+            
+            return response()->json([
+                'success' => true,
+                'message' => 'Command restarted successfully',
+                'command' => $command,
+                'status' => 'queued',
+                'job_id' => $newJobId
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to restart command', [
+                'command' => $command,
+                'error' => $e->getMessage()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to restart command: ' . $e->getMessage()
             ], 500);
         }
     }
@@ -239,6 +410,75 @@ class ArtisanCommandsController extends Controller
                 ]
             ]
         ];
+    }
+
+    /**
+     * Get running jobs from queue
+     */
+    private function getRunningJobs()
+    {
+        $runningJobs = [];
+        
+        if (config('queue.default') === 'database' && Schema::hasTable('jobs')) {
+            try {
+                $jobs = DB::table('jobs')
+                    ->orderBy('id', 'desc')
+                    ->limit(10)
+                    ->get();
+                
+                foreach ($jobs as $job) {
+                    try {
+                        $payload = json_decode($job->payload, true);
+                        if (isset($payload['displayName']) && $payload['displayName'] === 'App\\Jobs\\ExecuteArtisanCommandJob') {
+                            $commandData = null;
+                            $options = [];
+                            
+                            // Laravel serializes job data, so we need to unserialize it
+                            if (isset($payload['data'])) {
+                                $data = $payload['data'];
+                                
+                                // If data is a string, it's serialized
+                                if (is_string($data)) {
+                                    $unserialized = @unserialize($data);
+                                    if ($unserialized !== false) {
+                                        // The unserialized data contains the job properties
+                                        if (is_object($unserialized)) {
+                                            $commandData = $unserialized->command ?? null;
+                                            $options = $unserialized->options ?? [];
+                                        } elseif (is_array($unserialized)) {
+                                            $commandData = $unserialized['command'] ?? null;
+                                            $options = $unserialized['options'] ?? [];
+                                        }
+                                    }
+                                } elseif (is_array($data)) {
+                                    // Direct array access
+                                    $commandData = $data['command'] ?? null;
+                                    $options = $data['options'] ?? [];
+                                }
+                            }
+                            
+                            if ($commandData) {
+                                $runningJobs[] = [
+                                    'id' => $job->id,
+                                    'command' => $commandData,
+                                    'options' => $options,
+                                    'created_at' => $job->created_at,
+                                    'queue' => $job->queue ?? 'default'
+                                ];
+                            }
+                        }
+                    } catch (\Exception $e) {
+                        // Skip jobs that can't be parsed
+                        Log::debug('Failed to parse job payload', ['job_id' => $job->id, 'error' => $e->getMessage()]);
+                        continue;
+                    }
+                }
+            } catch (\Exception $e) {
+                Log::warning('Failed to get running jobs', ['error' => $e->getMessage()]);
+            }
+        }
+        
+        return $runningJobs;
     }
 
     /**

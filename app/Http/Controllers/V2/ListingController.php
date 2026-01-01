@@ -930,6 +930,10 @@ class ListingController extends Controller
         if($stock == 'no'){
             $stock = request('stock');
         }
+        
+        // Cast stock to integer to preserve negative values
+        // This ensures -1 stays as -1, not converted to 1
+        $stock = (int)$stock;
 
         // Check if this is an exact stock set request (from stock formula page)
         $setExactStock = request('set_exact_stock', false);
@@ -968,11 +972,14 @@ class ListingController extends Controller
             $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
             if($check_active_verification != null){
                 $new_quantity = $stock - $pending_orders;
-            }else{
+                }else{
                 if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
+                    // Special case: if previous_qty was negative and no pending orders, use stock directly
                     $new_quantity = $stock;
                 }else{
-                    $new_quantity = $stock + $previous_qty;
+                    // Normal case: add/subtract stock to/from previous quantity
+                    // If stock is -1, this will subtract 1 from previous_qty
+                    $new_quantity = $previous_qty + $stock;
                 }
             }
         }
