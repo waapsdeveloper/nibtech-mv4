@@ -150,8 +150,8 @@
                         <div class="btn-group">
                             <!-- Status Change Dropdown -->
                             <div class="btn-group" role="group">
-                                <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
-                                    <i class="fe fe-edit"></i> Change Status
+                                <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Change Status">
+                                    <i class="fe fe-edit"></i>
                                 </button>
                                 <ul class="dropdown-menu">
                                     <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
@@ -170,8 +170,8 @@
                             </div>
                             
                             <!-- Delete Button -->
-                            <button type="button" class="btn btn-danger" onclick="deleteLog({{ $log->id }})">
-                                <i class="fe fe-trash-2"></i> Delete Log
+                            <button type="button" class="btn btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
+                                <i class="fe fe-trash-2"></i>
                             </button>
                         </div>
                     </div>
