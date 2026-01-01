@@ -135,7 +135,7 @@
                                 </thead>
                                 <tbody>
                                     @foreach($logs as $log)
-                                    <tr>
+                                    <tr data-log-id="{{ $log->id }}">
                                         <td>{{ $log->id }}</td>
                                         <td>{{ $log->marketplace->name ?? 'N/A' }} (ID: {{ $log->marketplace_id }})</td>
                                         <td>
@@ -162,9 +162,37 @@
                                             @endif
                                         </td>
                                         <td>
-                                            <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary">
-                                                <i class="fe fe-eye"></i> View
-                                            </a>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary">
+                                                    <i class="fe fe-eye"></i> View
+                                                </a>
+                                                
+                                                <!-- Status Change Dropdown -->
+                                                <div class="btn-group" role="group">
+                                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                                        <i class="fe fe-edit"></i> Status
+                                                    </button>
+                                                    <ul class="dropdown-menu">
+                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
+                                                            <span class="badge bg-warning me-2">Running</span> Set to Running
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
+                                                            <span class="badge bg-success me-2">Completed</span> Set to Completed
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
+                                                            <span class="badge bg-danger me-2">Failed</span> Set to Failed
+                                                        </a></li>
+                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
+                                                            <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
+                                                        </a></li>
+                                                    </ul>
+                                                </div>
+                                                
+                                                <!-- Delete Button -->
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteLog({{ $log->id }})">
+                                                    <i class="fe fe-trash-2"></i> Delete
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -186,5 +214,102 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function deleteLog(logId) {
+    if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('{{ url("v2/logs/stock-sync") }}/' + logId, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            // Show success message
+            showAlert('success', data.message || 'Log entry deleted successfully');
+            
+            // Remove the row from table
+            const row = document.querySelector('tr[data-log-id="' + logId + '"]');
+            if (row) {
+                row.remove();
+            } else {
+                // If row doesn't have data attribute, reload page
+                setTimeout(() => {
+                    window.location.reload();
+                }, 1000);
+            }
+        } else {
+            showAlert('danger', data.error || 'Failed to delete log entry');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while deleting the log entry');
+    });
+}
+
+function changeStatus(logId, newStatus) {
+    if (!confirm('Are you sure you want to change the status to "' + newStatus + '"?')) {
+        return;
+    }
+    
+    fetch('{{ url("v2/logs/stock-sync") }}/' + logId + '/status', {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Status updated successfully');
+            
+            // Reload page to show updated status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('danger', data.error || 'Failed to update status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while updating the status');
+    });
+}
+
+function showAlert(type, message) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = message + 
+        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    
+    // Add to page
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
 @endsection
 

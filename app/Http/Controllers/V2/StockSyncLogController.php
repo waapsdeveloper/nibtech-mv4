@@ -66,4 +66,87 @@ class StockSyncLogController extends Controller
         
         return view('v2.logs.stock-sync.show', compact('log', 'data'));
     }
+    
+    /**
+     * Delete a log entry
+     */
+    public function destroy($id)
+    {
+        try {
+            $log = StockSyncLog::findOrFail($id);
+            $log->delete();
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Log entry deleted successfully'
+                ]);
+            }
+            
+            return redirect()->route('v2.logs.stock-sync')
+                ->with('success', 'Log entry deleted successfully');
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to delete log entry: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('v2.logs.stock-sync')
+                ->with('error', 'Failed to delete log entry: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Update log status
+     */
+    public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:running,completed,failed,cancelled'
+        ]);
+        
+        try {
+            $log = StockSyncLog::findOrFail($id);
+            $oldStatus = $log->status;
+            $newStatus = $request->input('status');
+            
+            $log->status = $newStatus;
+            
+            // If changing to completed or failed, set completed_at if not already set
+            if (in_array($newStatus, ['completed', 'failed', 'cancelled']) && !$log->completed_at) {
+                $log->completed_at = now();
+                
+                // Calculate duration if started_at exists
+                if ($log->started_at) {
+                    $log->duration_seconds = now()->diffInSeconds($log->started_at);
+                }
+            }
+            
+            $log->save();
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Status updated successfully',
+                    'old_status' => $oldStatus,
+                    'new_status' => $newStatus
+                ]);
+            }
+            
+            return redirect()->back()
+                ->with('success', 'Status updated from ' . ucfirst($oldStatus) . ' to ' . ucfirst($newStatus));
+        } catch (\Exception $e) {
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to update status: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->back()
+                ->with('error', 'Failed to update status: ' . $e->getMessage());
+        }
+    }
 }

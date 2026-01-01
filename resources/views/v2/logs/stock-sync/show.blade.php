@@ -142,15 +142,131 @@
                     </div>
                     @endif
 
-                    <div class="mt-4">
+                    <div class="mt-4 d-flex justify-content-between">
                         <a href="{{ url('v2/logs/stock-sync') }}" class="btn btn-secondary">
                             <i class="fe fe-arrow-left"></i> Back to Logs
                         </a>
+                        
+                        <div class="btn-group">
+                            <!-- Status Change Dropdown -->
+                            <div class="btn-group" role="group">
+                                <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fe fe-edit"></i> Change Status
+                                </button>
+                                <ul class="dropdown-menu">
+                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
+                                        <span class="badge bg-warning me-2">Running</span> Set to Running
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
+                                        <span class="badge bg-success me-2">Completed</span> Set to Completed
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
+                                        <span class="badge bg-danger me-2">Failed</span> Set to Failed
+                                    </a></li>
+                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
+                                        <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
+                                    </a></li>
+                                </ul>
+                            </div>
+                            
+                            <!-- Delete Button -->
+                            <button type="button" class="btn btn-danger" onclick="deleteLog({{ $log->id }})">
+                                <i class="fe fe-trash-2"></i> Delete Log
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script>
+function deleteLog(logId) {
+    if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
+        return;
+    }
+    
+    fetch('{{ url("v2/logs/stock-sync") }}/' + logId, {
+        method: 'DELETE',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Log entry deleted successfully');
+            // Redirect to logs list after 1 second
+            setTimeout(() => {
+                window.location.href = '{{ url("v2/logs/stock-sync") }}';
+            }, 1000);
+        } else {
+            showAlert('danger', data.error || 'Failed to delete log entry');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while deleting the log entry');
+    });
+}
+
+function changeStatus(logId, newStatus) {
+    if (!confirm('Are you sure you want to change the status to "' + newStatus + '"?')) {
+        return;
+    }
+    
+    fetch('{{ url("v2/logs/stock-sync") }}/' + logId + '/status', {
+        method: 'PATCH',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            status: newStatus
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Status updated successfully');
+            // Reload page to show updated status
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('danger', data.error || 'Failed to update status');
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while updating the status');
+    });
+}
+
+function showAlert(type, message) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = message + 
+        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    
+    // Add to page
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
+}
+</script>
 @endsection
 

@@ -80,5 +80,7 @@ Route::prefix('v2')->group(function () {
     // Stock Sync Logs
     Route::get('logs/stock-sync', [\App\Http\Controllers\V2\StockSyncLogController::class, 'index'])->name('v2.logs.stock-sync');
     Route::get('logs/stock-sync/{id}', [\App\Http\Controllers\V2\StockSyncLogController::class, 'show'])->name('v2.logs.stock-sync.show');
+    Route::delete('logs/stock-sync/{id}', [\App\Http\Controllers\V2\StockSyncLogController::class, 'destroy'])->name('v2.logs.stock-sync.destroy');
+    Route::patch('logs/stock-sync/{id}/status', [\App\Http\Controllers\V2\StockSyncLogController::class, 'updateStatus'])->name('v2.logs.stock-sync.update-status');
 });
 
