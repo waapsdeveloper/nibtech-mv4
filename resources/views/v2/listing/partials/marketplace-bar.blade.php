@@ -91,6 +91,13 @@
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
                 <span class="text-muted small">(<span id="stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $currentStock }}</span>)</span>
+                {{-- Real-time Backmarket Stock Badge (only for Backmarket) --}}
+                @if($marketplaceIdInt === 1)
+                    <span id="backmarket_stock_badge_{{ $variationId }}_{{ $marketplaceId }}" class="badge bg-secondary text-white ms-2" style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">
+                        <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
+                        <span>Loading...</span>
+                    </span>
+                @endif
                 @if($totalLocked > 0)
                     <span class="badge bg-warning text-dark cursor-pointer" 
                           title="{{ $lockedStockCount }} active lock(s) - {{ $totalLocked }} units locked" 
@@ -175,4 +182,29 @@
         @endif
     </div>
 </div>
+
+@if($marketplaceIdInt === 1)
+<script>
+    // Fetch Backmarket stock when marketplace bar is rendered
+    (function() {
+        const variationId = {{ $variationId }};
+        const marketplaceId = {{ $marketplaceIdInt }};
+        
+        // Wait for DOM and functions to be ready
+        $(document).ready(function() {
+            // Small delay to ensure listing.js is loaded
+            setTimeout(function() {
+                if (typeof window.fetchBackmarketStockQuantity === 'function') {
+                    window.fetchBackmarketStockQuantity(variationId, marketplaceId)
+                        .then(function(quantity) {
+                            if (quantity !== null && typeof window.updateBackmarketStockBadge === 'function') {
+                                window.updateBackmarketStockBadge(variationId, marketplaceId, quantity);
+                            }
+                        });
+                }
+            }, 100);
+        });
+    })();
+</script>
+@endif
 

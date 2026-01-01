@@ -1813,4 +1813,37 @@ class ListingController extends Controller
             $this->trackListingChanges($variationId, $marketplaceId, $listingId, $countryId, $changes, 'auto', 'Buybox update from API');
         }
     }
+
+    /**
+     * Get updated stock quantity from Backmarket API (V2 endpoint)
+     * Uses ListingDataService for service layer architecture
+     * 
+     * @param int $variationId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getUpdatedQuantity(int $variationId)
+    {
+        try {
+            $result = $this->dataService->getBackmarketStockQuantity($variationId);
+            
+            return response()->json([
+                'success' => $result['updated'],
+                'quantity' => $result['quantity'],
+                'sku' => $result['sku'],
+                'state' => $result['state'],
+                'error' => $result['error'] ?? null
+            ]);
+        } catch (\Exception $e) {
+            Log::error("V2 getUpdatedQuantity error: " . $e->getMessage(), [
+                'variation_id' => $variationId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'quantity' => 0,
+                'error' => 'Error fetching stock quantity'
+            ], 500);
+        }
+    }
 }

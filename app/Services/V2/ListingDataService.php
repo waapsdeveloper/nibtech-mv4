@@ -8,7 +8,10 @@ use App\Models\Currency_model;
 use App\Models\Grade_model;
 use App\Models\Marketplace_model;
 use App\Models\Storage_model;
+use App\Models\Variation_model;
+use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ListingDataService
 {
@@ -107,6 +110,67 @@ class ListingDataService
     public function clearCache(): void
     {
         Cache::forget('listing_reference_data');
+    }
+
+    /**
+     * Get updated stock quantity from Backmarket API for a variation
+     * 
+     * @param int $variationId
+     * @return array ['quantity' => int, 'sku' => string, 'state' => int, 'updated' => bool, 'error' => string|null]
+     */
+    public function getBackmarketStockQuantity(int $variationId): array
+    {
+        $variation = Variation_model::find($variationId);
+        
+        if (!$variation || !$variation->reference_id) {
+            return [
+                'quantity' => 0,
+                'sku' => null,
+                'state' => null,
+                'updated' => false,
+                'error' => 'Variation or reference_id not found'
+            ];
+        }
+        
+        try {
+            $bm = new BackMarketAPIController();
+            $apiResponse = $bm->getOneListing($variation->reference_id);
+            
+            if ($apiResponse && is_object($apiResponse)) {
+                $quantity = isset($apiResponse->quantity) ? (int)$apiResponse->quantity : $variation->listed_stock ?? 0;
+                $sku = isset($apiResponse->sku) ? $apiResponse->sku : $variation->sku;
+                $state = isset($apiResponse->publication_state) ? $apiResponse->publication_state : $variation->state;
+                
+                return [
+                    'quantity' => $quantity,
+                    'sku' => $sku,
+                    'state' => $state,
+                    'updated' => true,
+                    'error' => null
+                ];
+            }
+            
+            return [
+                'quantity' => $variation->listed_stock ?? 0,
+                'sku' => $variation->sku,
+                'state' => $variation->state,
+                'updated' => false,
+                'error' => 'Invalid API response'
+            ];
+        } catch (\Exception $e) {
+            Log::error("Error fetching Backmarket stock for variation {$variationId}: " . $e->getMessage(), [
+                'variation_id' => $variationId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return [
+                'quantity' => $variation->listed_stock ?? 0,
+                'sku' => $variation->sku,
+                'state' => $variation->state,
+                'updated' => false,
+                'error' => $e->getMessage()
+            ];
+        }
     }
 }
 
