@@ -40,7 +40,10 @@ class StockDistributionService
 
         $distributionResults = [];
         $totalDistributed = 0;
-        $remainingStock = abs($stockChange);
+        
+        // Determine if this is a subtraction (negative stock change)
+        $isSubtraction = $stockChange < 0;
+        $remainingStock = abs($stockChange); // Use abs only for tracking remaining amount to process
 
         // Get variation to determine total stock if needed
         $variation = \App\Models\Variation_model::find($variationId);
@@ -51,16 +54,27 @@ class StockDistributionService
         // Get admin ID for creating new records
         $adminId = auth()->id() ?? session('user_id') ?? 1;
 
-        // Apply each marketplace's formula (skip marketplace 1 as it gets remaining stock)
-        foreach ($allMarketplaces as $marketplace) {
-            // Skip marketplace 1 - it will get remaining stock at the end
-            if ($marketplace->id == 1) {
+        // For subtraction, we need to subtract from marketplaces in reverse order (marketplace 1 last)
+        // For addition, we process other marketplaces first, then marketplace 1 gets remaining
+        $marketplacesToProcess = $isSubtraction 
+            ? $allMarketplaces->reverse() 
+            : $allMarketplaces;
+
+        // Apply each marketplace's formula
+        foreach ($marketplacesToProcess as $marketplace) {
+            // For addition: skip marketplace 1 - it will get remaining stock at the end
+            // For subtraction: process marketplace 1 first
+            if (!$isSubtraction && $marketplace->id == 1) {
                 continue;
             }
 
             // Get or create marketplace stock record
             $marketplaceStock = $existingStocks->get($marketplace->id);
             if (!$marketplaceStock) {
+                // For subtraction, if marketplace doesn't exist, skip it (can't subtract from 0)
+                if ($isSubtraction) {
+                    continue;
+                }
                 $marketplaceStock = MarketplaceStockModel::create([
                     'variation_id' => $variationId,
                     'marketplace_id' => $marketplace->id,
@@ -72,13 +86,41 @@ class StockDistributionService
 
             $formula = $marketplaceStock->formula;
 
-            // Skip if no formula
+            // For subtraction without formula, subtract proportionally or from marketplace 1
             if (!$formula || !isset($formula['value']) || !isset($formula['type'])) {
+                // For subtraction, if no formula, subtract from marketplace 1 first
+                if ($isSubtraction && $marketplace->id == 1 && $remainingStock > 0) {
+                    $oldValue = $marketplaceStock->listed_stock;
+                    $actualSubtraction = min($remainingStock, $oldValue); // Can't subtract more than available
+                    $newValue = max(0, $oldValue - $actualSubtraction); // Don't go below 0
+
+                    $marketplaceStock->reserve_old_value = $oldValue;
+                    $marketplaceStock->listed_stock = $newValue;
+                    $marketplaceStock->reserve_new_value = $newValue;
+                    $marketplaceStock->save();
+
+                    $totalDistributed += $actualSubtraction;
+                    $remainingStock -= $actualSubtraction;
+
+                    $distributionResults[] = [
+                        'marketplace_id' => $marketplaceStock->marketplace_id,
+                        'marketplace_name' => $marketplace->name ?? 'Unknown',
+                        'old_value' => $oldValue,
+                        'new_value' => $newValue,
+                        'distribution' => -$actualSubtraction, // Negative to indicate subtraction
+                    ];
+
+                    Log::info("Subtracted {$actualSubtraction} units from marketplace {$marketplaceStock->marketplace_id} ({$marketplace->name}) for variation {$variationId}");
+                }
                 continue;
             }
 
             // Determine base value to apply formula to
-            $baseValue = ($formula['apply_to'] ?? 'pushed') === 'total' ? $totalStock : $stockChange;
+            // For subtraction with apply_to: total, use absolute value of total stock
+            // For subtraction with apply_to: pushed, use absolute value of stock change
+            $baseValue = ($formula['apply_to'] ?? 'pushed') === 'total' 
+                ? ($isSubtraction ? abs($totalStock) : $totalStock)
+                : ($isSubtraction ? abs($stockChange) : $stockChange);
 
             // Log formula details for debugging
             Log::info("Calculating distribution for marketplace {$marketplace->id} ({$marketplace->name})", [
@@ -89,6 +131,7 @@ class StockDistributionService
                 'base_value' => $baseValue,
                 'stock_change' => $stockChange,
                 'total_stock' => $totalStock,
+                'is_subtraction' => $isSubtraction,
             ]);
 
             // Calculate distribution based on formula
@@ -100,12 +143,21 @@ class StockDistributionService
             
             Log::info("Distribution calculated for marketplace {$marketplace->id}", [
                 'calculated_distribution' => $distribution,
+                'is_subtraction' => $isSubtraction,
             ]);
 
             if ($distribution > 0 && $remainingStock > 0) {
                 $oldValue = $marketplaceStock->listed_stock;
-                $actualDistribution = min($distribution, $remainingStock);
-                $newValue = $oldValue + $actualDistribution;
+                
+                if ($isSubtraction) {
+                    // For subtraction: subtract the calculated amount (but not more than available)
+                    $actualDistribution = min($distribution, $remainingStock, $oldValue);
+                    $newValue = max(0, $oldValue - $actualDistribution);
+                } else {
+                    // For addition: add the calculated amount
+                    $actualDistribution = min($distribution, $remainingStock);
+                    $newValue = $oldValue + $actualDistribution;
+                }
 
                 // Store reserve values
                 $marketplaceStock->reserve_old_value = $oldValue;
@@ -121,15 +173,16 @@ class StockDistributionService
                     'marketplace_name' => $marketplace->name ?? 'Unknown',
                     'old_value' => $oldValue,
                     'new_value' => $newValue,
-                    'distribution' => $actualDistribution,
+                    'distribution' => $isSubtraction ? -$actualDistribution : $actualDistribution,
                 ];
 
-                Log::info("Distributed {$actualDistribution} units to marketplace {$marketplaceStock->marketplace_id} ({$marketplace->name}) for variation {$variationId}");
+                $action = $isSubtraction ? 'Subtracted' : 'Distributed';
+                Log::info("{$action} {$actualDistribution} units " . ($isSubtraction ? 'from' : 'to') . " marketplace {$marketplaceStock->marketplace_id} ({$marketplace->name}) for variation {$variationId}");
             }
         }
 
-        // Distribute remaining stock to marketplace 1 if there's any left (unless ignoreRemaining is true)
-        if ($remainingStock > 0 && !$ignoreRemaining) {
+        // For addition: Distribute remaining stock to marketplace 1 if there's any left (unless ignoreRemaining is true)
+        if (!$isSubtraction && $remainingStock > 0 && !$ignoreRemaining) {
             // Get or create marketplace 1 stock record
             $marketplace1Stock = $existingStocks->get(1);
             if (!$marketplace1Stock) {
@@ -164,8 +217,10 @@ class StockDistributionService
 
             Log::info("Distributed remaining {$remainingStock} units to marketplace 1 ({$marketplace1Name}) for variation {$variationId}");
             $remainingStock = 0;
-        } else if ($remainingStock > 0 && $ignoreRemaining) {
+        } else if (!$isSubtraction && $remainingStock > 0 && $ignoreRemaining) {
             Log::info("Ignoring remaining {$remainingStock} units for variation {$variationId} (exact stock set mode)");
+        } else if ($isSubtraction && $remainingStock > 0) {
+            Log::warning("Could not subtract all {$remainingStock} units for variation {$variationId} - insufficient stock in marketplaces");
         }
 
         return [

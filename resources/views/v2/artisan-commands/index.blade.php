@@ -51,6 +51,77 @@
 
     <div class="row">
         <div class="col-md-12">
+            {{-- Running Jobs Section --}}
+            <div class="card mb-4">
+                <div class="card-header bg-warning text-dark">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="card-title mb-0">
+                            <i class="fe fe-play-circle me-2"></i>Running Commands
+                        </h5>
+                        <button type="button" class="btn btn-sm btn-light" onclick="refreshRunningJobs()" title="Refresh">
+                            <i class="fe fe-refresh-cw"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body" id="runningJobsContainer">
+                    @if(count($runningJobs) > 0)
+                        <div class="table-responsive">
+                            <table class="table table-sm table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Command</th>
+                                        <th>Options</th>
+                                        <th>Job ID</th>
+                                        <th>Started</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach($runningJobs as $job)
+                                    <tr>
+                                        <td>
+                                            <code>{{ $job['command'] }}</code>
+                                        </td>
+                                        <td>
+                                            @if(!empty($job['options']))
+                                                <small class="text-muted">
+                                                    @foreach($job['options'] as $key => $value)
+                                                        <span class="badge bg-secondary me-1">{{ str_replace('--', '', $key) }}: {{ is_bool($value) ? ($value ? 'true' : 'false') : $value }}</span>
+                                                    @endforeach
+                                                </small>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <code>{{ $job['id'] }}</code>
+                                        </td>
+                                        <td>
+                                            <small class="text-muted">{{ \Carbon\Carbon::parse($job['created_at'])->diffForHumans() }}</small>
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <button type="button" class="btn btn-danger" onclick="killCommandFromList('{{ $job['command'] }}', '{{ $job['id'] }}', this)" title="Kill Command">
+                                                    <i class="fe fe-x-circle"></i> Kill
+                                                </button>
+                                                <button type="button" class="btn btn-warning" onclick="restartCommandFromList('{{ $job['command'] }}', {{ json_encode($job['options']) }}, '{{ $job['id'] }}', this)" title="Restart Command">
+                                                    <i class="fe fe-refresh-cw"></i> Restart
+                                                </button>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
+                    @else
+                        <div class="alert alert-info mb-0">
+                            <i class="fe fe-info me-2"></i>No running commands found.
+                        </div>
+                    @endif
+                </div>
+            </div>
+
             {{-- Migration Status Section --}}
             <div class="card mb-4">
                 <div class="card-header bg-primary text-white">
@@ -758,19 +829,44 @@ document.querySelectorAll('.command-form').forEach(form => {
         .then(data => {
             if (data.success) {
                 if (data.status === 'queued') {
+                    const jobId = data.job_id || null;
                     let message = '<div class="alert alert-info mb-2">' +
+                                 '<div class="d-flex justify-content-between align-items-start mb-2">' +
+                                 '<div>' +
                                  '<i class="fe fe-clock me-2"></i><strong>Command queued successfully!</strong><br>' +
-                                 '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
+                                 '<small class="text-muted">Command: <code>' + data.command + '</code></small>';
+                    if (jobId) {
+                        message += '<br><small class="text-muted">Job ID: <code>' + jobId + '</code></small>';
+                    }
+                    message += '</div>';
+                    
+                    // Add Kill and Restart buttons at the top
+                    if (jobId) {
+                        message += '<div class="d-flex gap-2">' +
+                                 '<button type="button" class="btn btn-sm btn-danger" onclick="killCommand(\'' + command + '\', \'' + jobId + '\', this)">' +
+                                 '<i class="fe fe-x-circle"></i> Kill' +
+                                 '</button>' +
+                                 '<button type="button" class="btn btn-sm btn-warning" onclick="restartCommand(\'' + command + '\', ' + JSON.stringify(options).replace(/"/g, '&quot;') + ', \'' + jobId + '\', this)">' +
+                                 '<i class="fe fe-refresh-cw"></i> Restart' +
+                                 '</button>' +
+                                 '</div>';
+                    }
+                    message += '</div>' +
                                  '<div class="small">' +
                                  'The command is running in the background. ' +
                                  '<strong>Status will be checked automatically...</strong><br><br>' +
-                                 '<div id="command-status-check" class="text-muted">' +
+                                 '<div id="command-status-check" class="text-muted mb-2">' +
                                  '<i class="fe fe-loader me-1 spin"></i>Checking status...' +
                                  '</div>' +
                                  '</div>' +
                                  '</div>';
                     
                     outputDiv.innerHTML = message;
+                    
+                    // Store job ID and command info for later use
+                    outputDiv.setAttribute('data-job-id', jobId || '');
+                    outputDiv.setAttribute('data-command', command);
+                    outputDiv.setAttribute('data-options', JSON.stringify(options));
                     
                     // Start polling for status updates
                     const commandName = command;
@@ -1134,6 +1230,251 @@ function convertMarkdownToHtml(markdown) {
     html = '<div class="markdown-body"><p class="mb-2">' + html + '</p></div>';
     
     return html;
+}
+
+// Kill a running command
+function killCommand(command, jobId, buttonElement) {
+    if (!confirm('Are you sure you want to kill this command? This will stop the running job.')) {
+        return;
+    }
+    
+    const originalHtml = buttonElement.innerHTML;
+    buttonElement.disabled = true;
+    buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Killing...';
+    
+    fetch('{{ url("v2/artisan-commands/kill") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            command: command,
+            job_id: jobId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Command killed successfully');
+            
+            // Update the status check area
+            const statusDiv = document.getElementById('command-status-check');
+            if (statusDiv) {
+                statusDiv.innerHTML = '<div class="text-danger"><i class="fe fe-x-circle me-1"></i>Command killed</div>';
+            }
+            
+            // Hide kill/restart buttons
+            const buttonContainer = buttonElement.closest('.mt-2');
+            if (buttonContainer) {
+                buttonContainer.style.display = 'none';
+            }
+        } else {
+            showAlert('danger', data.error || 'Failed to kill command');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while killing the command');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+    });
+}
+
+// Restart a command
+function restartCommand(command, options, oldJobId, buttonElement) {
+    if (!confirm('Are you sure you want to restart this command? This will kill the current job and start a new one.')) {
+        return;
+    }
+    
+    const originalHtml = buttonElement.innerHTML;
+    buttonElement.disabled = true;
+    buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Restarting...';
+    
+    fetch('{{ url("v2/artisan-commands/restart") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            command: command,
+            options: options,
+            job_id: oldJobId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Command restarted successfully');
+            
+            // Update the output div with new job info
+            const outputDiv = buttonElement.closest('.command-output-container').querySelector('.command-output');
+            if (outputDiv && data.job_id) {
+                outputDiv.setAttribute('data-job-id', data.job_id);
+                
+                // Update job ID in the message if it exists
+                const jobIdElements = outputDiv.querySelectorAll('code');
+                jobIdElements.forEach(el => {
+                    if (el.textContent.includes('Job ID') || (el.previousSibling && el.previousSibling.textContent && el.previousSibling.textContent.includes('Job ID'))) {
+                        const container = el.closest('small');
+                        if (container) {
+                            container.innerHTML = 'Job ID: <code>' + data.job_id + '</code>';
+                        }
+                    }
+                });
+                
+                // Update kill/restart buttons with new job ID
+                const killBtn = outputDiv.querySelector('button[onclick*="killCommand"]');
+                const restartBtn = outputDiv.querySelector('button[onclick*="restartCommand"]');
+                if (killBtn) {
+                    killBtn.setAttribute('onclick', 'killCommand(\'' + command + '\', \'' + data.job_id + '\', this)');
+                }
+                if (restartBtn) {
+                    restartBtn.setAttribute('onclick', 'restartCommand(\'' + command + '\', ' + JSON.stringify(options).replace(/"/g, '&quot;') + ', \'' + data.job_id + '\', this)');
+                }
+            }
+            
+            // Reset button
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHtml;
+            
+            // Restart polling
+            const outputDiv = buttonElement.closest('.command-output-container').querySelector('.command-output');
+            const marketplaceId = options.marketplace || 1;
+            pollCommandStatus(command, outputDiv, marketplaceId);
+        } else {
+            showAlert('danger', data.error || 'Failed to restart command');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while restarting the command');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+    });
+}
+
+// Kill command from the running jobs list
+function killCommandFromList(command, jobId, buttonElement) {
+    if (!confirm('Are you sure you want to kill this command? This will stop the running job.')) {
+        return;
+    }
+    
+    const originalHtml = buttonElement.innerHTML;
+    buttonElement.disabled = true;
+    buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Killing...';
+    
+    fetch('{{ url("v2/artisan-commands/kill") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            command: command,
+            job_id: jobId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Command killed successfully');
+            // Refresh the running jobs list
+            refreshRunningJobs();
+        } else {
+            showAlert('danger', data.error || 'Failed to kill command');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while killing the command');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+    });
+}
+
+// Restart command from the running jobs list
+function restartCommandFromList(command, options, oldJobId, buttonElement) {
+    if (!confirm('Are you sure you want to restart this command? This will kill the current job and start a new one.')) {
+        return;
+    }
+    
+    const originalHtml = buttonElement.innerHTML;
+    buttonElement.disabled = true;
+    buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Restarting...';
+    
+    // Convert options object to proper format
+    const optionsObj = typeof options === 'string' ? JSON.parse(options.replace(/&quot;/g, '"')) : options;
+    
+    fetch('{{ url("v2/artisan-commands/restart") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            command: command,
+            options: optionsObj,
+            job_id: oldJobId
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Command restarted successfully');
+            // Refresh the running jobs list
+            refreshRunningJobs();
+        } else {
+            showAlert('danger', data.error || 'Failed to restart command');
+            buttonElement.disabled = false;
+            buttonElement.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while restarting the command');
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+    });
+}
+
+// Refresh running jobs list
+function refreshRunningJobs() {
+    const container = document.getElementById('runningJobsContainer');
+    if (!container) return;
+    
+    container.innerHTML = '<div class="text-center p-3"><i class="fe fe-loader spin"></i> Refreshing...</div>';
+    
+    // Reload the page to get updated running jobs
+    setTimeout(() => {
+        window.location.reload();
+    }, 500);
+}
+
+function showAlert(type, message) {
+    // Create alert element
+    const alertDiv = document.createElement('div');
+    alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
+    alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    alertDiv.innerHTML = message + 
+        '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
+    
+    // Add to page
+    document.body.appendChild(alertDiv);
+    
+    // Auto remove after 5 seconds
+    setTimeout(() => {
+        if (alertDiv.parentNode) {
+            alertDiv.remove();
+        }
+    }, 5000);
 }
 </script>
 @endsection
