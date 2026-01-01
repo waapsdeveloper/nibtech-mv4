@@ -111,101 +111,104 @@
             </div>
 
             <!-- Logs Table -->
-            <div class="card">
+            <div class="card mb-4">
                 <div class="card-header">
                     <h5 class="card-title mb-0">Stock Sync Logs</h5>
                 </div>
-                <div class="card-body">
-                    @if($logs->count() > 0)
-                        <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
-                                    <tr>
-                                        <th>ID</th>
-                                        <th>Marketplace</th>
-                                        <th>Status</th>
-                                        <th>Total Records</th>
-                                        <th>Synced</th>
-                                        <th>Skipped</th>
-                                        <th>Errors</th>
-                                        <th>Started At</th>
-                                        <th>Duration</th>
-                                        <th>Actions</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    @foreach($logs as $log)
-                                    <tr data-log-id="{{ $log->id }}">
-                                        <td>{{ $log->id }}</td>
-                                        <td>{{ $log->marketplace->name ?? 'N/A' }} (ID: {{ $log->marketplace_id }})</td>
-                                        <td>
-                                            <div class="dropdown">
-                                                @if($log->status == 'running')
-                                                    <span class="badge bg-warning status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Running</span>
-                                                @elseif($log->status == 'completed')
-                                                    <span class="badge bg-success status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Completed</span>
-                                                @elseif($log->status == 'failed')
-                                                    <span class="badge bg-danger status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Failed</span>
-                                                @else
-                                                    <span class="badge bg-secondary status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">{{ ucfirst($log->status) }}</span>
-                                                @endif
-                                                <ul class="dropdown-menu">
-                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
-                                                        <span class="badge bg-warning me-2">Running</span> Set to Running
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
-                                                        <span class="badge bg-success me-2">Completed</span> Set to Completed
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
-                                                        <span class="badge bg-danger me-2">Failed</span> Set to Failed
-                                                    </a></li>
-                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
-                                                        <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
-                                                    </a></li>
-                                                </ul>
-                                            </div>
-                                        </td>
-                                        <td>{{ $log->total_records }}</td>
-                                        <td class="text-success">{{ $log->synced_count }}</td>
-                                        <td class="text-warning">{{ $log->skipped_count }}</td>
-                                        <td class="text-danger">{{ $log->error_count }}</td>
-                                        <td>{{ $log->started_at->format('Y-m-d H:i:s') }}</td>
-                                        <td>
-                                            @if($log->duration_seconds)
-                                                {{ gmdate('H:i:s', $log->duration_seconds) }}
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
-                                        <td>
-                                            <div class="btn-group" role="group">
-                                                <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary" title="View Details">
-                                                    <i class="fe fe-eye"></i>
-                                                </a>
-                                                
-                                                <!-- Delete Button -->
-                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
-                                                    <i class="fe fe-trash-2"></i>
-                                                </button>
-                                            </div>
-                                        </td>
-                                    </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                        
-                        <!-- Pagination -->
-                        <div class="mt-3">
-                            {{ $logs->appends(request()->query())->links() }}
-                        </div>
-                    @else
+            </div>
+            
+            @if($logs->count() > 0)
+                <div class="table-responsive">
+                    <table class="table table-hover table-bordered">
+                        <thead class="table-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Marketplace</th>
+                                <th>Status</th>
+                                <th>Total Records</th>
+                                <th>Synced</th>
+                                <th>Skipped</th>
+                                <th>Errors</th>
+                                <th>Started At</th>
+                                <th>Duration</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach($logs as $log)
+                            <tr data-log-id="{{ $log->id }}">
+                                <td>{{ $log->id }}</td>
+                                <td>{{ $log->marketplace->name ?? 'N/A' }} (ID: {{ $log->marketplace_id }})</td>
+                                <td>
+                                    <div class="dropdown">
+                                        @if($log->status == 'running')
+                                            <span class="badge bg-warning status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Running</span>
+                                        @elseif($log->status == 'completed')
+                                            <span class="badge bg-success status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Completed</span>
+                                        @elseif($log->status == 'failed')
+                                            <span class="badge bg-danger status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Failed</span>
+                                        @else
+                                            <span class="badge bg-secondary status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">{{ ucfirst($log->status) }}</span>
+                                        @endif
+                                        <ul class="dropdown-menu">
+                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
+                                                <span class="badge bg-warning me-2">Running</span> Set to Running
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
+                                                <span class="badge bg-success me-2">Completed</span> Set to Completed
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
+                                                <span class="badge bg-danger me-2">Failed</span> Set to Failed
+                                            </a></li>
+                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
+                                                <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
+                                            </a></li>
+                                        </ul>
+                                    </div>
+                                </td>
+                                <td>{{ $log->total_records }}</td>
+                                <td class="text-success">{{ $log->synced_count }}</td>
+                                <td class="text-warning">{{ $log->skipped_count }}</td>
+                                <td class="text-danger">{{ $log->error_count }}</td>
+                                <td>{{ $log->started_at->format('Y-m-d H:i:s') }}</td>
+                                <td>
+                                    @if($log->duration_seconds)
+                                        {{ gmdate('H:i:s', $log->duration_seconds) }}
+                                    @else
+                                        <span class="text-muted">-</span>
+                                    @endif
+                                </td>
+                                <td>
+                                    <div class="btn-group" role="group">
+                                        <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary" title="View Details">
+                                            <i class="fe fe-eye"></i>
+                                        </a>
+                                        
+                                        <!-- Delete Button -->
+                                        <button type="button" class="btn btn-sm btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
+                                            <i class="fe fe-trash-2"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Pagination -->
+                <div class="mt-3">
+                    {{ $logs->appends(request()->query())->links() }}
+                </div>
+            @else
+                <div class="card">
+                    <div class="card-body">
                         <div class="alert alert-info">
                             <i class="fe fe-info me-2"></i>No stock sync logs found.
                         </div>
-                    @endif
+                    </div>
                 </div>
-            </div>
+            @endif
         </div>
     </div>
 </div>
