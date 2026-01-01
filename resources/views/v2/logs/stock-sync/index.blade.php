@@ -139,15 +139,31 @@
                                         <td>{{ $log->id }}</td>
                                         <td>{{ $log->marketplace->name ?? 'N/A' }} (ID: {{ $log->marketplace_id }})</td>
                                         <td>
-                                            @if($log->status == 'running')
-                                                <span class="badge bg-warning status-badge">Running</span>
-                                            @elseif($log->status == 'completed')
-                                                <span class="badge bg-success status-badge">Completed</span>
-                                            @elseif($log->status == 'failed')
-                                                <span class="badge bg-danger status-badge">Failed</span>
-                                            @else
-                                                <span class="badge bg-secondary status-badge">{{ ucfirst($log->status) }}</span>
-                                            @endif
+                                            <div class="dropdown">
+                                                @if($log->status == 'running')
+                                                    <span class="badge bg-warning status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Running</span>
+                                                @elseif($log->status == 'completed')
+                                                    <span class="badge bg-success status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Completed</span>
+                                                @elseif($log->status == 'failed')
+                                                    <span class="badge bg-danger status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Failed</span>
+                                                @else
+                                                    <span class="badge bg-secondary status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">{{ ucfirst($log->status) }}</span>
+                                                @endif
+                                                <ul class="dropdown-menu">
+                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
+                                                        <span class="badge bg-warning me-2">Running</span> Set to Running
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
+                                                        <span class="badge bg-success me-2">Completed</span> Set to Completed
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
+                                                        <span class="badge bg-danger me-2">Failed</span> Set to Failed
+                                                    </a></li>
+                                                    <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
+                                                        <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
+                                                    </a></li>
+                                                </ul>
+                                            </div>
                                         </td>
                                         <td>{{ $log->total_records }}</td>
                                         <td class="text-success">{{ $log->synced_count }}</td>
@@ -166,27 +182,6 @@
                                                 <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary" title="View Details">
                                                     <i class="fe fe-eye"></i>
                                                 </a>
-                                                
-                                                <!-- Status Change Dropdown -->
-                                                <div class="btn-group" role="group">
-                                                    <button type="button" class="btn btn-sm btn-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" title="Change Status">
-                                                        <i class="fe fe-edit"></i>
-                                                    </button>
-                                                    <ul class="dropdown-menu">
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
-                                                            <span class="badge bg-warning me-2">Running</span> Set to Running
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
-                                                            <span class="badge bg-success me-2">Completed</span> Set to Completed
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
-                                                            <span class="badge bg-danger me-2">Failed</span> Set to Failed
-                                                        </a></li>
-                                                        <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
-                                                            <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
-                                                        </a></li>
-                                                    </ul>
-                                                </div>
                                                 
                                                 <!-- Delete Button -->
                                                 <button type="button" class="btn btn-sm btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
