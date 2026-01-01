@@ -22,7 +22,7 @@
                    style="width:60px; height: 31px;"
                    data-available-count="{{ $availableCount }}"
                    data-current-total="{{ $totalStock }}">
-            <label for="" class="small">Add</label>
+            <label for="" class="small" title="Enter positive to add, negative to subtract">Add/Subtract</label>
         </div>
         <button id="send_total_{{ $variationId }}" class="btn btn-sm btn-light d-none" style="height: 31px; line-height: 1;">Push</button>
         <span class="text-success small" id="success_total_{{ $variationId }}"></span>
