@@ -124,7 +124,24 @@ class SyncAllMarketplaceStockFromAPI extends Command
                         } elseif (is_object($apiListing)) {
                             // Check if it's an error response
                             if (isset($apiListing->error) || isset($apiListing->message)) {
-                                $reason = 'API error: ' . ($apiListing->error ?? $apiListing->message ?? 'Unknown error');
+                                // Convert error/message to string safely
+                                $errorMsg = null;
+                                if (isset($apiListing->error)) {
+                                    $errorMsg = $apiListing->error;
+                                } elseif (isset($apiListing->message)) {
+                                    $errorMsg = $apiListing->message;
+                                }
+                                
+                                // Convert to string safely
+                                if (is_object($errorMsg) || is_array($errorMsg)) {
+                                    $errorMsg = json_encode($errorMsg);
+                                } elseif ($errorMsg === null) {
+                                    $errorMsg = 'Unknown error';
+                                } else {
+                                    $errorMsg = (string)$errorMsg;
+                                }
+                                
+                                $reason = 'API error: ' . $errorMsg;
                             } elseif (!isset($apiListing->quantity)) {
                                 $reason = 'Response missing quantity field (listing may be deleted or inactive)';
                             }
@@ -148,7 +165,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
                                 'marketplace_id' => $marketplaceId,
                                 'reason' => $reason,
                                 'response_type' => $apiResponseType,
-                                'response_preview' => is_object($apiListing) ? json_encode($apiListing) : (string)$apiListing
+                                'response_preview' => is_object($apiListing) ? json_encode($apiListing) : (is_array($apiListing) ? json_encode($apiListing) : (string)$apiListing)
                             ]);
                         }
                         
