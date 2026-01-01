@@ -139,33 +139,17 @@
                             <tr data-log-id="{{ $log->id }}">
                                 <td>{{ $log->id }}</td>
                                 <td>{{ $log->marketplace->name ?? 'N/A' }} (ID: {{ $log->marketplace_id }})</td>
-                                <td>
-                                    <div class="dropdown">
-                                        @if($log->status == 'running')
-                                            <span class="badge bg-warning status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Running</span>
-                                        @elseif($log->status == 'completed')
-                                            <span class="badge bg-success status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Completed</span>
-                                        @elseif($log->status == 'failed')
-                                            <span class="badge bg-danger status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Failed</span>
-                                        @else
-                                            <span class="badge bg-secondary status-badge dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">{{ ucfirst($log->status) }}</span>
-                                        @endif
-                                        <ul class="dropdown-menu">
-                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
-                                                <span class="badge bg-warning me-2">Running</span> Set to Running
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
-                                                <span class="badge bg-success me-2">Completed</span> Set to Completed
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
-                                                <span class="badge bg-danger me-2">Failed</span> Set to Failed
-                                            </a></li>
-                                            <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
-                                                <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
-                                            </a></li>
-                                        </ul>
-                                    </div>
-                                </td>
+                                        <td>
+                                            @if($log->status == 'running')
+                                                <span class="badge bg-warning status-badge" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'running')" title="Click to change status">Running</span>
+                                            @elseif($log->status == 'completed')
+                                                <span class="badge bg-success status-badge" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'completed')" title="Click to change status">Completed</span>
+                                            @elseif($log->status == 'failed')
+                                                <span class="badge bg-danger status-badge" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'failed')" title="Click to change status">Failed</span>
+                                            @else
+                                                <span class="badge bg-secondary status-badge" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, '{{ $log->status }}')" title="Click to change status">{{ ucfirst($log->status) }}</span>
+                                            @endif
+                                        </td>
                                 <td>{{ $log->total_records }}</td>
                                 <td class="text-success">{{ $log->synced_count }}</td>
                                 <td class="text-warning">{{ $log->skipped_count }}</td>
@@ -212,10 +196,104 @@
         </div>
     </div>
 </div>
+
+<!-- Status Change Modal -->
+<div class="modal fade" id="statusChangeModal" tabindex="-1" aria-labelledby="statusChangeModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="statusChangeModalLabel">Change Log Status</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <p>Current status: <span id="currentStatusBadge"></span></p>
+                <p class="mb-3">Select new status:</p>
+                <div class="list-group">
+                    <a href="#" class="list-group-item list-group-item-action" onclick="selectStatus('running'); return false;">
+                        <span class="badge bg-warning me-2">Running</span> Running
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="selectStatus('completed'); return false;">
+                        <span class="badge bg-success me-2">Completed</span> Completed
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="selectStatus('failed'); return false;">
+                        <span class="badge bg-danger me-2">Failed</span> Failed
+                    </a>
+                    <a href="#" class="list-group-item list-group-item-action" onclick="selectStatus('cancelled'); return false;">
+                        <span class="badge bg-secondary me-2">Cancelled</span> Cancelled
+                    </a>
+                </div>
+                <input type="hidden" id="selectedLogId" value="">
+                <input type="hidden" id="selectedStatus" value="">
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-primary" onclick="confirmStatusChange()">Change Status</button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @endsection
 
 @section('scripts')
 <script>
+let statusModal;
+
+// Initialize modal
+document.addEventListener('DOMContentLoaded', function() {
+    statusModal = new bootstrap.Modal(document.getElementById('statusChangeModal'));
+});
+
+function openStatusModal(logId, currentStatus) {
+    // Set current status badge
+    let badgeClass = 'badge bg-secondary';
+    let statusText = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1);
+    
+    if (currentStatus === 'running') {
+        badgeClass = 'badge bg-warning';
+    } else if (currentStatus === 'completed') {
+        badgeClass = 'badge bg-success';
+    } else if (currentStatus === 'failed') {
+        badgeClass = 'badge bg-danger';
+    }
+    
+    document.getElementById('currentStatusBadge').innerHTML = '<span class="' + badgeClass + '">' + statusText + '</span>';
+    document.getElementById('selectedLogId').value = logId;
+    document.getElementById('selectedStatus').value = '';
+    
+    // Reset selection
+    document.querySelectorAll('#statusChangeModal .list-group-item').forEach(item => {
+        item.classList.remove('active');
+    });
+    
+    statusModal.show();
+}
+
+function selectStatus(status) {
+    document.getElementById('selectedStatus').value = status;
+    
+    // Update UI to show selection
+    document.querySelectorAll('#statusChangeModal .list-group-item').forEach(item => {
+        item.classList.remove('active');
+        if (item.textContent.includes(status.charAt(0).toUpperCase() + status.slice(1))) {
+            item.classList.add('active');
+        }
+    });
+}
+
+function confirmStatusChange() {
+    const logId = document.getElementById('selectedLogId').value;
+    const newStatus = document.getElementById('selectedStatus').value;
+    
+    if (!newStatus) {
+        showAlert('warning', 'Please select a status');
+        return;
+    }
+    
+    changeStatus(logId, newStatus);
+    statusModal.hide();
+}
+
 function deleteLog(logId) {
     if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
         return;
@@ -256,10 +334,6 @@ function deleteLog(logId) {
 }
 
 function changeStatus(logId, newStatus) {
-    if (!confirm('Are you sure you want to change the status to "' + newStatus + '"?')) {
-        return;
-    }
-    
     fetch('{{ url("v2/logs/stock-sync") }}/' + logId + '/status', {
         method: 'PATCH',
         headers: {

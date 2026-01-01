@@ -34,31 +34,15 @@
                                 <tr>
                                     <th>Status</th>
                                     <td>
-                                        <div class="dropdown">
-                                            @if($log->status == 'running')
-                                                <span class="badge bg-warning dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Running</span>
-                                            @elseif($log->status == 'completed')
-                                                <span class="badge bg-success dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Completed</span>
-                                            @elseif($log->status == 'failed')
-                                                <span class="badge bg-danger dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">Failed</span>
-                                            @else
-                                                <span class="badge bg-secondary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;" title="Click to change status">{{ ucfirst($log->status) }}</span>
-                                            @endif
-                                            <ul class="dropdown-menu">
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'running'); return false;">
-                                                    <span class="badge bg-warning me-2">Running</span> Set to Running
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'completed'); return false;">
-                                                    <span class="badge bg-success me-2">Completed</span> Set to Completed
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'failed'); return false;">
-                                                    <span class="badge bg-danger me-2">Failed</span> Set to Failed
-                                                </a></li>
-                                                <li><a class="dropdown-item" href="#" onclick="changeStatus({{ $log->id }}, 'cancelled'); return false;">
-                                                    <span class="badge bg-secondary me-2">Cancelled</span> Set to Cancelled
-                                                </a></li>
-                                            </ul>
-                                        </div>
+                                        @if($log->status == 'running')
+                                            <span class="badge bg-warning" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'running')" title="Click to change status">Running</span>
+                                        @elseif($log->status == 'completed')
+                                            <span class="badge bg-success" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'completed')" title="Click to change status">Completed</span>
+                                        @elseif($log->status == 'failed')
+                                            <span class="badge bg-danger" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, 'failed')" title="Click to change status">Failed</span>
+                                        @else
+                                            <span class="badge bg-secondary" style="cursor: pointer;" onclick="openStatusModal({{ $log->id }}, '{{ $log->status }}')" title="Click to change status">{{ ucfirst($log->status) }}</span>
+                                        @endif
                                     </td>
                                 </tr>
                                 <tr>
@@ -208,10 +192,6 @@ function deleteLog(logId) {
 }
 
 function changeStatus(logId, newStatus) {
-    if (!confirm('Are you sure you want to change the status to "' + newStatus + '"?')) {
-        return;
-    }
-    
     fetch('{{ url("v2/logs/stock-sync") }}/' + logId + '/status', {
         method: 'PATCH',
         headers: {
