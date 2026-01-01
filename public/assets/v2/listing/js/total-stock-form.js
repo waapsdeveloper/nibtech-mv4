@@ -21,7 +21,7 @@
             
             const variationId = matches[1];
             const input = $(this);
-            const value = parseFloat(input.val()) || 0;
+            const value = parseFloat(input.val());
             const pushButton = $('#send_total_' + variationId);
             
             // Clear previous errors
@@ -29,7 +29,8 @@
             errorElement.addClass('d-none').text('');
             input.removeClass('is-invalid');
             
-            if (!value || value === 0) {
+            // Allow negative numbers for subtraction, but hide button if empty or zero
+            if (isNaN(value) || value === 0) {
                 pushButton.addClass('d-none');
                 return;
             }
@@ -55,8 +56,8 @@
             const quantity = parseFloat(input.val());
             const currentTotal = parseFloat($('#total_stock_' + variationId).val()) || 0;
             
-            // Validate quantity
-            if (!quantity || quantity === 0 || isNaN(quantity)) {
+            // Validate quantity - allow negative numbers for subtraction
+            if (isNaN(quantity) || quantity === 0) {
                 return;
             }
             
