@@ -114,11 +114,44 @@ class SyncAllMarketplaceStockFromAPI extends Command
                     
                     if (!$apiListing || !isset($apiListing->quantity)) {
                         $skippedCount++;
-                        Log::warning("SyncAllMarketplaceStockFromAPI: Invalid API response", [
-                            'variation_id' => $variation->id,
-                            'reference_id' => $variation->reference_id,
-                            'marketplace_id' => $marketplaceId
-                        ]);
+                        
+                        // Determine the reason for invalid response
+                        $reason = 'Unknown';
+                        $apiResponseType = gettype($apiListing);
+                        
+                        if ($apiListing === null) {
+                            $reason = 'API returned null (listing may not exist or API error)';
+                        } elseif (is_object($apiListing)) {
+                            // Check if it's an error response
+                            if (isset($apiListing->error) || isset($apiListing->message)) {
+                                $reason = 'API error: ' . ($apiListing->error ?? $apiListing->message ?? 'Unknown error');
+                            } elseif (!isset($apiListing->quantity)) {
+                                $reason = 'Response missing quantity field (listing may be deleted or inactive)';
+                            }
+                        } elseif (is_array($apiListing)) {
+                            $reason = 'API returned array instead of object';
+                        }
+                        
+                        // Log as info instead of warning if it's expected (listing doesn't exist)
+                        // Only log as warning if it's an actual error
+                        if (strpos($reason, 'may not exist') !== false || strpos($reason, 'deleted or inactive') !== false) {
+                            Log::info("SyncAllMarketplaceStockFromAPI: Skipping variation (expected)", [
+                                'variation_id' => $variation->id,
+                                'reference_id' => $variation->reference_id,
+                                'marketplace_id' => $marketplaceId,
+                                'reason' => $reason
+                            ]);
+                        } else {
+                            Log::warning("SyncAllMarketplaceStockFromAPI: Invalid API response", [
+                                'variation_id' => $variation->id,
+                                'reference_id' => $variation->reference_id,
+                                'marketplace_id' => $marketplaceId,
+                                'reason' => $reason,
+                                'response_type' => $apiResponseType,
+                                'response_preview' => is_object($apiListing) ? json_encode($apiListing) : (string)$apiListing
+                            ]);
+                        }
+                        
                         $bar->advance();
                         continue;
                     }
