@@ -172,19 +172,41 @@
                     </div>
 
                     @foreach($commands as $command)
-                    <div class="card command-card mb-4">
-                        <div class="card-header bg-light">
+                    <div class="card command-card mb-4" style="{{ isset($command['warning']) && $command['warning'] ? 'border-left-color: #dc3545;' : '' }}">
+                        <div class="card-header {{ isset($command['warning']) && $command['warning'] ? 'bg-danger text-white' : 'bg-light' }}">
                             <div class="d-flex justify-content-between align-items-center">
                                 <div>
                                     <h6 class="mb-1 fw-bold">
                                         <code>{{ $command['signature'] }}</code>
                                     </h6>
-                                    <p class="mb-0 text-muted small">{{ $command['description'] }}</p>
+                                    <p class="mb-0 {{ isset($command['warning']) && $command['warning'] ? 'text-white' : 'text-muted' }} small">{{ $command['description'] }}</p>
                                 </div>
-                                <span class="badge bg-primary">{{ $command['category'] }}</span>
+                                <span class="badge {{ isset($command['warning']) && $command['warning'] ? 'bg-warning text-dark' : 'bg-primary' }}">{{ $command['category'] }}</span>
                             </div>
                         </div>
                         <div class="card-body">
+                            {{-- Emergency Warning --}}
+                            @if(isset($command['warning']) && $command['warning'])
+                            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                                <h5 class="alert-heading">
+                                    <i class="fe fe-alert-triangle me-2"></i>EMERGENCY COMMAND WARNING
+                                </h5>
+                                <p class="mb-0">
+                                    <strong>{{ $command['warning_message'] ?? 'This is a destructive operation that cannot be easily undone!' }}</strong>
+                                </p>
+                                <hr>
+                                <p class="mb-0 small">
+                                    <strong>What this command does:</strong><br>
+                                    • Syncs parent stock (variation.listed_stock) to Backmarket (marketplace_id = 1)<br>
+                                    • Sets all other marketplaces' listed_stock to 0<br>
+                                    • This will overwrite existing marketplace stock values
+                                </p>
+                                <p class="mb-0 mt-2 small">
+                                    <strong>Recommendation:</strong> Always run with <code>--dry-run</code> first to see what will be changed!
+                                </p>
+                                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                            </div>
+                            @endif
                             {{-- Documentation Links --}}
                             @if(!empty($command['docs']))
                             <div class="mb-3">
@@ -212,6 +234,17 @@
                                                     </option>
                                                 @endforeach
                                             </select>
+                                        @elseif($option['type'] === 'checkbox')
+                                            <div class="form-check">
+                                                <input type="checkbox" 
+                                                       name="{{ $optionKey }}" 
+                                                       class="form-check-input" 
+                                                       id="{{ $optionKey }}_{{ $loop->parent->index }}"
+                                                       value="1">
+                                                <label class="form-check-label small" for="{{ $optionKey }}_{{ $loop->parent->index }}">
+                                                    {{ $option['description'] ?? '' }}
+                                                </label>
+                                            </div>
                                         @else
                                             <input type="{{ $option['type'] }}" 
                                                    name="{{ $optionKey }}" 
@@ -298,6 +331,9 @@
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" id="runSingleMigrationBtn" style="display: none;" onclick="runSingleMigration()">
+                                <i class="fe fe-play me-1"></i>Run This Migration
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -542,13 +578,120 @@ function checkMigrationDetails(migrationName) {
 
                 html += '</div>';
                 contentDiv.innerHTML = html;
+                
+                // Show/hide "Run This Migration" button based on migration status
+                const runBtn = document.getElementById('runSingleMigrationBtn');
+                if (runBtn) {
+                    // Show button only if migration is not in database
+                    if (!data.in_database) {
+                        runBtn.style.display = 'inline-block';
+                        runBtn.setAttribute('data-migration', data.migration_name);
+                        // Store migration path if available
+                        if (data.migration_path) {
+                            runBtn.setAttribute('data-migration-path', data.migration_path);
+                        }
+                    } else {
+                        runBtn.style.display = 'none';
+                        runBtn.removeAttribute('data-migration');
+                        runBtn.removeAttribute('data-migration-path');
+                    }
+                }
             } else {
                 contentDiv.innerHTML = '<div class="alert alert-danger">' + escapeHtml(data.message || data.error || 'Unknown error') + '</div>';
+                // Hide button on error
+                const runBtn = document.getElementById('runSingleMigrationBtn');
+                if (runBtn) {
+                    runBtn.style.display = 'none';
+                }
             }
         })
         .catch(error => {
             contentDiv.innerHTML = '<div class="alert alert-danger">Error loading migration details: ' + escapeHtml(error.message) + '</div>';
+            // Hide button on error
+            const runBtn = document.getElementById('runSingleMigrationBtn');
+            if (runBtn) {
+                runBtn.style.display = 'none';
+            }
         });
+}
+
+// Run a single specific migration
+function runSingleMigration() {
+    const runBtn = document.getElementById('runSingleMigrationBtn');
+    if (!runBtn) return;
+    
+    const migrationName = runBtn.getAttribute('data-migration');
+    const migrationPath = runBtn.getAttribute('data-migration-path');
+    
+    if (!migrationName) {
+        alert('Migration name not found');
+        return;
+    }
+    
+    if (!confirm('Are you sure you want to run this migration?\n\nMigration: ' + migrationName + '\n\nThis will execute the migration and record it in the database.')) {
+        return;
+    }
+    
+    // Disable button and show loading
+    runBtn.disabled = true;
+    const originalHtml = runBtn.innerHTML;
+    runBtn.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Running...';
+    
+    // Show output in modal body
+    const contentDiv = document.getElementById('migrationDetailsContent');
+    const outputHtml = '<div class="alert alert-info mb-3">' +
+                      '<i class="fe fe-clock me-2"></i><strong>Running migration...</strong><br>' +
+                      '<small>Migration: <code>' + escapeHtml(migrationName) + '</code></small>' +
+                      '</div>' +
+                      '<div class="command-output p-3 rounded" id="singleMigrationOutput" style="background: #1e1e1e; color: #d4d4d4; font-family: monospace; font-size: 0.875rem; max-height: 300px; overflow-y: auto;">' +
+                      '<div class="text-info">Command queued. Check logs for output...</div>' +
+                      '</div>';
+    contentDiv.innerHTML = outputHtml;
+    
+    fetch('{{ url("v2/artisan-commands/run-single-migration") }}', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        },
+        body: JSON.stringify({
+            migration: migrationName,
+            path: migrationPath
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        const outputDiv = document.getElementById('singleMigrationOutput');
+        if (data.success) {
+            if (data.status === 'queued') {
+                outputDiv.innerHTML = '<div class="text-success">✓ Migration command queued successfully!</div>' +
+                                    '<div class="text-muted mt-2">The migration is running in the background.</div>' +
+                                    '<div class="text-muted small mt-2">Check the logs for output:<br>' +
+                                    '<code>tail -f storage/logs/laravel.log | grep "RunSingleMigration"</code></div>' +
+                                    '<div class="text-info mt-3">You can close this modal and check back later, or reload the page to see if the migration was recorded.</div>';
+            } else {
+                outputDiv.innerHTML = '<div class="text-success">✓ ' + (data.message || 'Migration completed') + '</div>';
+            }
+            
+            // Re-enable button but change text
+            runBtn.disabled = false;
+            runBtn.innerHTML = '<i class="fe fe-check me-1"></i>Migration Queued';
+            runBtn.classList.remove('btn-primary');
+            runBtn.classList.add('btn-success');
+        } else {
+            outputDiv.innerHTML = '<div class="text-danger">✗ Error: ' + escapeHtml(data.error || data.message || 'Unknown error') + '</div>';
+            runBtn.disabled = false;
+            runBtn.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        const outputDiv = document.getElementById('singleMigrationOutput');
+        if (outputDiv) {
+            outputDiv.innerHTML = '<div class="text-danger">✗ Error: ' + escapeHtml(error.message) + '</div>';
+        }
+        runBtn.disabled = false;
+        runBtn.innerHTML = originalHtml;
+    });
 }
 
 // Clear migration output
@@ -584,6 +727,13 @@ document.querySelectorAll('.command-form').forEach(form => {
                 }
             }
         });
+        
+        // Handle checkboxes - unchecked checkboxes won't be in FormData, so we need to check them explicitly
+        this.querySelectorAll('input[type="checkbox"]').forEach(checkbox => {
+            if (checkbox.checked) {
+                options[checkbox.name] = checkbox.value || '1';
+            }
+        });
 
         // Show output container
         const outputContainer = this.closest('.card-body').querySelector('.command-output-container');
@@ -608,25 +758,58 @@ document.querySelectorAll('.command-form').forEach(form => {
         .then(data => {
             if (data.success) {
                 if (data.status === 'queued') {
-                    outputDiv.innerHTML = '<div class="alert alert-info mb-2">' +
-                                         '<i class="fe fe-clock me-2"></i><strong>Command queued successfully!</strong><br>' +
-                                         '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
-                                         '<div class="small">' +
-                                         'The command is running in the background. Check the logs for output:<br>' +
-                                         '<code>tail -f storage/logs/laravel.log | grep "ExecuteArtisanCommandJob"</code><br><br>' +
-                                         '<strong>Note:</strong> Make sure your queue worker is running:<br>' +
-                                         '<code>php artisan queue:work</code> or <code>php artisan queue:listen</code>' +
+                    let message = '<div class="alert alert-info mb-2">' +
+                                 '<i class="fe fe-clock me-2"></i><strong>Command queued successfully!</strong><br>' +
+                                 '<small class="text-muted">Command: <code>' + data.command + '</code></small><br><br>' +
+                                 '<div class="small">' +
+                                 'The command is running in the background. ' +
+                                 '<strong>Status will be checked automatically...</strong><br><br>' +
+                                 '<div id="command-status-check" class="text-muted">' +
+                                 '<i class="fe fe-loader me-1 spin"></i>Checking status...' +
+                                 '</div>' +
+                                 '</div>' +
+                                 '</div>';
+                    
+                    outputDiv.innerHTML = message;
+                    
+                    // Start polling for status updates
+                    const commandName = command;
+                    const marketplaceId = options.marketplace || 1;
+                    pollCommandStatus(commandName, outputDiv, marketplaceId);
+                } else if (data.status === 'completed') {
+                    // Synchronous execution completed successfully
+                    outputDiv.innerHTML = '<div class="alert alert-success mb-2">' +
+                                         '<i class="fe fe-check-circle me-2"></i><strong>✓ Command executed successfully!</strong><br>' +
+                                         '<small class="text-muted">Command: <code>' + escapeHtml(data.command) + '</code></small>' +
                                          '</div>' +
-                                         '</div>';
+                                         (data.output ? '<pre class="mb-0 bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto;">' + escapeHtml(data.output) + '</pre>' : '<div class="text-muted">No output</div>');
+                } else if (data.status === 'failed') {
+                    // Synchronous execution failed
+                    outputDiv.innerHTML = '<div class="alert alert-danger mb-2">' +
+                                         '<i class="fe fe-x-circle me-2"></i><strong>✗ Command failed</strong><br>' +
+                                         '<small class="text-muted">Command: <code>' + escapeHtml(data.command) + '</code></small>' +
+                                         '</div>' +
+                                         (data.output ? '<pre class="mb-0 bg-light p-3 rounded text-danger" style="max-height: 400px; overflow-y: auto;">' + escapeHtml(data.output) + '</pre>' : '<div class="text-danger">' + escapeHtml(data.message || 'Unknown error') + '</div>');
                 } else {
-                    outputDiv.innerHTML = '<div class="text-success mb-2">✓ Command executed successfully</div>' +
-                                         '<div class="text-muted small mb-2">Command: <code>' + data.command + '</code></div>' +
-                                         '<pre class="mb-0">' + escapeHtml(data.output || 'No output') + '</pre>';
+                    // Fallback for other statuses
+                    outputDiv.innerHTML = '<div class="text-success mb-2">✓ ' + (data.message || 'Command executed successfully') + '</div>' +
+                                         '<div class="text-muted small mb-2">Command: <code>' + escapeHtml(data.command) + '</code></div>' +
+                                         (data.output ? '<pre class="mb-0">' + escapeHtml(data.output) + '</pre>' : '');
                 }
             } else {
-                outputDiv.innerHTML = '<div class="text-danger mb-2">✗ Command failed</div>' +
-                                     '<div class="text-muted small mb-2">Command: <code>' + data.command + '</code></div>' +
-                                     '<pre class="mb-0 text-danger">' + escapeHtml(data.error || 'Unknown error') + '</pre>';
+                // Command failed - show error and output if available
+                let errorHtml = '<div class="alert alert-danger mb-2">' +
+                               '<i class="fe fe-x-circle me-2"></i><strong>✗ Command failed</strong><br>' +
+                               '<small class="text-muted">Command: <code>' + escapeHtml(data.command || command) + '</code></small>' +
+                               '</div>';
+                
+                if (data.output) {
+                    errorHtml += '<pre class="mb-0 bg-light p-3 rounded text-danger" style="max-height: 400px; overflow-y: auto;">' + escapeHtml(data.output) + '</pre>';
+                } else {
+                    errorHtml += '<pre class="mb-0 text-danger">' + escapeHtml(data.error || data.message || 'Unknown error') + '</pre>';
+                }
+                
+                outputDiv.innerHTML = errorHtml;
             }
         })
         .catch(error => {
@@ -634,6 +817,232 @@ document.querySelectorAll('.command-form').forEach(form => {
         });
     });
 });
+
+// Poll command status automatically (for queued commands)
+function pollCommandStatus(command, outputDiv, marketplaceId = 1, pollCount = 0) {
+    const maxPolls = 120; // Poll for up to 10 minutes (120 * 5 seconds)
+    
+    if (pollCount >= maxPolls) {
+        const statusDiv = document.getElementById('command-status-check');
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="text-warning">Status check timeout. Please check logs manually or refresh the page.</div>';
+        }
+        return;
+    }
+    
+    let url = '{{ url("v2/artisan-commands/check-command-status") }}?command=' + encodeURIComponent(command);
+    if (command === 'v2:sync-all-marketplace-stock-from-api') {
+        url += '&marketplace=' + marketplaceId;
+    }
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        const statusDiv = document.getElementById('command-status-check');
+        
+        if (data.success) {
+            if (data.status === 'completed') {
+                // Command completed - show success message
+                let successHtml = '<div class="alert alert-success mb-0">' +
+                                '<i class="fe fe-check-circle me-2"></i><strong>✓ Command Completed!</strong><br>';
+                
+                if (command === 'v2:sync-all-marketplace-stock-from-api' && data.summary) {
+                    successHtml += '<div class="mt-2 small">' +
+                                 '<strong>Summary:</strong> ' + escapeHtml(data.summary) + '<br>';
+                    if (data.total_records !== null) {
+                        successHtml += 'Total: ' + data.total_records + ' | ';
+                        successHtml += 'Synced: ' + data.synced_count + ' | ';
+                        successHtml += 'Skipped: ' + data.skipped_count + ' | ';
+                        successHtml += 'Errors: ' + data.error_count + '<br>';
+                    }
+                    if (data.duration_seconds !== null) {
+                        successHtml += 'Duration: ' + data.duration_seconds + ' seconds<br>';
+                    }
+                    if (data.log_id) {
+                        successHtml += '<a href="{{ url("v2/logs/stock-sync") }}/' + data.log_id + '" class="btn btn-sm btn-primary mt-2">View Full Log Details</a>';
+                    }
+                    successHtml += '</div>';
+                } else {
+                    if (data.completed_at) {
+                        successHtml += '<small>Completed at: ' + escapeHtml(data.completed_at) + '</small>';
+                    }
+                }
+                
+                successHtml += '</div>';
+                
+                if (statusDiv) {
+                    statusDiv.outerHTML = successHtml;
+                } else {
+                    outputDiv.innerHTML = successHtml;
+                }
+                
+                // Stop polling
+                return;
+            } else if (data.status === 'failed') {
+                // Command failed
+                let errorHtml = '<div class="alert alert-danger mb-0">' +
+                              '<i class="fe fe-x-circle me-2"></i><strong>✗ Command Failed</strong><br>';
+                if (data.completed_at) {
+                    errorHtml += '<small>Failed at: ' + escapeHtml(data.completed_at) + '</small>';
+                }
+                errorHtml += '</div>';
+                
+                if (statusDiv) {
+                    statusDiv.outerHTML = errorHtml;
+                } else {
+                    outputDiv.innerHTML = errorHtml;
+                }
+                
+                // Stop polling
+                return;
+            } else if (data.status === 'running') {
+                // Still running - update status and continue polling
+                if (statusDiv) {
+                    let runningText = '<i class="fe fe-loader me-1 spin"></i>Running...';
+                    if (command === 'v2:sync-all-marketplace-stock-from-api' && data.synced_count !== null) {
+                        runningText += ' (Synced: ' + data.synced_count + '/' + (data.total_records || '?') + ')';
+                    }
+                    statusDiv.innerHTML = runningText;
+                }
+            } else if (data.status === 'queued') {
+                // Still queued
+                if (statusDiv) {
+                    statusDiv.innerHTML = '<i class="fe fe-clock me-1"></i>Queued...';
+                }
+            }
+        }
+        
+        // Continue polling if not completed or failed
+        if (data.status !== 'completed' && data.status !== 'failed') {
+            setTimeout(() => {
+                pollCommandStatus(command, outputDiv, marketplaceId, pollCount + 1);
+            }, 5000); // Poll every 5 seconds
+        }
+    })
+    .catch(error => {
+        const statusDiv = document.getElementById('command-status-check');
+        if (statusDiv) {
+            statusDiv.innerHTML = '<div class="text-danger">Error checking status: ' + escapeHtml(error.message) + '</div>';
+        }
+        
+        // Continue polling even on error (might be temporary)
+        if (pollCount < maxPolls) {
+            setTimeout(() => {
+                pollCommandStatus(command, outputDiv, marketplaceId, pollCount + 1);
+            }, 5000);
+        }
+    });
+}
+
+// Check command status by looking at recent logs
+function checkCommandStatus(command, buttonElement) {
+    if (!buttonElement) return;
+    
+    const originalHtml = buttonElement.innerHTML;
+    buttonElement.disabled = true;
+    buttonElement.innerHTML = '<i class="fe fe-loader me-1 spin"></i>Checking...';
+    
+    // Get marketplace ID from form if it's the sync command
+    let url = '{{ url("v2/artisan-commands/check-command-status") }}?command=' + encodeURIComponent(command);
+    if (command === 'v2:sync-all-marketplace-stock-from-api') {
+        const commandForm = document.querySelector('[data-command="' + escapeHtml(command) + '"]');
+        if (commandForm) {
+            const marketplaceInput = commandForm.querySelector('input[name="options[marketplace]"]');
+            const marketplaceId = marketplaceInput ? (marketplaceInput.value || 1) : 1;
+            url += '&marketplace=' + marketplaceId;
+        }
+    }
+    
+    fetch(url, {
+        method: 'GET',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+        
+        if (data.success) {
+            // Find the output div for this command form
+            const commandForm = document.querySelector('[data-command="' + escapeHtml(command) + '"]');
+            const outputDiv = commandForm ? commandForm.closest('.card-body').querySelector('.command-output') : null;
+            
+            if (outputDiv) {
+                let statusHtml = '<div class="alert alert-info mb-2 mt-2">' +
+                               '<strong>Command Status Check</strong><br>' +
+                               '<small>Command: <code>' + escapeHtml(command) + '</code></small><br><br>';
+                
+                if (data.status === 'completed') {
+                    statusHtml += '<div class="alert alert-success">' +
+                                 '<i class="fe fe-check-circle me-2"></i><strong>✓ Command Completed!</strong><br>' +
+                                 '<small>Completed at: ' + (data.completed_at || 'Recently') + '</small><br>';
+                    if (data.exit_code !== null) {
+                        statusHtml += '<small>Exit Code: ' + data.exit_code + '</small><br>';
+                    }
+                    // Show sync log details if available
+                    if (command === 'v2:sync-all-marketplace-stock-from-api' && data.summary) {
+                        statusHtml += '<div class="mt-2 small">' +
+                                     '<strong>Summary:</strong> ' + escapeHtml(data.summary) + '<br>';
+                        if (data.total_records !== null) {
+                            statusHtml += 'Total: ' + data.total_records + ' | ';
+                            statusHtml += 'Synced: ' + data.synced_count + ' | ';
+                            statusHtml += 'Skipped: ' + data.skipped_count + ' | ';
+                            statusHtml += 'Errors: ' + data.error_count + '<br>';
+                        }
+                        if (data.duration_seconds !== null) {
+                            statusHtml += 'Duration: ' + data.duration_seconds + ' seconds<br>';
+                        }
+                        if (data.log_id) {
+                            statusHtml += '<a href="{{ url("v2/logs/stock-sync") }}/' + data.log_id + '" class="btn btn-sm btn-primary mt-2">View Full Log Details</a>';
+                        }
+                        statusHtml += '</div>';
+                    }
+                    statusHtml += '</div>';
+                } else if (data.status === 'running') {
+                    statusHtml += '<div class="alert alert-warning">' +
+                                 '<i class="fe fe-loader me-2"></i><strong>Command Still Running...</strong><br>' +
+                                 '<small>Started at: ' + (data.started_at || 'Recently') + '</small><br>' +
+                                 '<small>Please check again in a moment.</small>' +
+                                 '</div>';
+                } else if (data.status === 'queued') {
+                    statusHtml += '<div class="alert alert-secondary">' +
+                                 '<i class="fe fe-clock me-2"></i><strong>Command Queued</strong><br>' +
+                                 '<small>The command has been queued and is waiting to run.</small>' +
+                                 '</div>';
+                } else {
+                    statusHtml += '<div class="alert alert-secondary">' +
+                                 '<i class="fe fe-info me-2"></i><strong>Status Unknown</strong><br>' +
+                                 '<small>No recent execution found in logs. The command may not have started yet, or logs may have been cleared.</small>' +
+                                 '</div>';
+                }
+                
+                if (data.last_log_entry) {
+                    statusHtml += '<div class="mt-2 small">' +
+                                 '<strong>Last Log Entry:</strong><br>' +
+                                 '<code class="small" style="word-break: break-all;">' + escapeHtml(data.last_log_entry.substring(0, 200)) + (data.last_log_entry.length > 200 ? '...' : '') + '</code>' +
+                                 '</div>';
+                }
+                
+                statusHtml += '</div>';
+                outputDiv.innerHTML = statusHtml + outputDiv.innerHTML;
+            }
+        } else {
+            alert('Error checking status: ' + (data.error || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        buttonElement.disabled = false;
+        buttonElement.innerHTML = originalHtml;
+        alert('Error checking status: ' + error.message);
+    });
+}
 
 // Show documentation
 function showDocumentation(filename) {

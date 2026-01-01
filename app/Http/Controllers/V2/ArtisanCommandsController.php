@@ -61,18 +61,24 @@ class ArtisanCommandsController extends Controller
         try {
             // Clean options - Artisan::call() expects options with '--' prefix in array keys
             $cleanOptions = [];
+            
             foreach ($options as $key => $value) {
-                // Skip empty values
+                // Skip empty values (but allow '0' and boolean false)
                 if ($value === null || $value === '') {
                     continue;
                 }
                 
-                // Ensure '--' prefix is present
+                // Ensure '--' prefix is present for options
                 $cleanKey = strpos($key, '--') === 0 ? $key : '--' . $key;
                 
-                // Convert string numbers to integers for numeric options
+                // For numeric options (like marketplace), keep as integer
+                // Check if this is a numeric option that should stay as number
                 if (is_numeric($value) && !is_float($value) && strpos($value, '.') === false) {
                     $cleanOptions[$cleanKey] = (int) $value;
+                }
+                // Handle boolean/checkbox values - if value is '1' or true, set as boolean true
+                elseif ($value === '1' || $value === 1 || $value === true) {
+                    $cleanOptions[$cleanKey] = true;
                 } else {
                     $cleanOptions[$cleanKey] = $value;
                 }
@@ -209,6 +215,28 @@ class ArtisanCommandsController extends Controller
                     'php artisan v2:marketplace:sync-stock',
                     'php artisan v2:marketplace:sync-stock --marketplace=1'
                 ]
+            ],
+            [
+                'signature' => 'v2:sync-all-marketplace-stock-from-api',
+                'name' => 'Sync All Marketplace Stock from API',
+                'description' => 'Fetch stock quantities from Backmarket API for all variations in a marketplace and update marketplace_stock table. Runs in queue for bulk operations.',
+                'category' => 'Stock Management',
+                'warning' => false,
+                'docs' => [],
+                'options' => [
+                    'marketplace' => [
+                        'label' => 'Marketplace ID',
+                        'type' => 'number',
+                        'placeholder' => 'Enter marketplace ID (default: 1)',
+                        'required' => false,
+                        'default' => '1',
+                        'description' => 'The marketplace ID to sync stock for (default: 1 for BackMarket)'
+                    ]
+                ],
+                'examples' => [
+                    'php artisan v2:sync-all-marketplace-stock-from-api',
+                    'php artisan v2:sync-all-marketplace-stock-from-api --marketplace=1'
+                ]
             ]
         ];
     }
@@ -260,6 +288,10 @@ class ArtisanCommandsController extends Controller
             }
 
             $status['migrations_table_exists'] = true;
+            
+            // Check which columns exist in migrations table (cache for this method call)
+            $migrationColumns = Schema::getColumnListing('migrations');
+            $hasTimestamps = in_array('created_at', $migrationColumns) && in_array('updated_at', $migrationColumns);
 
             // Get all migration files from main directory and subdirectories
             $migrationPath = database_path('migrations');
@@ -278,6 +310,7 @@ class ArtisanCommandsController extends Controller
                             'timestamp' => $matches[1],
                             'name' => $matches[2],
                             'path' => 'migrations',
+                            'full_path' => $file->getPathname(),
                             'batch' => null,
                             'ran_at' => null
                         ];
@@ -298,6 +331,7 @@ class ArtisanCommandsController extends Controller
                                 'timestamp' => $matches[1],
                                 'name' => $matches[2],
                                 'path' => 'migrations/' . $dirName,
+                                'full_path' => $file->getPathname(),
                                 'batch' => null,
                                 'ran_at' => null
                             ];
@@ -322,7 +356,7 @@ class ArtisanCommandsController extends Controller
                 $status['last_migration'] = [
                     'migration' => $lastRan->migration,
                     'batch' => $lastRan->batch,
-                    'ran_at' => $lastRan->created_at ?? null
+                    'ran_at' => $hasTimestamps ? ($lastRan->created_at ?? null) : null
                 ];
             }
 
@@ -343,7 +377,7 @@ class ArtisanCommandsController extends Controller
                 } else {
                     // Migration is recorded - update with batch info
                     $migration['batch'] = $ranMigration->batch ?? null;
-                    $migration['ran_at'] = $ranMigration->created_at ?? null;
+                    $migration['ran_at'] = $hasTimestamps ? ($ranMigration->created_at ?? null) : null;
                     $migration['status'] = 'completed';
                 }
             }
@@ -451,6 +485,23 @@ class ArtisanCommandsController extends Controller
                 $tableExists = Schema::hasTable($tableName);
             }
 
+            // Find the migration file path by searching all migrations
+            $migrationPathFull = null;
+            $migrationBasePath = database_path('migrations');
+            
+            // Search in all migrations (from getMigrationStatus logic)
+            // Check main migrations directory
+            $mainFile = $migrationBasePath . '/' . $migrationName . '.php';
+            if (File::exists($mainFile)) {
+                $migrationPathFull = 'migrations/' . $migrationName . '.php';
+            } else {
+                // Check subdirectories recursively
+                $foundPath = $this->findMigrationFile($migrationBasePath, $migrationName);
+                if ($foundPath) {
+                    $migrationPathFull = 'migrations/' . $foundPath;
+                }
+            }
+
             return response()->json([
                 'success' => true,
                 'migration_name' => $migrationName,
@@ -458,6 +509,7 @@ class ArtisanCommandsController extends Controller
                 'migration_record' => $migrationRecord,
                 'all_similar_records' => $allRecords,
                 'table_exists' => $tableExists,
+                'migration_path' => $migrationPathFull,
                 'all_migrations_in_db' => DB::table('migrations')
                     ->orderBy('id', 'desc')
                     ->limit(50)
@@ -509,13 +561,24 @@ class ArtisanCommandsController extends Controller
             $maxBatch = DB::table('migrations')->max('batch') ?? 0;
             $newBatch = $maxBatch + 1;
 
-            // Insert the migration record
-            DB::table('migrations')->insert([
+            // Check which columns exist in the migrations table
+            $columns = Schema::getColumnListing('migrations');
+            $hasTimestamps = in_array('created_at', $columns) && in_array('updated_at', $columns);
+
+            // Build insert data - only include columns that exist
+            $insertData = [
                 'migration' => $migrationName,
-                'batch' => $newBatch,
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+                'batch' => $newBatch
+            ];
+
+            // Only add timestamps if the columns exist
+            if ($hasTimestamps) {
+                $insertData['created_at'] = now();
+                $insertData['updated_at'] = now();
+            }
+
+            // Insert the migration record
+            DB::table('migrations')->insert($insertData);
 
             Log::info('Migration manually recorded', [
                 'migration' => $migrationName,
@@ -542,6 +605,303 @@ class ArtisanCommandsController extends Controller
                 'error' => $e->getMessage()
             ], 500);
         }
+    }
+
+    /**
+     * Run a single specific migration
+     */
+    public function runSingleMigration(Request $request)
+    {
+        try {
+            $request->validate([
+                'migration' => 'required|string',
+                'path' => 'nullable|string'
+            ]);
+
+            $migrationName = $request->input('migration');
+            $migrationPath = $request->input('path');
+
+            // Build the migration path (relative to database/migrations)
+            // Always search dynamically for the migration file - more reliable than parsing paths
+            $relativePath = null;
+            $migrationBasePath = database_path('migrations');
+            
+            // Search for the migration file dynamically
+            // Check main directory first
+            $mainFile = $migrationBasePath . '/' . $migrationName . '.php';
+            if (File::exists($mainFile)) {
+                $relativePath = $migrationName . '.php';
+            } else {
+                // Search all subdirectories recursively (handles any folder structure)
+                $found = $this->findMigrationFile($migrationBasePath, $migrationName);
+                if ($found) {
+                    $relativePath = $found;
+                }
+            }
+            
+            // If still not found and path was provided, try to use it as fallback
+            if (!$relativePath && $migrationPath) {
+                // Path provided from frontend - try to extract and verify
+                // Format could be: "migrations/live_migrations/filename.php" or "migrations/filename.php"
+                // Remove "database/migrations/" if present
+                $cleanPath = preg_replace('#^database/migrations/#', '', $migrationPath);
+                // Remove "migrations/" prefix if present (but keep subdirectories)
+                $cleanPath = preg_replace('#^migrations/#', '', $cleanPath);
+                
+                // Verify the file exists at this path
+                $fullPath = $migrationBasePath . '/' . $cleanPath;
+                if (File::exists($fullPath)) {
+                    $relativePath = $cleanPath;
+                } else {
+                    // Log for debugging
+                    Log::warning('Migration path provided but file not found, will search dynamically', [
+                        'migration' => $migrationName,
+                        'provided_path' => $migrationPath,
+                        'extracted_path' => $cleanPath,
+                        'full_path' => $fullPath
+                    ]);
+                }
+            }
+
+            if (!$relativePath) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Migration file not found: ' . $migrationName . '. Searched in main directory and all subdirectories.'
+                ], 404);
+            }
+
+            // Verify file exists
+            $fullPath = $migrationBasePath . '/' . $relativePath;
+            if (!File::exists($fullPath)) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Migration file not found: ' . $migrationName . ' at path: ' . $relativePath
+                ], 404);
+            }
+
+            // Dispatch job to run the specific migration
+            // Use --path with relative path from database/migrations
+            $job = new ExecuteArtisanCommandJob('migrate', [
+                '--path' => 'database/migrations/' . $relativePath
+            ]);
+            dispatch($job);
+
+            Log::info('Single migration command dispatched to queue', [
+                'migration' => $migrationName,
+                'path' => $fullPath
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Migration command dispatched to queue. Check logs for output.',
+                'migration' => $migrationName,
+                'path' => $fullPath,
+                'status' => 'queued'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Single migration command dispatch failed', [
+                'migration' => $request->input('migration'),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Check command execution status by looking at recent logs
+     */
+    public function checkCommandStatus(Request $request)
+    {
+        try {
+            $command = $request->input('command');
+            
+            if (!$command) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Command name required'
+                ], 400);
+            }
+
+            // For sync-all-marketplace-stock-from-api command, check StockSyncLog table
+            if ($command === 'v2:sync-all-marketplace-stock-from-api') {
+                $marketplaceId = $request->input('marketplace', 1);
+                
+                $logEntry = \App\Models\StockSyncLog::where('marketplace_id', $marketplaceId)
+                    ->orderBy('started_at', 'desc')
+                    ->first();
+                
+                if ($logEntry) {
+                    $status = $logEntry->status; // running, completed, failed, cancelled
+                    $startedAt = $logEntry->started_at ? $logEntry->started_at->format('Y-m-d H:i:s') : null;
+                    $completedAt = $logEntry->completed_at ? $logEntry->completed_at->format('Y-m-d H:i:s') : null;
+                    $exitCode = $status === 'completed' ? 0 : ($status === 'failed' ? 1 : null);
+                    
+                    return response()->json([
+                        'success' => true,
+                        'status' => $status,
+                        'started_at' => $startedAt,
+                        'completed_at' => $completedAt,
+                        'exit_code' => $exitCode,
+                        'summary' => $logEntry->summary,
+                        'total_records' => $logEntry->total_records,
+                        'synced_count' => $logEntry->synced_count,
+                        'skipped_count' => $logEntry->skipped_count,
+                        'error_count' => $logEntry->error_count,
+                        'duration_seconds' => $logEntry->duration_seconds,
+                        'log_id' => $logEntry->id
+                    ]);
+                } else {
+                    return response()->json([
+                        'success' => true,
+                        'status' => 'not_found',
+                        'message' => 'No sync log found for this marketplace'
+                    ]);
+                }
+            }
+
+            // For other commands, read recent log entries
+            $logPath = storage_path('logs/laravel.log');
+            $status = 'not_found';
+            $lastLogEntry = null;
+            $startedAt = null;
+            $completedAt = null;
+            $exitCode = null;
+
+            if (File::exists($logPath)) {
+                // Read last 1000 lines of log file
+                $lines = file($logPath);
+                $recentLines = array_slice($lines, -1000);
+                
+                $foundStart = false;
+                $foundComplete = false;
+                
+                // Search backwards through recent lines
+                for ($i = count($recentLines) - 1; $i >= 0; $i--) {
+                    $line = $recentLines[$i];
+                    
+                    // Look for command completion
+                    if (strpos($line, 'ExecuteArtisanCommandJob: Command completed') !== false && 
+                        strpos($line, $command) !== false) {
+                        $foundComplete = true;
+                        $status = 'completed';
+                        $completedAt = $this->extractTimestamp($line);
+                        
+                        // Try to extract exit code
+                        if (preg_match('/"exit_code":\s*(\d+)/', $line, $matches)) {
+                            $exitCode = (int)$matches[1];
+                        }
+                        
+                        // Get this as last log entry
+                        if (!$lastLogEntry) {
+                            $lastLogEntry = trim($line);
+                        }
+                        break;
+                    }
+                    
+                    // Look for command start
+                    if (strpos($line, 'ExecuteArtisanCommandJob: Starting command execution') !== false && 
+                        strpos($line, $command) !== false) {
+                        $foundStart = true;
+                        $startedAt = $this->extractTimestamp($line);
+                        
+                        if (!$foundComplete) {
+                            $status = 'running';
+                        }
+                        
+                        // Get this as last log entry if we haven't found completion
+                        if (!$lastLogEntry) {
+                            $lastLogEntry = trim($line);
+                        }
+                    }
+                    
+                    // Look for command dispatch
+                    if (strpos($line, 'Artisan command dispatched to queue') !== false && 
+                        strpos($line, $command) !== false) {
+                        if (!$foundStart && !$foundComplete) {
+                            $status = 'queued';
+                            if (!$lastLogEntry) {
+                                $lastLogEntry = trim($line);
+                            }
+                        }
+                    }
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'status' => $status,
+                'started_at' => $startedAt,
+                'completed_at' => $completedAt,
+                'exit_code' => $exitCode,
+                'last_log_entry' => $lastLogEntry
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error checking command status', [
+                'command' => $request->input('command'),
+                'error' => $e->getMessage()
+            ]);
+
+            return response()->json([
+                'success' => false,
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Extract timestamp from log line
+     */
+    private function extractTimestamp($logLine)
+    {
+        // Laravel log format: [2024-01-01 12:00:00] local.INFO: ...
+        if (preg_match('/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\]/', $logLine, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
+
+    /**
+     * Recursively find a migration file in the migrations directory and subdirectories
+     * 
+     * @param string $basePath Base migrations directory path
+     * @param string $migrationName Migration name (without .php extension)
+     * @return string|null Relative path from basePath if found, null otherwise
+     */
+    private function findMigrationFile($basePath, $migrationName)
+    {
+        $filename = $migrationName . '.php';
+        
+        // Check main directory
+        $mainFile = $basePath . '/' . $filename;
+        if (File::exists($mainFile)) {
+            return $filename;
+        }
+        
+        // Check all subdirectories
+        if (File::isDirectory($basePath)) {
+            $directories = File::directories($basePath);
+            foreach ($directories as $directory) {
+                $dirName = basename($directory);
+                $subFile = $directory . '/' . $filename;
+                
+                if (File::exists($subFile)) {
+                    return $dirName . '/' . $filename;
+                }
+                
+                // Recursively check nested subdirectories
+                $nestedResult = $this->findMigrationFile($directory, $migrationName);
+                if ($nestedResult) {
+                    return $dirName . '/' . $nestedResult;
+                }
+            }
+        }
+        
+        return null;
     }
 }
 
