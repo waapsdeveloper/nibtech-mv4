@@ -79,6 +79,8 @@ class StockDistributionService
                     'variation_id' => $variationId,
                     'marketplace_id' => $marketplace->id,
                     'listed_stock' => 0,
+                    'locked_stock' => 0,
+                    // available_stock will be automatically calculated by model observer (0 - 0 = 0)
                     'admin_id' => $adminId,
                 ]);
                 $existingStocks->put($marketplace->id, $marketplaceStock);
@@ -191,6 +193,8 @@ class StockDistributionService
                     'variation_id' => $variationId,
                     'marketplace_id' => 1,
                     'listed_stock' => 0,
+                    'locked_stock' => 0,
+                    // available_stock will be automatically calculated by model observer (0 - 0 = 0)
                     'admin_id' => $adminId,
                 ]);
             }

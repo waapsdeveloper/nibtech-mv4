@@ -1050,6 +1050,7 @@ class ListingController extends Controller
         
         // Update marketplace stock
         $marketplaceStock->listed_stock = $new_quantity;
+        // available_stock will be automatically recalculated by model observer
         $marketplaceStock->admin_id = session('user_id');
         $marketplaceStock->save();
         

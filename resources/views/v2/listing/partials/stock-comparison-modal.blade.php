@@ -23,12 +23,22 @@
                         <div class="card-header bg-info text-white">
                             <h6 class="mb-0">Total Stock We Have</h6>
                         </div>
-                        <div class="card-body">
-                            <div class="d-flex justify-content-between align-items-center">
-                                <span><strong>Total Stock (System):</strong></span>
-                                <span class="badge bg-info fs-6" id="comparisonTotalStock">0</span>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <tbody>
+                                        <tr>
+                                            <th class="text-end" style="width: 50%;">Total Stock (System):</th>
+                                            <td class="text-center">
+                                                <span class="badge bg-info fs-6" id="comparisonTotalStock">0</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
-                            <small class="text-muted">This is the total stock quantity we have for this variation across all marketplaces</small>
+                            <div class="p-2">
+                                <small class="text-muted">This is the total stock quantity we have for this variation across all marketplaces</small>
+                            </div>
                         </div>
                     </div>
                     
@@ -37,23 +47,30 @@
                         <div class="card-header bg-primary text-white">
                             <h6 class="mb-0">Backmarket API vs Our Stock</h6>
                         </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span><strong>API Stock:</strong></span>
-                                        <span class="badge bg-info" id="comparisonApiStock">-</span>
-                                    </div>
-                                </div>
-                                <div class="col-md-6">
-                                    <div class="d-flex justify-content-between align-items-center mb-2">
-                                        <span><strong>Our Available Stock:</strong></span>
-                                        <span class="badge bg-success" id="comparisonOurStock">-</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="alert alert-warning mb-0 mt-2" id="comparisonDifference">
-                                <strong>Difference:</strong> <span id="comparisonDiffValue">0</span>
+                        <div class="card-body p-0">
+                            <div class="table-responsive">
+                                <table class="table table-bordered mb-0">
+                                    <thead>
+                                        <tr>
+                                            <th class="text-center" style="width: 33.33%;">API Stock</th>
+                                            <th class="text-center" style="width: 33.33%;">Our Available Stock</th>
+                                            <th class="text-center" style="width: 33.33%;">Difference</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-center">
+                                                <span class="badge bg-info fs-6" id="comparisonApiStock">-</span>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-success fs-6" id="comparisonOurStock">-</span>
+                                            </td>
+                                            <td class="text-center" id="comparisonDifference">
+                                                <span class="badge fs-6" id="comparisonDiffValue">0</span>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -97,6 +114,9 @@
                 </div>
             </div>
             <div class="modal-footer">
+                <button type="button" class="btn btn-warning" id="fixStockMismatchBtn" onclick="fixStockMismatch()" style="display: none;">
+                    <i class="fas fa-wrench me-1"></i>Fix Stock Mismatch
+                </button>
                 <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
             </div>
         </div>

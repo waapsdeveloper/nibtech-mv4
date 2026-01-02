@@ -107,7 +107,8 @@
             updateTarget: "{{ url('listing/update_target') }}",
             imei: "{{ url('imei') }}",
             getStockLocks: "{{ url('v2/stock-locks/api') }}",
-            getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}"
+            getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}",
+            fixStockMismatch: "{{ url('v2/listings/fix_stock_mismatch') }}"
         },
         csrfToken: "{{ csrf_token() }}",
         flagsPath: "{{ asset('assets/img/flags') }}"
