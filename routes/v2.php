@@ -24,6 +24,8 @@ Route::prefix('v2')->group(function () {
     Route::get('listings/get_variation_history/{id}', [V2ListingController::class, 'get_variation_history'])->name('v2.get_variation_history');
     Route::get('listings/get_listings/{variationId}', [V2ListingController::class, 'get_listings'])->name('v2.get_listings');
     Route::get('listings/get_updated_quantity/{id}', [V2ListingController::class, 'getUpdatedQuantity'])->name('v2.listing.get_updated_quantity');
+    Route::get('listings/get_marketplace_stock_comparison/{id}', [V2ListingController::class, 'getMarketplaceStockComparison'])->name('v2.listing.get_marketplace_stock_comparison');
+    Route::post('listings/fix_stock_mismatch/{id}', [V2ListingController::class, 'fixStockMismatch'])->name('v2.listing.fix_stock_mismatch');
     
     // Marketplace routes
     Route::get('marketplace', [Marketplace::class, 'render'])->name('v2.view_marketplace');
@@ -54,6 +56,7 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/update_limit/{id}', [V2ListingController::class, 'update_limit'])->name('v2.listing.update_limit');
     Route::post('listings/update_marketplace_handlers/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_handlers'])->name('v2.listing.update_marketplace_handlers');
     Route::post('listings/update_marketplace_prices/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_prices'])->name('v2.listing.update_marketplace_prices');
+    Route::post('listings/restore_history/{id}', [V2ListingController::class, 'restore_history'])->name('v2.listing.restore_history');
     
     // Stock Locks Dashboard
     Route::get('stock-locks', [\App\Http\Livewire\V2\StockLocks::class, 'index'])->name('v2.stock-locks');

@@ -23,6 +23,7 @@
 								<li class="side-item side-item-category">Main</li>
                                 @php
                                 $user = session('user');
+                                $isSuperAdmin = (session('user_id') == 1) || (isset($user->role_id) && $user->role_id == 1);
                                 @endphp
                                 @if($user->hasPermission('view_listing'))
                                 <li class="slide has-sub">
@@ -35,12 +36,12 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/listings')}}">Listings</a>
                                         </li>
-                                        @if ($user->hasPermission('view_marketplace'))
+                                        @if ($isSuperAdmin && $user->hasPermission('view_marketplace'))
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/marketplace')}}">Marketplaces</a>
                                         </li>
                                         @endif
-                                        @if ($user->hasPermission('view_marketplace') || $user->hasPermission('view_listing'))
+                                        @if ($isSuperAdmin && ($user->hasPermission('view_marketplace') || $user->hasPermission('view_listing')))
                                         <li class="slide has-sub">
                                             <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2OptionsMenu" role="button" aria-expanded="false" aria-controls="v2OptionsMenu">
                                                 Options
@@ -67,7 +68,7 @@
                                             </ul>
                                         </li>
                                         @endif
-                                        @if ($user->hasPermission('view_listing'))
+                                        @if ($isSuperAdmin && $user->hasPermission('view_listing'))
                                         <li class="slide has-sub">
                                             <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2LogsMenu" role="button" aria-expanded="false" aria-controls="v2LogsMenu">
                                                 Logs

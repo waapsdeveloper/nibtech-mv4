@@ -110,5 +110,21 @@ class MarketplaceStockModel extends Model
         $this->available_stock = max(0, $this->listed_stock - $this->locked_stock);
         $this->save();
     }
+    
+    /**
+     * Boot the model and register observers
+     */
+    protected static function booted()
+    {
+        // Automatically recalculate available_stock whenever listed_stock or locked_stock changes
+        static::saving(function ($marketplaceStock) {
+            // Only recalculate if listed_stock or locked_stock is being changed
+            if ($marketplaceStock->isDirty(['listed_stock', 'locked_stock'])) {
+                $listedStock = $marketplaceStock->listed_stock ?? 0;
+                $lockedStock = $marketplaceStock->locked_stock ?? 0;
+                $marketplaceStock->available_stock = max(0, $listedStock - $lockedStock);
+            }
+        });
+    }
 }
 

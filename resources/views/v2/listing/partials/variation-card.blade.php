@@ -44,8 +44,11 @@
     $gradeName = isset($grades[$gradeId]) ? $grades[$gradeId] : '';
     $productModel = $variation->product->model ?? 'N/A';
     $productId = $variation->product_id ?? 0;
-    // Calculate total stock from all marketplaces
+    // Calculate total stock and available stock from all marketplaces
+    // Total Stock = Sum of all marketplace listed_stock
+    // Available Stock = Sum of all marketplace available_stock (listed - locked)
     $totalStock = 0;
+    $totalAvailableStock = 0;
     if(isset($marketplaces) && count($marketplaces) > 0) {
         foreach($marketplaces as $mpId => $mp) {
             $marketplaceIdInt = (int)$mpId;
@@ -53,7 +56,14 @@
                 ->where('marketplace_id', $marketplaceIdInt)
                 ->first();
             if($marketplaceStock) {
-                $totalStock += $marketplaceStock->listed_stock ?? 0;
+                $listedStock = (int)($marketplaceStock->listed_stock ?? 0);
+                $totalStock += $listedStock;
+                
+                // Calculate available stock for this marketplace (listed - locked)
+                $availableStock = $marketplaceStock->available_stock !== null 
+                    ? (int)$marketplaceStock->available_stock 
+                    : max(0, $listedStock - (int)($marketplaceStock->locked_stock ?? 0));
+                $totalAvailableStock += $availableStock;
             }
         }
     }
@@ -61,12 +71,21 @@
     if($totalStock == 0) {
         $totalStock = $variation->listed_stock ?? 0;
     }
+    
+    // Ensure available stock never exceeds total stock (safety check)
+    // Available stock should logically never exceed total stock, but we cap it just in case
+    $totalAvailableStock = min($totalAvailableStock, $totalStock);
+    
+    // Keep physical stock count for reference (but use marketplace available for display)
     $availableStocks = $variation->available_stocks ?? collect();
     $pendingOrders = $variation->pending_orders ?? collect();
     $pendingBmOrders = $variation->pending_bm_orders ?? collect();
-    $availableCount = $availableStocks->count();
+    $physicalAvailableCount = $availableStocks->count(); // Physical stock items count
     $pendingCount = $pendingOrders->count();
     $pendingBmCount = $pendingBmOrders->count();
+    
+    // Use marketplace available stock for display (not physical count)
+    $availableCount = $totalAvailableStock;
     $difference = $availableCount - $pendingCount;
     
     // Calculate average cost from available stocks
@@ -117,8 +136,11 @@
                     <span class="text-muted">|</span>
                     <h6 class="mb-0">Difference: {{ $difference }}</h6>
                 </div>
-                <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal">
+                <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal" title="View Variation History">
                     <i class="fas fa-history"></i>
+                </a>
+                <a href="javascript:void(0)" class="btn btn-link" id="stock_comparison_{{ $variationId }}" onclick="showStockComparison({{ $variationId }})" title="View Stock Comparison">
+                    <i class="fas fa-cog"></i>
                 </a>
             </div>
         </div>

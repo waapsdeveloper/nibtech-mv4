@@ -13,18 +13,19 @@
                     <table class="table table-bordered table-striped table-hover">
                         <thead class="table-light sticky-top">
                             <tr>
-                                <th width="15%">Date</th>
-                                <th width="12%">Field</th>
-                                <th width="15%">Old Value</th>
-                                <th width="15%">New Value</th>
-                                <th width="10%">Change Type</th>
-                                <th width="13%">Changed By</th>
-                                <th width="20%">Reason</th>
+                                <th width="12%">Date</th>
+                                <th width="10%">Field</th>
+                                <th width="13%">Old Value</th>
+                                <th width="13%">New Value</th>
+                                <th width="8%">Change Type</th>
+                                <th width="11%">Changed By</th>
+                                <th width="18%">Reason</th>
+                                <th width="15%" class="text-center">Action</th>
                             </tr>
                         </thead>
                         <tbody id="listingHistoryTable">
                             <tr>
-                                <td colspan="7" class="text-center text-muted">Loading history...</td>
+                                <td colspan="8" class="text-center text-muted">Loading history...</td>
                             </tr>
                         </tbody>
                     </table>

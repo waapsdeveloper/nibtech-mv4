@@ -1423,6 +1423,112 @@ class ListingController extends Controller
     }
 
     /**
+     * Restore listing field to previous value from history
+     */
+    public function restore_history($listingId, Request $request)
+    {
+        $listing = Listing_model::with(['variation', 'marketplace', 'country_id', 'currency'])->find($listingId);
+
+        if (!$listing) {
+            return response()->json(['success' => false, 'error' => 'Listing not found'], 404);
+        }
+
+        $historyId = $request->input('history_id');
+        $fieldName = $request->input('field_name');
+        $oldValue = $request->input('old_value');
+
+        if (!$fieldName || $oldValue === null) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+
+        // Map field names from state fields to listing table columns
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',
+            'price_handler' => 'price_limit',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        $listingField = $listingFieldMapping[$fieldName] ?? null;
+        if (!$listingField) {
+            return response()->json(['success' => false, 'error' => 'Invalid field name'], 400);
+        }
+
+        // Capture snapshot BEFORE updating
+        $rowSnapshot = $this->captureListingSnapshot($listing);
+
+        // Get current value before restore
+        $currentValue = $listing->$listingField;
+
+        // Convert old value to appropriate type
+        $restoredValue = $oldValue;
+        if ($fieldName === 'buybox') {
+            // Convert to boolean/integer for buybox
+            $restoredValue = ($oldValue === '1' || $oldValue === 1 || $oldValue === true || $oldValue === 'true') ? 1 : 0;
+        } elseif (in_array($fieldName, ['min_price', 'price', 'min_handler', 'price_handler', 'buybox_price'])) {
+            // Convert to float for price fields
+            $restoredValue = (float)$oldValue;
+        }
+
+        // Update listing with restored value
+        $listing->$listingField = $restoredValue;
+        $listing->save();
+
+        // Update BackMarket API if needed (for price fields)
+        $bm = new BackMarketAPIController();
+        if ($listing->variation && $listing->variation->reference_id && $listing->country_id) {
+            $currencyCode = $listing->currency ? $listing->currency->code : 'EUR';
+            $marketCode = $listing->country_id->market_code ?? null;
+
+            $apiPayload = [];
+            if ($fieldName === 'min_price' || $fieldName === 'min_handler') {
+                $apiPayload['min_price'] = $oldValue;
+            }
+            if ($fieldName === 'price' || $fieldName === 'price_handler') {
+                $apiPayload['price'] = $oldValue;
+            }
+            
+            if (!empty($apiPayload)) {
+                $apiPayload['currency'] = $currencyCode;
+                $bm->updateOneListing($listing->variation->reference_id, json_encode($apiPayload), $marketCode);
+            }
+        }
+
+        // Track restore action in history
+        $changes = [
+            $fieldName => [
+                'old' => $currentValue,
+                'new' => $oldValue
+            ]
+        ];
+
+        $this->trackListingChanges(
+            $variationId,
+            $marketplaceId,
+            $listing->id,
+            $countryId,
+            $changes,
+            'listing',
+            "Restored from history (History ID: {$historyId})",
+            $rowSnapshot
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Field restored successfully',
+            'listing' => $listing,
+            'restored_field' => $fieldName,
+            'restored_value' => $oldValue
+        ]);
+    }
+
+    /**
      * Update listing limits (min_price_limit and price_limit - handlers)
      * V2 version with change tracking
      */
@@ -1850,6 +1956,242 @@ class ListingController extends Controller
                 'success' => false,
                 'quantity' => 0,
                 'error' => 'Error fetching stock quantity'
+            ], 500);
+        }
+    }
+
+    /**
+     * Get all marketplace stock data for comparison (for stock difference modal)
+     * 
+     * @param int $variationId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getMarketplaceStockComparison(int $variationId)
+    {
+        try {
+            $variation = Variation_model::find($variationId);
+            if (!$variation) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Variation not found'
+                ], 404);
+            }
+
+            // Get all marketplaces
+            $marketplaces = Marketplace_model::all()->keyBy('id');
+            
+            // Get all marketplace stocks for this variation
+            $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variationId)
+                ->with('marketplace')
+                ->get()
+                ->keyBy('marketplace_id');
+
+            // Get Backmarket API stock (only for marketplace 1)
+            $apiStock = null;
+            try {
+                $apiResult = $this->dataService->getBackmarketStockQuantity($variationId);
+                if ($apiResult['updated'] && isset($apiResult['quantity'])) {
+                    $apiStock = (int) $apiResult['quantity'];
+                }
+            } catch (\Exception $e) {
+                // API stock fetch failed, continue without it
+                Log::warning("Failed to fetch API stock for comparison: " . $e->getMessage());
+            }
+
+            // Build comparison data
+            $comparisonData = [];
+            $totalListedStock = 0;
+            $totalAvailableStock = 0;
+            $totalLockedStock = 0;
+
+            foreach ($marketplaces as $marketplaceId => $marketplace) {
+                $marketplaceIdInt = (int) $marketplaceId;
+                $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
+                
+                $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
+                $lockedStock = $marketplaceStock ? (int) ($marketplaceStock->locked_stock ?? 0) : 0;
+                $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
+                    ? (int) $marketplaceStock->available_stock 
+                    : max(0, $listedStock - $lockedStock);
+
+                // Get listing count for this marketplace
+                $listingCount = Listing_model::where('variation_id', $variationId)
+                    ->where('marketplace_id', $marketplaceIdInt)
+                    ->count();
+
+                $comparisonData[] = [
+                    'marketplace_id' => $marketplaceIdInt,
+                    'marketplace_name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
+                    'listed_stock' => $listedStock,
+                    'available_stock' => $availableStock,
+                    'locked_stock' => $lockedStock,
+                    'listing_count' => $listingCount,
+                    'is_backmarket' => $marketplaceIdInt === 1
+                ];
+
+                $totalListedStock += $listedStock;
+                $totalAvailableStock += $availableStock;
+                $totalLockedStock += $lockedStock;
+            }
+
+            // Get total stock from variation (this is the total stock we have in the system)
+            $totalStock = (int) ($variation->listed_stock ?? 0);
+
+            return response()->json([
+                'success' => true,
+                'variation_id' => $variationId,
+                'variation_sku' => $variation->sku ?? '',
+                'total_stock' => $totalStock, // Total stock we have in the system
+                'api_stock' => $apiStock,
+                'marketplaces' => $comparisonData,
+                'totals' => [
+                    'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
+                    'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
+                    'locked_stock' => $totalLockedStock // Sum of all marketplace locked stocks
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error("V2 getMarketplaceStockComparison error: " . $e->getMessage(), [
+                'variation_id' => $variationId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error fetching stock comparison data'
+            ], 500);
+        }
+    }
+
+    /**
+     * Fix stock mismatches for a variation
+     * Syncs marketplace stocks with API and parent stock
+     * 
+     * @param int $variationId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function fixStockMismatch(int $variationId)
+    {
+        try {
+            DB::beginTransaction();
+            
+            $variation = Variation_model::find($variationId);
+            if (!$variation) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Variation not found'
+                ], 404);
+            }
+
+            // Get all marketplace stocks
+            $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variationId)
+                ->get();
+
+            // Get Backmarket API stock (only for marketplace 1)
+            $apiStock = null;
+            try {
+                $apiResult = $this->dataService->getBackmarketStockQuantity($variationId);
+                if ($apiResult['updated'] && isset($apiResult['quantity'])) {
+                    $apiStock = (int) $apiResult['quantity'];
+                }
+            } catch (\Exception $e) {
+                Log::warning("Failed to fetch API stock for fix: " . $e->getMessage());
+            }
+
+            $fixes = [];
+            $sumListedStock = 0;
+
+            // Fix each marketplace stock
+            foreach ($marketplaceStocks as $ms) {
+                $marketplaceId = $ms->marketplace_id;
+                $oldListedStock = (int)($ms->listed_stock ?? 0);
+                $lockedStock = (int)($ms->locked_stock ?? 0);
+                $newListedStock = $oldListedStock;
+                $needsFix = false;
+
+                // If Backmarket (marketplace 1) and API stock is available, use API stock
+                if ($marketplaceId == 1 && $apiStock !== null) {
+                    $newListedStock = $apiStock;
+                    if ($newListedStock != $oldListedStock) {
+                        $needsFix = true;
+                        $fixes[] = [
+                            'marketplace_id' => $marketplaceId,
+                            'field' => 'listed_stock',
+                            'old_value' => $oldListedStock,
+                            'new_value' => $newListedStock,
+                            'reason' => 'Synced with API'
+                        ];
+                    }
+                }
+
+                // Recalculate available stock
+                $newAvailableStock = max(0, $newListedStock - $lockedStock);
+                $oldAvailableStock = $ms->available_stock !== null 
+                    ? (int)$ms->available_stock 
+                    : max(0, $oldListedStock - $lockedStock);
+
+                if ($newAvailableStock != $oldAvailableStock) {
+                    $needsFix = true;
+                    $fixes[] = [
+                        'marketplace_id' => $marketplaceId,
+                        'field' => 'available_stock',
+                        'old_value' => $oldAvailableStock,
+                        'new_value' => $newAvailableStock,
+                        'reason' => 'Recalculated (listed - locked)'
+                    ];
+                }
+
+                // Update if needed
+                if ($needsFix) {
+                    $ms->listed_stock = $newListedStock;
+                    $ms->available_stock = $newAvailableStock;
+                    $ms->admin_id = session('user_id');
+                    $ms->save();
+                }
+
+                $sumListedStock += $newListedStock;
+            }
+
+            // Update parent total stock to match sum of marketplace stocks
+            $oldParentStock = (int)($variation->listed_stock ?? 0);
+            if ($sumListedStock != $oldParentStock) {
+                $variation->listed_stock = $sumListedStock;
+                $variation->save();
+                
+                $fixes[] = [
+                    'marketplace_id' => null,
+                    'field' => 'variation.listed_stock',
+                    'old_value' => $oldParentStock,
+                    'new_value' => $sumListedStock,
+                    'reason' => 'Synced with sum of marketplace stocks'
+                ];
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Stock mismatches fixed successfully',
+                'variation_id' => $variationId,
+                'fixes_applied' => count($fixes),
+                'fixes' => $fixes,
+                'summary' => [
+                    'parent_stock_before' => $oldParentStock,
+                    'parent_stock_after' => $sumListedStock,
+                    'api_stock' => $apiStock
+                ]
+            ]);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error("V2 fixStockMismatch error: " . $e->getMessage(), [
+                'variation_id' => $variationId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error fixing stock mismatch: ' . $e->getMessage()
             ], 500);
         }
     }
