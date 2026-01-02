@@ -23,6 +23,7 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/clear_cache', [V2ListingController::class, 'clearCache'])->name('v2.clear_listing_cache');
     Route::get('listings/get_variation_history/{id}', [V2ListingController::class, 'get_variation_history'])->name('v2.get_variation_history');
     Route::get('listings/get_listings/{variationId}', [V2ListingController::class, 'get_listings'])->name('v2.get_listings');
+    Route::get('listings/get_updated_quantity/{id}', [V2ListingController::class, 'getUpdatedQuantity'])->name('v2.listing.get_updated_quantity');
     
     // Marketplace routes
     Route::get('marketplace', [Marketplace::class, 'render'])->name('v2.view_marketplace');
@@ -72,6 +73,20 @@ Route::prefix('v2')->group(function () {
     Route::post('artisan-commands/run-migrations', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'runMigrations'])->name('v2.artisan-commands.run-migrations');
     Route::get('artisan-commands/migration-details', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getMigrationDetails'])->name('v2.artisan-commands.migration-details');
     Route::post('artisan-commands/record-migration', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'recordMigration'])->name('v2.artisan-commands.record-migration');
+    Route::post('artisan-commands/run-single-migration', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'runSingleMigration'])->name('v2.artisan-commands.run-single-migration');
+    Route::get('artisan-commands/check-command-status', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'checkCommandStatus'])->name('v2.artisan-commands.check-command-status');
+    Route::post('artisan-commands/kill', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'killCommand'])->name('v2.artisan-commands.kill');
+    Route::post('artisan-commands/restart', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'restartCommand'])->name('v2.artisan-commands.restart');
     Route::get('artisan-commands/documentation', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getDocumentation'])->name('v2.artisan-commands.documentation');
+    
+    // Stock Sync Logs
+    Route::get('logs/stock-sync', [\App\Http\Controllers\V2\StockSyncLogController::class, 'index'])->name('v2.logs.stock-sync');
+    Route::get('logs/stock-sync/{id}', [\App\Http\Controllers\V2\StockSyncLogController::class, 'show'])->name('v2.logs.stock-sync.show');
+    Route::delete('logs/stock-sync/{id}', [\App\Http\Controllers\V2\StockSyncLogController::class, 'destroy'])->name('v2.logs.stock-sync.destroy');
+    Route::patch('logs/stock-sync/{id}/status', [\App\Http\Controllers\V2\StockSyncLogController::class, 'updateStatus'])->name('v2.logs.stock-sync.update-status');
+    
+    // Log File Viewer
+    Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
+    Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
 });
 

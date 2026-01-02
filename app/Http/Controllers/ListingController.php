@@ -328,7 +328,7 @@ class ListingController extends Controller
     private function mapVariationListingRow($variation, $listing): array
     {
         $availableCount = $variation->available_stocks ? $variation->available_stocks->count() : 0;
-        $pendingCount = $variation->pending_orders ? $variation->pending_orders->count() : 0;
+        $pendingCount = $variation->pending_orders ? $variation->pending_orders->sum('quantity') : 0;
         $pendingBMCount = $variation->pending_bm_orders ? $variation->pending_bm_orders->count() : 0;
         return [
             $variation->id,
@@ -543,7 +543,32 @@ class ListingController extends Controller
             $breakeven_price = 0;
         }
 
-        return response()->json(['stocks'=>$stocks, 'stock_costs'=>$stock_costs, 'vendors'=>$vendors, 'po'=>$po, 'reference'=>$reference, 'breakeven_price'=>$breakeven_price, 'latest_topup_items'=>$latest_topup_items, 'topup_reference'=>$topup_reference]);
+        // Fetch updated quantity from BackMarket API to ensure consistency
+        $updatedQuantity = null;
+        if($variation && $variation->reference_id){
+            try {
+                $bm = new BackMarketAPIController();
+                $updatedQuantity = $variation->update_qty($bm);
+            } catch (\Exception $e) {
+                // If API call fails, use the stored listed_stock value
+                $updatedQuantity = $variation->listed_stock ?? 0;
+                Log::warning("Failed to fetch updated quantity from API for variation ID $id: " . $e->getMessage());
+            }
+        } else {
+            $updatedQuantity = $variation->listed_stock ?? 0;
+        }
+
+        return response()->json([
+            'stocks'=>$stocks, 
+            'stock_costs'=>$stock_costs, 
+            'vendors'=>$vendors, 
+            'po'=>$po, 
+            'reference'=>$reference, 
+            'breakeven_price'=>$breakeven_price, 
+            'latest_topup_items'=>$latest_topup_items, 
+            'topup_reference'=>$topup_reference,
+            'updatedQuantity' => (int)$updatedQuantity
+        ]);
 
     }
 
@@ -799,7 +824,8 @@ class ListingController extends Controller
         $variation = Variation_model::find($id);
         $bm = new BackMarketAPIController();
         $updatedQuantity = $variation->update_qty($bm);
-        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]));
+        // V1 listing: Skip buffer (buffer only applies to V2 listing)
+        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>request('stock')]), null, true);
         if($response->quantity != null){
             $variation->listed_stock = $response->quantity;
             $variation->save();
@@ -808,7 +834,8 @@ class ListingController extends Controller
     }
     public function add_quantity($id, $stock = 'no', $process_id = null, $listing = false){
         if($stock == 'no'){
-            $stock = request('stock');
+            // Accept both 'stock' and 'quantity' fields for backward compatibility
+            $stock = request('stock') ?? request('quantity');
         }
         
         // Check if this is an exact stock set request (from stock formula page)
@@ -834,12 +861,14 @@ class ListingController extends Controller
         }
         $pending_orders = $variation->pending_orders->sum('quantity');
 
+        // Check for active verification (needed for both quantity calculation and verification record creation)
+        $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
+        
         // If setting exact stock, use the exact value directly
         if($setExactStock && $exactStockValue !== null){
             $new_quantity = (int)$exactStockValue;
         } else {
             // Normal flow: calculate based on addition
-            $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
             if($check_active_verification != null){
                 $new_quantity = $stock - $pending_orders;
                 // $new_quantity = $stock;
@@ -852,7 +881,8 @@ class ListingController extends Controller
             }
         }
         
-        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]));
+        // V1 listing: Skip buffer (buffer only applies to V2 listing)
+        $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]), null, true);
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
             return $response;
@@ -863,9 +893,12 @@ class ListingController extends Controller
         if($response && is_object($response) && isset($response->quantity)){
             $responseQuantity = $response->quantity;
         } else {
-            // If API response doesn't have quantity, use the new_quantity we sent
-            $responseQuantity = $new_quantity;
-            Log::warning("API response missing quantity property for variation ID $id, using calculated value: $new_quantity");
+            // If API response doesn't have quantity, fetch the actual quantity from API
+            // This ensures we get the actual quantity after buffer is applied
+            $variation->refresh();
+            $actualQuantity = $variation->update_qty($bm);
+            $responseQuantity = $actualQuantity;
+            Log::warning("API response missing quantity property for variation ID $id, fetched actual quantity from API: $actualQuantity (sent: $new_quantity)");
         }
         
         if($responseQuantity != null){
@@ -908,15 +941,37 @@ class ListingController extends Controller
             $marketplaceStocks = collect();
         }
         
-        $listed_stock_verification = new Listed_stock_verification_model();
+        // If active verification exists, use firstOrNew, otherwise create new
+        if($check_active_verification != null){
+            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from
+            $listed_stock_verification = Listed_stock_verification_model::where('process_id', $process_id)
+                ->where('variation_id', $variation->id)
+                ->whereNull('qty_to')
+                ->whereNotNull('qty_from')
+                ->first();
+            
+            // If not found, create a new one
+            if (!$listed_stock_verification) {
+                $listed_stock_verification = new Listed_stock_verification_model();
+                $listed_stock_verification->process_id = $process_id;
+                $listed_stock_verification->variation_id = $variation->id;
+            }
+        } else {
+            $listed_stock_verification = new Listed_stock_verification_model();
+            $listed_stock_verification->qty_from = $previous_qty;
+        }
+        
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
         $listed_stock_verification->pending_orders = $pending_orders;
-        $listed_stock_verification->qty_from = $previous_qty;
+        
         $listed_stock_verification->qty_change = $stock;
         $listed_stock_verification->qty_to = $responseQuantity ?? 0;
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
+
+        $variation->listed_stock = $responseQuantity ?? 0;
+        $variation->save();
 
         // Return JSON response with total stock and marketplace stocks
         // Check if request is AJAX by checking headers
@@ -1009,7 +1064,8 @@ class ListingController extends Controller
         // Update via API if variation has reference_id (BackMarket integration)
         if($variation->reference_id) {
             $bm = new BackMarketAPIController();
-            $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $totalStock]));
+            // V1 listing: Skip buffer (buffer only applies to V2 listing)
+            $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $totalStock]), null, true);
             
             if(is_string($apiResponse) || is_int($apiResponse) || is_null($apiResponse)){
                 Log::warning("API update warning for variation ID $variationId: $apiResponse");
@@ -1176,7 +1232,8 @@ class ListingController extends Controller
             $listed_stock_verification->admin_id = session('user_id');
             $listed_stock_verification->save();
 
-            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]));
+            // V1 listing: Skip buffer (buffer only applies to V2 listing)
+            $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>0]), null, true);
 
             if($response->quantity != null){
                 $variation->listed_stock = $response->quantity;

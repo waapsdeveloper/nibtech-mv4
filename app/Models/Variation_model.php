@@ -160,6 +160,16 @@ class Variation_model extends Model
             $q->where('order_type_id',3)->where('status',2);
         });
     }
+
+    public function pending_orders_count()
+    {
+        return $this->pending_orders->count();
+    }
+
+    public function pending_orders_sum()
+    {
+        return $this->pending_orders->sum('quantity');
+    }
     public function pending_bm_orders()
     {
         return $this->hasMany(Order_item_model::class, 'variation_id', 'id')->whereHas('order', function($q){

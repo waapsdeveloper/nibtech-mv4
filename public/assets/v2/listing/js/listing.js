@@ -168,14 +168,19 @@ function show_variation_history(variationId, variationName) {
  * @param {string} snapshotId - Unique ID for the snapshot tooltip
  */
 window.showSnapshotTooltip = function(event, snapshotId) {
-    // Get snapshot from global object
-    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
-        return;
-    }
-    
-    const snapshot = window.listingSnapshots[snapshotId];
-    const tooltip = document.getElementById(`tooltip_${snapshotId}`);
-    if (!tooltip) return;
+    try {
+        // Get snapshot from global object
+        if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+            return;
+        }
+        
+        const snapshot = window.listingSnapshots[snapshotId];
+        const tooltip = document.getElementById(`tooltip_${snapshotId}`);
+        if (!tooltip) return;
+        
+        // Get the icon element from the event
+        const icon = event.target;
+        if (!icon) return;
         
         // Format and set tooltip content
         tooltip.innerHTML = formatSnapshotForTooltip(snapshot);
@@ -949,7 +954,7 @@ $(document).ready(function() {
 /**
  * Global marketplace toggle function
  */
-function toggleGlobalMarketplace(marketplaceId, badgeElement) {
+window.toggleGlobalMarketplace = function(marketplaceId, badgeElement) {
     // Initialize global state if not exists
     if (!window.globalMarketplaceState) {
         window.globalMarketplaceState = {};
@@ -1016,7 +1021,7 @@ function loadMarketplaceState() {
 /**
  * Clear marketplace state and reset to defaults
  */
-function clearMarketplaceState() {
+window.clearMarketplaceState = function() {
     // Clear localStorage
     localStorage.removeItem('globalMarketplaceState');
     
@@ -1730,4 +1735,65 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         }
     });
 });
+
+/**
+ * Fetch updated stock quantity from Backmarket API for a variation
+ * Only fetches if marketplace is Backmarket (ID = 1)
+ * 
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @returns {Promise<number|null>} Stock quantity or null if not Backmarket
+ */
+window.fetchBackmarketStockQuantity = function(variationId, marketplaceId) {
+    // Only fetch for Backmarket (marketplace ID = 1)
+    if (marketplaceId !== 1) {
+        return Promise.resolve(null);
+    }
+    
+    if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.getUpdatedQuantity) {
+        console.warn('getUpdatedQuantity URL not configured');
+        return Promise.resolve(null);
+    }
+    
+    return $.ajax({
+        url: window.ListingConfig.urls.getUpdatedQuantity + '/' + variationId,
+        type: 'GET',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-TOKEN': window.ListingConfig.csrfToken
+        }
+    }).then(function(response) {
+        if (response.success && response.quantity !== undefined) {
+            return response.quantity;
+        }
+        return null;
+    }).catch(function(xhr, status, error) {
+        console.error('Error fetching Backmarket stock quantity:', error);
+        return null;
+    });
+};
+
+/**
+ * Update Backmarket stock badge in marketplace bar
+ * 
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {number} quantity
+ */
+window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantity) {
+    const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
+    
+    if (badgeElement.length) {
+        if (quantity !== null && quantity !== undefined) {
+            // Remove loading spinner, show quantity
+            badgeElement
+                .removeClass('bg-secondary d-none')
+                .addClass('bg-primary')
+                .html('<span class="stock-value">' + quantity + '</span> <small class="ms-1">(API)</small>');
+        } else {
+            // Hide badge if fetch failed
+            badgeElement.addClass('d-none');
+        }
+    }
+};
 
