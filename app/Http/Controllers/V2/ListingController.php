@@ -1853,4 +1853,107 @@ class ListingController extends Controller
             ], 500);
         }
     }
+
+    /**
+     * Get all marketplace stock data for comparison (for stock difference modal)
+     * 
+     * @param int $variationId
+     * @return \Illuminate\Http\JsonResponse
+     */
+    public function getMarketplaceStockComparison(int $variationId)
+    {
+        try {
+            $variation = Variation_model::find($variationId);
+            if (!$variation) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Variation not found'
+                ], 404);
+            }
+
+            // Get all marketplaces
+            $marketplaces = Marketplace_model::all()->keyBy('id');
+            
+            // Get all marketplace stocks for this variation
+            $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variationId)
+                ->with('marketplace')
+                ->get()
+                ->keyBy('marketplace_id');
+
+            // Get Backmarket API stock (only for marketplace 1)
+            $apiStock = null;
+            try {
+                $apiResult = $this->dataService->getBackmarketStockQuantity($variationId);
+                if ($apiResult['updated'] && isset($apiResult['quantity'])) {
+                    $apiStock = (int) $apiResult['quantity'];
+                }
+            } catch (\Exception $e) {
+                // API stock fetch failed, continue without it
+                Log::warning("Failed to fetch API stock for comparison: " . $e->getMessage());
+            }
+
+            // Build comparison data
+            $comparisonData = [];
+            $totalListedStock = 0;
+            $totalAvailableStock = 0;
+            $totalLockedStock = 0;
+
+            foreach ($marketplaces as $marketplaceId => $marketplace) {
+                $marketplaceIdInt = (int) $marketplaceId;
+                $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
+                
+                $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
+                $lockedStock = $marketplaceStock ? (int) ($marketplaceStock->locked_stock ?? 0) : 0;
+                $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
+                    ? (int) $marketplaceStock->available_stock 
+                    : max(0, $listedStock - $lockedStock);
+
+                // Get listing count for this marketplace
+                $listingCount = Listing_model::where('variation_id', $variationId)
+                    ->where('marketplace_id', $marketplaceIdInt)
+                    ->count();
+
+                $comparisonData[] = [
+                    'marketplace_id' => $marketplaceIdInt,
+                    'marketplace_name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
+                    'listed_stock' => $listedStock,
+                    'available_stock' => $availableStock,
+                    'locked_stock' => $lockedStock,
+                    'listing_count' => $listingCount,
+                    'is_backmarket' => $marketplaceIdInt === 1
+                ];
+
+                $totalListedStock += $listedStock;
+                $totalAvailableStock += $availableStock;
+                $totalLockedStock += $lockedStock;
+            }
+
+            // Get total stock from variation (this is the total stock we have in the system)
+            $totalStock = (int) ($variation->listed_stock ?? 0);
+
+            return response()->json([
+                'success' => true,
+                'variation_id' => $variationId,
+                'variation_sku' => $variation->sku ?? '',
+                'total_stock' => $totalStock, // Total stock we have in the system
+                'api_stock' => $apiStock,
+                'marketplaces' => $comparisonData,
+                'totals' => [
+                    'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
+                    'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
+                    'locked_stock' => $totalLockedStock // Sum of all marketplace locked stocks
+                ]
+            ]);
+        } catch (\Exception $e) {
+            Log::error("V2 getMarketplaceStockComparison error: " . $e->getMessage(), [
+                'variation_id' => $variationId,
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error fetching stock comparison data'
+            ], 500);
+        }
+    }
 }

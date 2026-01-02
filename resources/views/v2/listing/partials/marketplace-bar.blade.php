@@ -104,11 +104,15 @@
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
                 <span class="text-muted small">
-                    <span class="text-success" title="Available Stock">
+                    <span class="text-primary" title="Listed Stock - Total allocated to this marketplace">
+                        Listed: <span id="listed_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $listedStock }}</span>
+                    </span>
+                    <span class="mx-1">|</span>
+                    <span class="text-success" title="Available Stock - Available for sale (Listed - Locked)">
                         Avail: <span id="available_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $availableStock }}</span>
                     </span>
                     <span class="mx-1">|</span>
-                    <span class="text-warning" title="Pending/Locked Stock">
+                    <span class="text-warning" title="Pending/Locked Stock - Reserved/Pending orders">
                         Pending: <span id="pending_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingStock }}</span>
                     </span>
                 </span>

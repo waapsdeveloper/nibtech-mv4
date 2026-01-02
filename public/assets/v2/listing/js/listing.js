@@ -1780,6 +1780,118 @@ window.fetchBackmarketStockQuantity = function(variationId, marketplaceId) {
  * @param {number} marketplaceId
  * @param {number} quantity
  */
+/**
+ * Show stock comparison modal
+ * 
+ * @param {number} variationId
+ */
+window.showStockComparison = function(variationId) {
+    const modal = new bootstrap.Modal(document.getElementById('stockComparisonModal'));
+    const loadingDiv = $('#stockComparisonLoading');
+    const contentDiv = $('#stockComparisonContent');
+    const errorDiv = $('#stockComparisonError');
+    
+    // Show loading, hide content and error
+    loadingDiv.show();
+    contentDiv.hide();
+    errorDiv.hide();
+    
+    // Show modal
+    modal.show();
+    
+    // Fetch comparison data
+    if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.getMarketplaceStockComparison) {
+        errorDiv.find('#stockComparisonErrorMessage').text('Comparison URL not configured');
+        loadingDiv.hide();
+        errorDiv.show();
+        return;
+    }
+    
+    $.ajax({
+        url: window.ListingConfig.urls.getMarketplaceStockComparison + '/' + variationId,
+        type: 'GET',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-TOKEN': window.ListingConfig.csrfToken
+        },
+        success: function(response) {
+            if (response.success) {
+                // Populate modal with data
+                $('#comparisonVariationSku').text(response.variation_sku || 'N/A');
+                
+                // Show total stock (this is the total stock we have in the system)
+                $('#comparisonTotalStock').text(response.total_stock || 0);
+                
+                // Show API comparison if API stock is available
+                if (response.api_stock !== null && response.api_stock !== undefined) {
+                    const apiStock = parseInt(response.api_stock) || 0;
+                    const ourStock = response.totals.available_stock || 0;
+                    const difference = apiStock - ourStock;
+                    
+                    $('#comparisonApiStock').text(apiStock);
+                    $('#comparisonOurStock').text(ourStock);
+                    $('#comparisonDiffValue').text(difference > 0 ? '+' + difference : difference);
+                    
+                    // Color code the difference
+                    const diffElement = $('#comparisonDifference');
+                    if (difference > 0) {
+                        diffElement.removeClass('alert-warning alert-danger').addClass('alert-success');
+                    } else if (difference < 0) {
+                        diffElement.removeClass('alert-warning alert-success').addClass('alert-danger');
+                    } else {
+                        diffElement.removeClass('alert-danger alert-success').addClass('alert-warning');
+                    }
+                    
+                    $('#apiComparisonCard').show();
+                } else {
+                    $('#apiComparisonCard').hide();
+                }
+                
+                // Populate marketplace table
+                let tableBody = '';
+                let totalListings = 0;
+                
+                if (response.marketplaces && response.marketplaces.length > 0) {
+                    response.marketplaces.forEach(function(mp) {
+                        const isBackmarket = mp.is_backmarket;
+                        const rowClass = isBackmarket ? 'table-warning' : '';
+                        tableBody += '<tr class="' + rowClass + '">';
+                        tableBody += '<td>' + mp.marketplace_name + (isBackmarket ? ' <span class="badge bg-primary">API</span>' : '') + '</td>';
+                        tableBody += '<td class="text-center">' + mp.listed_stock + '</td>';
+                        tableBody += '<td class="text-center">' + mp.available_stock + '</td>';
+                        tableBody += '<td class="text-center">' + mp.locked_stock + '</td>';
+                        tableBody += '<td class="text-center">' + mp.listing_count + '</td>';
+                        tableBody += '</tr>';
+                        totalListings += mp.listing_count || 0;
+                    });
+                } else {
+                    tableBody = '<tr><td colspan="5" class="text-center text-muted">No marketplace data available</td></tr>';
+                }
+                
+                $('#comparisonMarketplaceTableBody').html(tableBody);
+                $('#comparisonTotalListed').text(response.totals.listed_stock || 0);
+                $('#comparisonTotalAvailable').text(response.totals.available_stock || 0);
+                $('#comparisonTotalLocked').text(response.totals.locked_stock || 0);
+                $('#comparisonTotalListings').text(totalListings);
+                
+                // Show content, hide loading
+                loadingDiv.hide();
+                contentDiv.show();
+            } else {
+                errorDiv.find('#stockComparisonErrorMessage').text(response.error || 'Failed to load comparison data');
+                loadingDiv.hide();
+                errorDiv.show();
+            }
+        },
+        error: function(xhr, status, error) {
+            console.error('Error fetching stock comparison:', error);
+            errorDiv.find('#stockComparisonErrorMessage').text('Error loading comparison data: ' + error);
+            loadingDiv.hide();
+            errorDiv.show();
+        }
+    });
+};
+
 window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantity) {
     const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
     
@@ -1790,6 +1902,41 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 .removeClass('bg-secondary d-none')
                 .addClass('bg-primary')
                 .html('<span class="stock-value">' + quantity + '</span> <small class="ms-1">(API)</small>');
+            
+            // Compare API stock with our available stock and mark as red if different
+            const availableStockElement = $('#available_stock_' + variationId + '_' + marketplaceId);
+            const availableStockContainer = availableStockElement.closest('span.text-success');
+            
+            if (availableStockElement.length) {
+                const ourAvailableStock = parseInt(availableStockElement.text().trim()) || 0;
+                const apiStock = parseInt(quantity) || 0;
+                
+                // If stock numbers are different, mark our available stock as red and add star icon
+                if (ourAvailableStock !== apiStock) {
+                    availableStockElement.css({
+                        'color': '#dc3545',
+                        'font-weight': 'bold'
+                    });
+                    
+                    // Remove existing star if any
+                    availableStockContainer.find('.stock-diff-star').remove();
+                    
+                    // Add star icon that opens comparison modal
+                    const starIcon = $('<i class="fas fa-star stock-diff-star ms-1" style="color: #ffc107; cursor: pointer; font-size: 0.8em;" title="Click to view stock comparison" data-variation-id="' + variationId + '"></i>');
+                    starIcon.on('click', function(e) {
+                        e.stopPropagation();
+                        window.showStockComparison(variationId);
+                    });
+                    availableStockContainer.append(starIcon);
+                } else {
+                    // Reset to default color if they match and remove star
+                    availableStockElement.css({
+                        'color': '',
+                        'font-weight': ''
+                    });
+                    availableStockContainer.find('.stock-diff-star').remove();
+                }
+            }
         } else {
             // Hide badge if fetch failed
             badgeElement.addClass('d-none');
