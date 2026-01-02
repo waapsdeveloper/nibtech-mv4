@@ -647,7 +647,10 @@ class ArtisanCommandsController extends Controller
     {
         try {
             // Dispatch migrate command to queue
-            $job = new ExecuteArtisanCommandJob('migrate', []);
+            // Add --no-interaction to prevent STDIN errors in web context
+            $job = new ExecuteArtisanCommandJob('migrate', [
+                '--no-interaction' => true
+            ]);
             dispatch($job);
 
             Log::info('Migration command dispatched to queue');
@@ -921,8 +924,10 @@ class ArtisanCommandsController extends Controller
 
             // Dispatch job to run the specific migration
             // Use --path with relative path from database/migrations
+            // Add --no-interaction to prevent STDIN errors in web context
             $job = new ExecuteArtisanCommandJob('migrate', [
-                '--path' => 'database/migrations/' . $relativePath
+                '--path' => 'database/migrations/' . $relativePath,
+                '--no-interaction' => true
             ]);
             dispatch($job);
 
