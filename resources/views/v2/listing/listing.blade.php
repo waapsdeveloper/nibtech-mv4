@@ -6,6 +6,7 @@
 @endsection
 
 @section('content')
+
     <!-- Breadcrumb -->
     <div class="breadcrumb-header justify-content-between">
         <div class="left-content">
@@ -53,74 +54,11 @@
     @endif
 
     {{-- Variation History Modal --}}
-    <div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-lg modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 id="variation_name"></h5>
-                    <h5 class="modal-title" id="variationHistoryModalLabel"> &nbsp; History</h5>
-                    <button type="button" class="btn-close " data-bs-dismiss="modal" aria-label="Close">
-                        <i data-feather="x" class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <table class="table table-bordered table-striped">
-                        <thead>
-                            <tr>
-                                <th>Topup Ref</th>
-                                <th>Pending Orders</th>
-                                <th>Qty Before</th>
-                                <th>Qty Added</th>
-                                <th>Qty After</th>
-                                <th>Admin</th>
-                                <th>Date</th>
-                            </tr>
-                        </thead>
-                        <tbody id="variationHistoryTable">
-                            <!-- Data will be populated here via AJAX -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('v2.listing.partials.variation-history-modal')
     {{-- /Variation History Modal --}}
 
     {{-- Listing History Modal --}}
-    <div class="modal fade" id="listingHistoryModal" tabindex="-1" aria-labelledby="listingHistoryModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen-lg-down" style="max-width: 95vw;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="listingHistoryModalLabel"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        <i data-feather="x" class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <div class="table-responsive" style="max-height: 70vh; overflow-y: auto;">
-                        <table class="table table-bordered table-striped table-hover">
-                            <thead class="table-light sticky-top">
-                                <tr>
-                                    <th width="15%">Date</th>
-                                    <th width="12%">Field</th>
-                                    <th width="15%">Old Value</th>
-                                    <th width="15%">New Value</th>
-                                    <th width="10%">Change Type</th>
-                                    <th width="13%">Changed By</th>
-                                    <th width="20%">Reason</th>
-                                </tr>
-                            </thead>
-                            <tbody id="listingHistoryTable">
-                                <tr>
-                                    <td colspan="7" class="text-center text-muted">Loading history...</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('v2.listing.partials.listing-history-modal')
     {{-- /Listing History Modal --}}
 
     {{-- Bulk Update Modal --}}
@@ -128,27 +66,7 @@
     {{-- /Bulk Update Modal --}}
 
     {{-- Stock Locks Modal --}}
-    <div class="modal fade" id="stockLocksModal" tabindex="-1" aria-labelledby="stockLocksModalLabel" aria-hidden="true">
-        <div class="modal-dialog modal-fullscreen-lg-down modal-dialog-centered" style="max-width: 90vw;">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="stockLocksModalLabel">
-                        <i class="fe fe-lock me-2"></i>Stock Locks
-                    </h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
-                        <i data-feather="x" class="fas fa-times"></i>
-                    </button>
-                </div>
-                <div class="modal-body" id="stockLocksModalBody">
-                    <div class="text-center">
-                        <div class="spinner-border text-primary" role="status">
-                            <span class="visually-hidden">Loading...</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+    @include('v2.listing.partials.stock-locks-modal')
     {{-- /Stock Locks Modal --}}
 @endsection
 
