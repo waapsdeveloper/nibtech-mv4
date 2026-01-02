@@ -113,7 +113,7 @@
                 </div>
                 <div class="card-body p-0">
                     @if($totalLines > 0)
-                        <div class="log-content">
+                        <div class="log-content" id="logContent">
                             @foreach($lines as $line)
                                 @php
                                     $lineClass = '';
@@ -177,6 +177,15 @@
 
 @section('scripts')
 <script>
+// Auto-scroll to top on page load (showing newest entries first)
+$(document).ready(function() {
+    const logContent = document.getElementById('logContent');
+    if (logContent) {
+        // Scroll to top to show newest entries first
+        logContent.scrollTop = 0;
+    }
+});
+
 function clearLogFile() {
     if (!confirm('Are you sure you want to clear the entire log file? This action cannot be undone.')) {
         return;

@@ -40,6 +40,8 @@ class SyncAllMarketplaceStockFromAPI extends Command
             
             if ($minutesSinceLastRun < 30) {
                 $remainingMinutes = 30 - $minutesSinceLastRun;
+                $errorMessage = "COMMAND CANNOT RUN YET - Cooldown period active. Last sync was run {$minutesSinceLastRun} minute(s) ago. Please wait {$remainingMinutes} more minute(s).";
+                
                 $this->error("==========================================");
                 $this->error("COMMAND CANNOT RUN YET");
                 $this->error("==========================================");
@@ -48,6 +50,24 @@ class SyncAllMarketplaceStockFromAPI extends Command
                 $this->error("Last run: {$lastRun->started_at->format('Y-m-d H:i:s')}");
                 $this->error("Status: {$lastRun->status}");
                 $this->error("==========================================");
+                
+                // Create a log entry for cooldown to track the attempt
+                StockSyncLog::create([
+                    'marketplace_id' => $marketplaceId,
+                    'status' => 'cancelled',
+                    'summary' => $errorMessage,
+                    'started_at' => now(),
+                    'completed_at' => now(),
+                    'duration_seconds' => 0,
+                    'admin_id' => auth()->id() ?? null
+                ]);
+                
+                Log::warning('SyncAllMarketplaceStockFromAPI: Command blocked by cooldown', [
+                    'marketplace_id' => $marketplaceId,
+                    'minutes_since_last_run' => $minutesSinceLastRun,
+                    'remaining_minutes' => $remainingMinutes,
+                    'last_run_id' => $lastRun->id
+                ]);
                 
                 return 1;
             }
@@ -255,6 +275,22 @@ class SyncAllMarketplaceStockFromAPI extends Command
             // Update log entry with results
             $summary = "Total: {$totalRecords}, Synced: {$syncedCount}, Skipped: {$skippedCount}, Errors: {$errorCount}";
             
+            // Capture command output for logging
+            $commandOutput = "SYNC ALL MARKETPLACE STOCK FROM API\n";
+            $commandOutput .= "Marketplace ID: {$marketplaceId}\n";
+            $commandOutput .= "Total records: {$totalRecords}\n";
+            $commandOutput .= "Successfully synced: {$syncedCount}\n";
+            $commandOutput .= "Skipped: {$skippedCount}\n";
+            $commandOutput .= "Errors: {$errorCount}\n";
+            $commandOutput .= "Duration: {$duration} seconds\n";
+            
+            if ($errorCount > 0 && count($errors) > 0) {
+                $commandOutput .= "\nErrors:\n";
+                foreach (array_slice($errors, 0, 10) as $error) {
+                    $commandOutput .= "  Variation ID {$error['variation_id']}: {$error['error']}\n";
+                }
+            }
+            
             $logEntry->update([
                 'status' => 'completed',
                 'total_records' => $totalRecords,
@@ -265,6 +301,12 @@ class SyncAllMarketplaceStockFromAPI extends Command
                 'summary' => $summary,
                 'completed_at' => now(),
                 'duration_seconds' => $duration
+            ]);
+            
+            // Log the output for debugging
+            Log::info('SyncAllMarketplaceStockFromAPI: Command output', [
+                'log_id' => $logEntry->id,
+                'output' => $commandOutput
             ]);
             
             Log::info('SyncAllMarketplaceStockFromAPI: Completed', [

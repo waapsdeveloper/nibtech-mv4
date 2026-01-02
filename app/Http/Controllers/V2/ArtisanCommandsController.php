@@ -984,7 +984,30 @@ class ArtisanCommandsController extends Controller
                     $status = $logEntry->status; // running, completed, failed, cancelled
                     $startedAt = $logEntry->started_at ? $logEntry->started_at->format('Y-m-d H:i:s') : null;
                     $completedAt = $logEntry->completed_at ? $logEntry->completed_at->format('Y-m-d H:i:s') : null;
-                    $exitCode = $status === 'completed' ? 0 : ($status === 'failed' ? 1 : null);
+                    $exitCode = $status === 'completed' ? 0 : ($status === 'failed' ? 1 : ($status === 'cancelled' ? 1 : null));
+                    
+                    // Build detailed output message
+                    $output = "Status: {$status}\n";
+                    if ($logEntry->summary) {
+                        $output .= "Summary: {$logEntry->summary}\n";
+                    }
+                    if ($logEntry->total_records !== null) {
+                        $output .= "Total Records: {$logEntry->total_records}\n";
+                        $output .= "Synced: {$logEntry->synced_count}\n";
+                        $output .= "Skipped: {$logEntry->skipped_count}\n";
+                        $output .= "Errors: {$logEntry->error_count}\n";
+                    }
+                    if ($logEntry->duration_seconds !== null) {
+                        $output .= "Duration: {$logEntry->duration_seconds} seconds\n";
+                    }
+                    if ($logEntry->error_details && is_array($logEntry->error_details) && count($logEntry->error_details) > 0) {
+                        $output .= "\nError Details:\n";
+                        foreach (array_slice($logEntry->error_details, 0, 10) as $error) {
+                            $variationId = $error['variation_id'] ?? 'Unknown';
+                            $errorMsg = $error['error'] ?? 'Unknown error';
+                            $output .= "  Variation ID {$variationId}: {$errorMsg}\n";
+                        }
+                    }
                     
                     return response()->json([
                         'success' => true,
@@ -998,7 +1021,8 @@ class ArtisanCommandsController extends Controller
                         'skipped_count' => $logEntry->skipped_count,
                         'error_count' => $logEntry->error_count,
                         'duration_seconds' => $logEntry->duration_seconds,
-                        'log_id' => $logEntry->id
+                        'log_id' => $logEntry->id,
+                        'output' => $output
                     ]);
                 } else {
                     return response()->json([

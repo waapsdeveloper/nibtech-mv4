@@ -51,24 +51,37 @@
         ->where('marketplace_id', $marketplaceIdInt)
         ->first();
     
-    // Show AVAILABLE stock (listed - locked) in the marketplace bar
-    // This keeps the number aligned with lock behavior (so UI reflects real sellable stock).
-    $currentStock = 0;
+    // Calculate stock details for display
+    $listedStock = 0;
+    $availableStock = 0;
+    $pendingStock = 0; // Locked stock (pending/reserved)
+    
     if ($marketplaceStock) {
+        $listedStock = (int) ($marketplaceStock->listed_stock ?? 0);
+        
+        // Calculate available stock (listed - locked)
         if ($marketplaceStock->available_stock !== null) {
-            $currentStock = (int) $marketplaceStock->available_stock;
+            $availableStock = (int) $marketplaceStock->available_stock;
         } else {
-            $currentStock = (int) max(0, ($marketplaceStock->listed_stock ?? 0) - ($marketplaceStock->locked_stock ?? 0));
+            $availableStock = (int) max(0, $listedStock - ($marketplaceStock->locked_stock ?? 0));
         }
+        
+        // Pending stock is the locked stock (reserved/pending)
+        $pendingStock = (int) ($marketplaceStock->locked_stock ?? 0);
     }
     
-    // Get locked stock for this variation and marketplace
+    // Get locked stock for this variation and marketplace (for lock badge)
     $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
         ->where('marketplace_id', $marketplaceIdInt)
         ->where('lock_status', 'locked')
         ->get();
     $totalLocked = $activeLocks->sum('quantity_locked');
     $lockedStockCount = $activeLocks->count();
+    
+    // Use totalLocked if it's more accurate than marketplaceStock->locked_stock
+    if ($totalLocked > $pendingStock) {
+        $pendingStock = $totalLocked;
+    }
     
     // Debug: Uncomment the line below to see what's being queried (remove after debugging)
     // {{-- Debug: variation_id={{ $variationId }}, marketplace_id={{ $marketplaceIdInt }}, found={{ $marketplaceStock ? 'yes' : 'no' }}, stock={{ $currentStock }} --}}
@@ -90,7 +103,15 @@
             <div class="fw-bold d-flex align-items-center gap-2">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
-                <span class="text-muted small">(<span id="stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $currentStock }}</span>)</span>
+                <span class="text-muted small">
+                    <span class="text-success" title="Available Stock">
+                        Avail: <span id="available_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $availableStock }}</span>
+                    </span>
+                    <span class="mx-1">|</span>
+                    <span class="text-warning" title="Pending/Locked Stock">
+                        Pending: <span id="pending_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingStock }}</span>
+                    </span>
+                </span>
                 {{-- Real-time Backmarket Stock Badge (only for Backmarket) --}}
                 @if($marketplaceIdInt === 1)
                     <span id="backmarket_stock_badge_{{ $variationId }}_{{ $marketplaceId }}" class="badge bg-secondary text-white ms-2" style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">
