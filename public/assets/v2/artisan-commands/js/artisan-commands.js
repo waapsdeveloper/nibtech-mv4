@@ -1042,4 +1042,98 @@
         }, 5000);
     };
 
+    // Load PM2 logs
+    window.loadPm2Logs = function() {
+        const $container = $('#pm2LogsContainer');
+        const $refreshIcon = $('#pm2LogsRefreshIcon');
+        const lines = $('#pm2LogsLines').val() || 100;
+        
+        if (!$container.length) return;
+        
+        // Show loading state
+        $container.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading PM2 logs...</p></div>');
+        $refreshIcon.addClass('spin');
+        
+        $.ajax({
+            url: getUrl('pm2Logs'),
+            method: 'GET',
+            data: { lines: lines },
+            headers: {
+                'X-CSRF-TOKEN': getCsrfToken()
+            }
+        })
+        .done(function(data) {
+            $refreshIcon.removeClass('spin');
+            
+            if (data.success) {
+                if (data.logs) {
+                    // Format logs with line breaks and color coding
+                    const logLines = data.logs.split('\n');
+                    let html = '';
+                    
+                    logLines.forEach(function(line) {
+                        if (!line.trim()) {
+                            html += '<div class="log-line"><br></div>';
+                            return;
+                        }
+                        
+                        let lineClass = '';
+                        const lowerLine = line.toLowerCase();
+                        
+                        // Detect error patterns
+                        if (lowerLine.includes('error') || lowerLine.includes('exception') || lowerLine.includes('failed') || lowerLine.includes('fatal')) {
+                            lineClass = 'error';
+                        } else if (lowerLine.includes('warning') || lowerLine.includes('warn')) {
+                            lineClass = 'warning';
+                        } else if (lowerLine.includes('info') || lowerLine.includes('information')) {
+                            lineClass = 'info';
+                        } else if (lowerLine.includes('debug')) {
+                            lineClass = 'debug';
+                        }
+                        
+                        html += '<div class="log-line ' + lineClass + '">' + escapeHtml(line) + '</div>';
+                    });
+                    
+                    $container.html(html);
+                    
+                    // Auto-scroll to bottom to show most recent logs
+                    $container.scrollTop($container[0].scrollHeight);
+                } else {
+                    $container.html('<div class="alert alert-info m-3">No PM2 logs found. Make sure PM2 processes are running.</div>');
+                }
+            } else {
+                $container.html('<div class="alert alert-danger m-3">' + escapeHtml(data.error || 'Error loading PM2 logs') + '</div>');
+            }
+        })
+        .fail(function(xhr) {
+            $refreshIcon.removeClass('spin');
+            let errorMsg = 'Error loading PM2 logs';
+            
+            if (xhr.responseJSON && xhr.responseJSON.error) {
+                errorMsg = xhr.responseJSON.error;
+            } else if (xhr.statusText) {
+                errorMsg += ': ' + xhr.statusText;
+            }
+            
+            $container.html('<div class="alert alert-danger m-3">' + escapeHtml(errorMsg) + '</div>');
+        });
+    };
+
+    // Load PM2 logs on page load if container exists
+    $(document).ready(function() {
+        if ($('#pm2LogsContainer').length) {
+            loadPm2Logs();
+            
+            // Reload logs when line count changes
+            $('#pm2LogsLines').on('change', function() {
+                loadPm2Logs();
+            });
+            
+            // Auto-refresh PM2 logs every 30 seconds
+            setInterval(function() {
+                loadPm2Logs();
+            }, 30000);
+        }
+    });
+
 })(jQuery);

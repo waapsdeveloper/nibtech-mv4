@@ -78,6 +78,7 @@ Route::prefix('v2')->group(function () {
     Route::post('artisan-commands/kill', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'killCommand'])->name('v2.artisan-commands.kill');
     Route::post('artisan-commands/restart', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'restartCommand'])->name('v2.artisan-commands.restart');
     Route::get('artisan-commands/documentation', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getDocumentation'])->name('v2.artisan-commands.documentation');
+    Route::get('artisan-commands/pm2-logs', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getPm2Logs'])->name('v2.artisan-commands.pm2-logs');
     
     // Stock Sync Logs
     Route::get('logs/stock-sync', [\App\Http\Controllers\V2\StockSyncLogController::class, 'index'])->name('v2.logs.stock-sync');
