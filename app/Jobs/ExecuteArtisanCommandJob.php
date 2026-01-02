@@ -48,12 +48,32 @@ class ExecuteArtisanCommandJob implements ShouldQueue
             $exitCode = Artisan::call($this->command, $this->options);
             $output = Artisan::output();
 
+            // Log detailed output for debugging
             Log::info("ExecuteArtisanCommandJob: Command completed", [
                 'command' => $this->command,
                 'exit_code' => $exitCode,
                 'output_length' => strlen($output),
-                'job_id' => $this->job->getJobId()
+                'job_id' => $this->job->getJobId(),
+                'output_preview' => substr($output, 0, 500) // First 500 chars for preview
             ]);
+            
+            // Log full output if it's not too long (for debugging)
+            if (strlen($output) > 0 && strlen($output) < 10000) {
+                Log::debug("ExecuteArtisanCommandJob: Full command output", [
+                    'command' => $this->command,
+                    'output' => $output
+                ]);
+            } elseif (strlen($output) > 0) {
+                // For very long output, log in chunks
+                $chunks = str_split($output, 5000);
+                foreach ($chunks as $index => $chunk) {
+                    Log::debug("ExecuteArtisanCommandJob: Command output chunk " . ($index + 1), [
+                        'command' => $this->command,
+                        'chunk' => $index + 1,
+                        'output' => $chunk
+                    ]);
+                }
+            }
 
             return [
                 'success' => $exitCode === 0,

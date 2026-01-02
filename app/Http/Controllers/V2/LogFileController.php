@@ -30,20 +30,24 @@ class LogFileController extends Controller
             $allLines = file($logPath, FILE_IGNORE_NEW_LINES | FILE_SKIP_EMPTY_LINES);
             $totalLines = count($allLines);
             
-            // Calculate pagination
+            // Reverse the entire array to show newest first
+            $allLines = array_reverse($allLines);
+            
+            // Calculate pagination from the beginning of reversed array
+            // Page 1 = most recent entries (first in reversed array)
             $offset = ($page - 1) * $perPage;
             $lines = array_slice($allLines, $offset, $perPage);
             
-            // Reverse order to show newest first
-            $lines = array_reverse($lines);
-            
             $lineCount = count($lines);
+        } else {
+            $totalLines = 0;
         }
         
         // Calculate pagination info
         $totalPages = $totalLines > 0 ? ceil($totalLines / $perPage) : 1;
-        $hasNextPage = $page < $totalPages;
-        $hasPrevPage = $page > 1;
+        // For reversed order: page 1 = newest, higher pages = older
+        $hasNextPage = $page < $totalPages; // Next page = older entries
+        $hasPrevPage = $page > 1; // Previous page = newer entries
         
         return view('v2.logs.log-file.index', compact('lines', 'lineCount', 'totalLines', 'page', 'perPage', 'totalPages', 'hasNextPage', 'hasPrevPage', 'data'));
     }
