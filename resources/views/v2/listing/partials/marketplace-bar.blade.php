@@ -139,8 +139,9 @@
             </div>
             <div class="d-flex align-items-center gap-2">
                 <div>{!! $buyboxFlags !!}</div>
-                <button class="btn btn-sm btn-link p-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 24px;">
-                    <i class="fas fa-chevron-down"></i>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 40px; padding: 6px 12px; font-weight: 600;">
+                    <i class="fas fa-chevron-down me-1"></i>
+                    <span>Listings</span>
                 </button>
             </div>
         </div>

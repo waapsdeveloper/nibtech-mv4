@@ -367,6 +367,7 @@ Route::get('listing/get_updated_quantity/{id}', [ListingController::class, 'getU
 Route::get('listing/get_competitors/{id}/{no_check?}', [ListingController::class, 'getCompetitors'])->name('view_listing');
 Route::get('listing/get_or_create_listing/{variationId}/{marketplaceId}', [ListingController::class, 'getOrCreateListing'])->name('get_or_create_listing');
 Route::get('listing/get_variation_history/{id}', [ListingController::class, 'get_variation_history'])->name('view_listing_history');
+Route::get('listing/get_listing_history/{id}', [ListingController::class, 'get_listing_history'])->name('view_listing_history_detail');
 Route::post('listing/update_quantity/{id}', [ListingController::class,'update_quantity'])->name('update_listing_quantity');
 Route::post('listing/add_quantity/{id}', [ListingController::class,'add_quantity'])->name('update_listing_quantity');
 Route::post('listing/add_quantity_marketplace/{variationId}/{marketplaceId}', [ListingController::class,'add_quantity_marketplace'])->name('add_marketplace_quantity');
