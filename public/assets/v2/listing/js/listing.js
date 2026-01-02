@@ -321,12 +321,18 @@ function formatSnapshotForTooltip(snapshot) {
 function show_listing_history(listingId, variationId, marketplaceId, countryId, countryCode) {
     $('#listingHistoryModal').modal('show');
     
+    // Store listing info in modal data attributes for restore functionality
+    $('#listingHistoryModal').data('listing-id', listingId);
+    $('#listingHistoryModal').data('variation-id', variationId);
+    $('#listingHistoryModal').data('marketplace-id', marketplaceId);
+    $('#listingHistoryModal').data('country-id', countryId);
+    
     // Build listing info text for modal title
     const listingInfo = `Listing ID: ${listingId} | Variation: ${variationId} | Marketplace: ${marketplaceId}${countryCode ? ' | Country: ' + countryCode : ''}`;
     $('#listingHistoryModalLabel').text(listingInfo);
     
     // Show loading state
-    $('#listingHistoryTable').html('<tr><td colspan="7" class="text-center text-muted">Loading history...</td></tr>');
+    $('#listingHistoryTable').html('<tr><td colspan="8" class="text-center text-muted">Loading history...</td></tr>');
     
     // Load listing history
     $.ajax({
@@ -419,6 +425,27 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             </span>`;
                     }
                     
+                    // Determine if restore is available for this field
+                    const restorableFields = ['min_price', 'price', 'min_handler', 'price_handler', 'buybox', 'buybox_price'];
+                    const canRestore = restorableFields.includes(item.field_name) && item.old_value !== null && item.old_value !== '';
+                    
+                    // Build restore button
+                    let restoreButton = '';
+                    if (canRestore) {
+                        restoreButton = `
+                            <button class="btn btn-sm btn-outline-primary restore-history-btn" 
+                                    data-history-id="${item.id}"
+                                    data-field-name="${item.field_name}"
+                                    data-old-value="${item.old_value}"
+                                    data-field-label="${fieldLabel}"
+                                    title="Restore to: ${oldValue}"
+                                    onclick="restoreListingHistory(${item.id}, '${item.field_name}', ${item.old_value}, '${fieldLabel.replace(/'/g, "\\'")}')">
+                                <i class="fas fa-undo me-1"></i>Restore
+                            </button>`;
+                    } else {
+                        restoreButton = '<span class="text-muted small">-</span>';
+                    }
+                    
                     historyTable += `
                         <tr>
                             <td>${changedDate}</td>
@@ -428,18 +455,162 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
                             <td>${item.change_reason || '-'}</td>
+                            <td class="text-center">${restoreButton}</td>
                         </tr>`;
                 });
             } else {
-                historyTable = '<tr><td colspan="7" class="text-center text-muted">No history found for this listing</td></tr>';
+                historyTable = '<tr><td colspan="8" class="text-center text-muted">No history found for this listing</td></tr>';
             }
             $('#listingHistoryTable').html(historyTable);
         },
         error: function(xhr) {
             console.error('Error loading listing history:', xhr.responseText);
-            $('#listingHistoryTable').html('<tr><td colspan="7" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
+            $('#listingHistoryTable').html('<tr><td colspan="8" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
         }
     });
+}
+
+/**
+ * Restore listing field to previous value from history
+ */
+function restoreListingHistory(historyId, fieldName, oldValue, fieldLabel) {
+    const modal = $('#listingHistoryModal');
+    const listingId = modal.data('listing-id');
+    const variationId = modal.data('variation-id');
+    const marketplaceId = modal.data('marketplace-id');
+    const countryId = modal.data('country-id');
+    
+    if (!listingId) {
+        alert('Error: Listing ID not found');
+        return;
+    }
+    
+    // Confirm restore action
+    const confirmMessage = `Are you sure you want to restore "${fieldLabel}" to ${oldValue}?`;
+    if (!confirm(confirmMessage)) {
+        return;
+    }
+    
+    // Disable the restore button
+    const restoreBtn = $(`.restore-history-btn[data-history-id="${historyId}"]`);
+    const originalHtml = restoreBtn.html();
+    restoreBtn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Restoring...');
+    
+    // Call restore endpoint
+    $.ajax({
+        url: window.ListingConfig.urls.restoreListingHistory + '/' + listingId,
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-TOKEN': window.ListingConfig.csrfToken
+        },
+        data: {
+            history_id: historyId,
+            field_name: fieldName,
+            old_value: oldValue
+        },
+        success: function(response) {
+            if (response.success) {
+                // Update the specific listing row in the table without page refresh
+                updateListingRowAfterRestore(listingId, fieldName, oldValue);
+                
+                // Show success message
+                alert(`Successfully restored "${fieldLabel}" to ${oldValue}`);
+                
+                // Reload history to show the new restore entry
+                show_listing_history(listingId, variationId, marketplaceId, countryId, '');
+            } else {
+                alert('Error: ' + (response.message || 'Failed to restore'));
+                restoreBtn.prop('disabled', false).html(originalHtml);
+            }
+        },
+        error: function(xhr) {
+            console.error('Error restoring history:', xhr.responseText);
+            const errorMsg = xhr.responseJSON && xhr.responseJSON.message 
+                ? xhr.responseJSON.message 
+                : 'Failed to restore. Please try again.';
+            alert('Error: ' + errorMsg);
+            restoreBtn.prop('disabled', false).html(originalHtml);
+        }
+    });
+}
+
+/**
+ * Update listing row after restore without page refresh
+ */
+function updateListingRowAfterRestore(listingId, fieldName, restoredValue) {
+    // Map field names from state fields to listing table input IDs
+    const fieldIdMapping = {
+        'min_price': 'min_price',
+        'price': 'price',
+        'min_handler': 'min_price_limit',
+        'price_handler': 'price_limit',
+        'buybox': 'buybox',
+        'buybox_price': 'buybox_price'
+    };
+    
+    const inputFieldId = fieldIdMapping[fieldName];
+    if (!inputFieldId) {
+        console.warn('Cannot update field:', fieldName);
+        return;
+    }
+    
+    // Find the listing row by listing ID (rows have data-listing-id attribute)
+    const listingRow = $(`tr[data-listing-id="${listingId}"]`);
+    
+    if (listingRow.length === 0) {
+        // If row not found, try to reload the marketplace tables
+        console.log('Listing row not found, reloading marketplace tables...');
+        const modal = $('#listingHistoryModal');
+        const variationId = modal.data('variation-id');
+        const marketplaceId = modal.data('marketplace-id');
+        
+        if (variationId && marketplaceId && typeof loadMarketplaceTables === 'function') {
+            loadMarketplaceTables(variationId, marketplaceId);
+        }
+        return;
+    }
+    
+    // Find the input field within the listing row
+    const inputSelector = `#${inputFieldId}_${listingId}`;
+    const inputElement = $(inputSelector);
+    
+    if (inputElement.length) {
+        // Format the value based on field type
+        let formattedValue;
+        if (fieldName === 'buybox') {
+            formattedValue = (restoredValue === '1' || restoredValue === 1 || restoredValue === true || restoredValue === 'true') ? 1 : 0;
+        } else if (['min_price', 'price', 'min_handler', 'price_handler', 'buybox_price'].includes(fieldName)) {
+            formattedValue = parseFloat(restoredValue).toFixed(2);
+        } else {
+            formattedValue = restoredValue;
+        }
+        
+        // Update the input value
+        inputElement.val(formattedValue);
+        
+        // Trigger change event to update any dependent fields
+        inputElement.trigger('change');
+        
+        // If it's a checkbox (buybox), also update the checked state
+        if (fieldName === 'buybox' && inputElement.is(':checkbox')) {
+            inputElement.prop('checked', formattedValue == 1);
+        }
+        
+        // Add a visual indicator that the value was updated (green flash)
+        inputElement.css({
+            'background-color': '#d4edda',
+            'transition': 'background-color 2s ease'
+        });
+        
+        setTimeout(function() {
+            inputElement.css('background-color', '');
+        }, 2000);
+        
+        console.log(`Updated ${fieldName} for listing ${listingId} to ${formattedValue}`);
+    } else {
+        console.warn(`Input field ${inputSelector} not found for listing ${listingId}`);
+    }
 }
 
 /**

@@ -1423,6 +1423,112 @@ class ListingController extends Controller
     }
 
     /**
+     * Restore listing field to previous value from history
+     */
+    public function restore_history($listingId, Request $request)
+    {
+        $listing = Listing_model::with(['variation', 'marketplace', 'country_id', 'currency'])->find($listingId);
+
+        if (!$listing) {
+            return response()->json(['success' => false, 'error' => 'Listing not found'], 404);
+        }
+
+        $historyId = $request->input('history_id');
+        $fieldName = $request->input('field_name');
+        $oldValue = $request->input('old_value');
+
+        if (!$fieldName || $oldValue === null) {
+            return response()->json(['success' => false, 'error' => 'Missing required parameters'], 400);
+        }
+
+        $variationId = $listing->variation_id;
+        $marketplaceId = $listing->marketplace_id;
+        $countryId = $listing->country;
+
+        // Map field names from state fields to listing table columns
+        $listingFieldMapping = [
+            'min_handler' => 'min_price_limit',
+            'price_handler' => 'price_limit',
+            'buybox' => 'buybox',
+            'buybox_price' => 'buybox_price',
+            'min_price' => 'min_price',
+            'price' => 'price',
+        ];
+
+        $listingField = $listingFieldMapping[$fieldName] ?? null;
+        if (!$listingField) {
+            return response()->json(['success' => false, 'error' => 'Invalid field name'], 400);
+        }
+
+        // Capture snapshot BEFORE updating
+        $rowSnapshot = $this->captureListingSnapshot($listing);
+
+        // Get current value before restore
+        $currentValue = $listing->$listingField;
+
+        // Convert old value to appropriate type
+        $restoredValue = $oldValue;
+        if ($fieldName === 'buybox') {
+            // Convert to boolean/integer for buybox
+            $restoredValue = ($oldValue === '1' || $oldValue === 1 || $oldValue === true || $oldValue === 'true') ? 1 : 0;
+        } elseif (in_array($fieldName, ['min_price', 'price', 'min_handler', 'price_handler', 'buybox_price'])) {
+            // Convert to float for price fields
+            $restoredValue = (float)$oldValue;
+        }
+
+        // Update listing with restored value
+        $listing->$listingField = $restoredValue;
+        $listing->save();
+
+        // Update BackMarket API if needed (for price fields)
+        $bm = new BackMarketAPIController();
+        if ($listing->variation && $listing->variation->reference_id && $listing->country_id) {
+            $currencyCode = $listing->currency ? $listing->currency->code : 'EUR';
+            $marketCode = $listing->country_id->market_code ?? null;
+
+            $apiPayload = [];
+            if ($fieldName === 'min_price' || $fieldName === 'min_handler') {
+                $apiPayload['min_price'] = $oldValue;
+            }
+            if ($fieldName === 'price' || $fieldName === 'price_handler') {
+                $apiPayload['price'] = $oldValue;
+            }
+            
+            if (!empty($apiPayload)) {
+                $apiPayload['currency'] = $currencyCode;
+                $bm->updateOneListing($listing->variation->reference_id, json_encode($apiPayload), $marketCode);
+            }
+        }
+
+        // Track restore action in history
+        $changes = [
+            $fieldName => [
+                'old' => $currentValue,
+                'new' => $oldValue
+            ]
+        ];
+
+        $this->trackListingChanges(
+            $variationId,
+            $marketplaceId,
+            $listing->id,
+            $countryId,
+            $changes,
+            'listing',
+            "Restored from history (History ID: {$historyId})",
+            $rowSnapshot
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Field restored successfully',
+            'listing' => $listing,
+            'restored_field' => $fieldName,
+            'restored_value' => $oldValue
+        ]);
+    }
+
+    /**
      * Update listing limits (min_price_limit and price_limit - handlers)
      * V2 version with change tracking
      */

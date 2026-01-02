@@ -56,6 +56,7 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/update_limit/{id}', [V2ListingController::class, 'update_limit'])->name('v2.listing.update_limit');
     Route::post('listings/update_marketplace_handlers/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_handlers'])->name('v2.listing.update_marketplace_handlers');
     Route::post('listings/update_marketplace_prices/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_prices'])->name('v2.listing.update_marketplace_prices');
+    Route::post('listings/restore_history/{id}', [V2ListingController::class, 'restore_history'])->name('v2.listing.restore_history');
     
     // Stock Locks Dashboard
     Route::get('stock-locks', [\App\Http\Livewire\V2\StockLocks::class, 'index'])->name('v2.stock-locks');
