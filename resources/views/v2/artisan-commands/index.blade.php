@@ -27,6 +27,7 @@
     <!-- /Breadcrumb -->
 
     @include('v2.artisan-commands.partials.running-jobs')
+    @include('v2.artisan-commands.partials.pm2-logs')
     @include('v2.artisan-commands.partials.migration-status')
     @include('v2.artisan-commands.partials.commands-list')
     @include('v2.artisan-commands.partials.documentation-list')
@@ -51,7 +52,8 @@ window.ArtisanCommandsConfig = {
         documentation: '{{ url("v2/artisan-commands/documentation") }}',
         kill: '{{ url("v2/artisan-commands/kill") }}',
         restart: '{{ url("v2/artisan-commands/restart") }}',
-        stockSyncLog: '{{ url("v2/logs/stock-sync") }}'
+        stockSyncLog: '{{ url("v2/logs/stock-sync") }}',
+        pm2Logs: '{{ url("v2/artisan-commands/pm2-logs") }}'
     }
 };
 </script>

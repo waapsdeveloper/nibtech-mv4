@@ -1172,5 +1172,130 @@ class ArtisanCommandsController extends Controller
         
         return null;
     }
+
+    /**
+     * Get PM2 logs
+     */
+    public function getPm2Logs(Request $request)
+    {
+        try {
+            $lines = (int) $request->get('lines', 100);
+            $lines = max(10, min(1000, $lines)); // Limit between 10 and 1000
+            
+            // Check if PM2 command is available
+            $pm2Check = shell_exec('which pm2 2>&1');
+            if (empty($pm2Check) || strpos($pm2Check, 'not found') !== false) {
+                // Try Windows path
+                $pm2Check = shell_exec('where pm2 2>&1');
+                if (empty($pm2Check) || strpos($pm2Check, 'not found') !== false) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'PM2 is not installed or not in PATH. PM2 is typically used on Linux/Unix systems. On Windows, you may need to use PM2 via WSL or install it via npm.',
+                        'logs' => ''
+                    ]);
+                }
+            }
+            
+            // Get PM2 process list first to check if PM2 is running
+            $pm2List = shell_exec('pm2 list 2>&1');
+            
+            // Check for common PM2 error messages
+            if (strpos($pm2List, 'command not found') !== false || 
+                strpos($pm2List, 'not recognized') !== false ||
+                strpos($pm2List, 'Cannot find module') !== false) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'PM2 command not found. Make sure PM2 is installed: npm install -g pm2',
+                    'logs' => ''
+                ]);
+            }
+            
+            // Check if PM2 daemon is running
+            if (strpos($pm2List, 'PM2') === false && strpos($pm2List, 'online') === false && strpos($pm2List, 'stopped') === false) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'PM2 daemon is not running. Start it with: pm2 resurrect or pm2 start <app>',
+                    'logs' => ''
+                ]);
+            }
+            
+            // Get PM2 logs (error and output combined)
+            // Using --nostream to get historical logs, --lines to limit output
+            $pm2Logs = shell_exec("pm2 logs --lines {$lines} --nostream --format 2>&1");
+            
+            // If format option doesn't work, try without it
+            if (empty($pm2Logs) || (strpos($pm2Logs, 'error') !== false && strpos($pm2Logs, 'PM2') === false)) {
+                $pm2Logs = shell_exec("pm2 logs --lines {$lines} --nostream 2>&1");
+            }
+            
+            // Also try to get error logs specifically
+            $pm2ErrorLogs = shell_exec("pm2 logs --err --lines {$lines} --nostream 2>&1");
+            
+            // Combine logs if we have both
+            $combinedLogs = '';
+            if (!empty($pm2Logs) && strpos($pm2Logs, 'command not found') === false) {
+                $combinedLogs = $pm2Logs;
+            }
+            if (!empty($pm2ErrorLogs) && $pm2ErrorLogs !== $pm2Logs && strpos($pm2ErrorLogs, 'command not found') === false) {
+                if (!empty($combinedLogs)) {
+                    $combinedLogs .= "\n\n=== Error Logs ===\n" . $pm2ErrorLogs;
+                } else {
+                    $combinedLogs = $pm2ErrorLogs;
+                }
+            }
+            
+            // If still empty, try getting logs from PM2 log files directly
+            if (empty($combinedLogs) || strpos($combinedLogs, 'No log') !== false) {
+                // Try Linux/Unix path
+                $pm2Home = getenv('HOME') . '/.pm2';
+                if (!is_dir($pm2Home)) {
+                    // Try Windows path (if using WSL or similar)
+                    $pm2Home = getenv('USERPROFILE') . '/.pm2';
+                }
+                
+                if (is_dir($pm2Home)) {
+                    $logFiles = glob($pm2Home . '/logs/*.log');
+                    if (!empty($logFiles)) {
+                        $combinedLogs = "PM2 log files found:\n";
+                        foreach (array_slice($logFiles, 0, 5) as $logFile) {
+                            if (File::exists($logFile)) {
+                                $fileContent = file_get_contents($logFile);
+                                $fileLines = explode("\n", $fileContent);
+                                $recentLines = array_slice($fileLines, -$lines);
+                                $combinedLogs .= "\n=== " . basename($logFile) . " ===\n";
+                                $combinedLogs .= implode("\n", $recentLines);
+                            }
+                        }
+                    }
+                }
+            }
+            
+            if (empty($combinedLogs) || strpos($combinedLogs, 'No log') !== false) {
+                return response()->json([
+                    'success' => true,
+                    'logs' => 'No PM2 logs found. Make sure PM2 processes are running. Use "pm2 list" to check running processes.',
+                    'lines' => $lines
+                ]);
+            }
+            
+            return response()->json([
+                'success' => true,
+                'logs' => $combinedLogs,
+                'lines' => $lines
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error fetching PM2 logs', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return response()->json([
+                'success' => false,
+                'error' => 'Error fetching PM2 logs: ' . $e->getMessage(),
+                'logs' => ''
+            ], 500);
+        }
+    }
 }
 
