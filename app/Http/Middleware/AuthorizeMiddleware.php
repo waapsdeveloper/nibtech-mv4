@@ -25,7 +25,7 @@ class AuthorizeMiddleware
             if($user->status == 0){
                 // Log the unauthorized access attempt
                 Log::info('Unauthorized Login attempt by blocked user '.$user->first_name.' to '.$currentRoute);
-                abort(403, 'Account Blocked - Quote of the day: '.Inspiring::just_quote());
+                abort(403, 'Account Blocked - Quote of the day: '.Inspiring::quote());
             }
 
             session()->put('user',$user);
@@ -53,7 +53,7 @@ class AuthorizeMiddleware
         if (!$user->hasPermission($currentRoute)) {
             // Log the unauthorized access attempt
             Log::info('Unauthorized access attempt by user '.$user->first_name.' with Role '.$user->role->name.' to '.$currentRoute);
-            abort(403, 'Quote of the day: '.Inspiring::just_quote());
+            abort(403, 'Quote of the day: '.Inspiring::quote());
         }
         // Remove the 'page' session variable
         session()->forget('page');

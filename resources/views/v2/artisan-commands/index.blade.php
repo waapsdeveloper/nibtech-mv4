@@ -27,7 +27,6 @@
     <!-- /Breadcrumb -->
 
     @include('v2.artisan-commands.partials.running-jobs')
-    @include('v2.artisan-commands.partials.pm2-logs')
     @include('v2.artisan-commands.partials.migration-status')
     @include('v2.artisan-commands.partials.commands-list')
     @include('v2.artisan-commands.partials.documentation-list')

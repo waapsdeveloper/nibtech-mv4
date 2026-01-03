@@ -36,29 +36,27 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         $schedule->command('refresh:latest')
-            ->everyFiveMinutes();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
         $schedule->command('refresh:new')
-            ->everyTwoMinutes();
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyFiveMinutes() // Changed from everyTwoMinutes to reduce frequency
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
         $schedule->command('refresh:orders')
-            ->everyFiveMinutes();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
         $schedule->command('refurbed:new')
-            ->everyFiveMinutes();
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
         $schedule->command('refurbed:orders')
             ->hourly();
@@ -82,11 +80,10 @@ class Kernel extends ConsoleKernel
         //     ->onOneServer()
         //     ->runInBackground();
         $schedule->command('functions:ten')
-            ->everyTenMinutes();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyTenMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
         $schedule->command('functions:thirty')
             ->hourly();
             // ->withoutOverlapping()
@@ -114,11 +111,10 @@ class Kernel extends ConsoleKernel
             // ->runInBackground();
 
         $schedule->command('api-request:process')
-            ->everyFiveMinutes();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->everyFiveMinutes()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
         $schedule->command('support:sync')
             ->everyTenMinutes()

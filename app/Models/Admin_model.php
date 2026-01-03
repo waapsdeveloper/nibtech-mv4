@@ -81,9 +81,9 @@ class Admin_model extends Model
             return true;
         }
         // Check if user has the permission directly
-        // if ($this->permissions->contains('name', $permission)) {
-        //     return true;
-        // }
+        if ($this->permissions->contains('name', $permission)) {
+            return true;
+        }
         // foreach ($this->roles as $role) {
         if ($this->role->permissions->isEmpty() && $this->role->name === 'Super Admin') {
             return true;

@@ -1182,22 +1182,29 @@ class ArtisanCommandsController extends Controller
             $lines = (int) $request->get('lines', 100);
             $lines = max(10, min(1000, $lines)); // Limit between 10 and 1000
             
-            // Check if PM2 command is available
+            // Check if PM2 command is available (try pm2 first, then npx pm2)
+            $pm2Command = 'pm2';
             $pm2Check = shell_exec('which pm2 2>&1');
             if (empty($pm2Check) || strpos($pm2Check, 'not found') !== false) {
                 // Try Windows path
                 $pm2Check = shell_exec('where pm2 2>&1');
                 if (empty($pm2Check) || strpos($pm2Check, 'not found') !== false) {
-                    return response()->json([
-                        'success' => false,
-                        'error' => 'PM2 is not installed or not in PATH. PM2 is typically used on Linux/Unix systems. On Windows, you may need to use PM2 via WSL or install it via npm.',
-                        'logs' => ''
-                    ]);
+                    // Try npx pm2 (for systems where PM2 is installed via npx)
+                    $npxCheck = shell_exec('which npx 2>&1');
+                    if (!empty($npxCheck) && strpos($npxCheck, 'not found') === false) {
+                        $pm2Command = 'npx pm2';
+                    } else {
+                        return response()->json([
+                            'success' => false,
+                            'error' => 'PM2 is not installed or not in PATH. PM2 is typically used on Linux/Unix systems. On Windows, you may need to use PM2 via WSL or install it via npm.',
+                            'logs' => ''
+                        ]);
+                    }
                 }
             }
             
             // Get PM2 process list first to check if PM2 is running
-            $pm2List = shell_exec('pm2 list 2>&1');
+            $pm2List = shell_exec("{$pm2Command} list 2>&1");
             
             // Check for common PM2 error messages
             if (strpos($pm2List, 'command not found') !== false || 
@@ -1211,25 +1218,36 @@ class ArtisanCommandsController extends Controller
             }
             
             // Check if PM2 daemon is running
-            if (strpos($pm2List, 'PM2') === false && strpos($pm2List, 'online') === false && strpos($pm2List, 'stopped') === false) {
-                return response()->json([
-                    'success' => false,
-                    'error' => 'PM2 daemon is not running. Start it with: pm2 resurrect or pm2 start <app>',
-                    'logs' => ''
-                ]);
+            // PM2 list output should contain PM2 table structure or process info
+            // Empty list is OK (means no processes, but PM2 is working)
+            if (strpos($pm2List, 'command not found') !== false || 
+                strpos($pm2List, 'not recognized') !== false ||
+                strpos($pm2List, 'Cannot find module') !== false ||
+                (strpos($pm2List, 'PM2') === false && strpos($pm2List, 'online') === false && strpos($pm2List, 'stopped') === false && strpos($pm2List, '┌') === false && strpos($pm2List, '│') === false)) {
+                // If we get here and it's not an empty table, PM2 might not be working
+                // But empty table (just headers) is fine - it means PM2 is running but no processes
+                if (strpos($pm2List, '┌') !== false || strpos($pm2List, '│') !== false || strpos($pm2List, 'id') !== false) {
+                    // This looks like a PM2 table (even if empty), so PM2 is working
+                } else {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'PM2 daemon is not running. Start it with: pm2 resurrect or pm2 start <app>',
+                        'logs' => ''
+                    ]);
+                }
             }
             
             // Get PM2 logs (error and output combined)
             // Using --nostream to get historical logs, --lines to limit output
-            $pm2Logs = shell_exec("pm2 logs --lines {$lines} --nostream --format 2>&1");
+            $pm2Logs = shell_exec("{$pm2Command} logs --lines {$lines} --nostream --format 2>&1");
             
             // If format option doesn't work, try without it
             if (empty($pm2Logs) || (strpos($pm2Logs, 'error') !== false && strpos($pm2Logs, 'PM2') === false)) {
-                $pm2Logs = shell_exec("pm2 logs --lines {$lines} --nostream 2>&1");
+                $pm2Logs = shell_exec("{$pm2Command} logs --lines {$lines} --nostream 2>&1");
             }
             
             // Also try to get error logs specifically
-            $pm2ErrorLogs = shell_exec("pm2 logs --err --lines {$lines} --nostream 2>&1");
+            $pm2ErrorLogs = shell_exec("{$pm2Command} logs --err --lines {$lines} --nostream 2>&1");
             
             // Combine logs if we have both
             $combinedLogs = '';

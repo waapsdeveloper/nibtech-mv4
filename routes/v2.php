@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\V2\ListingController as V2ListingController;
 use App\Http\Controllers\V2\MarketplaceStockFormulaController;
+use App\Http\Controllers\V2\TeamController;
 use App\Http\Livewire\V2\Marketplace;
 use Illuminate\Support\Facades\Route;
 
@@ -92,5 +93,21 @@ Route::prefix('v2')->group(function () {
     // Log File Viewer
     Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
     Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
+    
+    // Team Management (Options > Teams)
+    Route::prefix('options/teams')->group(function () {
+        Route::get('/', [TeamController::class, 'index'])->name('v2.options.teams.index');
+        Route::get('add-member', [TeamController::class, 'add_member'])->name('v2.options.teams.add-member');
+        Route::post('insert-member', [TeamController::class, 'insert_member'])->name('v2.options.teams.insert-member');
+        Route::get('edit-member/{id}', [TeamController::class, 'edit_member'])->name('v2.options.teams.edit-member');
+        Route::post('update-member/{id}', [TeamController::class, 'update_member'])->name('v2.options.teams.update-member');
+        Route::get('update-status/{id}', [TeamController::class, 'update_status'])->name('v2.options.teams.update-status');
+        Route::get('get-permissions/{roleId}', [TeamController::class, 'get_permissions'])->name('v2.options.teams.get-permissions');
+        Route::post('toggle-role-permission/{roleId}/{permissionId}/{isChecked}', [TeamController::class, 'toggle_role_permission'])->name('v2.options.teams.toggle-role-permission');
+        Route::get('get-user-permissions/{userId}', [TeamController::class, 'get_user_permissions'])->name('v2.options.teams.get-user-permissions');
+        Route::post('toggle-user-permission/{userId}/{permissionId}/{isChecked}', [TeamController::class, 'toggle_user_permission'])->name('v2.options.teams.toggle-user-permission');
+        Route::post('toggle-allow-unknown-ip/{userId}', [TeamController::class, 'toggle_allow_unknown_ip'])->name('v2.options.teams.toggle-allow-unknown-ip');
+        Route::get('check-allow-unknown-ip/{userId}', [TeamController::class, 'check_allow_unknown_ip'])->name('v2.options.teams.check-allow-unknown-ip');
+    });
 });
 
