@@ -53,7 +53,21 @@
                                                     <a class="side-menu__item ps-0" href="{{url('v2/marketplace/stock-formula')}}">Stock Formula</a>
                                                 </li>
                                                 @endif
-                                                @if ($user->hasPermission('view_listing'))
+                                                @if ($user->hasPermission('view_team'))
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/options/teams')}}">Teams</a>
+                                                </li>
+                                                @endif
+                                            </ul>
+                                        </li>
+                                        @endif
+                                        @if ($isSuperAdmin)
+                                        <li class="slide has-sub">
+                                            <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2ExtrasMenu" role="button" aria-expanded="false" aria-controls="v2ExtrasMenu">
+                                                Extras
+                                                <i class="angle fe fe-chevron-down"></i>
+                                            </a>
+                                            <ul class="collapse ps-3" id="v2ExtrasMenu">
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">                                                        
                                                         Stock Locks
@@ -64,7 +78,6 @@
                                                         Artisan Commands
                                                     </a>
                                                 </li>
-                                                @endif
                                             </ul>
                                         </li>
                                         @endif
