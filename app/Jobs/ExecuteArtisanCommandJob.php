@@ -21,7 +21,7 @@ class ExecuteArtisanCommandJob implements ShouldQueue
     public $command;
     public $options;
     public $tries = 1;
-    public $timeout = 3600; // 1 hour timeout
+    public $timeout = 7200; // 2 hours timeout (increased for bulk operations)
 
     /**
      * Create a new job instance.
@@ -37,21 +37,35 @@ class ExecuteArtisanCommandJob implements ShouldQueue
      */
     public function handle()
     {
+        $commandStartTime = microtime(true);
+        
         Log::info("ExecuteArtisanCommandJob: Starting command execution", [
             'command' => $this->command,
             'options' => $this->options,
-            'job_id' => $this->job->getJobId()
+            'job_id' => $this->job->getJobId(),
+            'started_at' => now()->toDateTimeString()
         ]);
 
         try {
+            // Log progress for long-running commands
+            if (strpos($this->command, 'sync') !== false || strpos($this->command, 'bulk') !== false) {
+                Log::info("ExecuteArtisanCommandJob: Executing long-running command", [
+                    'command' => $this->command,
+                    'note' => 'This may take several minutes. Check logs for progress.'
+                ]);
+            }
+            
             // Execute command
             $exitCode = Artisan::call($this->command, $this->options);
             $output = Artisan::output();
+            
+            $commandDuration = round(microtime(true) - $commandStartTime, 2);
 
             // Log detailed output for debugging
             Log::info("ExecuteArtisanCommandJob: Command completed", [
                 'command' => $this->command,
                 'exit_code' => $exitCode,
+                'duration_seconds' => $commandDuration,
                 'output_length' => strlen($output),
                 'job_id' => $this->job->getJobId(),
                 'output_preview' => substr($output, 0, 500) // First 500 chars for preview

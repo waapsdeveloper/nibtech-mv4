@@ -388,12 +388,45 @@ class ArtisanCommandsController extends Controller
                 ]
             ],
             [
+                'signature' => 'v2:marketplace:sync-stock-bulk',
+                'name' => 'Bulk Sync Marketplace Stock (Optimized)',
+                'description' => 'Bulk sync stock from BackMarket API using getAllListings (95-98% fewer API calls). Currently supports BackMarket (ID 1) only.',
+                'category' => 'Stock',
+                'docs' => [
+                    'V1_V2_STOCK_SYNC_COMPARISON.md',
+                    'BACKMARKET_STOCK_SYNC_ANALYSIS.md'
+                ],
+                'options' => [
+                    'marketplace' => [
+                        'label' => 'Marketplace ID',
+                        'type' => 'number',
+                        'placeholder' => 'Enter marketplace ID (default: 1)',
+                        'required' => false,
+                        'default' => '1',
+                        'description' => 'The marketplace ID to sync stock for (currently only 1 for BackMarket)'
+                    ],
+                    'force' => [
+                        'label' => 'Force Sync',
+                        'type' => 'checkbox',
+                        'description' => 'Force sync even if last sync was less than 6 hours ago',
+                        'required' => false
+                    ]
+                ],
+                'examples' => [
+                    'php artisan v2:marketplace:sync-stock-bulk --marketplace=1',
+                    'php artisan v2:marketplace:sync-stock-bulk --marketplace=1 --force'
+                ]
+            ],
+            [
                 'signature' => 'v2:sync-all-marketplace-stock-from-api',
                 'name' => 'Sync All Marketplace Stock from API',
-                'description' => 'Fetch stock quantities from Backmarket API for all variations in a marketplace and update marketplace_stock table. Runs in queue for bulk operations.',
+                'description' => 'Fetch stock quantities from marketplace APIs for all variations. Uses bulk fetch for BackMarket (ID 1), individual calls for other marketplaces. Runs in queue for bulk operations.',
                 'category' => 'Stock Management',
                 'warning' => false,
-                'docs' => [],
+                'docs' => [
+                    'V1_V2_STOCK_SYNC_COMPARISON.md',
+                    'BACKMARKET_STOCK_SYNC_ANALYSIS.md'
+                ],
                 'options' => [
                     'marketplace' => [
                         'label' => 'Marketplace ID',
