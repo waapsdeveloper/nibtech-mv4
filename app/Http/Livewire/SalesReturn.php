@@ -438,8 +438,8 @@ class SalesReturn extends Component
             }else{
                 return 1;
             }
-
         }
+
         $order_item = Order_item_model::where(['order_id'=>$order_id,'stock_id'=>$stock->id])->first();
         if(!$order_item){
             session()->put('error', "Stock not found in this sheet");
@@ -449,6 +449,7 @@ class SalesReturn extends Component
                 return 1;
             }
         }
+
         if($order_item->status == 2){
             session()->put('error', "Stock already added");
             if($back != 1){
