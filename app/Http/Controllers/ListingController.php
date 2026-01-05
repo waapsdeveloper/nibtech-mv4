@@ -1417,6 +1417,20 @@ class ListingController extends Controller
     }
     public function update_target($id){
         $listing = Listing_model::find($id);
+        
+        if (!$listing) {
+            return response()->json(['error' => 'Listing not found'], 404);
+        }
+        
+        // V1/V2 Pattern: Only update EUR listings (currency_id = 4, country = 73)
+        // Safety check: Ensure we're only updating EUR listings (even though get_target_variations filters by country 73)
+        if ($listing->currency_id != 4) {
+            return response()->json([
+                'error' => 'Target updates are only allowed for EUR listings (currency_id = 4)',
+                'currency_id' => $listing->currency_id
+            ], 400);
+        }
+        
         $listing->target_price = request('target');
         $listing->target_percentage = request('percent');
 
