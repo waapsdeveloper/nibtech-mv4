@@ -186,28 +186,6 @@
                 <p class="mt-2 text-muted small">Click to load tables...</p>
             </div>
         </div>
-        
-        {{-- V2: Stock Locks Display --}}
-        @if($totalLocked > 0)
-        <div class="border-top p-3 bg-light">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">
-                    <i class="fe fe-lock me-2"></i>Stock Locks ({{ $lockedStockCount }} active, {{ $totalLocked }} units)
-                </h6>
-                <button class="btn btn-sm btn-outline-primary" onclick="showStockLocksModal({{ $variationId }}, {{ $marketplaceIdInt }})">
-                    <i class="fe fe-eye me-1"></i>View Details
-                </button>
-            </div>
-            <div class="small text-muted mb-2">
-                Click "View Details" to see all lock information in a modal
-            </div>
-            @livewire('v2.stock-locks', [
-                'variationId' => $variationId, 
-                'marketplaceId' => $marketplaceIdInt,
-                'showAll' => false
-            ], key('stock-locks-'.$variationId.'-'.$marketplaceIdInt))
-        </div>
-        @endif
     </div>
 </div>
 
