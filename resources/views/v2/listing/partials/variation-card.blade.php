@@ -136,9 +136,6 @@
                     <span class="text-muted">|</span>
                     <h6 class="mb-0">Difference: {{ $difference }}</h6>
                 </div>
-                <a href="javascript:void(0)" class="btn btn-link" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, {{ json_encode($sku . ' ' . $productModel . ' ' . $storageName . ' ' . $colorName . ' ' . $gradeName) }})" data-bs-toggle="modal" data-bs-target="#variationHistoryModal" title="View Variation History">
-                    <i class="fas fa-history"></i>
-                </a>
                 <a href="javascript:void(0)" class="btn btn-link" id="stock_comparison_{{ $variationId }}" onclick="showStockComparison({{ $variationId }})" title="View Stock Comparison">
                     <i class="fas fa-cog"></i>
                 </a>

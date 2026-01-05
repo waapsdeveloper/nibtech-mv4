@@ -53,9 +53,6 @@
         </div>
     @endif
 
-    {{-- Variation History Modal --}}
-    @include('v2.listing.partials.variation-history-modal')
-    {{-- /Variation History Modal --}}
 
     {{-- Listing History Modal --}}
     @include('v2.listing.partials.listing-history-modal')
@@ -89,7 +86,6 @@
     // Configure ListingConfig object with URLs and tokens
     window.ListingConfig = {
         urls: {
-            getVariationHistory: "{{ url('v2/listings/get_variation_history') }}",
             getListingHistory: "{{ url('v2/listings/get_listing_history') }}",
             recordChange: "{{ url('v2/listings/record_change') }}",
             updatePrice: "{{ url('v2/listings/update_price') }}",
