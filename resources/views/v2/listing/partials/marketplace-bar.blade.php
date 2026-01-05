@@ -99,11 +99,12 @@
 
 <div class="marketplace-bar-wrapper border-bottom">
     <div class="p-2">
-        <div class="d-flex justify-content-between align-items-center mb-2">
-            <div class="fw-bold d-flex align-items-center gap-2">
+        {{-- Line 1: Marketplace name, listing count, stock info, badges, buybox flags, and Listings button - Keep together on one line, wrap buybox flags on small screens --}}
+        <div class="d-flex justify-content-between align-items-center flex-wrap mb-2" style="gap: 0.5rem;">
+            <div class="fw-bold d-flex align-items-center flex-wrap" style="gap: 0.5rem; flex: 1; min-width: 0;">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
                 <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
-                <span class="text-muted small">
+                <span class="text-muted small d-flex align-items-center flex-wrap" style="gap: 0.25rem;">
                     <span class="text-primary" title="Listed Stock - Total allocated to this marketplace">
                         Listed: <span id="listed_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $listedStock }}</span>
                     </span>
@@ -111,19 +112,21 @@
                     <span class="text-success" title="Available Stock - Available for sale (Listed - Locked)">
                         Avail: <span id="available_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $availableStock }}</span>
                     </span>
-                    <span class="mx-1">|</span>
+                    {{-- Commented out: Pending/Locked Stock display - functionality preserved but hidden from UI --}}
+                    {{-- <span class="mx-1">|</span>
                     <span class="text-warning" title="Pending/Locked Stock - Reserved/Pending orders">
                         Pending: <span id="pending_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingStock }}</span>
-                    </span>
+                    </span> --}}
                 </span>
                 {{-- Real-time Backmarket Stock Badge (only for Backmarket) --}}
                 @if($marketplaceIdInt === 1)
-                    <span id="backmarket_stock_badge_{{ $variationId }}_{{ $marketplaceId }}" class="badge bg-secondary text-white ms-2" style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">
+                    <span id="backmarket_stock_badge_{{ $variationId }}_{{ $marketplaceId }}" class="badge bg-secondary text-white" style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">
                         <span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true"></span>
                         <span>Loading...</span>
                     </span>
                 @endif
-                @if($totalLocked > 0)
+                {{-- Commented out: Locked stock badge - functionality preserved but hidden from UI --}}
+                {{-- @if($totalLocked > 0)
                     <span class="badge bg-warning text-dark cursor-pointer" 
                           title="{{ $lockedStockCount }} active lock(s) - {{ $totalLocked }} units locked" 
                           data-bs-toggle="tooltip"
@@ -131,22 +134,25 @@
                           style="cursor: pointer;">
                         <i class="fe fe-lock me-1"></i>{{ $totalLocked }} Locked
                     </span>
-                @endif
+                @endif --}}
                 <span class="badge bg-light text-dark d-flex align-items-center gap-1">
                     <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
                     {{ $state }}
                 </span>
+                {{-- Buybox flags - will wrap to next line on small screens only --}}
+                <div class="d-flex align-items-center flex-wrap buybox-flags-container" style="gap: 0.25rem;">
+                    {!! $buyboxFlags !!}
+                </div>
             </div>
-            <div class="d-flex align-items-center gap-2">
-                <div>{!! $buyboxFlags !!}</div>
-                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 40px; padding: 6px 12px; font-weight: 600;">
-                    <i class="fas fa-chevron-down me-1"></i>
-                    <span>Listings</span>
-                </button>
-            </div>
+            <button class="btn btn-primary btn-sm flex-shrink-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 40px; padding: 6px 12px; font-weight: 600;">
+                <i class="fas fa-chevron-down me-1"></i>
+                <span>Listings</span>
+            </button>
         </div>
-        <div class="d-flex justify-content-between align-items-center">
-            <div class="d-flex align-items-center gap-2">
+        
+        {{-- Line 3: Forms and order summary - Can wrap on small screens --}}
+        <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.5rem;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 0.5rem;">
                 <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}" onsubmit="return false;">
                     @csrf
                     <div class="form-floating" style="width: 75px;">
@@ -172,7 +178,7 @@
                     <button type="button" class="btn btn-sm btn-success" style="height: 31px; line-height: 1;">Push</button>
                 </form>
             </div>
-            <div class="small fw-bold text-end">{{ $orderSummary }}</div>
+            <div class="small fw-bold text-end" style="min-width: fit-content;">{{ $orderSummary }}</div>
         </div>
     </div>
     <div class="marketplace-toggle-content collapse" id="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}">
@@ -208,6 +214,36 @@
         @endif
     </div>
 </div>
+
+@once
+<style>
+    /* Responsive buybox flags - wrap to next line only on small screens */
+    .buybox-flags-container {
+        flex-wrap: nowrap;
+    }
+    
+    /* On small screens (below 768px), allow buybox flags to wrap to next line */
+    @media (max-width: 767.98px) {
+        .buybox-flags-container {
+            flex-basis: 100%;
+            margin-top: 0.5rem;
+        }
+    }
+    
+    /* On very small screens (below 576px), ensure better wrapping */
+    @media (max-width: 575.98px) {
+        .marketplace-bar-wrapper .d-flex.flex-wrap {
+            flex-direction: column;
+            align-items: flex-start !important;
+        }
+        
+        .buybox-flags-container {
+            width: 100%;
+            margin-top: 0.5rem;
+        }
+    }
+</style>
+@endonce
 
 @if($marketplaceIdInt === 1)
 <script>
