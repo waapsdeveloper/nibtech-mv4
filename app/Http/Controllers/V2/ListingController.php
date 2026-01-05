@@ -1706,8 +1706,10 @@ class ListingController extends Controller
         $priceHandler = $request->input('all_handler');
 
         // Get all listings for this variation and marketplace
+        // V1 Pattern: Only update EUR listings (currency_id = 4, country = 73)
         $listings = Listing_model::where('variation_id', $variationId)
             ->where('marketplace_id', $marketplaceId)
+            ->where('currency_id', 4) // EUR currency only (matches V1 behavior)
             ->get();
 
         $updatedCount = 0;
@@ -1796,8 +1798,10 @@ class ListingController extends Controller
         $price = $request->input('all_price');
 
         // Get all listings for this variation and marketplace
+        // V1 Pattern: Only update EUR listings (currency_id = 4, country = 73)
         $listings = Listing_model::where('variation_id', $variationId)
             ->where('marketplace_id', $marketplaceId)
+            ->where('currency_id', 4) // EUR currency only (matches V1 behavior)
             ->with(['currency', 'country_id'])
             ->get();
 
