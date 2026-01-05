@@ -127,13 +127,21 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         // V2: Marketplace Stock Sync (6-hour interval per marketplace with staggered scheduling)
-        // Sync each marketplace at different times to avoid API rate limits
-        $schedule->command('v2:marketplace:sync-stock --marketplace=1')
+        // Using optimized bulk sync for BackMarket (95% fewer API calls)
+        $schedule->command('v2:marketplace:sync-stock-bulk --marketplace=1')
             ->everySixHours()
             ->at('00:00') // Back Market at midnight
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+        
+        // Keep old command for other marketplaces (deprecated - will be replaced)
+        // $schedule->command('v2:marketplace:sync-stock --marketplace=1')
+        //     ->everySixHours()
+        //     ->at('00:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
 
         $schedule->command('v2:marketplace:sync-stock --marketplace=4')
             ->everySixHours()

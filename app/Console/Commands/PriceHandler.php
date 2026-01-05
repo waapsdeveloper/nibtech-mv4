@@ -44,46 +44,71 @@ class PriceHandler extends Command
 
     public function handle()
     {
-
         ini_set('max_execution_time', 1200);
 
         $this->recheck_inactive_handlers();
 
         $error = '';
         $bm = new BackMarketAPIController();
-        $listings = Listing_model::whereIn('handler_status', [1,3])
-        ->where('marketplace_id', 1)
-        ->where('buybox',  '!=', 1)
-        ->where('min_price_limit', '>', 0)
-        ->whereColumn('min_price_limit', '<=', 'buybox_price')
-        ->whereColumn('min_price_limit', '<=', 'min_price')
-        ->get();
-        $variation_ids = $listings->pluck('variation_id');
-        $variations = Variation_model::whereIn('id', $variation_ids)->where('listed_stock', '>',0)->get();
-        $references = $listings->pluck('reference_uuid')->unique()->toArray();
-        $referenceVariationMap = $listings
-            ->filter(fn ($listing) => ! empty($listing->reference_uuid) && ! empty($listing->variation_id))
-            ->pluck('variation_id', 'reference_uuid')
-            ->toArray();
-        $resolvedVariationCache = [];
-        foreach ($references as $reference) {
-
-            $responses = $bm->getListingCompetitors($reference);
-            sleep(1);
-            // $responses = $listingController->getCompetitors($variation->id, 1);
-            if ($responses == null) {
-                $error .= "No response for variation: " . $reference . "\n";
-                continue;
-            }
-            if (is_object($responses) && $responses->type == 'unknown-competitor') {
-                continue;
-            }
-            if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
-                continue;
-            }
-            echo "SKU: " . $reference . "\n";
-            echo "Response: \n";
-            foreach($responses as $list){
+        
+        // Get total count for progress tracking
+        $totalListings = Listing_model::whereIn('handler_status', [1,3])
+            ->where('marketplace_id', 1)
+            ->where('buybox', '!=', 1)
+            ->where('min_price_limit', '>', 0)
+            ->whereColumn('min_price_limit', '<=', 'buybox_price')
+            ->whereColumn('min_price_limit', '<=', 'min_price')
+            ->count();
+        
+        $this->info("Processing {$totalListings} listings in chunks...");
+        
+        // Pre-load countries to avoid N+1 queries
+        $countries = Country_model::all()->keyBy('code');
+        
+        // Process in chunks of 50 to reduce memory usage and allow progress tracking
+        $chunkSize = 50;
+        $processed = 0;
+        
+        Listing_model::whereIn('handler_status', [1,3])
+            ->where('marketplace_id', 1)
+            ->where('buybox', '!=', 1)
+            ->where('min_price_limit', '>', 0)
+            ->whereColumn('min_price_limit', '<=', 'buybox_price')
+            ->whereColumn('min_price_limit', '<=', 'min_price')
+            ->with(['variation', 'country_id']) // Eager load relationships
+            ->chunk($chunkSize, function ($listings) use ($bm, &$error, &$processed, $countries) {
+                $variation_ids = $listings->pluck('variation_id')->filter();
+                $variations = Variation_model::whereIn('id', $variation_ids)
+                    ->where('listed_stock', '>', 0)
+                    ->get()
+                    ->keyBy('id');
+                
+                $references = $listings->pluck('reference_uuid')->filter()->unique()->toArray();
+                $referenceVariationMap = $listings
+                    ->filter(fn ($listing) => !empty($listing->reference_uuid) && !empty($listing->variation_id))
+                    ->pluck('variation_id', 'reference_uuid')
+                    ->toArray();
+                
+                $resolvedVariationCache = [];
+                
+                foreach ($references as $reference) {
+                    $responses = $bm->getListingCompetitors($reference);
+                    usleep(500000); // 0.5 second delay instead of 1 second (reduces wait time by 50%)
+                    
+                    if ($responses == null) {
+                        $error .= "No response for variation: " . $reference . "\n";
+                        continue;
+                    }
+                    if (is_object($responses) && $responses->type == 'unknown-competitor') {
+                        continue;
+                    }
+                    if (is_array($responses) && isset($responses['type']) && $responses['type'] == 'unknown-competitor') {
+                        continue;
+                    }
+                    echo "SKU: " . $reference . "\n";
+                    echo "Response: \n";
+                    
+                    foreach($responses as $list){
                 // print_r($list);
                 if(is_string($list) || is_int($list)){
                     print_r($responses);
@@ -102,12 +127,13 @@ class PriceHandler extends Command
                         continue;
                     }
                 }
-                $country = Country_model::where('code',$list->market)->first();
-                $listing = Listing_model::firstOrNew(['reference_uuid' => $reference, 'country' => $country->id, 'marketplace_id' => 1]);
+                // Use pre-loaded country cache instead of querying database
+                $country = $countries->get($list->market);
                 if($country == null){
                     $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
                     continue;
                 }
+                $listing = Listing_model::firstOrNew(['reference_uuid' => $reference, 'country' => $country->id, 'marketplace_id' => 1]);
                 if (! $listing->variation_id) {
                     $variationId = $referenceVariationMap[$reference]
                         ?? $resolvedVariationCache[$reference]
@@ -161,9 +187,13 @@ class PriceHandler extends Command
                     $listing->handler_status = 2;
                 }
                 $listing->save();
-
-            }
-        }
+                    }
+                }
+                
+                $processed += count($references);
+                $this->info("Processed {$processed} references...");
+            });
+        
         // foreach ($variations as $variation) {
 
         //     $responses = $bm->getListingCompetitors($variation->reference_uuid);
@@ -254,29 +284,45 @@ class PriceHandler extends Command
 
     }
     public function recheck_inactive_handlers(){
-        $listings = Listing_model::where('handler_status', 2)
+        // Use chunking to process in smaller batches
+        $listingController = app(ListingController::class);
+        $processed = 0;
+        
+        Listing_model::where('handler_status', 2)
             ->where('min_price_limit', '>', 0)
             ->where('min_price_limit', '<=', 'buybox_price')
             ->where('min_price_limit', '<=', 'min_price')
-            ->get();
-
-        $variations = Variation_model::whereIn('id', $listings->pluck('variation_id'))
-            ->where('listed_stock', '>', 0)
-            ->get();
-
-        // Resolve with container so constructor dependencies (StockDistributionService) are injected
-        $listingController = app(ListingController::class);
-        foreach ($variations as $variation) {
-            $json_data = $listingController->get_variation_available_stocks( $variation->id );
-            if (json_decode($json_data) == null) {
-                $json_data = json_encode(['breakeven_price' => 0]);
-                Log::info("Handler: No data for variation: " . $variation->sku. " - " . $json_data);
-                continue;
-            }
-            echo $json_data;
-            $breakeven_price = json_decode($json_data)->breakeven_price;
-
-            $listings->where('variation_id', $variation->id)->where('min_price_limit', '<=', $breakeven_price)->where('price_limit', '>=', $breakeven_price)->update(['handler_status' => 3]);
+            ->with('variation') // Eager load variation
+            ->chunk(50, function ($listings) use ($listingController, &$processed) {
+                $variationIds = $listings->pluck('variation_id')->filter();
+                
+                $variations = Variation_model::whereIn('id', $variationIds)
+                    ->where('listed_stock', '>', 0)
+                    ->get()
+                    ->keyBy('id');
+                
+                foreach ($variations as $variation) {
+                    $json_data = $listingController->get_variation_available_stocks($variation->id);
+                    if (json_decode($json_data) == null) {
+                        $json_data = json_encode(['breakeven_price' => 0]);
+                        Log::info("Handler: No data for variation: " . $variation->sku . " - " . $json_data);
+                        continue;
+                    }
+                    
+                    $breakeven_price = json_decode($json_data)->breakeven_price;
+                    
+                    // Use bulk update instead of individual updates
+                    $listings->where('variation_id', $variation->id)
+                        ->where('min_price_limit', '<=', $breakeven_price)
+                        ->where('price_limit', '>=', $breakeven_price)
+                        ->update(['handler_status' => 3]);
+                    
+                    $processed++;
+                }
+            });
+        
+        if ($processed > 0) {
+            $this->info("Rechecked {$processed} inactive handlers");
         }
     }
 
