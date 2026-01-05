@@ -46,7 +46,7 @@
     $productId = $variation->product_id ?? 0;
     // Calculate total stock and available stock from all marketplaces
     // Total Stock = Sum of all marketplace listed_stock
-    // Available Stock = Sum of all marketplace available_stock (listed - locked)
+    // Available Stock = Sum of all marketplace listed_stock (no locked stock calculation for simplicity)
     $totalStock = 0;
     $totalAvailableStock = 0;
     if(isset($marketplaces) && count($marketplaces) > 0) {
@@ -59,10 +59,8 @@
                 $listedStock = (int)($marketplaceStock->listed_stock ?? 0);
                 $totalStock += $listedStock;
                 
-                // Calculate available stock for this marketplace (listed - locked)
-                $availableStock = $marketplaceStock->available_stock !== null 
-                    ? (int)$marketplaceStock->available_stock 
-                    : max(0, $listedStock - (int)($marketplaceStock->locked_stock ?? 0));
+                // Calculate available stock for this marketplace (simplified: just use listed_stock, no locked calculation)
+                $availableStock = $listedStock;
                 $totalAvailableStock += $availableStock;
             }
         }
