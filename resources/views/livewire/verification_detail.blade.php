@@ -343,7 +343,7 @@
                         <tr>
                             <td colspan="2"><b>Total</b></td>
                             <td><b>{{ $total_quantity }}</b></td>
-                            <td title="{{ amount_formatter($total_cost/$total_quantity,2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
+                            <td title="{{ amount_formatter($total_cost/($total_quantity ?? 1),2) }}"><b>{{ amount_formatter($total_cost,2) }}</b></td>
                             <td><b>{{ $remaining_quantity }}</b></td>
                             <td><b>{{ amount_formatter($remaining_total_cost,2) }}</b></td>
                         </tr>
