@@ -1092,7 +1092,7 @@
 
                                                 @endif
                                                 <td>
-                                                    {{ $ord->order_status->name }}
+                                                    {{ $ord->order_status->name ?? 'Error' }}
                                                     @isset($itm->stock->imei) {{ $itm->stock->imei }}&nbsp; @endisset
                                                     @isset($itm->stock->serial_number) {{ $itm->stock->serial_number }}&nbsp; @endisset
                                                 </td>
