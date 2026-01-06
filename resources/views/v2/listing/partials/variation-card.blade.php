@@ -74,16 +74,16 @@
     // Available stock should logically never exceed total stock, but we cap it just in case
     $totalAvailableStock = min($totalAvailableStock, $totalStock);
     
-    // Keep physical stock count for reference (but use marketplace available for display)
+    // Use physical stock count (matching V1 behavior)
     $availableStocks = $variation->available_stocks ?? collect();
     $pendingOrders = $variation->pending_orders ?? collect();
     $pendingBmOrders = $variation->pending_bm_orders ?? collect();
     $physicalAvailableCount = $availableStocks->count(); // Physical stock items count
-    $pendingCount = $pendingOrders->count();
+    $pendingCount = $pendingOrders->sum('quantity'); // Sum of quantities (matching V1 behavior)
     $pendingBmCount = $pendingBmOrders->count();
     
-    // Use marketplace available stock for display (not physical count)
-    $availableCount = $totalAvailableStock;
+    // Use physical inventory count for display (matching V1)
+    $availableCount = $physicalAvailableCount;
     $difference = $availableCount - $pendingCount;
     
     // Calculate average cost from available stocks

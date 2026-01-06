@@ -54,19 +54,15 @@
     // Calculate stock details for display
     $listedStock = 0;
     $availableStock = 0;
-    $pendingStock = 0; // Locked stock (pending/reserved)
+    $pendingStock = 0; // Locked stock (pending/reserved) - kept for reference but not used in display
     
     if ($marketplaceStock) {
         $listedStock = (int) ($marketplaceStock->listed_stock ?? 0);
         
-        // Calculate available stock (listed - locked)
-        if ($marketplaceStock->available_stock !== null) {
-            $availableStock = (int) $marketplaceStock->available_stock;
-        } else {
-            $availableStock = (int) max(0, $listedStock - ($marketplaceStock->locked_stock ?? 0));
-        }
+        // Calculate available stock (simplified: just use listed_stock, no locked calculation)
+        $availableStock = $listedStock;
         
-        // Pending stock is the locked stock (reserved/pending)
+        // Pending stock is the locked stock (reserved/pending) - kept for reference
         $pendingStock = (int) ($marketplaceStock->locked_stock ?? 0);
     }
     
@@ -190,28 +186,6 @@
                 <p class="mt-2 text-muted small">Click to load tables...</p>
             </div>
         </div>
-        
-        {{-- V2: Stock Locks Display --}}
-        @if($totalLocked > 0)
-        <div class="border-top p-3 bg-light">
-            <div class="d-flex justify-content-between align-items-center mb-2">
-                <h6 class="mb-0">
-                    <i class="fe fe-lock me-2"></i>Stock Locks ({{ $lockedStockCount }} active, {{ $totalLocked }} units)
-                </h6>
-                <button class="btn btn-sm btn-outline-primary" onclick="showStockLocksModal({{ $variationId }}, {{ $marketplaceIdInt }})">
-                    <i class="fe fe-eye me-1"></i>View Details
-                </button>
-            </div>
-            <div class="small text-muted mb-2">
-                Click "View Details" to see all lock information in a modal
-            </div>
-            @livewire('v2.stock-locks', [
-                'variationId' => $variationId, 
-                'marketplaceId' => $marketplaceIdInt,
-                'showAll' => false
-            ], key('stock-locks-'.$variationId.'-'.$marketplaceIdInt))
-        </div>
-        @endif
     </div>
 </div>
 
