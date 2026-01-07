@@ -3,37 +3,19 @@
 namespace App\Http\Controllers;
 
 use App\Models\Api_request_model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
 class ApiRequestController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
-    {
-        //
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
-    {
-        //
-    }
 
     /**
      * Store a newly created resource in storage.
      *
      * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
+    * @return JsonResponse
      */
-    public function store(Request $request)
+    public function store(Request $request): JsonResponse
     {
 
         if($request->Serial != '' || $request->Imei != '' || $request->Imei2 != ''){
@@ -58,17 +40,7 @@ class ApiRequestController extends Controller
                 'request' => $datas,
             ]);
             $api_request->save();
-            // $datas = json_decode($datas);
-            // $datas = json_decode($datas);
-            // echo "Hello";
-            // unset($datas->OEMData);
-            // // dd($datas);
-            // $datas = json_encode($datas);
-            // // Create or update the resource
-            // $api_request = Api_request_model::firstOrNew([
-            //     'request' => $datas,
-            // ]);
-            // $api_request->save();
+
             $api_request = $this->save($datas);
             // Return response
             return response()->json([
@@ -103,27 +75,6 @@ class ApiRequestController extends Controller
         return $api_request;
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function show($id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function edit($id)
-    {
-        //
-    }
 
     public function request_drfones()
     {
@@ -176,14 +127,5 @@ class ApiRequestController extends Controller
         return redirect()->to('testing')->with('success', 'Data requested from DRFones successfully '.$responseData['Total'].' records found');
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  int  $id
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy($id)
-    {
-        //
-    }
+
 }
