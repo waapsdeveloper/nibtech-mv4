@@ -40,6 +40,7 @@ class Kernel extends HttpKernel
             \App\Http\Middleware\AuthorizeMiddleware::class,
             \App\Http\Middleware\CheckIPMiddleware::class,
             \App\Http\Middleware\LogContextMiddleware::class,
+            \App\Http\Middleware\DatabaseConnectionCleanup::class,
         ],
 
         'api' => [
