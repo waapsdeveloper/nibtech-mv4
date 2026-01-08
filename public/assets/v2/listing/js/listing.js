@@ -662,10 +662,9 @@ function loadMarketplaceTables(variationId, marketplaceId) {
             // Clear eur_listings for this variation
             window.eur_listings[variationId] = [];
             
-            // Calculate min prices from listings with country 73 (EUR)
+            // Calculate min prices from listings with currency_id 4 (EUR) - matches V1 logic
             const eurListings = data.listings.filter(listing => {
-                const country = listing.country_id || (listing.country && countries[listing.country]);
-                return country && (country.id === 73 || listing.country === 73);
+                return listing.currency_id == 4;  // 4 = EUR currency
             });
             
             if (eurListings.length > 0) {
@@ -1541,21 +1540,11 @@ function initializeChangeDetection() {
         window.ChangeDetection.storeOriginalValue(this);
     });
     
-    // Detect changes on blur event (when user finishes editing and tabs out)
-    // All four main inputs: min_price_limit, price_limit, min_price, price
-    // Marketplace-level inputs: all_min_handler, all_handler, all_min_price, all_price
-    // Note: buybox_price is not user-editable, it's updated programmatically
-    // Using only blur to avoid duplicate alerts from both change and blur events
-    $(document).on('blur', '[id^="min_price_limit_"], [id^="price_limit_"], [id^="min_price_"], [id^="price_"], [id^="all_min_handler_"], [id^="all_handler_"], [id^="all_min_price_"], [id^="all_price_"]', function(e) {
-        const elementId = $(this).attr('id');
-        console.log('Blur event fired for:', elementId);
-        
-        // For marketplace-level inputs, we don't track individual changes
-        // They are tracked when the form is submitted (bulk update)
-        if (!elementId.includes('all_')) {
-            window.ChangeDetection.detectChange(this);
-        }
-    });
+    // REMOVED: Blur event handler for change detection
+    // Client requirement: Changes should only fire on Enter key press (like V1)
+    // Change detection now only happens when form is submitted (via Enter key)
+    // This matches V1 behavior where changes only occur on Enter key press
+    // Note: Price validation (visual feedback) still works on blur via price-validation.js
     
     // Handle checkbox/toggle changes
     $(document).on('change', '.toggle-listing-enable', function() {
@@ -1612,10 +1601,19 @@ $(document).on('submit', '[id^="change_min_price_"], [id^="change_price_"]', fun
         return;
     }
     
+    // Record change detection (only fires on Enter key submission, not blur)
+    if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+        const inputId = input.attr('id');
+        if (window.ChangeDetection.originalValues[inputId]) {
+            window.ChangeDetection.detectChange(input[0]);
+        }
+    }
+    
     // Show loading state
     input.prop('disabled', true);
     
-    const url = window.ListingConfig.urls.updatePrice || `/v2/listings/update_price/${listingId}`;
+    // Construct URL with listing ID - route expects /v2/listings/update_price/{id}
+    const url = (window.ListingConfig.urls.updatePrice || '/v2/listings/update_price') + '/' + listingId;
     const data = {
         _token: window.ListingConfig.csrfToken,
     };
@@ -1633,12 +1631,13 @@ $(document).on('submit', '[id^="change_min_price_"], [id^="change_price_"]', fun
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                // Show success feedback
-                const row = input.closest('tr');
-                row.addClass('table-success');
-                setTimeout(function() {
-                    row.removeClass('table-success');
-                }, 2000);
+                // Show success feedback - match V1 behavior: individual input green, persistent
+                input.addClass('bg-green');
+                
+                // Run 8% validation formula (like V1) - validates min_price vs price relationship
+                if (typeof window.checkMinPriceDiff === 'function') {
+                    window.checkMinPriceDiff(listingId);
+                }
             }
             input.prop('disabled', false);
         },
@@ -1671,11 +1670,24 @@ $(document).on('submit', '[id^="change_limit_"]', function(e) {
     const minLimit = minLimitInput.val() ? parseFloat(minLimitInput.val()) : null;
     const priceLimit = priceLimitInput.val() ? parseFloat(priceLimitInput.val()) : null;
     
+    // Record change detection (only fires on Enter key submission, not blur)
+    if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+        const minLimitId = minLimitInput.attr('id');
+        const priceLimitId = priceLimitInput.attr('id');
+        if (window.ChangeDetection.originalValues[minLimitId]) {
+            window.ChangeDetection.detectChange(minLimitInput[0]);
+        }
+        if (window.ChangeDetection.originalValues[priceLimitId]) {
+            window.ChangeDetection.detectChange(priceLimitInput[0]);
+        }
+    }
+    
     // Show loading state
     minLimitInput.prop('disabled', true);
     priceLimitInput.prop('disabled', true);
     
-    const url = window.ListingConfig.urls.updateLimit || `/v2/listings/update_limit/${listingId}`;
+    // Construct URL with listing ID - route expects /v2/listings/update_limit/{id}
+    const url = (window.ListingConfig.urls.updateLimit || '/v2/listings/update_limit') + '/' + listingId;
     const data = {
         _token: window.ListingConfig.csrfToken,
         min_price_limit: minLimit,
@@ -1689,12 +1701,14 @@ $(document).on('submit', '[id^="change_limit_"]', function(e) {
         dataType: 'json',
         success: function(response) {
             if (response.success) {
-                // Show success feedback
-                const row = minLimitInput.closest('tr');
-                row.addClass('table-success');
-                setTimeout(function() {
-                    row.removeClass('table-success');
-                }, 2000);
+                // Show success feedback - match V1 behavior: individual inputs green, persistent
+                minLimitInput.addClass('bg-green');
+                priceLimitInput.addClass('bg-green');
+                
+                // Run 8% validation formula (like V1) - validates min_price vs price relationship
+                if (typeof window.checkMinPriceDiff === 'function') {
+                    window.checkMinPriceDiff(listingId);
+                }
             }
             minLimitInput.prop('disabled', false);
             priceLimitInput.prop('disabled', false);

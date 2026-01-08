@@ -1,6 +1,6 @@
 {{-- Documentation Modal --}}
 <div class="modal fade" id="documentationModal" tabindex="-1" aria-labelledby="documentationModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-dialog modal-fullscreen-lg-down modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="documentationModalLabel">
@@ -9,7 +9,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
-                <div id="documentationContent" class="markdown-content" style="max-height: 70vh; overflow-y: auto;">
+                <div id="documentationContent" class="markdown-content" style="max-height: 85vh; overflow-y: auto;">
                     <div class="text-center">
                         <div class="spinner-border text-primary" role="status">
                             <span class="visually-hidden">Loading...</span>

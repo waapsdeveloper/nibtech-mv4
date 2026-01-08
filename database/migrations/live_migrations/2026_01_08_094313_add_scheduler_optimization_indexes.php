@@ -58,6 +58,48 @@ return new class extends Migration
     }
 
     /**
+     * Check if an index with the same columns already exists (duplicate detection)
+     * 
+     * @param string $tableName
+     * @param array $columns Array of column names in order
+     * @return array|null Returns array with existing index name(s) or null if no duplicate
+     */
+    private function findDuplicateIndexByColumns(string $tableName, array $columns): ?array
+    {
+        $columnsStr = implode(',', $columns);
+        
+        // Get all indexes for this table
+        $allIndexes = DB::select(
+            "SELECT INDEX_NAME, COLUMN_NAME, SEQ_IN_INDEX
+             FROM information_schema.statistics
+             WHERE table_schema = DATABASE()
+             AND table_name = ?
+             AND INDEX_NAME != 'PRIMARY'
+             ORDER BY INDEX_NAME, SEQ_IN_INDEX",
+            [$tableName]
+        );
+        
+        // Group by index name and build column lists
+        $indexColumns = [];
+        foreach ($allIndexes as $row) {
+            if (!isset($indexColumns[$row->INDEX_NAME])) {
+                $indexColumns[$row->INDEX_NAME] = [];
+            }
+            $indexColumns[$row->INDEX_NAME][] = $row->COLUMN_NAME;
+        }
+        
+        // Find indexes with matching columns
+        $duplicates = [];
+        foreach ($indexColumns as $indexName => $indexCols) {
+            if (implode(',', $indexCols) === $columnsStr) {
+                $duplicates[] = $indexName;
+            }
+        }
+        
+        return count($duplicates) > 0 ? $duplicates : null;
+    }
+
+    /**
      * Check if there are duplicate records for unique index columns
      * 
      * @param string $tableName
@@ -115,6 +157,7 @@ return new class extends Migration
      * @param string $sql
      * @param bool $isUnique
      * @param array|null $uniqueColumns
+     * @param array|null $indexColumns Columns used in this index (for duplicate detection)
      * @return void
      */
     private function createIndexIfNotExists(
@@ -122,9 +165,28 @@ return new class extends Migration
         string $indexName, 
         string $sql, 
         bool $isUnique = false,
-        ?array $uniqueColumns = null
+        ?array $uniqueColumns = null,
+        ?array $indexColumns = null
     ): void {
-        if (!$this->indexExists($tableName, $indexName)) {
+        // Check if index with same name exists
+        if ($this->indexExists($tableName, $indexName)) {
+            echo "⊘ Index {$indexName} already exists on {$tableName}, skipping...\n";
+            return;
+        }
+        
+        // Check for duplicate indexes with same columns but different name
+        if ($indexColumns !== null) {
+            $duplicateIndexes = $this->findDuplicateIndexByColumns($tableName, $indexColumns);
+            if ($duplicateIndexes !== null && count($duplicateIndexes) > 0) {
+                $duplicateNames = implode(', ', $duplicateIndexes);
+                echo "⚠ Skipping index {$indexName} on {$tableName}: Duplicate index(es) already exist with same columns: {$duplicateNames}\n";
+                echo "   → Columns: (" . implode(', ', $indexColumns) . ")\n";
+                echo "   → Consider removing duplicate index(es) for better performance\n";
+                return;
+            }
+        }
+        
+        if (true) { // Removed the check since we already did it above
             // Check for duplicates if this is a unique index
             if ($isUnique && $uniqueColumns !== null) {
                 if ($this->hasDuplicates($tableName, $uniqueColumns)) {
@@ -164,8 +226,6 @@ return new class extends Migration
                     echo "⚠ Failed to create index {$indexName} on {$tableName}: {$e->getMessage()}\n";
                 }
             }
-        } else {
-            echo "⊘ Index {$indexName} already exists on {$tableName}, skipping...\n";
         }
     }
 
@@ -182,35 +242,50 @@ return new class extends Migration
             'idx_orders_reference_marketplace',
             "CREATE UNIQUE INDEX idx_orders_reference_marketplace ON {$tableName}(reference_id, marketplace_id)",
             true,
+            ['reference_id', 'marketplace_id'],
             ['reference_id', 'marketplace_id']
         );
 
         // Priority 1: Index for reference_id lookups (used in N+1 queries)
+        // Note: This might be redundant if idx_orders_reference_marketplace exists (leftmost prefix)
+        // But we keep it for queries that only filter by reference_id
         $this->createIndexIfNotExists(
             $tableName,
             'idx_orders_reference_id',
-            "CREATE INDEX idx_orders_reference_id ON {$tableName}(reference_id)"
+            "CREATE INDEX idx_orders_reference_id ON {$tableName}(reference_id)",
+            false,
+            null,
+            ['reference_id']
         );
 
         // Priority 1: Composite index for incomplete orders query
         $this->createIndexIfNotExists(
             $tableName,
             'idx_orders_incomplete',
-            "CREATE INDEX idx_orders_incomplete ON {$tableName}(order_type_id, status, created_at)"
+            "CREATE INDEX idx_orders_incomplete ON {$tableName}(order_type_id, status, created_at)",
+            false,
+            null,
+            ['order_type_id', 'status', 'created_at']
         );
 
         // Priority 1: Index for marketplace_id (used in whereHas queries)
         $this->createIndexIfNotExists(
             $tableName,
             'idx_orders_marketplace_id',
-            "CREATE INDEX idx_orders_marketplace_id ON {$tableName}(marketplace_id)"
+            "CREATE INDEX idx_orders_marketplace_id ON {$tableName}(marketplace_id)",
+            false,
+            null,
+            ['marketplace_id']
         );
 
         // Priority 2: Additional composite index for status/type/created queries
         $this->createIndexIfNotExists(
             $tableName,
             'idx_orders_status_type_created',
-            "CREATE INDEX idx_orders_status_type_created ON {$tableName}(status, order_type_id, created_at)"
+            "CREATE INDEX idx_orders_status_type_created ON {$tableName}(status, order_type_id, created_at)",
+            false,
+            null,
+            ['status', 'order_type_id', 'created_at']
         );
     }
 
@@ -227,6 +302,7 @@ return new class extends Migration
             'idx_order_items_reference_order',
             "CREATE UNIQUE INDEX idx_order_items_reference_order ON {$tableName}(reference_id, order_id)",
             true,
+            ['reference_id', 'order_id'],
             ['reference_id', 'order_id']
         );
 
@@ -234,14 +310,20 @@ return new class extends Migration
         $this->createIndexIfNotExists(
             $tableName,
             'idx_order_items_reference_id',
-            "CREATE INDEX idx_order_items_reference_id ON {$tableName}(reference_id)"
+            "CREATE INDEX idx_order_items_reference_id ON {$tableName}(reference_id)",
+            false,
+            null,
+            ['reference_id']
         );
 
         // Priority 1: Index for order_id (used in relationships)
         $this->createIndexIfNotExists(
             $tableName,
             'idx_order_items_order_id',
-            "CREATE INDEX idx_order_items_order_id ON {$tableName}(order_id)"
+            "CREATE INDEX idx_order_items_order_id ON {$tableName}(order_id)",
+            false,
+            null,
+            ['order_id']
         );
 
         // Priority 1: Partial index for care_id (only non-null values)
@@ -249,14 +331,20 @@ return new class extends Migration
         $this->createIndexIfNotExists(
             $tableName,
             'idx_order_items_care_id',
-            "CREATE INDEX idx_order_items_care_id ON {$tableName}(care_id)"
+            "CREATE INDEX idx_order_items_care_id ON {$tableName}(care_id)",
+            false,
+            null,
+            ['care_id']
         );
 
         // Priority 2: Composite index for variation/order queries
         $this->createIndexIfNotExists(
             $tableName,
             'idx_order_items_variation_order',
-            "CREATE INDEX idx_order_items_variation_order ON {$tableName}(variation_id, order_id)"
+            "CREATE INDEX idx_order_items_variation_order ON {$tableName}(variation_id, order_id)",
+            false,
+            null,
+            ['variation_id', 'order_id']
         );
     }
 
@@ -271,14 +359,20 @@ return new class extends Migration
         $this->createIndexIfNotExists(
             $tableName,
             'idx_variations_reference_id',
-            "CREATE INDEX idx_variations_reference_id ON {$tableName}(reference_id)"
+            "CREATE INDEX idx_variations_reference_id ON {$tableName}(reference_id)",
+            false,
+            null,
+            ['reference_id']
         );
 
         // Priority 1: Index for SKU lookups (used in updateOrderItemsInDB)
         $this->createIndexIfNotExists(
             $tableName,
             'idx_variations_sku',
-            "CREATE INDEX idx_variations_sku ON {$tableName}(sku)"
+            "CREATE INDEX idx_variations_sku ON {$tableName}(sku)",
+            false,
+            null,
+            ['sku']
         );
     }
 
@@ -293,21 +387,30 @@ return new class extends Migration
         $this->createIndexIfNotExists(
             $tableName,
             'idx_stocks_imei',
-            "CREATE INDEX idx_stocks_imei ON {$tableName}(imei)"
+            "CREATE INDEX idx_stocks_imei ON {$tableName}(imei)",
+            false,
+            null,
+            ['imei']
         );
 
         // Priority 1: Index for serial_number lookups (used in updateOrderItemsInDB)
         $this->createIndexIfNotExists(
             $tableName,
             'idx_stocks_serial_number',
-            "CREATE INDEX idx_stocks_serial_number ON {$tableName}(serial_number)"
+            "CREATE INDEX idx_stocks_serial_number ON {$tableName}(serial_number)",
+            false,
+            null,
+            ['serial_number']
         );
 
         // Priority 1: Index for variation_id (used in relationships)
         $this->createIndexIfNotExists(
             $tableName,
             'idx_stocks_variation_id',
-            "CREATE INDEX idx_stocks_variation_id ON {$tableName}(variation_id)"
+            "CREATE INDEX idx_stocks_variation_id ON {$tableName}(variation_id)",
+            false,
+            null,
+            ['variation_id']
         );
     }
 

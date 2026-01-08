@@ -8,6 +8,7 @@
 
     /**
      * Check minimum price difference and highlight accordingly
+     * Matches V1 behavior: validates that price doesn't exceed min_price by more than 8%
      * @param {number} listingId - Listing ID
      */
     window.checkMinPriceDiff = function(listingId) {
@@ -21,64 +22,32 @@
         const minVal = parseFloat(minPriceInput.value) || 0;
         const priceVal = parseFloat(priceInput.value) || 0;
 
-        // Remove previous classes
-        minPriceInput.classList.remove('bg-red', 'bg-green');
-        priceInput.classList.remove('bg-red', 'bg-green');
-
-        // Validation: min_price should be <= price and price should be <= min_price * 1.08
+        // Validation: min_price should be <= price AND price should be <= min_price * 1.08
+        // This matches V1 formula: min_val > price_val || min_val*1.08 < price_val
         if (minVal > priceVal || (minVal > 0 && priceVal > 0 && minVal * 1.08 < priceVal)) {
-            // Invalid: highlight in red
+            // Invalid: highlight both in red (validation overrides success green)
+            minPriceInput.classList.remove('bg-green');
             minPriceInput.classList.add('bg-red');
+            priceInput.classList.remove('bg-green');
             priceInput.classList.add('bg-red');
-        } else if (minVal > 0 && priceVal > 0) {
-            // Valid: highlight in green
-            minPriceInput.classList.add('bg-green');
-            priceInput.classList.add('bg-green');
+        } else {
+            // Valid: remove red classes (success green from update will remain if present)
+            minPriceInput.classList.remove('bg-red');
+            priceInput.classList.remove('bg-red');
+            // Note: We don't add bg-green here - that's handled by success feedback
+            // This matches V1 behavior where validation only removes red, doesn't add green
         }
     };
 
     /**
      * Initialize price validation for all listing inputs
+     * REMOVED: Blur and input event listeners - client wants colors only on Enter key press
+     * Colors are now applied only when form is submitted (Enter key) in listing.js
      */
     function initializePriceValidation() {
-        // Add validation on blur for min_price and price inputs
-        document.addEventListener('blur', function(e) {
-            if (e.target && e.target.id) {
-                const inputId = e.target.id;
-                
-                // Check if it's a min_price or price input
-                if (inputId.startsWith('min_price_') || inputId.startsWith('price_')) {
-                    // Extract listing ID
-                    const match = inputId.match(/(\d+)$/);
-                    if (match) {
-                        const listingId = match[1];
-                        // Small delay to ensure both values are updated
-                        setTimeout(function() {
-                            checkMinPriceDiff(listingId);
-                        }, 100);
-                    }
-                }
-            }
-        }, true); // Use capture phase to catch blur events
-
-        // Also validate on input change for real-time feedback
-        document.addEventListener('input', function(e) {
-            if (e.target && e.target.id) {
-                const inputId = e.target.id;
-                
-                if (inputId.startsWith('min_price_') || inputId.startsWith('price_')) {
-                    const match = inputId.match(/(\d+)$/);
-                    if (match) {
-                        const listingId = match[1];
-                        // Debounce validation
-                        clearTimeout(window.priceValidationTimeout);
-                        window.priceValidationTimeout = setTimeout(function() {
-                            checkMinPriceDiff(listingId);
-                        }, 300);
-                    }
-                }
-            }
-        });
+        // REMOVED: All automatic validation on blur/input
+        // Client requirement: No colors until Enter key is pressed
+        // Colors are now handled in listing.js on form submission only
     }
 
     // Add CSS for validation classes if not already present
