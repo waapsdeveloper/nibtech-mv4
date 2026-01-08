@@ -42,7 +42,7 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         $schedule->command('refresh:new')
-            ->everyFiveMinutes() // Changed from everyTwoMinutes to reduce frequency
+            ->everyTwoMinutes()
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
