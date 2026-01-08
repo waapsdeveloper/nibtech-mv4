@@ -729,7 +729,7 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                     const disabledClass = !isEnabled ? 'listing-disabled' : '';
                     const flagsPath = window.ListingConfig.flagsPath || '';
                     listingsTable += `
-                        <tr class="${classs} ${disabledClass}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''} data-listing-id="${listing.id}" data-enabled="${isEnabled ? '1' : '0'}">
+                        <tr class="${classs} ${disabledClass}" ${listing.buybox !== 1 ? 'style="background: pink;"' : ''} data-listing-id="${listing.id}" data-enabled="${isEnabled ? '1' : '0'}" data-currency-id="${listing.currency_id || ''}">
                             <td title="${listing.id} ${country.title || ''}">
                                 <a href="https://www.backmarket.${country.market_url}/${country.market_code}/p/gb/${listing.reference_uuid_2 || listing._2 || ''}" target="_blank">
                                     <img src="${flagsPath}/${country.code.toLowerCase()}.svg" height="15">
@@ -776,15 +776,16 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                                 </div>
                                 ${p_append}
                             </td>
-                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
+                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
+                                ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
+                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                    return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
+                                                Get Buybox
+                                            </button>`;
+                                })() : ''}
+                            </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
-                                    ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
-                                        const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
-                                        return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin: 0;">
-                                                    Get Buybox
-                                                </button>`;
-                                    })() : ''}
                                     <div class="form-check form-switch d-inline-block">
                                         <input 
                                             class="form-check-input toggle-listing-enable" 
@@ -860,6 +861,7 @@ function loadStocksForBestPrice(variationId, marketplaceId) {
 
 /**
  * Calculate and display best price only (average_cost removed from marketplace bar)
+ * Also updates breakeven tooltips for all listings in this marketplace
  */
 function updateBestPrice(variationId, marketplaceId, prices) {
     const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
@@ -868,14 +870,65 @@ function updateBestPrice(variationId, marketplaceId, prices) {
         return; // Element doesn't exist yet
     }
     
+    let bestPrice = '0.00';
     if (prices.length > 0) {
         let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
         // Calculate best_price: (average_cost + 20) / 0.88 (same formula as original)
-        let bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
+        bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
         bestPriceElement.text(bestPrice);
     } else {
         bestPriceElement.text('0.00');
     }
+    
+    // Update breakeven tooltips for all non-EUR listings in this marketplace
+    updateBreakevenTooltips(variationId, marketplaceId, parseFloat(bestPrice));
+}
+
+/**
+ * Update breakeven tooltips for all listings in a marketplace after best_price is calculated
+ */
+function updateBreakevenTooltips(variationId, marketplaceId, bestPrice) {
+    // Find all pm_append spans in this marketplace's table
+    const marketplaceToggle = $(`#marketplace_toggle_${variationId}_${marketplaceId}`);
+    if (marketplaceToggle.length === 0) {
+        return;
+    }
+    
+    const exchangeRates = window.exchange_rates || {};
+    const currencies = window.currencies || {};
+    const currencySigns = window.currency_sign || {};
+    
+    // Get all listing rows in this marketplace
+    marketplaceToggle.find('tr[data-listing-id]').each(function() {
+        const listingId = $(this).data('listing-id');
+        const currencyId = $(this).data('currency-id');
+        const pmAppendSpan = $(`#pm_append_${listingId}`);
+        
+        if (pmAppendSpan.length === 0) {
+            return; // Span doesn't exist
+        }
+        
+        // Only update for non-EUR listings
+        if (!currencyId || currencyId == 4) {
+            return; // EUR listing, no tooltip
+        }
+        
+        // Get exchange rate
+        const currencyCode = currencies[currencyId];
+        const rate = exchangeRates[currencyCode];
+        
+        if (!rate) {
+            return; // No exchange rate
+        }
+        
+        // Get currency sign
+        const currencySign = currencySigns[currencyId] || '';
+        
+        // Calculate and update breakeven tooltip
+        const breakevenPrice = (bestPrice * parseFloat(rate)).toFixed(2);
+        const tooltipText = `Break Even: ${currencySign}${breakevenPrice}`;
+        pmAppendSpan.attr('title', tooltipText);
+    });
 }
 
 /**
