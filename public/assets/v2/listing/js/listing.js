@@ -776,16 +776,15 @@ function loadMarketplaceTables(variationId, marketplaceId) {
                                 </div>
                                 ${p_append}
                             </td>
-                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
-                                ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
-                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
-                                    return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
-                                                Get Buybox
-                                            </button>`;
-                                })() : ''}
-                            </td>
+                            <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}</td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
+                                    ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
+                                        const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                        return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin: 0;">
+                                                    Get Buybox
+                                                </button>`;
+                                    })() : ''}
                                     <div class="form-check form-switch d-inline-block">
                                         <input 
                                             class="form-check-input toggle-listing-enable" 
