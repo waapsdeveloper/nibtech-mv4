@@ -662,10 +662,9 @@ function loadMarketplaceTables(variationId, marketplaceId) {
             // Clear eur_listings for this variation
             window.eur_listings[variationId] = [];
             
-            // Calculate min prices from listings with country 73 (EUR)
+            // Calculate min prices from listings with currency_id 4 (EUR) - matches V1 logic
             const eurListings = data.listings.filter(listing => {
-                const country = listing.country_id || (listing.country && countries[listing.country]);
-                return country && (country.id === 73 || listing.country === 73);
+                return listing.currency_id == 4;  // 4 = EUR currency
             });
             
             if (eurListings.length > 0) {
@@ -1633,9 +1632,12 @@ $(document).on('submit', '[id^="change_min_price_"], [id^="change_price_"]', fun
         success: function(response) {
             if (response.success) {
                 // Show success feedback - match V1 behavior: individual input green, persistent
-                // Client requirement: Only color the input that changed, no logical calculations
                 input.addClass('bg-green');
-                // REMOVED: checkMinPriceDiff - client wants only the changed input colored, not both
+                
+                // Run 8% validation formula (like V1) - validates min_price vs price relationship
+                if (typeof window.checkMinPriceDiff === 'function') {
+                    window.checkMinPriceDiff(listingId);
+                }
             }
             input.prop('disabled', false);
         },
@@ -1700,10 +1702,13 @@ $(document).on('submit', '[id^="change_limit_"]', function(e) {
         success: function(response) {
             if (response.success) {
                 // Show success feedback - match V1 behavior: individual inputs green, persistent
-                // Client requirement: Only color inputs that changed, no logical calculations
                 minLimitInput.addClass('bg-green');
                 priceLimitInput.addClass('bg-green');
-                // REMOVED: checkMinPriceDiff - client wants only changed inputs colored
+                
+                // Run 8% validation formula (like V1) - validates min_price vs price relationship
+                if (typeof window.checkMinPriceDiff === 'function') {
+                    window.checkMinPriceDiff(listingId);
+                }
             }
             minLimitInput.prop('disabled', false);
             priceLimitInput.prop('disabled', false);

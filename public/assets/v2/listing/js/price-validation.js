@@ -8,6 +8,7 @@
 
     /**
      * Check minimum price difference and highlight accordingly
+     * Matches V1 behavior: validates that price doesn't exceed min_price by more than 8%
      * @param {number} listingId - Listing ID
      */
     window.checkMinPriceDiff = function(listingId) {
@@ -21,19 +22,20 @@
         const minVal = parseFloat(minPriceInput.value) || 0;
         const priceVal = parseFloat(priceInput.value) || 0;
 
-        // Remove previous classes
-        minPriceInput.classList.remove('bg-red', 'bg-green');
-        priceInput.classList.remove('bg-red', 'bg-green');
-
-        // Validation: min_price should be <= price and price should be <= min_price * 1.08
+        // Validation: min_price should be <= price AND price should be <= min_price * 1.08
+        // This matches V1 formula: min_val > price_val || min_val*1.08 < price_val
         if (minVal > priceVal || (minVal > 0 && priceVal > 0 && minVal * 1.08 < priceVal)) {
-            // Invalid: highlight in red
+            // Invalid: highlight both in red (validation overrides success green)
+            minPriceInput.classList.remove('bg-green');
             minPriceInput.classList.add('bg-red');
+            priceInput.classList.remove('bg-green');
             priceInput.classList.add('bg-red');
-        } else if (minVal > 0 && priceVal > 0) {
-            // Valid: highlight in green
-            minPriceInput.classList.add('bg-green');
-            priceInput.classList.add('bg-green');
+        } else {
+            // Valid: remove red classes (success green from update will remain if present)
+            minPriceInput.classList.remove('bg-red');
+            priceInput.classList.remove('bg-red');
+            // Note: We don't add bg-green here - that's handled by success feedback
+            // This matches V1 behavior where validation only removes red, doesn't add green
         }
     };
 
