@@ -441,6 +441,184 @@ class ArtisanCommandsController extends Controller
                     'php artisan v2:sync-all-marketplace-stock-from-api',
                     'php artisan v2:sync-all-marketplace-stock-from-api --marketplace=1'
                 ]
+            ],
+            // ========== SCHEDULER COMMANDS (V1) ==========
+            [
+                'signature' => 'Refresh:new',
+                'name' => 'Refresh New Orders',
+                'description' => 'Sync new orders from BackMarket API and update incomplete orders. Runs every 2 minutes via scheduler.',
+                'category' => 'Scheduler - Orders',
+                'docs' => [
+                    'V2_ORDER_REFRESH_COMMANDS_ANALYSIS.md',
+                    'SCHEDULER_CPU_IMPACT_ANALYSIS.md'
+                ],
+                'options' => [],
+                'examples' => [
+                    'php artisan Refresh:new'
+                ],
+                'scheduled' => 'Every 2 minutes'
+            ],
+            [
+                'signature' => 'Refresh:orders',
+                'name' => 'Refresh Modified Orders',
+                'description' => 'Sync all modified orders from BackMarket API (last 3 months). Runs every 5 minutes via scheduler.',
+                'category' => 'Scheduler - Orders',
+                'docs' => [
+                    'V2_ORDER_REFRESH_COMMANDS_ANALYSIS.md',
+                    'SCHEDULER_CPU_IMPACT_ANALYSIS.md'
+                ],
+                'options' => [],
+                'examples' => [
+                    'php artisan Refresh:orders'
+                ],
+                'scheduled' => 'Every 5 minutes'
+            ],
+            [
+                'signature' => 'Refresh:latest',
+                'name' => 'Refresh Latest Care Records',
+                'description' => 'Sync latest care/replacement records from BackMarket API. Runs every 5 minutes via scheduler.',
+                'category' => 'Scheduler - Orders',
+                'docs' => [
+                    'V2_ORDER_REFRESH_COMMANDS_ANALYSIS.md',
+                    'SCHEDULER_CPU_IMPACT_ANALYSIS.md'
+                ],
+                'options' => [],
+                'examples' => [
+                    'php artisan Refresh:latest'
+                ],
+                'scheduled' => 'Every 5 minutes'
+            ],
+            [
+                'signature' => 'price:handler',
+                'name' => 'Price Handler',
+                'description' => 'Handle price updates. Runs every 10 minutes via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan price:handler'
+                ],
+                'scheduled' => 'Every 10 minutes'
+            ],
+            [
+                'signature' => 'refurbed:new',
+                'name' => 'Refurbed New Orders',
+                'description' => 'Sync new orders from Refurbed API. Runs every 5 minutes via scheduler.',
+                'category' => 'Scheduler - Refurbed',
+                'options' => [],
+                'examples' => [
+                    'php artisan refurbed:new'
+                ],
+                'scheduled' => 'Every 5 minutes'
+            ],
+            [
+                'signature' => 'refurbed:orders',
+                'name' => 'Refurbed Orders Sync',
+                'description' => 'Sync orders from Refurbed API. Runs hourly via scheduler.',
+                'category' => 'Scheduler - Refurbed',
+                'options' => [],
+                'examples' => [
+                    'php artisan refurbed:orders'
+                ],
+                'scheduled' => 'Hourly'
+            ],
+            [
+                'signature' => 'refurbed:link-tickets',
+                'name' => 'Refurbed Link Tickets',
+                'description' => 'Link Refurbed tickets. Runs every 10 minutes via scheduler.',
+                'category' => 'Scheduler - Refurbed',
+                'options' => [],
+                'examples' => [
+                    'php artisan refurbed:link-tickets'
+                ],
+                'scheduled' => 'Every 10 minutes'
+            ],
+            [
+                'signature' => 'functions:ten',
+                'name' => 'Functions (10 min)',
+                'description' => 'Run functions scheduled every 10 minutes. Runs every 10 minutes via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan functions:ten'
+                ],
+                'scheduled' => 'Every 10 minutes'
+            ],
+            [
+                'signature' => 'functions:thirty',
+                'name' => 'Functions (30 min)',
+                'description' => 'Run functions scheduled every 30 minutes. Runs hourly via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan functions:thirty'
+                ],
+                'scheduled' => 'Hourly'
+            ],
+            [
+                'signature' => 'functions:daily',
+                'name' => 'Functions (Daily)',
+                'description' => 'Run daily functions. Runs every 4 hours via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan functions:daily'
+                ],
+                'scheduled' => 'Every 4 hours'
+            ],
+            [
+                'signature' => 'backup:email',
+                'name' => 'Backup Email',
+                'description' => 'Send backup emails. Runs hourly between 6:00-02:00 via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan backup:email'
+                ],
+                'scheduled' => 'Hourly (6:00-02:00)'
+            ],
+            [
+                'signature' => 'fetch:exchange-rates',
+                'name' => 'Fetch Exchange Rates',
+                'description' => 'Fetch and update exchange rates. Runs hourly between 6:00-02:00 via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan fetch:exchange-rates'
+                ],
+                'scheduled' => 'Hourly (6:00-02:00)'
+            ],
+            [
+                'signature' => 'api-request:process',
+                'name' => 'Process API Requests',
+                'description' => 'Process queued API requests. Runs every 5 minutes via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan api-request:process'
+                ],
+                'scheduled' => 'Every 5 minutes'
+            ],
+            [
+                'signature' => 'support:sync',
+                'name' => 'Support Sync',
+                'description' => 'Sync support tickets. Runs every 10 minutes via scheduler.',
+                'category' => 'Scheduler - General',
+                'options' => [],
+                'examples' => [
+                    'php artisan support:sync'
+                ],
+                'scheduled' => 'Every 10 minutes'
+            ],
+            [
+                'signature' => 'bmpro:orders',
+                'name' => 'BMPro Orders',
+                'description' => 'Sync BMPro orders. Runs every 10 minutes via scheduler.',
+                'category' => 'Scheduler - Orders',
+                'options' => [],
+                'examples' => [
+                    'php artisan bmpro:orders'
+                ],
+                'scheduled' => 'Every 10 minutes'
             ]
         ];
     }
