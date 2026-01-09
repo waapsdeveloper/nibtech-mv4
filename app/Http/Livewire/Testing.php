@@ -39,7 +39,7 @@ class Testing extends Component
         $model = new Api_request_model();
         $model->push_testing(100);
 
-        $requests = Api_request_model::whereNull('status')->limit(500)->get();
+        $requests = Api_request_model::whereNull('status')->limit(200)->get();
 
         $data['requests'] = $requests;
 
