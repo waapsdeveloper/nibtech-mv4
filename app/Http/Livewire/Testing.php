@@ -198,4 +198,89 @@ class Testing extends Component
         return redirect()->back()->with('success', "$count request(s) deleted successfully");
     }
 
+    public function push_all(){
+        ini_set('max_execution_time', 1200);
+
+        $user_id = session('user_id');
+        if($user_id == NULL){
+            return redirect('index');
+        }
+
+        $model = new Api_request_model();
+        $result = $model->push_testing(100);
+
+        return redirect()->back()->with('success', 'Push testing completed. Data has been processed and sent to appropriate systems.');
+    }
+
+    public function push_one($id){
+        $user_id = session('user_id');
+        if($user_id == NULL){
+            return redirect('index');
+        }
+
+        $request = Api_request_model::find($id);
+        if(!$request){
+            return redirect()->back()->with('error', 'Request not found');
+        }
+
+        // Process this single request through push_testing logic
+        $model = new Api_request_model();
+        $datas = json_decode($request->request);
+
+        // Check conditions similar to push_testing method
+        if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName ?? ''), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
+            $request->send_to_yk();
+            return redirect()->back()->with('success', 'Request pushed to YK based on PC name');
+        }
+
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'eg')){
+            $request->send_to_eg();
+            return redirect()->back()->with('success', 'Request pushed to EG based on Batch ID');
+        }
+
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
+            $request->send_to_yk();
+            return redirect()->back()->with('success', 'Request pushed to YK based on Batch ID');
+        }
+
+        return redirect()->back()->with('success', 'Request processed but no automatic routing applied');
+    }
+
+    public function bulk_push(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $egCount = 0;
+        $ykCount = 0;
+        $processedCount = 0;
+
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if(!$request) continue;
+
+            $datas = json_decode($request->request);
+
+            // Check conditions similar to push_testing method
+            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName ?? ''), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
+                $request->send_to_yk();
+                $ykCount++;
+            }
+            elseif(str_contains(strtolower($datas->BatchID ?? ''), 'eg')){
+                $request->send_to_eg();
+                $egCount++;
+            }
+            elseif(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
+                $request->send_to_yk();
+                $ykCount++;
+            }
+
+            $processedCount++;
+        }
+
+        return redirect()->back()->with('success', "Processed $processedCount request(s): $egCount to EG, $ykCount to YK");
+    }
+
 }
