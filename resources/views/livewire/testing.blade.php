@@ -150,7 +150,8 @@
                                 <th>Status</th>
                                 <th>Tester</th>
                                 <th>Batch ID</th>
-                                <th>Actions</th>
+                                <th>Date/Time</th>
+                                <th></th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -248,6 +249,17 @@
                                             @endif">
                                             {{$datas->BatchID ?? 'N/A'}}
                                         </span>
+                                    </td>
+                                    <td>
+                                        @if(!empty($datas->Time))
+                                            @php
+                                                $timestamp = \Carbon\Carbon::parse($datas->Time);
+                                            @endphp
+                                            <small><strong>{{$timestamp->format('M d, Y')}}</strong></small><br>
+                                            <small class="text-muted">{{$timestamp->format('h:i A')}}</small>
+                                        @else
+                                            <span class="text-muted">N/A</span>
+                                        @endif
                                     </td>
                                     <td>
                                         <div class="btn-group-vertical btn-group-sm">
