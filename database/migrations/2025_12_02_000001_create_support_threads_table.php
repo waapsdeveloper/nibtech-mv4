@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('support_threads')) {
+            return;
+        }
+
         Schema::create('support_threads', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('marketplace_id')->nullable();

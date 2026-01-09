@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('daily_breaks')) {
+            return;
+        }
+
         Schema::create('daily_breaks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('attendance_id'); // FK to attendance table

@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('private_messages')) {
+            return;
+        }
+
         Schema::create('private_messages', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('sender_id');

@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('company_structures')) {
+            return;
+        }
+
         Schema::create('company_structures', function (Blueprint $table) {
             $table->id();
             $table->string('type'); // e.g., department, team, project

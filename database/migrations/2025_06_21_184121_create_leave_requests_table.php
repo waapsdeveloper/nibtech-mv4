@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('leave_requests')) {
+            return;
+        }
+
         Schema::create('leave_requests', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_id'); // Employee
