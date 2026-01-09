@@ -172,6 +172,36 @@
                                         $serials[] = $datas->Serial;
                                     }
 
+                                    // If IMEI is missing, try to find it from other records with the same serial
+                                    $imeiUpdated = false;
+                                    if((empty($datas->Imei) || empty($datas->Imei2)) && !empty($datas->Serial)){
+                                        foreach($requests as $otherRequest){
+                                            $otherResult = json_decode($otherRequest->request);
+                                            if(is_string($otherResult)) continue;
+
+                                            if(($otherResult->Serial ?? '') === $datas->Serial){
+                                                if(empty($datas->Imei) && !empty($otherResult->Imei)){
+                                                    $datas->Imei = $otherResult->Imei;
+                                                    $imeiUpdated = true;
+                                                }
+                                                if(empty($datas->Imei2) && !empty($otherResult->Imei2)){
+                                                    $datas->Imei2 = $otherResult->Imei2;
+                                                    $imeiUpdated = true;
+                                                }
+                                                // Break if both IMEIs are found
+                                                if(!empty($datas->Imei) && !empty($datas->Imei2)){
+                                                    break;
+                                                }
+                                            }
+                                        }
+
+                                        // Update the database if IMEI was found
+                                        if($imeiUpdated){
+                                            $request->request = json_encode($datas);
+                                            $request->save();
+                                        }
+                                    }
+
                                     $validRequests[] = $request;
                                 @endphp
                                 <tr class="@if($isDuplicate) table-warning @endif" data-request-id="{{$request->id}}">
@@ -189,9 +219,14 @@
                                         @endif
                                     </td>
                                     <td>
-                                        @if(!empty($datas->Imei) || !empty($datas->Imei2))
-                                            <small>IMEI1: {{$datas->Imei ?? 'N/A'}}</small><br>
-                                            <small>IMEI2: {{$datas->Imei2 ?? 'N/A'}}</small>
+                                        @php
+                                            $imeiFound = !empty($datas->Imei) || !empty($datas->Imei2);
+                                            $imei1 = $datas->Imei ?? 'N/A';
+                                            $imei2 = $datas->Imei2 ?? 'N/A';
+                                        @endphp
+                                        @if($imeiFound)
+                                            <small>IMEI1: {{$imei1}}</small><br>
+                                            <small>IMEI2: {{$imei2}}</small>
                                         @else
                                             <span class="badge bg-danger">Missing IMEI</span>
                                             <button type="button" class="btn btn-sm btn-warning mt-1" data-bs-toggle="modal" data-bs-target="#addImeiModal{{$request->id}}">
