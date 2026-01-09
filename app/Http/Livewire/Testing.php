@@ -224,38 +224,32 @@ class Testing extends Component
         }
 
         // Process this single request through push_testing logic
-        $model = new Api_request_model();
         $datas = json_decode($request->request);
 
-        // Check conditions similar to push_testing method
+        // Check if stock exists in the system
+        $stock = Api_request_model::resolveStock($datas);
+
+        if(!$stock){
+            return redirect()->back()->with('error', 'Stock not found in system. Cannot push automatically.');
+        }
+
+        // Stock exists, proceed with automatic push based on conditions
         if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName ?? ''), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
             $request->send_to_yk();
-            return redirect()->back()->with('success', 'Request pushed to YK based on PC name');
+            return redirect()->back()->with('success', 'Stock found! Request pushed to YK based on PC name');
         }
 
         if(str_contains(strtolower($datas->BatchID ?? ''), 'eg')){
             $request->send_to_eg();
-            return redirect()->back()->with('success', 'Request pushed to EG based on Batch ID');
+            return redirect()->back()->with('success', 'Stock found! Request pushed to EG based on Batch ID');
         }
 
         if(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
             $request->send_to_yk();
-            return redirect()->back()->with('success', 'Request pushed to YK based on Batch ID');
+            return redirect()->back()->with('success', 'Stock found! Request pushed to YK based on Batch ID');
         }
 
-        return redirect()->back()->with('success', 'Request processed but no automatic routing applied');
-    }
-
-    public function bulk_push(){
-        $request_ids = json_decode(request('request_ids'), true);
-
-        if(!is_array($request_ids) || empty($request_ids)){
-            return redirect()->back()->with('error', 'No requests selected');
-        }
-
-        $egCount = 0;
-        $ykCount = 0;
-        $processedCount = 0;
+        return redirect()->back()->with('success', 'Stock found but no automatic routing rule matched. Please use EG/YK buttons manually.');
 
         foreach($request_ids as $id){
             $request = Api_request_model::find($id);
