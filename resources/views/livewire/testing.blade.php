@@ -462,16 +462,32 @@
 		<script src="{{asset('assets/plugins/chartjs/Chart.bundle.min.js')}}"></script>
 
         <script>
-            // Select All functionality
+            // Select All functionality - only selects visible/filtered rows
             document.getElementById('selectAll').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.request-checkbox');
-                checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                const allRows = document.querySelectorAll('tbody tr');
+                allRows.forEach(row => {
+                    // Only select checkboxes in visible rows
+                    if (row.style.display !== 'none') {
+                        const checkbox = row.querySelector('.request-checkbox');
+                        if (checkbox) {
+                            checkbox.checked = this.checked;
+                        }
+                    }
+                });
                 updateSelectedCount();
             });
 
             document.getElementById('selectAllTable').addEventListener('change', function() {
-                const checkboxes = document.querySelectorAll('.request-checkbox');
-                checkboxes.forEach(checkbox => checkbox.checked = this.checked);
+                const allRows = document.querySelectorAll('tbody tr');
+                allRows.forEach(row => {
+                    // Only select checkboxes in visible rows
+                    if (row.style.display !== 'none') {
+                        const checkbox = row.querySelector('.request-checkbox');
+                        if (checkbox) {
+                            checkbox.checked = this.checked;
+                        }
+                    }
+                });
                 document.getElementById('selectAll').checked = this.checked;
                 updateSelectedCount();
             });
@@ -482,13 +498,34 @@
             });
 
             function updateSelectedCount() {
-                const selected = document.querySelectorAll('.request-checkbox:checked').length;
-                const total = document.querySelectorAll('.request-checkbox').length;
-                document.getElementById('selectedCount').textContent = selected + ' selected';
+                const visibleCheckboxes = Array.from(document.querySelectorAll('tbody tr'))
+                    .filter(row => row.style.display !== 'none')
+                    .map(row => row.querySelector('.request-checkbox'))
+                    .filter(cb => cb !== null);
+                const visibleTotal = visibleCheckboxes.length;
+                const visibleSelected = visibleCheckboxes.filter(cb => cb.checked).length;
 
-                // Update select all checkbox state
+                document.getElementById('selectedCount').textContent = visibleSelected + ' selected';
+
+                // Update select all checkbox state based on visible items only
                 const selectAllCheckbox = document.getElementById('selectAll');
                 const selectAllTableCheckbox = document.getElementById('selectAllTable');
+
+                if (visibleSelected === 0) {
+                    selectAllCheckbox.checked = false;
+                    selectAllTableCheckbox.checked = false;
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllTableCheckbox.indeterminate = false;
+                } else if (visibleSelected === visibleTotal) {
+                    selectAllCheckbox.checked = true;
+                    selectAllTableCheckbox.checked = true;
+                    selectAllCheckbox.indeterminate = false;
+                    selectAllTableCheckbox.indeterminate = false;
+                } else {
+                    selectAllCheckbox.indeterminate = true;
+                    selectAllTableCheckbox.indeterminate = true;
+                }
+            }
 
             // ==================== FILTER FUNCTIONALITY ====================
 
@@ -592,21 +629,6 @@
                 input.addEventListener('input', applyFilters);
                 input.addEventListener('change', applyFilters);
             });
-                if (selected === 0) {
-                    selectAllCheckbox.checked = false;
-                    selectAllTableCheckbox.checked = false;
-                    selectAllCheckbox.indeterminate = false;
-                    selectAllTableCheckbox.indeterminate = false;
-                } else if (selected === total) {
-                    selectAllCheckbox.checked = true;
-                    selectAllTableCheckbox.checked = true;
-                    selectAllCheckbox.indeterminate = false;
-                    selectAllTableCheckbox.indeterminate = false;
-                } else {
-                    selectAllCheckbox.indeterminate = true;
-                    selectAllTableCheckbox.indeterminate = true;
-                }
-            }
 
             function bulkAction(action) {
                 const selected = Array.from(document.querySelectorAll('.request-checkbox:checked')).map(cb => cb.value);
