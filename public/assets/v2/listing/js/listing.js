@@ -2203,6 +2203,113 @@ window.fixStockMismatch = function() {
     });
 };
 
+/**
+ * Fix stock mismatch silently (without showing modal)
+ * This is called automatically when API stock differs from available stock
+ * Updates stock values dynamically without page reload
+ */
+window.fixStockMismatchSilently = function(variationId) {
+    if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.fixStockMismatch) {
+        console.warn('Fix URL not configured for silent stock fix');
+        return Promise.resolve(null);
+    }
+    
+    return $.ajax({
+        url: window.ListingConfig.urls.fixStockMismatch + '/' + variationId,
+        type: 'POST',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-TOKEN': window.ListingConfig.csrfToken
+        }
+    }).then(function(response) {
+        if (response.success) {
+            console.log('Stock mismatch fixed silently for variation ' + variationId);
+            
+            let updateCount = 0;
+            
+            // Update stock values dynamically without page reload
+            if (response.fixes && response.fixes.length > 0) {
+                response.fixes.forEach(function(fix) {
+                    const marketplaceId = fix.marketplace_id;
+                    
+                    if (marketplaceId !== null) {
+                        // Update marketplace-specific stock values (CHILD LEVEL)
+                        if (fix.field === 'listed_stock') {
+                            const listedStockElement = $('#listed_stock_' + variationId + '_' + marketplaceId);
+                            if (listedStockElement.length) {
+                                listedStockElement.text(fix.new_value);
+                                updateCount++;
+                                console.log('Updated listed stock (marketplace ' + marketplaceId + '):', fix.old_value, '→', fix.new_value);
+                            }
+                        }
+                        
+                        if (fix.field === 'available_stock') {
+                            const availableStockElement = $('#available_stock_' + variationId + '_' + marketplaceId);
+                            if (availableStockElement.length) {
+                                availableStockElement.text(fix.new_value);
+                                // Reset color styling after fix
+                                availableStockElement.css({
+                                    'color': '',
+                                    'font-weight': ''
+                                });
+                                updateCount++;
+                                console.log('Updated available stock (marketplace ' + marketplaceId + '):', fix.old_value, '→', fix.new_value);
+                            }
+                        }
+                    } else {
+                        // Update parent variation stock (PARENT LEVEL)
+                        if (fix.field === 'variation.listed_stock') {
+                            const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                            if (listingTotalElement.length) {
+                                listingTotalElement.text(fix.new_value);
+                                updateCount++;
+                                console.log('Updated parent listing total:', fix.old_value, '→', fix.new_value);
+                            }
+                        }
+                    }
+                });
+            }
+            
+            console.log('Total UI elements updated:', updateCount, 'out of', response.fixes ? response.fixes.length : 0, 'fixes');
+            
+            // Update API badge if API stock is in the response
+            if (response.summary && response.summary.api_stock !== null && response.summary.api_stock !== undefined) {
+                // Extract unique marketplace IDs from fixes (Backmarket is marketplace 1)
+                const marketplaceIds = new Set();
+                if (response.fixes && response.fixes.length > 0) {
+                    response.fixes.forEach(function(fix) {
+                        if (fix.marketplace_id !== null) {
+                            marketplaceIds.add(fix.marketplace_id);
+                        }
+                    });
+                }
+                // If no marketplace IDs found in fixes, default to Backmarket (1)
+                if (marketplaceIds.size === 0) {
+                    marketplaceIds.add(1);
+                }
+                
+                marketplaceIds.forEach(function(marketplaceId) {
+                    const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
+                    if (badgeElement.length) {
+                        badgeElement
+                            .removeClass('bg-secondary d-none')
+                            .addClass('bg-primary')
+                            .html('<span class="stock-value">' + response.summary.api_stock + '</span> <small class="ms-1">(API)</small>');
+                    }
+                });
+            }
+            
+            return response;
+        } else {
+            console.error('Error fixing stock mismatch silently:', response.error);
+            return null;
+        }
+    }).catch(function(xhr, status, error) {
+        console.error('Error fixing stock mismatch silently:', error);
+        return null;
+    });
+};
+
 window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantity) {
     const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
     
@@ -2216,17 +2323,33 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
             
             // Compare API stock with our available stock and mark as red if different
             const availableStockElement = $('#available_stock_' + variationId + '_' + marketplaceId);
-            
+            console.log("updateBackmarketStockBadge", 4684564);
             if (availableStockElement.length) {
-                const ourAvailableStock = parseInt(availableStockElement.text().trim()) || 0;
+                // Get text content and extract number (handle cases where text might include "Avail: " or other text)
+                const availableStockText = availableStockElement.text().trim();
+                // Extract only numbers from the text
+                const ourAvailableStock = parseInt(availableStockText.replace(/\D/g, '')) || 0;
                 const apiStock = parseInt(quantity) || 0;
                 
-                // If stock numbers are different, mark our available stock as red
+                console.log('Stock comparison:', {
+                    variationId: variationId,
+                    marketplaceId: marketplaceId,
+                    availableStockText: availableStockText,
+                    ourAvailableStock: ourAvailableStock,
+                    apiStock: apiStock,
+                    areDifferent: ourAvailableStock !== apiStock
+                });
+                
+                // If stock numbers are different, mark our available stock as red and fix automatically
                 if (ourAvailableStock !== apiStock) {
+                    console.log('Stock mismatch detected! Fixing automatically...');
                     availableStockElement.css({
                         'color': '#dc3545',
                         'font-weight': 'bold'
                     });
+                    
+                    // Automatically fix the stock mismatch without showing modal
+                    window.fixStockMismatchSilently(variationId);
                 } else {
                     // Reset to default color if they match
                     availableStockElement.css({
@@ -2234,6 +2357,8 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                         'font-weight': ''
                     });
                 }
+            } else {
+                console.warn('Available stock element not found:', '#available_stock_' + variationId + '_' + marketplaceId);
             }
         } else {
             // Hide badge if fetch failed
