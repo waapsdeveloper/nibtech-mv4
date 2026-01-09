@@ -13,11 +13,16 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('daily_breaks', function (Blueprint $table) {
+        if (Schema::hasTable('advances')) {
+            return;
+        }
+
+        Schema::create('advances', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('attendance_id'); // FK to attendance table
-            $table->timestamp('break_start')->nullable();
-            $table->timestamp('break_end')->nullable();
+            $table->unsignedBigInteger('admin_id');
+            $table->decimal('amount', 10, 2);
+            $table->string('reason')->nullable();
+            $table->date('advance_date');
             $table->timestamps();
         });
     }
@@ -29,6 +34,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('daily_breaks');
+        Schema::dropIfExists('advances');
     }
 };

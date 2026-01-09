@@ -39,6 +39,7 @@ class ApiRequestController extends Controller
             $api_request = Api_request_model::firstOrNew([
                 'request' => $datas,
             ]);
+            $api_request->status = null;
             $api_request->save();
 
             $api_request = $this->save($datas);

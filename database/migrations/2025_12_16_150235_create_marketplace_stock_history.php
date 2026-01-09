@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('marketplace_stock_history')) {
+            return;
+        }
+
         Schema::create('marketplace_stock_history', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('marketplace_stock_id')->nullable();
@@ -26,7 +30,7 @@ return new class extends Migration
             $table->integer('available_stock_after')->default(0);
             $table->integer('quantity_change');
             $table->enum('change_type', [
-                'order_created', 'order_completed', 'order_cancelled', 
+                'order_created', 'order_completed', 'order_cancelled',
                 'topup', 'manual', 'reconciliation', 'api_sync', 'lock', 'unlock'
             ]);
             $table->unsignedBigInteger('order_id')->nullable();
@@ -35,7 +39,7 @@ return new class extends Migration
             $table->unsignedInteger('admin_id')->nullable();
             $table->text('notes')->nullable();
             $table->timestamps();
-            
+
             $table->index(['variation_id', 'marketplace_id']);
             $table->index('created_at');
             $table->index('order_id');

@@ -50,8 +50,19 @@ class RefurbedAPIController extends Controller
 
         $this->apiKey = (string) ($marketplaceToken ?? $config['api_key'] ?? '');
 
+        // If API key is missing, set default values and return early
+        // This allows the application to run without Refurbed integration
         if ($this->apiKey === '') {
-            throw new RuntimeException('Refurbed API key is missing. Set api_key in marketplace table for "Refurbed" or REFURBED_API_KEY in your environment.');
+            Log::info('Refurbed API key is not configured. Refurbed integration will be disabled.');
+            $this->baseUrl = 'https://api.refurbed.com';
+            $this->authScheme = 'Plain';
+            $this->userAgent = config('app.name', 'nibritaintech') . '/RefurbedConnector';
+            $this->timeout = 30;
+            $this->maxRetries = 3;
+            $this->retryDelayMs = 250;
+            $this->logChannel = null;
+            $this->sourceSystem = 'nibritaintech';
+            return;
         }
 
         $this->baseUrl = rtrim($config['base_url'] ?? 'https://api.refurbed.com', '/');
@@ -64,8 +75,21 @@ class RefurbedAPIController extends Controller
         $this->sourceSystem = $config['source_system'] ?? 'nibritaintech';
     }
 
+    /**
+     * Check if Refurbed integration is properly configured
+     */
+    protected function isConfigured(): bool
+    {
+        return $this->apiKey !== '';
+    }
+
     public function listOrders(array $filter = [], array $pagination = [], array $sort = []): array
     {
+        if (!$this->isConfigured()) {
+            Log::warning('Refurbed: API key not configured, skipping listOrders');
+            return [];
+        }
+
         return $this->post('refb.merchant.v1.OrderService/ListOrders', $this->cleanPayload([
             'filter' => $filter,
             'pagination' => $pagination,
@@ -169,11 +193,21 @@ class RefurbedAPIController extends Controller
 
     public function acceptOrder(string $orderId): array
     {
+        if (!$this->isConfigured()) {
+            Log::warning('Refurbed: API key not configured, skipping acceptOrder');
+            return ['error' => 'Refurbed not configured'];
+        }
+
         return $this->post('refb.merchant.v1.OrderService/AcceptOrder', ['id' => $orderId]);
     }
 
     public function cancelOrder(string $orderId, ?string $reason = null): array
     {
+        if (!$this->isConfigured()) {
+            Log::warning('Refurbed: API key not configured, skipping cancelOrder');
+            return ['error' => 'Refurbed not configured'];
+        }
+
         $orderId = (string) $this->normalizeOrderId($orderId);
 
         $itemsResponse = $this->getAllOrderItems($orderId);

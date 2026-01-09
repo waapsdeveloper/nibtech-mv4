@@ -13,15 +13,14 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('salaries', function (Blueprint $table) {
+        if (Schema::hasTable('group_message_reads')) {
+            return;
+        }
+
+        Schema::create('group_message_reads', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('message_id');
             $table->unsignedBigInteger('admin_id');
-            $table->decimal('base_salary', 10, 2);
-            $table->integer('total_days')->nullable();
-            $table->integer('present_days')->nullable();
-            $table->decimal('deductions', 10, 2)->default(0);
-            $table->decimal('net_salary', 10, 2);
-            $table->date('salary_month');
             $table->timestamps();
         });
     }
@@ -33,6 +32,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('salaries');
+        Schema::dropIfExists('group_message_reads');
     }
 };

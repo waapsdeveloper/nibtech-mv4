@@ -13,12 +13,13 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('advances', function (Blueprint $table) {
+        if (Schema::hasTable('chat_groups')) {
+            return;
+        }
+
+        Schema::create('chat_groups', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('admin_id');
-            $table->decimal('amount', 10, 2);
-            $table->string('reason')->nullable();
-            $table->date('advance_date');
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -30,6 +31,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('advances');
+        Schema::dropIfExists('chat_groups');
     }
 };

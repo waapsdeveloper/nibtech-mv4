@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('marketplace_stock_locks')) {
+            return;
+        }
+
         Schema::create('marketplace_stock_locks', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('marketplace_stock_id');
@@ -26,7 +30,7 @@ return new class extends Migration
             $table->timestamp('released_at')->nullable();
             $table->timestamp('consumed_at')->nullable();
             $table->timestamps();
-            
+
             $table->index('order_id');
             $table->index('marketplace_stock_id');
             $table->index(['variation_id', 'marketplace_id']);

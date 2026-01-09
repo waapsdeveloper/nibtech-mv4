@@ -105,10 +105,19 @@
         <div class="card">
             <div class="card-header pb-0">
                 <div class='d-flex justify-content-between align-items-center'>
-                    <form method='get' action='{{url("request_drfones")}}' class="d-flex gap-2">
-                        <input type='text' name='imei' class="form-control" placeholder='Enter IMEI' style="width: 200px;">
-                        <button type='submit' class="btn btn-primary">Search</button>
-                    </form>
+                    <div class="d-flex gap-2">
+                        <form method='get' action='{{url("request_drfones")}}' class="d-flex gap-2">
+                            <input type='text' name='imei' class="form-control" placeholder='Enter IMEI' style="width: 200px;">
+                            <button type='submit' class="btn btn-primary">Search</button>
+                        </form>
+
+                        <form method='post' action='{{url("testing/push_all")}}' class="d-flex gap-2">
+                            @csrf
+                            <button type='submit' class="btn btn-warning" onclick="return confirm('Push all testing data to appropriate systems?')">
+                                <i class="fe fe-upload me-1"></i>Push All
+                            </button>
+                        </form>
+                    </div>
 
                     <form method='post' action='{{url("testing/upload_excel")}}' enctype='multipart/form-data' class="d-flex gap-2">
                         @csrf
@@ -199,12 +208,20 @@
                             <span class="badge bg-info" id="selectedCount">0 selected</span>
                         </div>
                         <div class="btn-group">
+                            <button type="button" class="btn btn-warning" onclick="bulkAction('push_selected')">
+                                <i class="fe fe-upload me-1"></i>Push Selected
+                            </button>
                             <button type="button" class="btn btn-primary" onclick="bulkAction('send_to_eg')">
                                 <i class="fe fe-send me-1"></i>Send to EG
                             </button>
                             <button type="button" class="btn btn-info" onclick="bulkAction('send_to_yk')">
                                 <i class="fe fe-send me-1"></i>Send to YK
                             </button>
+                            @if(config('app.url') != 'https://sdpos.nibritaintech.com')
+                            <button type="button" class="btn btn-success" onclick="bulkAction('send_to_sd')">
+                                <i class="fe fe-send me-1"></i>Send to SD
+                            </button>
+                            @endif
                             <button type="button" class="btn btn-danger" onclick="bulkAction('delete')">
                                 <i class="fe fe-trash me-1"></i>Delete
                             </button>
@@ -374,12 +391,20 @@
                                     </td>
                                     <td>
                                         <div class="btn-group-vertical btn-group-sm">
+                                            <a href='{{url("testing/push_one")."/".$request->id}}' class='btn btn-warning btn-sm' onclick="return confirm('Push this request?')">
+                                                <i class="fe fe-upload"></i> Push
+                                            </a>
                                             <a href='{{url("testing/send_to_eg")."/".$request->id}}' class='btn btn-primary btn-sm'>
                                                 <i class="fe fe-send"></i> EG
                                             </a>
                                             <a href='{{url("testing/send_to_yk")."/".$request->id}}' class='btn btn-info btn-sm'>
                                                 <i class="fe fe-send"></i> YK
                                             </a>
+                                            @if(config('app.url') != 'https://sdpos.nibritaintech.com')
+                                            <a href='{{url("testing/send_to_sd")."/".$request->id}}' class='btn btn-success btn-sm'>
+                                                <i class="fe fe-send"></i> SD
+                                            </a>
+                                            @endif
                                             <a href='{{url("testing/delete_request")."/".$request->id}}' class='btn btn-danger btn-sm' onclick="return confirm('Delete this request?')">
                                                 <i class="fe fe-trash"></i> Delete
                                             </a>
@@ -595,6 +620,10 @@
                 let url = '';
 
                 switch(action) {
+                    case 'push_selected':
+                        confirmMessage = `Push ${selected.length} request(s) to appropriate systems?`;
+                        url = '{{url("testing/bulk_push")}}';
+                        break;
                     case 'send_to_eg':
                         confirmMessage = `Send ${selected.length} request(s) to EG?`;
                         url = '{{url("testing/bulk_send_to_eg")}}';
@@ -602,6 +631,10 @@
                     case 'send_to_yk':
                         confirmMessage = `Send ${selected.length} request(s) to YK?`;
                         url = '{{url("testing/bulk_send_to_yk")}}';
+                        break;
+                    case 'send_to_sd':
+                        confirmMessage = `Send ${selected.length} request(s) to SD?`;
+                        url = '{{url("testing/bulk_send_to_sd")}}';
                         break;
                     case 'delete':
                         confirmMessage = `Delete ${selected.length} request(s)? This action cannot be undone.`;

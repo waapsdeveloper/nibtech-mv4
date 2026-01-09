@@ -13,6 +13,10 @@ return new class extends Migration
      */
     public function up()
     {
+        if (Schema::hasTable('marketplace_stock')) {
+            return;
+        }
+
         Schema::create('marketplace_stock', function (Blueprint $table) {
             $table->id();
             $table->integer('variation_id');
@@ -21,15 +25,15 @@ return new class extends Migration
             $table->integer('admin_id')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            
+
             // Foreign key constraints
             $table->foreign('variation_id')->references('id')->on('variation')->onDelete('cascade');
             $table->foreign('marketplace_id')->references('id')->on('marketplace')->onDelete('cascade');
             $table->foreign('admin_id')->references('id')->on('admin')->onDelete('set null');
-            
+
             // Unique constraint: one stock record per variation per marketplace
             $table->unique(['variation_id', 'marketplace_id']);
-            
+
             // Indexes for better query performance
             $table->index('variation_id');
             $table->index('marketplace_id');
