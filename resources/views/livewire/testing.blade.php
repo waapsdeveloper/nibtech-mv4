@@ -41,6 +41,15 @@
                 border-bottom: 2px solid #dee2e6;
                 margin-bottom: 20px;
             }
+            .filter-section {
+                background-color: #f8f9fa;
+                padding: 15px;
+                border-radius: 5px;
+                margin-bottom: 20px;
+            }
+            .filter-input {
+                font-size: 0.875rem;
+            }
         </style>
     @endsection
 <br>
@@ -113,6 +122,73 @@
                     $serials = [];
                     $validRequests = [];
                 @endphp
+
+                {{-- Filter Section --}}
+                <div class="filter-section">
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Model Name</label>
+                            <input type="text" id="filterModel" class="form-control form-control-sm filter-input" placeholder="Search model...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Serial Number</label>
+                            <input type="text" id="filterSerial" class="form-control form-control-sm filter-input" placeholder="Search serial...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">IMEI</label>
+                            <input type="text" id="filterImei" class="form-control form-control-sm filter-input" placeholder="Search IMEI...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Grade</label>
+                            <select id="filterGrade" class="form-select form-select-sm filter-input">
+                                <option value="">All Grades</option>
+                                <option value="RMA">RMA</option>
+                                <option value="REPAIR">REPAIR</option>
+                                <option value="PASS">PASS</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label small mb-1">Tester Name</label>
+                            <input type="text" id="filterTester" class="form-control form-control-sm filter-input" placeholder="Search tester...">
+                        </div>
+                    </div>
+                    <div class="row g-2 mt-2">
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Batch ID</label>
+                            <input type="text" id="filterBatch" class="form-control form-control-sm filter-input" placeholder="Search batch...">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Battery Health</label>
+                            <select id="filterBattery" class="form-select form-select-sm filter-input">
+                                <option value="">All</option>
+                                <option value="good">Good (≥85%)</option>
+                                <option value="fair">Fair (70-84%)</option>
+                                <option value="poor">Poor (<70%)</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Test Status</label>
+                            <select id="filterStatus" class="form-select form-select-sm filter-input">
+                                <option value="">All</option>
+                                <option value="pass">All Pass</option>
+                                <option value="fail">Has Failures</option>
+                            </select>
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Date From</label>
+                            <input type="date" id="filterDateFrom" class="form-control form-control-sm filter-input">
+                        </div>
+                        <div class="col-md-2">
+                            <label class="form-label small mb-1">Date To</label>
+                            <input type="date" id="filterDateTo" class="form-control form-control-sm filter-input">
+                        </div>
+                        <div class="col-md-2 d-flex align-items-end">
+                            <button type="button" class="btn btn-secondary btn-sm w-100" onclick="clearFilters()">
+                                <i class="fe fe-x me-1"></i>Clear Filters
+                            </button>
+                        </div>
+                    </div>
+                </div>
 
                 {{-- Bulk Actions Bar --}}
                 <div class="bulk-actions">
@@ -388,6 +464,109 @@
                 // Update select all checkbox state
                 const selectAllCheckbox = document.getElementById('selectAll');
                 const selectAllTableCheckbox = document.getElementById('selectAllTable');
+
+            // ==================== FILTER FUNCTIONALITY ====================
+
+            function applyFilters() {
+                const filters = {
+                    model: document.getElementById('filterModel').value.toLowerCase(),
+                    serial: document.getElementById('filterSerial').value.toLowerCase(),
+                    imei: document.getElementById('filterImei').value.toLowerCase(),
+                    grade: document.getElementById('filterGrade').value.toLowerCase(),
+                    tester: document.getElementById('filterTester').value.toLowerCase(),
+                    batch: document.getElementById('filterBatch').value.toLowerCase(),
+                    battery: document.getElementById('filterBattery').value,
+                    status: document.getElementById('filterStatus').value,
+                    dateFrom: document.getElementById('filterDateFrom').value,
+                    dateTo: document.getElementById('filterDateTo').value
+                };
+
+                const rows = document.querySelectorAll('tbody tr');
+                let visibleCount = 0;
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll('td');
+                    if (cells.length === 0) return;
+
+                    const rowData = {
+                        model: cells[1]?.textContent.toLowerCase() || '',
+                        serial: cells[2]?.textContent.toLowerCase() || '',
+                        imei: cells[3]?.textContent.toLowerCase() || '',
+                        grade: cells[6]?.textContent.toLowerCase().trim() || '',
+                        tester: cells[8]?.textContent.toLowerCase() || '',
+                        batch: cells[9]?.textContent.toLowerCase() || '',
+                        batteryHealth: cells[5]?.querySelector('.progress-bar')?.textContent.trim() || '',
+                        hasFail: cells[7]?.textContent.includes('Failed') || false,
+                        date: cells[10]?.textContent.trim() || ''
+                    };
+
+                    let show = true;
+
+                    // Apply text filters
+                    if (filters.model && !rowData.model.includes(filters.model)) show = false;
+                    if (filters.serial && !rowData.serial.includes(filters.serial)) show = false;
+                    if (filters.imei && !rowData.imei.includes(filters.imei)) show = false;
+                    if (filters.grade && !rowData.grade.includes(filters.grade)) show = false;
+                    if (filters.tester && !rowData.tester.includes(filters.tester)) show = false;
+                    if (filters.batch && !rowData.batch.includes(filters.batch)) show = false;
+
+                    // Battery health filter
+                    if (filters.battery) {
+                        const batteryValue = parseInt(rowData.batteryHealth.replace('%', ''));
+                        if (!isNaN(batteryValue)) {
+                            if (filters.battery === 'good' && batteryValue < 85) show = false;
+                            if (filters.battery === 'fair' && (batteryValue < 70 || batteryValue >= 85)) show = false;
+                            if (filters.battery === 'poor' && batteryValue >= 70) show = false;
+                        }
+                    }
+
+                    // Test status filter
+                    if (filters.status) {
+                        if (filters.status === 'pass' && rowData.hasFail) show = false;
+                        if (filters.status === 'fail' && !rowData.hasFail) show = false;
+                    }
+
+                    // Date range filter
+                    if (filters.dateFrom || filters.dateTo) {
+                        const dateMatch = rowData.date.match(/(\w{3}\s\d{1,2},\s\d{4})/);
+                        if (dateMatch) {
+                            const rowDate = new Date(dateMatch[0]);
+                            if (filters.dateFrom && rowDate < new Date(filters.dateFrom)) show = false;
+                            if (filters.dateTo && rowDate > new Date(filters.dateTo)) show = false;
+                        }
+                    }
+
+                    row.style.display = show ? '' : 'none';
+                    if (show) visibleCount++;
+                });
+
+                // Update selected count after filtering
+                updateSelectedCount();
+
+                // Show filter results count
+                const totalRows = rows.length;
+                console.log(`Showing ${visibleCount} of ${totalRows} records`);
+            }
+
+            function clearFilters() {
+                document.getElementById('filterModel').value = '';
+                document.getElementById('filterSerial').value = '';
+                document.getElementById('filterImei').value = '';
+                document.getElementById('filterGrade').value = '';
+                document.getElementById('filterTester').value = '';
+                document.getElementById('filterBatch').value = '';
+                document.getElementById('filterBattery').value = '';
+                document.getElementById('filterStatus').value = '';
+                document.getElementById('filterDateFrom').value = '';
+                document.getElementById('filterDateTo').value = '';
+                applyFilters();
+            }
+
+            // Add event listeners to all filter inputs
+            document.querySelectorAll('.filter-input').forEach(input => {
+                input.addEventListener('input', applyFilters);
+                input.addEventListener('change', applyFilters);
+            });
                 if (selected === 0) {
                     selectAllCheckbox.checked = false;
                     selectAllTableCheckbox.checked = false;
