@@ -391,6 +391,9 @@
                                     </td>
                                     <td>
                                         <div class="btn-group-vertical btn-group-sm">
+                                            <button type="button" class="btn btn-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#viewRequestModal{{$request->id}}">
+                                                <i class="fe fe-eye"></i> View
+                                            </button>
                                             <a href='{{url("testing/push_one")."/".$request->id}}' class='btn btn-warning btn-sm' onclick="return confirm('Push this request?')">
                                                 <i class="fe fe-upload"></i> Push
                                             </a>
@@ -411,6 +414,42 @@
                                         </div>
                                     </td>
                                 </tr>
+
+                                {{-- Modal for Viewing Full Request --}}
+                                <div class="modal fade" id="viewRequestModal{{$request->id}}" tabindex="-1">
+                                    <div class="modal-dialog modal-lg">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Request Details - ID: {{$request->id}}</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted">Request ID</h6>
+                                                    <p><strong>{{$request->id}}</strong></p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted">Status</h6>
+                                                    <p><span class="badge bg-{{$request->status ? 'success' : 'secondary'}}">{{$request->status ?? 'Pending'}}</span></p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted">Stock ID</h6>
+                                                    <p>{{$request->stock_id ?? 'N/A'}}</p>
+                                                </div>
+                                                <div class="mb-3">
+                                                    <h6 class="text-muted">Full Request Data (JSON)</h6>
+                                                    <pre class="bg-light p-3 rounded" style="max-height: 400px; overflow-y: auto; font-size: 0.85rem;"><code id="jsonData{{$request->id}}">{{json_encode(json_decode($request->request), JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES)}}</code></pre>
+                                                </div>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                                                <button type="button" class="btn btn-primary" onclick="copyToClipboard({{$request->id}})">
+                                                    <i class="fe fe-copy me-1"></i>Copy JSON
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
 
                                 {{-- Modal for Adding IMEI --}}
                                 @if(empty($datas->Imei) && empty($datas->Imei2) && !empty($datas->Serial))
@@ -689,6 +728,27 @@
 
             // Initialize count on page load
             updateSelectedCount();
+
+            // Copy to clipboard function
+            function copyToClipboard(requestId) {
+                const jsonText = document.getElementById('jsonData' + requestId).textContent;
+
+                navigator.clipboard.writeText(jsonText).then(() => {
+                    alert('JSON copied to clipboard!');
+                }).catch(err => {
+                    console.error('Failed to copy:', err);
+                    // Fallback for older browsers
+                    const textarea = document.createElement('textarea');
+                    textarea.value = jsonText;
+                    textarea.style.position = 'fixed';
+                    textarea.style.opacity = '0';
+                    document.body.appendChild(textarea);
+                    textarea.select();
+                    document.execCommand('copy');
+                    document.body.removeChild(textarea);
+                    alert('JSON copied to clipboard!');
+                });
+            }
         </script>
 
     @endsection
