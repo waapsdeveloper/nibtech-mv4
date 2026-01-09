@@ -747,6 +747,27 @@ class Api_request_model extends Model
         $this->save();
     }
 
+    public function send_to_sd(){
+        if(config('app.url') == 'https://sdpos.nibritaintech.com'){
+            return;
+        }
+
+        $payload = json_decode($this->request, true) ?? [];
+
+        if(empty($payload)){
+            return;
+        }
+
+        SendApiRequestPayload::dispatch(
+            'https://sdpos.nibritaintech.com/api/request',
+            $payload,
+            '2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+        )->onQueue('api-requests');
+
+        $this->status = 3;
+        $this->save();
+    }
+
     public function send_to_yk(){
         if(config('app.url') != 'https://sdpos.nibritaintech.com'){
             return;

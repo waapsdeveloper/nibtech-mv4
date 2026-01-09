@@ -279,9 +279,11 @@ Route::get('testing/repush/{id}', [Testing::class, 'repush'])->name('repush_test
 Route::post('testing/add_imei/{id}', [Testing::class, 'add_imei'])->name('add_testing_api_data');
 Route::get('testing/send_to_eg/{id}', [Testing::class, 'send_to_eg'])->name('send_to_eg');
 Route::get('testing/send_to_yk/{id}', [Testing::class, 'send_to_yk'])->name('send_to_yk');
+Route::get('testing/send_to_sd/{id}', [Testing::class, 'send_to_sd'])->name('send_to_sd');
 Route::get('testing/delete_request/{id}', [Testing::class, 'delete_request'])->name('delete_testing_request');
 Route::post('testing/bulk_send_to_eg', [Testing::class, 'bulk_send_to_eg'])->name('bulk_send_to_eg');
 Route::post('testing/bulk_send_to_yk', [Testing::class, 'bulk_send_to_yk'])->name('bulk_send_to_yk');
+Route::post('testing/bulk_send_to_sd', [Testing::class, 'bulk_send_to_sd'])->name('bulk_send_to_sd');
 Route::post('testing/bulk_delete', [Testing::class, 'bulk_delete'])->name('bulk_delete_testing');
 
 Route::get('order', Order::class)->name('view_order');

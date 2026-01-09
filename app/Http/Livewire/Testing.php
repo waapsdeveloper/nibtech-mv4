@@ -130,6 +130,12 @@ class Testing extends Component
 
         return redirect()->back()->with('success', 'Request sent to EG');
     }
+    public function send_to_sd($id){
+        $request = Api_request_model::find($id);
+        $request->send_to_sd();
+
+        return redirect()->back()->with('success', 'Request sent to SD');
+    }
     public function send_to_yk($id){
         $request = Api_request_model::find($id);
         $request->send_to_yk();
@@ -184,6 +190,25 @@ class Testing extends Component
         }
 
         return redirect()->back()->with('success', "$count request(s) sent to YK successfully");
+    }
+
+    public function bulk_send_to_sd(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_sd();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to SD successfully");
     }
 
     public function bulk_delete(){
@@ -249,22 +274,18 @@ class Testing extends Component
             return redirect()->back()->with('success', 'Stock found! Request pushed to YK based on Batch ID');
         }
 
-        return redirect()->back()->with('success', 'Stock found but no automatic routing rule matched. Please use EG/YK buttons manually.');
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'sd')){
+            $request->send_to_sd();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to SD based on Batch ID');
+        }
 
-        foreach($request_ids as $id){
-            $request = Api_request_model::find($id);
-            if(!$request) continue;
+        // Default routing based on environment
+        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+            $request->send_to_sd();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to SD (default for this environment)');
+        }
 
-            $datas = json_decode($request->request);
-
-            // Check conditions similar to push_testing method
-            if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName ?? ''), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
-                $request->send_to_yk();
-                $ykCount++;
-            }
-            elseif(str_contains(strtolower($datas->BatchID ?? ''), 'eg')){
-                $request->send_to_eg();
-                $egCount++;
+        return redirect()->back()->with('success', 'Stock found but no automatic routing rule matched. Please use EG/YK/SD buttons manually.');
             }
             elseif(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
                 $request->send_to_yk();
