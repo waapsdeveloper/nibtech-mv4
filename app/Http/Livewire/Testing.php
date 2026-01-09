@@ -286,16 +286,6 @@ class Testing extends Component
         }
 
         return redirect()->back()->with('success', 'Stock found but no automatic routing rule matched. Please use EG/YK/SD buttons manually.');
-            }
-            elseif(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
-                $request->send_to_yk();
-                $ykCount++;
-            }
-
-            $processedCount++;
-        }
-
-        return redirect()->back()->with('success', "Processed $processedCount request(s): $egCount to EG, $ykCount to YK");
     }
 
 }
