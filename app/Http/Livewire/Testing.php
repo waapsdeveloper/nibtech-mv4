@@ -148,4 +148,54 @@ class Testing extends Component
         }
     }
 
+    public function bulk_send_to_eg(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_eg();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to EG successfully");
+    }
+
+    public function bulk_send_to_yk(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_yk();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to YK successfully");
+    }
+
+    public function bulk_delete(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = Api_request_model::whereIn('id', $request_ids)->delete();
+
+        return redirect()->back()->with('success', "$count request(s) deleted successfully");
+    }
+
 }
