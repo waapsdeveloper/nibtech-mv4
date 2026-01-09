@@ -16,6 +16,7 @@ use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Tag\A;
 
 class Testing extends Component
 {
@@ -33,6 +34,10 @@ class Testing extends Component
 
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
+
+        // Call push_testing to process and send data individually when page loads
+        $model = new Api_request_model();
+        $model->push_testing(100);
 
         $requests = Api_request_model::whereNull('status')->limit(500)->get();
 
