@@ -34,7 +34,7 @@ class Testing extends Component
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
 
-        $requests = Api_request_model::whereNull('status')->limit(100)->get();
+        $requests = Api_request_model::whereNull('status')->limit(500)->get();
 
         $data['requests'] = $requests;
 
