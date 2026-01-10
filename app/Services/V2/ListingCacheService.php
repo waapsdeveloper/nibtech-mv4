@@ -49,10 +49,6 @@ class ListingCacheService
                 self::CACHE_TTL
             );
             
-            Log::debug('Cached variation data', [
-                'count' => count($variationData),
-                'page_key' => $pageKey
-            ]);
         } catch (\Exception $e) {
             Log::error('Error caching variation data: ' . $e->getMessage());
         }

@@ -194,12 +194,6 @@ class SyncMarketplaceStock extends Command
             return;
         }
         
-        Log::debug("SyncMarketplaceStock: Syncing Back Market variation", [
-            'variation_id' => $variation->id,
-            'reference_id' => $variation->reference_id,
-            'current_listed_stock' => $marketplaceStock->listed_stock
-        ]);
-        
         $bm = new BackMarketAPIController();
         $apiListing = $bm->getOneListing($variation->reference_id);
         

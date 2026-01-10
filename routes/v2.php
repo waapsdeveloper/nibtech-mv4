@@ -95,6 +95,12 @@ Route::prefix('v2')->group(function () {
     Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
     Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
     
+    // Log Settings CRUD
+    Route::post('logs/log-settings', [\App\Http\Controllers\V2\LogFileController::class, 'storeLogSetting'])->name('v2.logs.log-settings.store');
+    Route::put('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'updateLogSetting'])->name('v2.logs.log-settings.update');
+    Route::delete('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'deleteLogSetting'])->name('v2.logs.log-settings.delete');
+    Route::get('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'getLogSetting'])->name('v2.logs.log-settings.show');
+    
     // Team Management (Options > Teams)
     Route::prefix('options/teams')->group(function () {
         Route::get('/', [TeamController::class, 'index'])->name('v2.options.teams.index');

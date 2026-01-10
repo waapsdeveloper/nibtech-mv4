@@ -65,7 +65,6 @@ class ListingController extends Controller
      */
     public function index(Request $request)
     {
-        // Log::info('V2 ListingController index called');
         $data['title_page'] = "Listings V2";
         session()->put('page_title', $data['title_page']);
 
@@ -167,8 +166,6 @@ class ListingController extends Controller
                 })->values(); // Reset keys to ensure proper collection
 
                 $listingCount = $marketplaceListings->count();
-
-                // Log::info('Marketplace listings by id : ', ['marketplace_id' => $marketplaceIdInt, 'listing_count' => $listingCount]);
 
                 // Calculate order summary for this marketplace
                 $orderSummary = $this->calculateMarketplaceOrderSummary($variation->id, $marketplaceIdInt);
@@ -378,7 +375,6 @@ class ListingController extends Controller
      */
     public function getVariations(Request $request)
     {
-        // Log::info('V2 ListingController getVariations called', ['request' => $request->all()]);
         try {
             // Increase execution time limit for this operation
             set_time_limit(120);
@@ -556,7 +552,6 @@ class ListingController extends Controller
      */
     public function renderListingItems(Request $request)
     {
-        // Log::info('V2 ListingController renderListingItems called', ['variation_ids' => $request->input('variation_ids', [])]);
         try {
             $variationIds = $request->input('variation_ids', []);
             $singleId = $request->input('variation_id', null);

@@ -560,7 +560,6 @@ function updateListingRowAfterRestore(listingId, fieldName, restoredValue) {
     
     if (listingRow.length === 0) {
         // If row not found, try to reload the marketplace tables
-        console.log('Listing row not found, reloading marketplace tables...');
         const modal = $('#listingHistoryModal');
         const variationId = modal.data('variation-id');
         const marketplaceId = modal.data('marketplace-id');
@@ -607,7 +606,6 @@ function updateListingRowAfterRestore(listingId, fieldName, restoredValue) {
             inputElement.css('background-color', '');
         }, 2000);
         
-        console.log(`Updated ${fieldName} for listing ${listingId} to ${formattedValue}`);
     } else {
         console.warn(`Input field ${inputSelector} not found for listing ${listingId}`);
     }
@@ -653,9 +651,6 @@ window.refreshPricesFromAPI = function(variationId, callback) {
         return;
     }
     
-    // Show loading indicator
-    console.log('Refreshing prices from API for variation ' + variationId);
-    
     $.ajax({
         url: window.ListingConfig.urls.getCompetitors + '/' + variationId + '/0',
         type: 'GET',
@@ -665,9 +660,7 @@ window.refreshPricesFromAPI = function(variationId, callback) {
         },
         success: function(response) {
             if (response.error) {
-                console.warn('Error refreshing prices:', response.error);
-            } else {
-                console.log('Prices refreshed successfully from API');
+                console.error('Error refreshing prices:', response.error);
             }
             if (callback) callback();
         },
@@ -1054,7 +1047,6 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
     setTimeout(function() {
         const selector = `#listings_${variationId}_${marketplaceId} [id^="min_price_limit_"], #listings_${variationId}_${marketplaceId} [id^="price_limit_"], #listings_${variationId}_${marketplaceId} [id^="min_price_"], #listings_${variationId}_${marketplaceId} [id^="price_"], #listings_${variationId}_${marketplaceId} .toggle-listing-enable`;
         const elements = $(selector);
-        console.log(`Found ${elements.length} elements to store for ${variationId}_${marketplaceId}`);
         
         elements.each(function() {
             if ($(this).is(':checkbox')) {
@@ -1066,14 +1058,12 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
                         fieldName: 'BuyBox Status',
                         listingId: $(this).data('listing-id')
                     };
-                    console.log('Stored checkbox value for:', id);
                 }
             } else {
                 // For input fields (all four inputs + buybox_price)
                 window.ChangeDetection.storeOriginalValue(this);
             }
         });
-        console.log(`Stored original values for ${variationId}_${marketplaceId} table. Total stored:`, Object.keys(window.ChangeDetection.originalValues).length);
     }, 200);
 }
 
@@ -1472,7 +1462,6 @@ window.ChangeDetection = window.ChangeDetection || {
                 marketplaceId: this.getMarketplaceId(id)
             };
             
-            console.log('Stored original value for', id, ':', value);
         }
     },
     
@@ -1514,15 +1503,12 @@ window.ChangeDetection = window.ChangeDetection || {
     // Function to detect and show change alert
     detectChange: function(element) {
         const id = $(element).attr('id');
-        console.log('detectChange called for:', id);
         
         if (!id) {
-            console.log('No ID found');
             return;
         }
         
         if (!this.originalValues[id]) {
-            console.log('Original value not stored for:', id, '- storing now');
             // Store it now if not already stored
             this.storeOriginalValue(element);
             return;
@@ -1532,15 +1518,12 @@ window.ChangeDetection = window.ChangeDetection || {
         const originalValue = this.originalValues[id].value || '';
         const fieldName = this.originalValues[id].fieldName;
         
-        console.log('Comparing values - Original:', originalValue, 'Current:', currentValue);
-        
         // Check if value actually changed (compare as strings)
         if (String(currentValue) !== String(originalValue)) {
             // Prevent duplicate alerts within 2 seconds for the same element
             const now = Date.now();
             const lastAlert = this.lastAlertTime[id];
             if (lastAlert && (now - lastAlert) < 2000) {
-                console.log('Skipping duplicate alert for', id, '- last alert was', (now - lastAlert), 'ms ago');
                 return;
             }
             
@@ -1554,15 +1537,11 @@ window.ChangeDetection = window.ChangeDetection || {
                 elementId: id
             };
             
-            console.log('Change detected!', changeInfo);
-            
             // Record the alert time
             this.lastAlertTime[id] = now;
             
             // Record change to database instead of showing alert
             this.recordChange(changeInfo);
-        } else {
-            console.log('No change detected - values are the same');
         }
     },
     
@@ -1633,8 +1612,6 @@ window.ChangeDetection = window.ChangeDetection || {
             _token: window.ListingConfig.csrfToken
         };
         
-        console.log('Recording change to database:', requestData);
-        
         // Call API to record change
         $.ajax({
             url: window.ListingConfig.urls.recordChange || '/v2/listings/record_change',
@@ -1642,7 +1619,7 @@ window.ChangeDetection = window.ChangeDetection || {
             data: requestData,
             dataType: 'json',
             success: function(response) {
-                console.log('Change recorded successfully:', response);
+                // Change recorded successfully
             },
             error: function(xhr) {
                 console.error('Error recording change:', xhr.responseText);
@@ -1941,9 +1918,6 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
     const baseUrl = window.ListingConfig.urls.updateMarketplaceHandlers || '/v2/listings/update_marketplace_handlers';
     const url = `${baseUrl}/${variationId}/${marketplaceId}`;
     
-    console.log('Submitting to URL:', url);
-    console.log('Variation ID:', variationId, 'Marketplace ID:', marketplaceId);
-    
     const data = {
         _token: window.ListingConfig.csrfToken,
     };
@@ -1954,8 +1928,6 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
     if (!isNaN(priceHandler)) {
         data.all_handler = priceHandler;
     }
-    
-    console.log('Request data:', data);
     
     $.ajax({
         type: "POST",
@@ -1968,7 +1940,7 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
                 loadMarketplaceTables(variationId, marketplaceId);
                 
                 // Log success (no alert to avoid disturbance)
-                console.log('Handlers updated successfully:', response.message || `Updated ${response.updated_count || 0} listing(s)`);
+                // Handlers updated successfully
             }
             button.prop('disabled', false).html(originalText);
         },
@@ -2026,9 +1998,6 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         data.all_price = price;
     }
     
-    console.log('Price update URL:', url);
-    console.log('Request data:', data);
-    
     $.ajax({
         type: "POST",
         url: url,
@@ -2039,7 +2008,7 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
                 // Reload the listings table to show updated values
                 loadMarketplaceTables(variationId, marketplaceId);
                 // Log success (no alert to avoid disturbance)
-                console.log('Prices updated successfully:', response.message || `Updated ${response.updated_count || 0} listing(s)`);
+                // Prices updated successfully
             }
             button.prop('disabled', false).html(originalText);
         },
@@ -2304,8 +2273,6 @@ window.fixStockMismatchSilently = function(variationId) {
         }
     }).then(function(response) {
         if (response.success) {
-            console.log('Stock mismatch fixed silently for variation ' + variationId);
-            
             let updateCount = 0;
             
             // Update stock values dynamically without page reload
@@ -2320,7 +2287,6 @@ window.fixStockMismatchSilently = function(variationId) {
                             if (listedStockElement.length) {
                                 listedStockElement.text(fix.new_value);
                                 updateCount++;
-                                console.log('Updated listed stock (marketplace ' + marketplaceId + '):', fix.old_value, '→', fix.new_value);
                             }
                         }
                         
@@ -2337,14 +2303,11 @@ window.fixStockMismatchSilently = function(variationId) {
                             if (listingTotalElement.length) {
                                 listingTotalElement.text(fix.new_value);
                                 updateCount++;
-                                console.log('Updated parent listing total:', fix.old_value, '→', fix.new_value);
                             }
                         }
                     }
                 });
             }
-            
-            console.log('Total UI elements updated:', updateCount, 'out of', response.fixes ? response.fixes.length : 0, 'fixes');
             
             // Update API badge if API stock is in the response
             if (response.summary && response.summary.api_stock !== null && response.summary.api_stock !== undefined) {
@@ -2407,19 +2370,9 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 const ourListedStock = parseInt(listedStockText.replace(/\D/g, '')) || 0;
                 const apiStock = parseInt(quantity) || 0;
                 
-                console.log('Stock comparison (Listed vs API):', {
-                    variationId: variationId,
-                    marketplaceId: marketplaceId,
-                    ourListedStock: ourListedStock,
-                    apiStock: apiStock,
-                    areDifferent: ourListedStock !== apiStock
-                });
-                
                 // If listed stock differs from API stock, fix the mismatch
                 // This will sync listed_stock with API, but NOT change available_stock
                 if (ourListedStock !== apiStock) {
-                    console.log('Listed stock mismatch detected! Fixing automatically...');
-                    
                     // Automatically fix the stock mismatch without showing modal
                     window.fixStockMismatchSilently(variationId);
                 }
