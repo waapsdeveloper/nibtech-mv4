@@ -144,7 +144,6 @@ class ListingController extends Controller
             });
         })
         ->when($request->filled('marketplace'), function ($q) use ($request) {
-            // Log::info('Filtering by marketplace: ' . request('marketplace'));
              return $q->whereHas('listings', function ($q) {
                  $q->where('marketplace_id', request('marketplace'));
              });
@@ -476,7 +475,6 @@ class ListingController extends Controller
             });
         })
         ->when(request('marketplace') != '', function ($q) {
-            // Log::info('Filtering by marketplace: ' . request('marketplace'));
             return $q->whereHas('listings', function ($q) {
                 $q->where('marketplace_id', request('marketplace'));
             });
@@ -730,10 +728,8 @@ class ListingController extends Controller
             if(is_string($responses) || is_int($responses) || is_null($responses)){
                 $error = $responses;
                 $error .= " - ".$variation->reference_uuid;
-                // Log::error($error);
                 return response()->json(['error'=>$error]);
             }
-            // Log::info("Responses for variation ID $id: " . json_encode($responses));
             foreach($responses as $list){
                 if(is_string($list) || is_int($list)){
                     $error .= $list;
@@ -1177,11 +1173,6 @@ class ListingController extends Controller
                 $response = $bm->updateOneListing($listing->variation->reference_id,json_encode(['price'=>request('price'),'currency'=>$listing->currency->code]), $listing->country_id->market_code);
             }
         }
-        // print_r($response);
-        // die;
-        // if($listing->country_id->code == 'SE'){
-        //     Log::info("Updated listing price for listing ID $id: " . json_encode($response));
-        // }
         if(request('min_price')){
             return $response;
         }elseif(request('price')){
