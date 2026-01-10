@@ -59,11 +59,18 @@
     if ($marketplaceStock) {
         $listedStock = (int) ($marketplaceStock->listed_stock ?? 0);
         
-        // Calculate available stock (simplified: just use listed_stock, no locked calculation)
-        $availableStock = $listedStock;
-        
         // Pending stock is the locked stock (reserved/pending) - kept for reference
         $pendingStock = (int) ($marketplaceStock->locked_stock ?? 0);
+    }
+    
+    // Available stock comes from inventory (variation-level physical stock count)
+    // This should be the SAME for all marketplaces - comes from available_stocks relationship
+    // Use passed availableCount if provided, otherwise calculate from variation
+    if (isset($availableCount)) {
+        $availableStock = (int) $availableCount;
+    } else {
+        $availableStocks = $variation->available_stocks ?? collect();
+        $availableStock = $availableStocks->count(); // Physical stock count from inventory
     }
     
     // Get locked stock for this variation and marketplace (for lock badge)

@@ -35,5 +35,6 @@ class DatabaseSeeder extends Seeder
         $this->call(StockTableSeeder::class);
         $this->call(StorageTableSeeder::class);
         $this->call(VariationTableSeeder::class);
+        $this->call(LogSettingsSeeder::class);
     }
 }

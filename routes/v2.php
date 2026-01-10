@@ -24,6 +24,7 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/clear_cache', [V2ListingController::class, 'clearCache'])->name('v2.clear_listing_cache');
     Route::get('listings/get_variation_history/{id}', [V2ListingController::class, 'get_variation_history'])->name('v2.get_variation_history');
     Route::get('listings/get_listings/{variationId}', [V2ListingController::class, 'get_listings'])->name('v2.get_listings');
+    Route::get('listings/get_competitors/{variationId}/{no_check?}', [V2ListingController::class, 'getCompetitors'])->name('v2.get_competitors');
     Route::get('listings/get_updated_quantity/{id}', [V2ListingController::class, 'getUpdatedQuantity'])->name('v2.listing.get_updated_quantity');
     Route::get('listings/get_marketplace_stock_comparison/{id}', [V2ListingController::class, 'getMarketplaceStockComparison'])->name('v2.listing.get_marketplace_stock_comparison');
     Route::post('listings/fix_stock_mismatch/{id}', [V2ListingController::class, 'fixStockMismatch'])->name('v2.listing.fix_stock_mismatch');
@@ -93,6 +94,12 @@ Route::prefix('v2')->group(function () {
     // Log File Viewer
     Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
     Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
+    
+    // Log Settings CRUD
+    Route::post('logs/log-settings', [\App\Http\Controllers\V2\LogFileController::class, 'storeLogSetting'])->name('v2.logs.log-settings.store');
+    Route::put('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'updateLogSetting'])->name('v2.logs.log-settings.update');
+    Route::delete('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'deleteLogSetting'])->name('v2.logs.log-settings.delete');
+    Route::get('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'getLogSetting'])->name('v2.logs.log-settings.show');
     
     // Team Management (Options > Teams)
     Route::prefix('options/teams')->group(function () {

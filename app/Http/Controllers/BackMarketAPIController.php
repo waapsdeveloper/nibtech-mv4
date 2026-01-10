@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Country_model;
 use App\Models\Marketplace_model;
+use App\Services\V2\SlackLogService;
 use Exception;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
@@ -478,7 +479,7 @@ class BackMarketAPIController extends Controller
 
             return $result_array;
         }else{
-            Log::channel('slack')->info("Care API: ".json_encode($result));
+            SlackLogService::post('care_api', 'info', "Care API: " . json_encode($result), ['endpoint' => 'sav']);
         }
     }
     public function getCare($id) {
@@ -520,7 +521,7 @@ class BackMarketAPIController extends Controller
 
             return $result_array;
         }else{
-            Log::channel('slack')->info("Care API: ".json_encode($result));
+            SlackLogService::post('care_api', 'info', "Care API: " . json_encode($result), ['endpoint' => 'sav/' . $id]);
         }
     }
     public function getAllOrders($page = 1, $param = [], $date_modification = false) {
@@ -546,7 +547,11 @@ class BackMarketAPIController extends Controller
         //     dd($result);
         // }
         if(!isset($result->results)){
-            Log::channel('slack')->info("Order API: ".json_encode($result));
+            SlackLogService::post('order_api', 'warning', "Order API: Missing results", [
+                'response' => json_encode($result),
+                'endpoint' => $end_point,
+                'date_modification' => $date_modification
+            ]);
             die();
         }
         $result_array = $result->results;
@@ -904,6 +909,9 @@ class BackMarketAPIController extends Controller
             $result_next = $result;
 
             $page = 1;
+            // Start batch mode to avoid spamming Slack if multiple pages fail
+            SlackLogService::startBatch();
+            
             // judge whetehr there exists the next page
             while (($result_next->next) != null) {
                 // for($i = 0; $i <= 3; $i++){
@@ -916,7 +924,12 @@ class BackMarketAPIController extends Controller
                     $result_next = $this->apiGet($end_point_next, $code);
                 // the new page array
                 if(!isset($result_next->results)){
-                    Log::channel('slack')->info("Listing API: ".json_encode($result_next));
+                    // Collect log instead of posting immediately (inside loop)
+                    SlackLogService::collectBatch('listing_api', 'warning', "Listing API: Missing results (page {$page})", [
+                        'response' => json_encode($result_next),
+                        'endpoint' => $end_point_next,
+                        'page' => $page
+                    ]);
                     break;
                 }
                 $result_next_array = $result_next->results;
@@ -925,12 +938,19 @@ class BackMarketAPIController extends Controller
                     array_push($result_array[$id], $result_next_array[$key]);
                 }
             }
+            
+            // Post batch summary after loop completes (only if there were errors)
+            SlackLogService::postBatch();
         // print_r($result_array);
         }
         return $result_array;
     }
     public function getAllListingsBi ($param = array()) {
         $country_codes = Country_model::where('market_code','!=',null)->pluck('market_code','id')->toArray();
+        
+        // Start batch mode to avoid spamming Slack if multiple countries fail
+        SlackLogService::startBatch();
+        
         foreach($country_codes as $id => $code){
             $end_point = 'listings_bi';
 
@@ -944,8 +964,13 @@ class BackMarketAPIController extends Controller
             $result = $this->apiGet($end_point, $code);
             // print_r($result);
             if(!isset($result->results)){
-
-                Log::channel('slack')->info("ListingBI API: ".$end_point." | ".json_encode($result));
+                // Collect log instead of posting immediately (inside loop)
+                SlackLogService::collectBatch('listing_api', 'warning', "ListingBI API: Missing results for country {$code}", [
+                    'endpoint' => $end_point,
+                    'response' => json_encode($result),
+                    'country_code' => $code,
+                    'country_id' => $id
+                ]);
                 if(!isset($result_array)){
                     die;
                 }
@@ -981,8 +1006,11 @@ class BackMarketAPIController extends Controller
             }
             }
         }
+        
+        // Post batch summary after loop completes (only if there were errors)
+        SlackLogService::postBatch();
+        
         // print_r($result_array);
-
         return $result_array;
     }
     private function readCSV($file) {

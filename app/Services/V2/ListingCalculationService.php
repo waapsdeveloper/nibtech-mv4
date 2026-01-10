@@ -158,13 +158,6 @@ class ListingCalculationService
             // This ensures null marketplace orders are ONLY counted for marketplace 1, not duplicated across other marketplaces
             $effectiveMarketplaceId = ($marketplaceId === null || $marketplaceId == 1) ? 1 : $marketplaceId;
             
-            \Log::debug('Calculating marketplace summary', [
-                'variation_id' => $variationId,
-                'marketplace_id' => $marketplaceId,
-                'effective_marketplace_id' => $effectiveMarketplaceId,
-                'will_include_null' => $effectiveMarketplaceId == 1
-            ]);
-            
             // Today's orders
             $todayOrders = \App\Models\Order_item_model::where('variation_id', $variationId)
                 ->whereHas('order', function($q) use ($effectiveMarketplaceId) {
@@ -318,10 +311,6 @@ class ListingCalculationService
             $summaries[$marketplaceId]['pending_count'] = $pendingOrders;
         }
 
-        \Log::info('Marketplace summaries calculated in ListingCalculationService', [
-            'variation_id' => $variationId,
-            'summaries' => $summaries
-        ]);
         return $summaries;
     }
 

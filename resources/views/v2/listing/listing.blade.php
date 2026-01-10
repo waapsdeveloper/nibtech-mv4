@@ -93,6 +93,7 @@
             updateMarketplaceHandlers: "{{ url('v2/listings/update_marketplace_handlers') }}",
             updateMarketplacePrices: "{{ url('v2/listings/update_marketplace_prices') }}",
             getListings: "{{ url('v2/listings/get_listings') }}",
+            getCompetitors: "{{ url('v2/listings/get_competitors') }}",
             getVariationStocks: "{{ url('listing/get_variation_available_stocks') }}",
             getUpdatedQuantity: "{{ url('v2/listings/get_updated_quantity') }}",
             toggleEnable: "{{ url('listing/toggle_enable') }}",

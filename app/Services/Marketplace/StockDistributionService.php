@@ -252,13 +252,6 @@ class StockDistributionService
             // Value should be stored as a number like 5 for 5%, not 0.05
             $result = (int) round(($baseValue * $value) / 100);
             
-            Log::info("Percentage calculation", [
-                'base_value' => $baseValue,
-                'percentage_value' => $value,
-                'calculation' => "($baseValue * $value) / 100",
-                'result' => $result,
-            ]);
-            
             return $result;
         } elseif ($type === 'fixed') {
             // Fixed amount (value is the exact number to distribute)
