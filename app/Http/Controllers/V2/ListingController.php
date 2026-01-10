@@ -786,9 +786,115 @@ class ListingController extends Controller
     }
 
     /**
-     * Get listings for a variation, optionally filtered by marketplace
-     * Similar to original getCompetitors but supports marketplace filtering
+     * Get competitors from API and refresh prices (like V1 getCompetitors)
+     * Only works for Backmarket (marketplace_id = 1)
      */
+    public function getCompetitors($variationId, $no_check = 0)
+    {
+        $error = "";
+        $variation = Variation_model::with('listings')->find($variationId);
+        
+        if (!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+        
+        // Get reference_uuid for Backmarket (marketplace_id = 1)
+        $backmarketListing = $variation->listings->where('marketplace_id', 1)->whereNotNull('reference_uuid')->first();
+        
+        if (!$backmarketListing || !$backmarketListing->reference_uuid) {
+            return response()->json(['error' => 'No Backmarket reference UUID found'], 400);
+        }
+        
+        $reference = $backmarketListing->reference_uuid;
+        
+        // Call BackMarket API to get competitors
+        $bm = new \App\Http\Controllers\BackMarketAPIController();
+        $responses = $bm->getListingCompetitors($reference);
+        
+        if (is_string($responses) || is_int($responses) || is_null($responses)) {
+            $error = $responses;
+            $error .= " - " . $variation->reference_id;
+            return response()->json(['error' => $error]);
+        }
+        
+        // Update listings with fresh API data
+        foreach ($responses as $list) {
+            if (is_string($list) || is_int($list)) {
+                $error .= $list;
+                continue;
+            }
+            if (is_array($list)) {
+                $error .= json_encode($list);
+                continue;
+            }
+            
+            $country = \App\Models\Country_model::where('code', $list->market)->first();
+            if (!$country) {
+                continue;
+            }
+            
+            $listings = Listing_model::where('variation_id', $variationId)
+                ->where('country', $country->id)
+                ->where('marketplace_id', 1)
+                ->get();
+            
+            // If multiple listings exist, keep only the first one
+            if ($listings->count() > 1) {
+                $listings->each(function($listing, $key) {
+                    if ($key > 0) {
+                        $listing->delete();
+                    }
+                });
+            }
+            
+            $listing = Listing_model::firstOrNew([
+                'variation_id' => $variationId,
+                'country' => $country->id,
+                'marketplace_id' => 1
+            ]);
+            
+            if (isset($list->product_id)) {
+                $listing->reference_uuid_2 = $list->product_id;
+            }
+            
+            if ($list->price != null) {
+                $listing->price = $list->price->amount;
+                $currency = \App\Models\Currency_model::where('code', $list->price->currency)->first();
+            }
+            if ($list->min_price != null) {
+                $listing->min_price = $list->min_price->amount;
+                if (!isset($currency)) {
+                    $currency = \App\Models\Currency_model::where('code', $list->min_price->currency)->first();
+                }
+            }
+            
+            if (isset($currency)) {
+                $listing->currency_id = $currency->id;
+            }
+            
+            $listing->buybox = $list->is_winning ?? 0;
+            if (isset($list->price_to_win) && isset($list->price_to_win->amount)) {
+                $listing->buybox_price = $list->price_to_win->amount;
+            }
+            if (isset($list->winner_price) && isset($list->winner_price->amount)) {
+                $listing->buybox_winner_price = $list->winner_price->amount;
+            }
+            
+            $listing->save();
+        }
+        
+        if ($no_check == 1) {
+            return response()->json(['responses' => $responses, 'error' => $error]);
+        }
+        
+        // Return updated listings
+        $listings = Listing_model::with('marketplace')
+            ->where('variation_id', $variationId)
+            ->get();
+        
+        return response()->json(['listings' => $listings, 'error' => $error]);
+    }
+
     public function get_listings($variationId, Request $request)
     {
         $marketplaceId = $request->input('marketplace_id');
@@ -2128,27 +2234,17 @@ class ListingController extends Controller
                     }
                 }
 
-                // Recalculate available stock
-                $newAvailableStock = max(0, $newListedStock - $lockedStock);
-                $oldAvailableStock = $ms->available_stock !== null 
-                    ? (int)$ms->available_stock 
-                    : max(0, $oldListedStock - $lockedStock);
-
-                if ($newAvailableStock != $oldAvailableStock) {
-                    $needsFix = true;
-                    $fixes[] = [
-                        'marketplace_id' => $marketplaceId,
-                        'field' => 'available_stock',
-                        'old_value' => $oldAvailableStock,
-                        'new_value' => $newAvailableStock,
-                        'reason' => 'Recalculated (listed - locked)'
-                    ];
-                }
-
-                // Update if needed
+                // NOTE: Available stock should NOT be calculated from listed_stock - locked_stock
+                // Available stock comes from inventory (variation-level physical stock count)
+                // It should be the SAME for all marketplaces and should not be changed by sync operations
+                // The marketplace_stock.available_stock field may exist for internal tracking,
+                // but for DISPLAY purposes, we use variation->available_stocks count (from inventory)
+                
+                // Update if needed (only listed_stock, NOT available_stock)
                 if ($needsFix) {
                     $ms->listed_stock = $newListedStock;
-                    $ms->available_stock = $newAvailableStock;
+                    // DO NOT update available_stock - it comes from inventory, not from marketplace calculations
+                    // $ms->available_stock = $newAvailableStock; // REMOVED - wrong logic
                     $ms->admin_id = session('user_id');
                     $ms->save();
                 }

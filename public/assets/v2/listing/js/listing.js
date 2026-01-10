@@ -643,11 +643,87 @@ $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
 });
 
 /**
+ * Refresh prices from API (for Backmarket only)
+ * Made global so it can be called from onclick handlers
+ */
+window.refreshPricesFromAPI = function(variationId, callback) {
+    if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.getCompetitors) {
+        console.warn('getCompetitors URL not configured');
+        if (callback) callback();
+        return;
+    }
+    
+    // Show loading indicator
+    console.log('Refreshing prices from API for variation ' + variationId);
+    
+    $.ajax({
+        url: window.ListingConfig.urls.getCompetitors + '/' + variationId + '/0',
+        type: 'GET',
+        dataType: 'json',
+        headers: {
+            'X-CSRF-TOKEN': window.ListingConfig.csrfToken
+        },
+        success: function(response) {
+            if (response.error) {
+                console.warn('Error refreshing prices:', response.error);
+            } else {
+                console.log('Prices refreshed successfully from API');
+            }
+            if (callback) callback();
+        },
+        error: function(xhr, status, error) {
+            console.error('Error refreshing prices from API:', error);
+            if (callback) callback();
+        }
+    });
+};
+
+/**
+ * Handle refresh button click (with loading state)
+ */
+function refreshPricesButtonClick(variationId, marketplaceId) {
+    const btn = $(`#refresh_prices_btn_${variationId}_${marketplaceId}`);
+    const icon = btn.find('i');
+    const originalClass = icon.attr('class');
+    
+    // Show loading state
+    icon.removeClass('fa-sync-alt').addClass('fa-spinner fa-spin');
+    btn.prop('disabled', true);
+    
+    // Refresh prices and reload listings
+    window.refreshPricesFromAPI(variationId, function() {
+        // Reload listings after refresh
+        loadMarketplaceTables(variationId, marketplaceId, true);
+        
+        // Reset button state
+        icon.removeClass('fa-spinner fa-spin').addClass('fa-sync-alt');
+        btn.prop('disabled', false);
+    });
+}
+
+/**
  * Load marketplace tables
  */
-function loadMarketplaceTables(variationId, marketplaceId) {
+function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
+    // For Backmarket (marketplace_id = 1), refresh prices from API first (like V1)
+    if (!skipRefresh && marketplaceId == 1) {
+        window.refreshPricesFromAPI(variationId, function() {
+            // After refresh, load listings
+            loadListingsAfterRefresh(variationId, marketplaceId, container);
+        });
+        return;
+    }
+    
+    // For other marketplaces, just load listings directly
+    loadListingsAfterRefresh(variationId, marketplaceId, container);
+}
+
+/**
+ * Load listings after price refresh (or directly for non-Backmarket)
+ */
+function loadListingsAfterRefresh(variationId, marketplaceId, container) {
     // Get listings for this marketplace
     $.ajax({
         url: window.ListingConfig.urls.getListings + '/' + variationId,
@@ -951,7 +1027,12 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                         <th width="80"><small><b>BuyBox</b></small></th>
                         <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}"></b>)</small></th>
-                        <th width="120"><small><b>Price</b></small></th>
+                        <th width="120">
+                            <small><b>Price</b></small>
+                            ${marketplaceId == 1 ? `<button type="button" class="btn btn-link btn-sm p-0 ms-1" id="refresh_prices_btn_${variationId}_${marketplaceId}" onclick="refreshPricesButtonClick(${variationId}, ${marketplaceId})" title="Refresh prices from API" style="font-size: 0.7rem; line-height: 1; padding: 0 2px;">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>` : ''}
+                        </th>
                         <th><small><b>Date</b></small></th>
                         <th width="80" class="text-center"><small><b>Action</b></small></th>
                     </tr>
@@ -2243,19 +2324,12 @@ window.fixStockMismatchSilently = function(variationId) {
                             }
                         }
                         
-                        if (fix.field === 'available_stock') {
-                            const availableStockElement = $('#available_stock_' + variationId + '_' + marketplaceId);
-                            if (availableStockElement.length) {
-                                availableStockElement.text(fix.new_value);
-                                // Reset color styling after fix
-                                availableStockElement.css({
-                                    'color': '',
-                                    'font-weight': ''
-                                });
-                                updateCount++;
-                                console.log('Updated available stock (marketplace ' + marketplaceId + '):', fix.old_value, '→', fix.new_value);
-                            }
-                        }
+                        // NOTE: available_stock should NOT be updated from sync/fix operations
+                        // Available stock comes from inventory (variation-level physical stock count)
+                        // It should be the SAME for all marketplaces and should not be changed by sync operations
+                        // if (fix.field === 'available_stock') {
+                        //     // DO NOT UPDATE - Available stock comes from inventory, not from marketplace sync
+                        // }
                     } else {
                         // Update parent variation stock (PARENT LEVEL)
                         if (fix.field === 'variation.listed_stock') {
@@ -2321,44 +2395,36 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 .addClass('bg-primary')
                 .html('<span class="stock-value">' + quantity + '</span> <small class="ms-1">(API)</small>');
             
-            // Compare API stock with our available stock and mark as red if different
-            const availableStockElement = $('#available_stock_' + variationId + '_' + marketplaceId);
-            console.log("updateBackmarketStockBadge", 4684564);
-            if (availableStockElement.length) {
-                // Get text content and extract number (handle cases where text might include "Avail: " or other text)
-                const availableStockText = availableStockElement.text().trim();
-                // Extract only numbers from the text
-                const ourAvailableStock = parseInt(availableStockText.replace(/\D/g, '')) || 0;
+            // NOTE: Available stock comparison removed
+            // Available stock comes from inventory (variation-level physical stock count)
+            // It should NOT be compared with API stock (which is marketplace-specific listed stock)
+            // API stock should be compared with LISTED stock, not AVAILABLE stock
+            // 
+            // Compare API stock with LISTED stock instead (marketplace-specific)
+            const listedStockElement = $('#listed_stock_' + variationId + '_' + marketplaceId);
+            if (listedStockElement.length) {
+                const listedStockText = listedStockElement.text().trim();
+                const ourListedStock = parseInt(listedStockText.replace(/\D/g, '')) || 0;
                 const apiStock = parseInt(quantity) || 0;
                 
-                console.log('Stock comparison:', {
+                console.log('Stock comparison (Listed vs API):', {
                     variationId: variationId,
                     marketplaceId: marketplaceId,
-                    availableStockText: availableStockText,
-                    ourAvailableStock: ourAvailableStock,
+                    ourListedStock: ourListedStock,
                     apiStock: apiStock,
-                    areDifferent: ourAvailableStock !== apiStock
+                    areDifferent: ourListedStock !== apiStock
                 });
                 
-                // If stock numbers are different, mark our available stock as red and fix automatically
-                if (ourAvailableStock !== apiStock) {
-                    console.log('Stock mismatch detected! Fixing automatically...');
-                    availableStockElement.css({
-                        'color': '#dc3545',
-                        'font-weight': 'bold'
-                    });
+                // If listed stock differs from API stock, fix the mismatch
+                // This will sync listed_stock with API, but NOT change available_stock
+                if (ourListedStock !== apiStock) {
+                    console.log('Listed stock mismatch detected! Fixing automatically...');
                     
                     // Automatically fix the stock mismatch without showing modal
                     window.fixStockMismatchSilently(variationId);
-                } else {
-                    // Reset to default color if they match
-                    availableStockElement.css({
-                        'color': '',
-                        'font-weight': ''
-                    });
                 }
             } else {
-                console.warn('Available stock element not found:', '#available_stock_' + variationId + '_' + marketplaceId);
+                console.warn('Listed stock element not found:', '#listed_stock_' + variationId + '_' + marketplaceId);
             }
         } else {
             // Hide badge if fetch failed

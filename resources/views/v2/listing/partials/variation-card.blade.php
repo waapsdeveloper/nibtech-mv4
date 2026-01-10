@@ -189,6 +189,7 @@
                                         'variationId' => $variationId,
                                         'marketplace' => $marketplace,
                                         'marketplaceId' => $marketplaceId,
+                                        'availableCount' => $availableCount,
                                         'process_id' => $process_id ?? null
                                     ])
                                 </div>

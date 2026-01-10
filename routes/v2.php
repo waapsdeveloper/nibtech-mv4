@@ -24,6 +24,7 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/clear_cache', [V2ListingController::class, 'clearCache'])->name('v2.clear_listing_cache');
     Route::get('listings/get_variation_history/{id}', [V2ListingController::class, 'get_variation_history'])->name('v2.get_variation_history');
     Route::get('listings/get_listings/{variationId}', [V2ListingController::class, 'get_listings'])->name('v2.get_listings');
+    Route::get('listings/get_competitors/{variationId}/{no_check?}', [V2ListingController::class, 'getCompetitors'])->name('v2.get_competitors');
     Route::get('listings/get_updated_quantity/{id}', [V2ListingController::class, 'getUpdatedQuantity'])->name('v2.listing.get_updated_quantity');
     Route::get('listings/get_marketplace_stock_comparison/{id}', [V2ListingController::class, 'getMarketplaceStockComparison'])->name('v2.listing.get_marketplace_stock_comparison');
     Route::post('listings/fix_stock_mismatch/{id}', [V2ListingController::class, 'fixStockMismatch'])->name('v2.listing.fix_stock_mismatch');
