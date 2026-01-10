@@ -13,9 +13,17 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('chat_groups', function (Blueprint $table) {
+        if (Schema::hasTable('attendances')) {
+            return;
+        }
+
+        Schema::create('attendances', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
+            $table->unsignedBigInteger('admin_id'); // FK
+            $table->date('date');
+            $table->time('clock_in')->nullable();
+            $table->time('clock_out')->nullable();
+            $table->string('status')->nullable(); // present, absent, leave
             $table->timestamps();
         });
     }
@@ -27,6 +35,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('chat_groups');
+        Schema::dropIfExists('attendances');
     }
 };

@@ -13,10 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('group_message_reads', function (Blueprint $table) {
+        if (Schema::hasTable('company_structures')) {
+            return;
+        }
+
+        Schema::create('company_structures', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('message_id');
-            $table->unsignedBigInteger('admin_id');
+            $table->string('type'); // e.g., department, team, project
+            $table->string('name');
+            $table->json('metadata')->nullable(); // Additional data: hours, rules, quota etc.
             $table->timestamps();
         });
     }
@@ -28,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('group_message_reads');
+        Schema::dropIfExists('company_structures');
     }
 };

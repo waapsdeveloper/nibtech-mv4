@@ -13,8 +13,15 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('payrolls', function (Blueprint $table) {
+        if (Schema::hasTable('daily_breaks')) {
+            return;
+        }
+
+        Schema::create('daily_breaks', function (Blueprint $table) {
             $table->id();
+            $table->unsignedBigInteger('attendance_id'); // FK to attendance table
+            $table->timestamp('break_start')->nullable();
+            $table->timestamp('break_end')->nullable();
             $table->timestamps();
         });
     }
@@ -26,6 +33,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('payrolls');
+        Schema::dropIfExists('daily_breaks');
     }
 };

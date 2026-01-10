@@ -16,6 +16,7 @@ use App\Models\Stock_operations_model;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Maatwebsite\Excel\Facades\Excel;
+use Mpdf\Tag\A;
 
 class Testing extends Component
 {
@@ -34,7 +35,11 @@ class Testing extends Component
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
 
-        $requests = Api_request_model::whereNull('status')->limit(100)->get();
+        // Call push_testing to process and send data individually when page loads
+        $model = new Api_request_model();
+        $model->push_testing(100);
+
+        $requests = Api_request_model::whereNull('status')->limit(400)->get();
 
         $data['requests'] = $requests;
 
@@ -125,6 +130,12 @@ class Testing extends Component
 
         return redirect()->back()->with('success', 'Request sent to EG');
     }
+    public function send_to_sd($id){
+        $request = Api_request_model::find($id);
+        $request->send_to_sd();
+
+        return redirect()->back()->with('success', 'Request sent to SD');
+    }
     public function send_to_yk($id){
         $request = Api_request_model::find($id);
         $request->send_to_yk();
@@ -141,6 +152,140 @@ class Testing extends Component
         }else{
             return redirect()->back()->with('error', 'Request not found');
         }
+    }
+
+    public function bulk_send_to_eg(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_eg();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to EG successfully");
+    }
+
+    public function bulk_send_to_yk(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_yk();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to YK successfully");
+    }
+
+    public function bulk_send_to_sd(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = 0;
+        foreach($request_ids as $id){
+            $request = Api_request_model::find($id);
+            if($request){
+                $request->send_to_sd();
+                $count++;
+            }
+        }
+
+        return redirect()->back()->with('success', "$count request(s) sent to SD successfully");
+    }
+
+    public function bulk_delete(){
+        $request_ids = json_decode(request('request_ids'), true);
+
+        if(!is_array($request_ids) || empty($request_ids)){
+            return redirect()->back()->with('error', 'No requests selected');
+        }
+
+        $count = Api_request_model::whereIn('id', $request_ids)->delete();
+
+        return redirect()->back()->with('success', "$count request(s) deleted successfully");
+    }
+
+    public function push_all(){
+        ini_set('max_execution_time', 1200);
+
+        $user_id = session('user_id');
+        if($user_id == NULL){
+            return redirect('index');
+        }
+
+        $model = new Api_request_model();
+        $result = $model->push_testing(100);
+
+        return redirect()->back()->with('success', 'Push testing completed. Data has been processed and sent to appropriate systems.');
+    }
+
+    public function push_one($id){
+        $user_id = session('user_id');
+        if($user_id == NULL){
+            return redirect('index');
+        }
+
+        $request = Api_request_model::find($id);
+        if(!$request){
+            return redirect()->back()->with('error', 'Request not found');
+        }
+
+        // Process this single request through push_testing logic
+        $datas = json_decode($request->request);
+
+        // Check if stock exists in the system
+        $stock = Api_request_model::resolveStock($datas);
+
+        if(!$stock){
+            return redirect()->back()->with('error', 'Stock not found in system. Cannot push automatically.');
+        }
+
+        // Stock exists, proceed with automatic push based on conditions
+        if(config('app.url') == 'https://sdpos.nibritaintech.com' && in_array(trim($datas->PCName ?? ''), ['PC12', 'PC13', 'PC14', 'PC15', 'PC16'])){
+            $request->send_to_yk();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to YK based on PC name');
+        }
+
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'eg')){
+            $request->send_to_eg();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to EG based on Batch ID');
+        }
+
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'yk')){
+            $request->send_to_yk();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to YK based on Batch ID');
+        }
+
+        if(str_contains(strtolower($datas->BatchID ?? ''), 'sd')){
+            $request->send_to_sd();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to SD based on Batch ID');
+        }
+
+        // Default routing based on environment
+        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+            $request->send_to_sd();
+            return redirect()->back()->with('success', 'Stock found! Request pushed to SD (default for this environment)');
+        }
+
+        return redirect()->back()->with('success', 'Stock found but no automatic routing rule matched. Please use EG/YK/SD buttons manually.');
     }
 
 }

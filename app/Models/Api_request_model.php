@@ -105,6 +105,9 @@ class Api_request_model extends Model
                 continue;
 
             }
+            if(!isset($datas->Imei)){
+                continue;
+            }
             if(!$stock && $datas->Imei == '' && $datas->Imei2 == ''){
                 // self::recordDebugPoint($request, 'skipped request because stock lookup failed and no IMEI present', [
                 //     'serial' => $datas->Serial ?? null,
@@ -736,6 +739,27 @@ class Api_request_model extends Model
 
         SendApiRequestPayload::dispatch(
             'https://egpos.nibritaintech.com/api/request',
+            $payload,
+            '2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
+        )->onQueue('api-requests');
+
+        $this->status = 3;
+        $this->save();
+    }
+
+    public function send_to_sd(){
+        if(config('app.url') == 'https://sdpos.nibritaintech.com'){
+            return;
+        }
+
+        $payload = json_decode($this->request, true) ?? [];
+
+        if(empty($payload)){
+            return;
+        }
+
+        SendApiRequestPayload::dispatch(
+            'https://sdpos.nibritaintech.com/api/request',
             $payload,
             '2|otpLfHymDGDscNuKjk9CQMx620avGG0aWgMpuPAp5d1d27d2'
         )->onQueue('api-requests');

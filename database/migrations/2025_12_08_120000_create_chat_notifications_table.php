@@ -8,6 +8,10 @@ return new class extends Migration
 {
     public function up(): void
     {
+        if (Schema::hasTable('chat_notifications')) {
+            return;
+        }
+
         Schema::create('chat_notifications', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('admin_id');

@@ -13,11 +13,12 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('company_structures', function (Blueprint $table) {
+        if (Schema::hasTable('payrolls')) {
+            return;
+        }
+
+        Schema::create('payrolls', function (Blueprint $table) {
             $table->id();
-            $table->string('type'); // e.g., department, team, project
-            $table->string('name');
-            $table->json('metadata')->nullable(); // Additional data: hours, rules, quota etc.
             $table->timestamps();
         });
     }
@@ -29,6 +30,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('company_structures');
+        Schema::dropIfExists('payrolls');
     }
 };

@@ -13,12 +13,20 @@ return new class extends Migration
      */
     public function up()
     {
-        Schema::create('group_chat_members', function (Blueprint $table) {
+        if (Schema::hasTable('salaries')) {
+            return;
+        }
+
+        Schema::create('salaries', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('group_id');
             $table->unsignedBigInteger('admin_id');
+            $table->decimal('base_salary', 10, 2);
+            $table->integer('total_days')->nullable();
+            $table->integer('present_days')->nullable();
+            $table->decimal('deductions', 10, 2)->default(0);
+            $table->decimal('net_salary', 10, 2);
+            $table->date('salary_month');
             $table->timestamps();
-            // $table->foreign('group_id')->references('id')->on('chat_groups')->onDelete('cascade');
         });
     }
 
@@ -29,6 +37,6 @@ return new class extends Migration
      */
     public function down()
     {
-        Schema::dropIfExists('group_chat_members');
+        Schema::dropIfExists('salaries');
     }
 };
