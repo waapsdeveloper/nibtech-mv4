@@ -69,6 +69,10 @@
     {{-- Stock Comparison Modal --}}
     @include('v2.listing.partials.stock-comparison-modal')
     {{-- /Stock Comparison Modal --}}
+
+    {{-- Variation History Modal --}}
+    @include('v2.listing.partials.variation-history-modal')
+    {{-- /Variation History Modal --}}
 @endsection
 
 @section('scripts')
@@ -106,7 +110,8 @@
             getStockLocks: "{{ url('v2/stock-locks/api') }}",
             getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}",
             fixStockMismatch: "{{ url('v2/listings/fix_stock_mismatch') }}",
-            restoreListingHistory: "{{ url('v2/listings/restore_history') }}"
+            restoreListingHistory: "{{ url('v2/listings/restore_history') }}",
+            getVariationHistory: "{{ url('v2/listings/get_variation_history') }}"
         },
         csrfToken: "{{ csrf_token() }}",
         flagsPath: "{{ asset('assets/img/flags') }}"

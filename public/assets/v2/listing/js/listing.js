@@ -696,12 +696,16 @@ function refreshPricesButtonClick(variationId, marketplaceId) {
 
 /**
  * Load marketplace tables
+ * When marketplace expands, automatically refresh prices from API (for Backmarket)
+ * This matches the behavior of clicking the refresh button
  */
 function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
     // For Backmarket (marketplace_id = 1), refresh prices from API first (like V1)
+    // This is called automatically when the marketplace bar expands (similar to refresh button behavior)
     if (!skipRefresh && marketplaceId == 1) {
+        // Call refreshPricesFromAPI when expanding - same functionality as refresh button
         window.refreshPricesFromAPI(variationId, function() {
             // After refresh, load listings
             loadListingsAfterRefresh(variationId, marketplaceId, container);

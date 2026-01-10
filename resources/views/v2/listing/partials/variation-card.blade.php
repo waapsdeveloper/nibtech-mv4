@@ -106,13 +106,18 @@
 <div class="card" id="variation_card_{{ $variationId }}" style="padding-left: 5px; padding-right: 5px; width: 100%;">
     <div class="card-header py-0 d-flex justify-content-between" style="padding-left: 5px; padding-right: 5px;">
         <div>
-            <h5>
-                <a href="{{url('inventory')}}?sku={{ $sku }}" title="View Inventory" target="_blank">
-                    <span style="background-color: {{ $colorCode }}; width: 30px; height: 16px; display: inline-block;"></span>
-                    {{ $sku }}
-                </a>
-                <a href="https://www.backmarket.fr/bo-seller/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
-                    - {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}
+            <h5 class="d-flex align-items-center gap-2">
+                <span>
+                    <a href="{{url('inventory')}}?sku={{ $sku }}" title="View Inventory" target="_blank">
+                        <span style="background-color: {{ $colorCode }}; width: 30px; height: 16px; display: inline-block;"></span>
+                        {{ $sku }}
+                    </a>
+                    <a href="https://www.backmarket.fr/bo-seller/listings/active?sku={{ $sku }}" title="View BM Ad" target="_blank">
+                        - {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}
+                    </a>
+                </span>
+                <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, '{{ $sku }} {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}')" title="View History">
+                    <i class="fas fa-history"></i>
                 </a>
             </h5>
             <div id="sales_{{ $variationId }}" class="small text-muted mb-1">
