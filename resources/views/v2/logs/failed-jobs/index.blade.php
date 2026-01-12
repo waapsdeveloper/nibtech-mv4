@@ -42,6 +42,13 @@
 
     <div class="row">
         <div class="col-12">
+            @if(isset($error))
+            <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                <strong>Error:</strong> {{ $error }}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            </div>
+            @endif
+            
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -113,7 +120,7 @@
                             <table class="table table-hover table-bordered">
                                 <thead class="table-light">
                                     <tr>
-                                        <th>ID</th>
+                                        <th>UUID</th>
                                         <th>Job Class</th>
                                         <th>Command</th>
                                         <th>Queue</th>
@@ -125,7 +132,7 @@
                                 <tbody>
                                     @foreach($failedJobs as $job)
                                     <tr>
-                                        <td>{{ $job->id }}</td>
+                                        <td><code>{{ $job->uuid ?? $job->id ?? 'N/A' }}</code></td>
                                         <td>
                                             <code>{{ $job->job_class ?? 'Unknown' }}</code>
                                         </td>
@@ -153,13 +160,13 @@
                                         <td>{{ \Carbon\Carbon::parse($job->failed_at)->format('Y-m-d H:i:s') }}</td>
                                         <td>
                                             <div class="btn-group" role="group">
-                                                <a href="{{ url('v2/logs/failed-jobs/' . $job->id) }}" class="btn btn-sm btn-primary" title="View Details">
+                                                <a href="{{ url('v2/logs/failed-jobs/' . ($job->uuid ?? $job->id)) }}" class="btn btn-sm btn-primary" title="View Details">
                                                     <i class="fe fe-eye"></i>
                                                 </a>
-                                                <button type="button" class="btn btn-sm btn-success" onclick="retryJob({{ $job->id }})" title="Retry Job">
+                                                <button type="button" class="btn btn-sm btn-success" onclick="retryJob('{{ $job->uuid ?? $job->id }}')" title="Retry Job">
                                                     <i class="fe fe-refresh-cw"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteJob({{ $job->id }})" title="Delete Job">
+                                                <button type="button" class="btn btn-sm btn-danger" onclick="deleteJob('{{ $job->uuid ?? $job->id }}')" title="Delete Job">
                                                     <i class="fe fe-trash-2"></i>
                                                 </button>
                                             </div>
@@ -197,7 +204,7 @@ function retryJob(jobId) {
         return;
     }
     
-    fetch('{{ url("v2/logs/failed-jobs") }}/' + jobId + '/retry', {
+    fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId) + '/retry', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -227,7 +234,7 @@ function deleteJob(jobId) {
         return;
     }
     
-    fetch('{{ url("v2/logs/failed-jobs") }}/' + jobId, {
+    fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId), {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),

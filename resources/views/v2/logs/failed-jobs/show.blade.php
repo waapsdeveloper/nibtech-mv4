@@ -47,13 +47,15 @@
                         <div class="col-md-6">
                             <table class="table table-bordered">
                                 <tr>
-                                    <th width="40%">Job ID</th>
+                                    <th width="40%">UUID</th>
+                                    <td><code>{{ $job->uuid ?? $job->id ?? 'N/A' }}</code></td>
+                                </tr>
+                                @if(isset($job->id) && $job->id != $job->uuid)
+                                <tr>
+                                    <th>ID</th>
                                     <td>{{ $job->id }}</td>
                                 </tr>
-                                <tr>
-                                    <th>UUID</th>
-                                    <td><code>{{ $job->uuid }}</code></td>
-                                </tr>
+                                @endif
                                 <tr>
                                     <th>Queue</th>
                                     <td>{{ $job->queue ?? 'default' }}</td>
@@ -169,10 +171,10 @@
                         </a>
                         
                         <div>
-                            <button type="button" class="btn btn-success me-2" onclick="retryJob({{ $job->id }})">
+                            <button type="button" class="btn btn-success me-2" onclick="retryJob('{{ $job->uuid ?? $job->id }}')">
                                 <i class="fe fe-refresh-cw"></i> Retry Job
                             </button>
-                            <button type="button" class="btn btn-danger" onclick="deleteJob({{ $job->id }})">
+                            <button type="button" class="btn btn-danger" onclick="deleteJob('{{ $job->uuid ?? $job->id }}')">
                                 <i class="fe fe-trash-2"></i> Delete Job
                             </button>
                         </div>
@@ -191,7 +193,7 @@ function retryJob(jobId) {
         return;
     }
     
-    fetch('{{ url("v2/logs/failed-jobs") }}/' + jobId + '/retry', {
+    fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId) + '/retry', {
         method: 'POST',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -222,7 +224,7 @@ function deleteJob(jobId) {
         return;
     }
     
-    fetch('{{ url("v2/logs/failed-jobs") }}/' + jobId, {
+    fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId), {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
