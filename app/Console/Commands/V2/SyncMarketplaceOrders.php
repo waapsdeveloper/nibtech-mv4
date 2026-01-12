@@ -4,6 +4,7 @@ namespace App\Console\Commands\V2;
 
 use Illuminate\Console\Command;
 use App\Services\V2\MarketplaceOrderSyncService;
+use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -127,6 +128,17 @@ class SyncMarketplaceOrders extends Command
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            // Send error to Slack
+            SlackLogService::post('order_sync', 'error', "V2 Sync Command Failed: {$e->getMessage()}", [
+                'command' => 'v2:sync-orders',
+                'type' => $type,
+                'marketplace_id' => $marketplaceId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], true);
+            
             return 1;
         }
     }
@@ -143,6 +155,14 @@ class SyncMarketplaceOrders extends Command
         $this->info("✅ Synced: {$result['synced']} orders");
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
+            
+            // Send error summary to Slack
+            SlackLogService::post('order_sync', 'warning', "V2 Sync New Orders: {$result['errors']} error(s) occurred", [
+                'command' => 'v2:sync-orders',
+                'type' => 'new',
+                'synced' => $result['synced'],
+                'errors' => $result['errors']
+            ], true);
         }
 
         return $result;
@@ -160,6 +180,14 @@ class SyncMarketplaceOrders extends Command
         $this->info("✅ Synced: {$result['synced']} orders");
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
+            
+            // Send error summary to Slack
+            SlackLogService::post('order_sync', 'warning', "V2 Sync Modified Orders: {$result['errors']} error(s) occurred", [
+                'command' => 'v2:sync-orders',
+                'type' => 'modified',
+                'synced' => $result['synced'],
+                'errors' => $result['errors']
+            ], true);
         }
 
         return $result;
@@ -177,6 +205,14 @@ class SyncMarketplaceOrders extends Command
         $this->info("✅ Synced: {$result['synced']} care records");
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
+            
+            // Send error summary to Slack
+            SlackLogService::post('order_sync', 'warning', "V2 Sync Care Records: {$result['errors']} error(s) occurred", [
+                'command' => 'v2:sync-orders',
+                'type' => 'care',
+                'synced' => $result['synced'],
+                'errors' => $result['errors']
+            ], true);
         }
 
         return $result;
@@ -194,6 +230,14 @@ class SyncMarketplaceOrders extends Command
         $this->info("✅ Synced: {$result['synced']} orders");
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
+            
+            // Send error summary to Slack
+            SlackLogService::post('order_sync', 'warning', "V2 Sync Incomplete Orders: {$result['errors']} error(s) occurred", [
+                'command' => 'v2:sync-orders',
+                'type' => 'incomplete',
+                'synced' => $result['synced'],
+                'errors' => $result['errors']
+            ], true);
         }
 
         return $result;

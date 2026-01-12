@@ -9,6 +9,7 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Events\V2\OrderCreated;
 use App\Events\V2\OrderStatusChanged;
+use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -42,6 +43,12 @@ class OrderSyncService
             Log::warning('OrderSyncService: Order object missing order_id', [
                 'order_obj' => $orderObj
             ]);
+            
+            // Send warning to Slack
+            SlackLogService::post('order_sync', 'warning', "Order object missing order_id", [
+                'order_obj_keys' => is_object($orderObj) ? array_keys((array)$orderObj) : 'not_object'
+            ]);
+            
             return null;
         }
 
@@ -113,6 +120,12 @@ class OrderSyncService
             Log::warning('OrderSyncService: Order status is null', [
                 'order_id' => $orderObj->order_id,
                 'order_obj' => $orderObj
+            ]);
+            
+            // Send warning to Slack
+            SlackLogService::post('order_sync', 'warning', "Order status is null", [
+                'order_id' => $orderObj->order_id,
+                'marketplace_id' => $marketplaceId
             ]);
         }
 
