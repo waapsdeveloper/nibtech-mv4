@@ -698,8 +698,12 @@ function refreshPricesButtonClick(variationId, marketplaceId) {
  * Load marketplace tables
  * When marketplace expands, automatically refresh prices from API (for Backmarket)
  * This matches the behavior of clicking the refresh button
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {boolean} skipRefresh - Skip price refresh for Backmarket
+ * @param {function} callback - Optional callback to execute after table is loaded
  */
-function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) {
+function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false, callback = null) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
     // For Backmarket (marketplace_id = 1), refresh prices from API first (like V1)
@@ -708,19 +712,23 @@ function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) 
         // Call refreshPricesFromAPI when expanding - same functionality as refresh button
         window.refreshPricesFromAPI(variationId, function() {
             // After refresh, load listings
-            loadListingsAfterRefresh(variationId, marketplaceId, container);
+            loadListingsAfterRefresh(variationId, marketplaceId, container, callback);
         });
         return;
     }
     
     // For other marketplaces, just load listings directly
-    loadListingsAfterRefresh(variationId, marketplaceId, container);
+    loadListingsAfterRefresh(variationId, marketplaceId, container, callback);
 }
 
 /**
  * Load listings after price refresh (or directly for non-Backmarket)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {jQuery} container
+ * @param {function} callback - Optional callback to execute after table is rendered
  */
-function loadListingsAfterRefresh(variationId, marketplaceId, container) {
+function loadListingsAfterRefresh(variationId, marketplaceId, container, callback = null) {
     // Get listings for this marketplace
     $.ajax({
         url: window.ListingConfig.urls.getListings + '/' + variationId,
@@ -888,6 +896,15 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container) {
             // Render listings table first
             renderMarketplaceTables(variationId, marketplaceId, listingsTable);
             
+            // Execute callback after table is rendered (e.g., to highlight changed prices)
+            if (callback && typeof callback === 'function') {
+                // Delay to ensure DOM is ready and inputs are fully rendered
+                // Use a slightly longer delay to match the setTimeout in renderMarketplaceTables (200ms)
+                setTimeout(function() {
+                    callback();
+                }, 250);
+            }
+            
             // Load stocks only to calculate best_price (for marketplace 1 only, stocks are common)
             if (marketplaceId === 1) {
                 loadStocksForBestPrice(variationId, marketplaceId);
@@ -1001,6 +1018,169 @@ function updateBreakevenTooltips(variationId, marketplaceId, bestPrice) {
         const breakevenPrice = (bestPrice * parseFloat(rate)).toFixed(2);
         const tooltipText = `Break Even: ${currencySign}${breakevenPrice}`;
         pmAppendSpan.attr('title', tooltipText);
+    });
+}
+
+/**
+ * Highlight changed prices with green background after bulk price update
+ * Compares old values (stored before update) with new values (from rendered table)
+ * Matches the behavior of individual input updates (green background on change)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {object} oldPrices - Object containing old price values keyed by listing ID
+ */
+function highlightChangedPrices(variationId, marketplaceId, oldPrices) {
+    if (!oldPrices || typeof oldPrices !== 'object') {
+        return;
+    }
+    
+    // Get all price inputs in the table
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length === 0) {
+        return;
+    }
+    
+    // Compare old and new values for each listing
+    listingsContainer.find('[id^="min_price_"], [id^="price_"]').each(function() {
+        const input = $(this);
+        const inputId = input.attr('id');
+        const listingId = inputId.replace(/^(min_price_|price_)/, '');
+        
+        if (!oldPrices[listingId]) {
+            return; // No old value stored for this listing
+        }
+        
+        // Get new value from input (handle empty strings)
+        const newValueStr = input.val();
+        const newValue = (newValueStr && newValueStr.trim() !== '') ? parseFloat(newValueStr) : null;
+        let oldValue = null;
+        let isChanged = false;
+        
+        if (inputId.startsWith('min_price_')) {
+            oldValue = oldPrices[listingId].min_price;
+            // Check if value changed (accounting for floating point precision)
+            // Compare null/undefined cases and numeric differences
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        } else if (inputId.startsWith('price_')) {
+            oldValue = oldPrices[listingId].price;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        }
+        
+        // Add green background if value changed (same as individual input updates)
+        if (isChanged) {
+            input.addClass('bg-green');
+            
+            // Update original value in ChangeDetection so future individual changes work correctly
+            if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+                const currentValue = input.val() || '';
+                window.ChangeDetection.originalValues[inputId] = {
+                    value: currentValue,
+                    fieldName: inputId.startsWith('min_price_') ? 'Min Price' : 'Price',
+                    listingId: listingId
+                };
+            }
+            
+            // Run validation check (like individual input updates) - validates min_price vs price relationship
+            if (typeof window.checkMinPriceDiff === 'function') {
+                window.checkMinPriceDiff(listingId);
+            }
+        }
+    });
+}
+
+/**
+ * Highlight changed handlers with green background after bulk handler update
+ * Compares old values (stored before update) with new values (from rendered table)
+ * Matches the behavior of individual input updates (green background on change)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {object} oldHandlers - Object containing old handler values keyed by listing ID
+ */
+function highlightChangedHandlers(variationId, marketplaceId, oldHandlers) {
+    if (!oldHandlers || typeof oldHandlers !== 'object') {
+        return;
+    }
+    
+    // Get all handler inputs in the table (min_price_limit and price_limit)
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length === 0) {
+        return;
+    }
+    
+    // Compare old and new values for each listing
+    listingsContainer.find('[id^="min_price_limit_"], [id^="price_limit_"]').each(function() {
+        const input = $(this);
+        const inputId = input.attr('id');
+        const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
+        
+        if (!oldHandlers[listingId]) {
+            return; // No old value stored for this listing
+        }
+        
+        // Get new value from input (handle empty strings)
+        const newValueStr = input.val();
+        const newValue = (newValueStr && newValueStr.trim() !== '') ? parseFloat(newValueStr) : null;
+        let oldValue = null;
+        let isChanged = false;
+        
+        if (inputId.startsWith('min_price_limit_')) {
+            oldValue = oldHandlers[listingId].min_price_limit;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        } else if (inputId.startsWith('price_limit_')) {
+            oldValue = oldHandlers[listingId].price_limit;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        }
+        
+        // Add green background if value changed (same as individual input updates)
+        if (isChanged) {
+            input.addClass('bg-green');
+            
+            // Update original value in ChangeDetection so future individual changes work correctly
+            if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+                const currentValue = input.val() || '';
+                window.ChangeDetection.originalValues[inputId] = {
+                    value: currentValue,
+                    fieldName: inputId.startsWith('min_price_limit_') ? 'Min Price Handler' : 'Price Handler',
+                    listingId: listingId
+                };
+            }
+            
+            // Run validation check (like individual input updates) - validates min_price vs price relationship
+            if (typeof window.checkMinPriceDiff === 'function') {
+                window.checkMinPriceDiff(listingId);
+            }
+        }
     });
 }
 
@@ -1914,6 +2094,24 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
         return;
     }
     
+    // Store old handler values before update (for green highlighting after reload)
+    const oldHandlers = {};
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length > 0) {
+        listingsContainer.find('[id^="min_price_limit_"], [id^="price_limit_"]').each(function() {
+            const inputId = $(this).attr('id');
+            const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
+            if (!oldHandlers[listingId]) {
+                oldHandlers[listingId] = {};
+            }
+            if (inputId.startsWith('min_price_limit_')) {
+                oldHandlers[listingId].min_price_limit = $(this).val() ? parseFloat($(this).val()) : null;
+            } else if (inputId.startsWith('price_limit_')) {
+                oldHandlers[listingId].price_limit = $(this).val() ? parseFloat($(this).val()) : null;
+            }
+        });
+    }
+    
     const button = $(this);
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
@@ -1941,7 +2139,11 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
         success: function(response) {
             if (response.success) {
                 // Reload the listings table to show updated values
-                loadMarketplaceTables(variationId, marketplaceId);
+                // Skip API refresh to ensure we highlight the changes from the form, not API
+                // Pass oldHandlers directly to the callback for better handler change detection
+                loadMarketplaceTables(variationId, marketplaceId, true, function() {
+                    highlightChangedHandlers(variationId, marketplaceId, oldHandlers);
+                });
                 
                 // Log success (no alert to avoid disturbance)
                 // Handlers updated successfully
@@ -1984,6 +2186,24 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         return;
     }
     
+    // Store old price values before update (for green highlighting after reload)
+    const oldPrices = {};
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length > 0) {
+        listingsContainer.find('[id^="min_price_"], [id^="price_"]').each(function() {
+            const inputId = $(this).attr('id');
+            const listingId = inputId.replace(/^(min_price_|price_)/, '');
+            if (!oldPrices[listingId]) {
+                oldPrices[listingId] = {};
+            }
+            if (inputId.startsWith('min_price_')) {
+                oldPrices[listingId].min_price = $(this).val() ? parseFloat($(this).val()) : null;
+            } else if (inputId.startsWith('price_')) {
+                oldPrices[listingId].price = $(this).val() ? parseFloat($(this).val()) : null;
+            }
+        });
+    }
+    
     const button = $(this);
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
@@ -2010,7 +2230,11 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         success: function(response) {
             if (response.success) {
                 // Reload the listings table to show updated values
-                loadMarketplaceTables(variationId, marketplaceId);
+                // Skip API refresh to ensure we highlight the changes from the form, not API
+                // Pass oldPrices directly to the callback for better price change detection
+                loadMarketplaceTables(variationId, marketplaceId, true, function() {
+                    highlightChangedPrices(variationId, marketplaceId, oldPrices);
+                });
                 // Log success (no alert to avoid disturbance)
                 // Prices updated successfully
             }
