@@ -95,6 +95,13 @@ Route::prefix('v2')->group(function () {
     Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
     Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
     
+    // Failed Jobs
+    Route::get('logs/failed-jobs', [\App\Http\Controllers\V2\FailedJobsController::class, 'index'])->name('v2.logs.failed-jobs');
+    Route::get('logs/failed-jobs/{id}', [\App\Http\Controllers\V2\FailedJobsController::class, 'show'])->name('v2.logs.failed-jobs.show');
+    Route::post('logs/failed-jobs/{id}/retry', [\App\Http\Controllers\V2\FailedJobsController::class, 'retry'])->name('v2.logs.failed-jobs.retry');
+    Route::delete('logs/failed-jobs/{id}', [\App\Http\Controllers\V2\FailedJobsController::class, 'destroy'])->name('v2.logs.failed-jobs.destroy');
+    Route::delete('logs/failed-jobs', [\App\Http\Controllers\V2\FailedJobsController::class, 'clear'])->name('v2.logs.failed-jobs.clear');
+    
     // Log Settings CRUD
     Route::post('logs/log-settings', [\App\Http\Controllers\V2\LogFileController::class, 'storeLogSetting'])->name('v2.logs.log-settings.store');
     Route::put('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'updateLogSetting'])->name('v2.logs.log-settings.update');
