@@ -98,6 +98,11 @@
                                                         Log File
                                                     </a>
                                                 </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/failed-jobs')}}">                                                        
+                                                        Failed Jobs
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </li>
                                         @endif

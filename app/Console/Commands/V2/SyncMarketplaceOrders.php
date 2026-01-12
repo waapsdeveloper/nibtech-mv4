@@ -91,9 +91,9 @@ class SyncMarketplaceOrders extends Command
             ]
         ]);
 
-        // Log sync start to Slack
+        // Log sync start to Slack (using 'warning' level to match existing log settings)
         $marketplaceInfo = $marketplaceId ? "Marketplace ID: {$marketplaceId}" : "All marketplaces";
-        SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+        SlackLogService::post('order_sync', 'warning', "🔄 V2 Marketplace Order Sync Started", [
             'command' => 'v2:sync-orders',
             'type' => $type,
             'marketplace_id' => $marketplaceId,
