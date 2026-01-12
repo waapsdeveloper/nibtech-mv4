@@ -57,6 +57,13 @@ class SyncMarketplaceOrders extends Command
      */
     public function handle()
     {
+        // CRITICAL: Log immediately when handle() is called to verify execution
+        Log::info("=== SyncMarketplaceOrders::handle() CALLED ===", [
+            'timestamp' => now()->toDateTimeString(),
+            'memory_usage' => memory_get_usage(true),
+            'options_received' => $this->options()
+        ]);
+        
         $type = $this->option('type');
         $marketplaceId = $this->option('marketplace') ? (int) $this->option('marketplace') : null;
         $pageSize = (int) $this->option('page-size');
@@ -75,7 +82,13 @@ class SyncMarketplaceOrders extends Command
             'type' => $type,
             'marketplace_id' => $marketplaceId,
             'page_size' => $pageSize,
-            'days_back' => $daysBack
+            'days_back' => $daysBack,
+            'parsed_options' => [
+                'type' => $type,
+                'marketplace' => $marketplaceId,
+                'page-size' => $pageSize,
+                'days-back' => $daysBack
+            ]
         ]);
 
         // Log sync start to Slack

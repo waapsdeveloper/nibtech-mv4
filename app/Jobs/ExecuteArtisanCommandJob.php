@@ -37,12 +37,22 @@ class ExecuteArtisanCommandJob implements ShouldQueue
      */
     public function handle()
     {
+        // CRITICAL: Log immediately when job starts
+        Log::info("=== ExecuteArtisanCommandJob::handle() STARTED ===", [
+            'command' => $this->command,
+            'options' => $this->options,
+            'job_id' => $this->job ? $this->job->getJobId() : 'no-job-id',
+            'started_at' => now()->toDateTimeString(),
+            'memory_usage' => memory_get_usage(true),
+            'pid' => getmypid()
+        ]);
+        
         $commandStartTime = microtime(true);
         
         Log::info("ExecuteArtisanCommandJob: Starting command execution", [
             'command' => $this->command,
             'options' => $this->options,
-            'job_id' => $this->job->getJobId(),
+            'job_id' => $this->job ? $this->job->getJobId() : 'no-job-id',
             'started_at' => now()->toDateTimeString()
         ]);
 
