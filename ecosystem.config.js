@@ -2,7 +2,7 @@ module.exports = {
   apps: [{
     name: 'sdpos-queue',
     script: 'artisan',
-    args: 'queue:work --tries=3 --timeout=300',
+    args: 'queue:work',
     interpreter: 'php',
     cwd: process.cwd(), // Use current working directory (works on any server)
     instances: 1,
