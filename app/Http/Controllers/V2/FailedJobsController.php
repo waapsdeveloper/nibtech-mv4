@@ -5,7 +5,10 @@ namespace App\Http\Controllers\V2;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Pagination\LengthAwarePaginator;
 
 class FailedJobsController extends Controller
 {
@@ -17,20 +20,54 @@ class FailedJobsController extends Controller
         $data['title_page'] = "Failed Jobs";
         session()->put('page_title', $data['title_page']);
         
-        // Get filter parameters
-        $queue = $request->get('queue');
-        $perPage = $request->get('per_page', 20);
-        
-        // Build query
-        $query = DB::table('failed_jobs')
-            ->orderBy('failed_at', 'desc');
-        
-        if ($queue) {
-            $query->where('queue', $queue);
+        try {
+            // Check if table exists
+            if (!Schema::hasTable('failed_jobs')) {
+                $emptyPaginator = new LengthAwarePaginator([], 0, 20, 1, [
+                    'path' => request()->url(),
+                    'pageName' => 'page',
+                ]);
+                return view('v2.logs.failed-jobs.index', [
+                    'failedJobs' => $emptyPaginator,
+                    'stats' => ['total' => 0, 'last_24h' => 0, 'last_7d' => 0],
+                    'queues' => collect([]),
+                    'data' => $data,
+                    'error' => 'failed_jobs table does not exist. Please run: php artisan queue:failed-table && php artisan migrate'
+                ]);
+            }
+            
+            // Get filter parameters
+            $queue = $request->get('queue');
+            $perPage = $request->get('per_page', 20);
+            
+            // Build query
+            $query = DB::table('failed_jobs')
+                ->orderBy('failed_at', 'desc');
+            
+            if ($queue) {
+                $query->where('queue', $queue);
+            }
+            
+            // Get failed jobs
+            $failedJobs = $query->paginate($perPage);
+        } catch (\Exception $e) {
+            \Log::error('FailedJobsController::index error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            $emptyPaginator = new LengthAwarePaginator([], 0, 20, 1, [
+                'path' => request()->url(),
+                'pageName' => 'page',
+            ]);
+            return view('v2.logs.failed-jobs.index', [
+                'failedJobs' => $emptyPaginator,
+                'stats' => ['total' => 0, 'last_24h' => 0, 'last_7d' => 0],
+                'queues' => collect([]),
+                'data' => $data,
+                'error' => 'Error loading failed jobs: ' . $e->getMessage()
+            ]);
         }
-        
-        // Get failed jobs
-        $failedJobs = $query->paginate($perPage);
         
         // Parse payload for each job to extract useful info
         $failedJobs->getCollection()->transform(function ($job) {
@@ -74,22 +111,30 @@ class FailedJobsController extends Controller
         });
         
         // Get statistics
-        $stats = [
-            'total' => DB::table('failed_jobs')->count(),
-            'last_24h' => DB::table('failed_jobs')
-                ->where('failed_at', '>=', now()->subDay())
-                ->count(),
-            'last_7d' => DB::table('failed_jobs')
-                ->where('failed_at', '>=', now()->subDays(7))
-                ->count(),
-        ];
-        
-        // Get unique queues
-        $queues = DB::table('failed_jobs')
-            ->select('queue')
-            ->distinct()
-            ->whereNotNull('queue')
-            ->pluck('queue');
+        try {
+            $stats = [
+                'total' => DB::table('failed_jobs')->count(),
+                'last_24h' => DB::table('failed_jobs')
+                    ->where('failed_at', '>=', now()->subDay())
+                    ->count(),
+                'last_7d' => DB::table('failed_jobs')
+                    ->where('failed_at', '>=', now()->subDays(7))
+                    ->count(),
+            ];
+            
+            // Get unique queues
+            $queues = DB::table('failed_jobs')
+                ->select('queue')
+                ->distinct()
+                ->whereNotNull('queue')
+                ->pluck('queue');
+        } catch (\Exception $e) {
+            Log::error('FailedJobsController::index error in stats', [
+                'error' => $e->getMessage()
+            ]);
+            $stats = ['total' => 0, 'last_24h' => 0, 'last_7d' => 0];
+            $queues = collect([]);
+        }
         
         return view('v2.logs.failed-jobs.index', compact('failedJobs', 'stats', 'queues', 'data'));
     }
@@ -99,7 +144,13 @@ class FailedJobsController extends Controller
      */
     public function show($id)
     {
-        $job = DB::table('failed_jobs')->find($id);
+        // Try to find by uuid first (Laravel default), then by id if uuid doesn't work
+        $job = DB::table('failed_jobs')->where('uuid', $id)->first();
+        
+        // If not found by uuid, try by id (in case table has id column)
+        if (!$job) {
+            $job = DB::table('failed_jobs')->where('id', $id)->first();
+        }
         
         if (!$job) {
             abort(404, 'Failed job not found');
@@ -135,6 +186,7 @@ class FailedJobsController extends Controller
     public function retry($id)
     {
         try {
+            // queue:retry accepts uuid, not id
             Artisan::call('queue:retry', ['id' => $id]);
             
             return redirect()->route('v2.logs.failed-jobs')
@@ -151,7 +203,11 @@ class FailedJobsController extends Controller
     public function destroy($id)
     {
         try {
-            DB::table('failed_jobs')->where('id', $id)->delete();
+            // Try to delete by uuid first, then by id
+            $deleted = DB::table('failed_jobs')->where('uuid', $id)->delete();
+            if ($deleted === 0) {
+                $deleted = DB::table('failed_jobs')->where('id', $id)->delete();
+            }
             
             if (request()->expectsJson()) {
                 return response()->json([
