@@ -50,8 +50,18 @@ class SlackLogService
      */
     public static function post(string $logType, string $level, string $message, array $context = [], bool $allowInLoop = false): bool
     {
+        // DEBUG: Log entry attempt
+        Log::debug("SlackLogService::post called", [
+            'log_type' => $logType,
+            'level' => $level,
+            'message_preview' => mb_substr($message, 0, 100),
+            'batch_mode' => self::$batchMode,
+            'allow_in_loop' => $allowInLoop
+        ]);
+        
         // If in batch mode and not explicitly allowed, collect instead of posting
         if (self::$batchMode && !$allowInLoop) {
+            Log::debug("SlackLogService: Collecting to batch (batch mode active)");
             self::collectBatch($logType, $level, $message, $context);
             return true;
         }
@@ -60,13 +70,43 @@ class SlackLogService
             // Find active log setting for this type and level
             $setting = LogSetting::getActiveForType($logType, $level);
             
+            // DEBUG: Log setting lookup result
+            if (!$setting) {
+                Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
+            } else {
+                Log::debug("SlackLogService: Found setting", [
+                    'setting_name' => $setting->name,
+                    'is_enabled' => $setting->is_enabled,
+                    'channel_name' => $setting->channel_name,
+                    'has_webhook' => !empty($setting->webhook_url)
+                ]);
+            }
+            
             // If no setting found, also check keyword-based settings
             if (!$setting) {
                 $setting = LogSetting::getActiveForKeywords($message, $level);
+                if ($setting) {
+                    Log::debug("SlackLogService: Found keyword-based setting", [
+                        'setting_name' => $setting->name
+                    ]);
+                }
             }
             
             // If no matching setting found, don't post to Slack (only log to file)
             if (!$setting || !$setting->is_enabled) {
+                // DEBUG: Log why not posting
+                if (!$setting) {
+                    Log::debug("SlackLogService: No matching setting found - logging to file only", [
+                        'log_type' => $logType,
+                        'level' => $level,
+                        'message' => mb_substr($message, 0, 200)
+                    ]);
+                } else {
+                    Log::debug("SlackLogService: Setting found but disabled - logging to file only", [
+                        'setting_name' => $setting->name,
+                        'is_enabled' => $setting->is_enabled
+                    ]);
+                }
                 // Log to file only (default Laravel log)
                 self::logToFile($level, $message, $context);
                 return false;
@@ -74,6 +114,10 @@ class SlackLogService
             
             // Check rate limiting
             if (!self::checkRateLimit($logType, $level)) {
+                Log::debug("SlackLogService: Rate limited - logging to file only", [
+                    'log_type' => $logType,
+                    'level' => $level
+                ]);
                 // Still log to file even if rate limited
                 self::logToFile($level, $message, $context);
                 return false;
@@ -81,7 +125,11 @@ class SlackLogService
             
             // Verify webhook URL exists
             if (empty($setting->webhook_url)) {
-                Log::warning("SlackLogService: Webhook URL missing for log setting: {$setting->name}");
+                Log::warning("SlackLogService: Webhook URL missing for log setting: {$setting->name}", [
+                    'setting_id' => $setting->id,
+                    'setting_name' => $setting->name,
+                    'channel_name' => $setting->channel_name
+                ]);
                 self::logToFile($level, $message, $context);
                 return false;
             }
@@ -89,20 +137,39 @@ class SlackLogService
             // Format message for Slack using Block Kit for better formatting
             $slackPayload = self::formatSlackBlocks($level, $message, $context, $setting->channel_name, $logType);
             
+            // DEBUG: Log before posting
+            Log::debug("SlackLogService: Posting to Slack", [
+                'webhook_url_preview' => mb_substr($setting->webhook_url, 0, 50) . '...',
+                'channel_name' => $setting->channel_name,
+                'payload_size' => strlen(json_encode($slackPayload))
+            ]);
+            
             // Post to Slack
             $response = Http::timeout(5)
                 ->asJson()
                 ->post($setting->webhook_url, $slackPayload);
+            
+            // DEBUG: Log response
+            Log::debug("SlackLogService: Slack API response", [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body_preview' => mb_substr($response->body(), 0, 200)
+            ]);
             
             if ($response->successful()) {
                 // Update rate limit cache
                 self::updateRateLimit($logType, $level);
                 // Also log to file for backup
                 self::logToFile($level, $message, $context);
+                Log::debug("SlackLogService: Successfully posted to Slack");
                 return true;
             } else {
                 // If Slack post fails, still log to file
-                Log::warning("SlackLogService: Failed to post to Slack channel {$setting->channel_name}. Status: {$response->status()}");
+                Log::warning("SlackLogService: Failed to post to Slack channel {$setting->channel_name}. Status: {$response->status()}", [
+                    'response_body' => $response->body(),
+                    'log_type' => $logType,
+                    'level' => $level
+                ]);
                 self::logToFile($level, $message, $context);
                 return false;
             }
@@ -113,6 +180,8 @@ class SlackLogService
                 'log_type' => $logType,
                 'level' => $level,
                 'message' => $message,
+                'exception' => get_class($e),
+                'trace' => $e->getTraceAsString()
             ]);
             self::logToFile($level, $message, $context);
             return false;

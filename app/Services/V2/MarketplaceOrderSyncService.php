@@ -7,6 +7,7 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Services\V2\OrderSyncService;
+use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
 use Carbon\Carbon;
 
@@ -102,6 +103,18 @@ class MarketplaceOrderSyncService
                             'order_id' => $orderObj->order_id ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
+                        
+                        // Send critical errors to Slack (only for first few to avoid spam)
+                        if ($totalErrors <= 5) {
+                            SlackLogService::post('order_sync', 'error', "Error syncing order: {$e->getMessage()}", [
+                                'marketplace_id' => $marketplace->id,
+                                'marketplace_name' => $marketplace->name ?? 'unknown',
+                                'order_id' => $orderObj->order_id ?? 'unknown',
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -109,6 +122,15 @@ class MarketplaceOrderSyncService
                 Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
                     'marketplace_id' => $marketplace->id,
                     'error' => $e->getMessage()
+                ]);
+                
+                // Send marketplace-level errors to Slack
+                SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$e->getMessage()}", [
+                    'marketplace_id' => $marketplace->id,
+                    'marketplace_name' => $marketplace->name ?? 'unknown',
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
                 ]);
             }
         }
@@ -172,6 +194,18 @@ class MarketplaceOrderSyncService
                             'order_id' => $orderObj->order_id ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
+                        
+                        // Send critical errors to Slack (only for first few to avoid spam)
+                        if ($totalErrors <= 5) {
+                            SlackLogService::post('order_sync', 'error', "Error syncing order: {$e->getMessage()}", [
+                                'marketplace_id' => $marketplace->id,
+                                'marketplace_name' => $marketplace->name ?? 'unknown',
+                                'order_id' => $orderObj->order_id ?? 'unknown',
+                                'error' => $e->getMessage(),
+                                'file' => $e->getFile(),
+                                'line' => $e->getLine()
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -179,6 +213,15 @@ class MarketplaceOrderSyncService
                 Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
                     'marketplace_id' => $marketplace->id,
                     'error' => $e->getMessage()
+                ]);
+                
+                // Send marketplace-level errors to Slack
+                SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$e->getMessage()}", [
+                    'marketplace_id' => $marketplace->id,
+                    'marketplace_name' => $marketplace->name ?? 'unknown',
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
                 ]);
             }
         }
@@ -255,6 +298,16 @@ class MarketplaceOrderSyncService
                             'care_id' => $careId,
                             'error' => $e->getMessage()
                         ]);
+                        
+                        // Send critical errors to Slack (only for first few to avoid spam)
+                        if ($totalErrors <= 5) {
+                            SlackLogService::post('order_sync', 'error', "Error updating care record: {$e->getMessage()}", [
+                                'marketplace_id' => $marketplace->id,
+                                'orderline_reference_id' => $orderlineReferenceId,
+                                'care_id' => $careId,
+                                'error' => $e->getMessage()
+                            ]);
+                        }
                     }
                 }
             } catch (\Exception $e) {
@@ -262,6 +315,15 @@ class MarketplaceOrderSyncService
                 Log::error("MarketplaceOrderSyncService: Error syncing care records", [
                     'marketplace_id' => $marketplace->id,
                     'error' => $e->getMessage()
+                ]);
+                
+                // Send marketplace-level errors to Slack
+                SlackLogService::post('order_sync', 'error', "Error syncing care records: {$e->getMessage()}", [
+                    'marketplace_id' => $marketplace->id,
+                    'marketplace_name' => $marketplace->name ?? 'unknown',
+                    'error' => $e->getMessage(),
+                    'file' => $e->getFile(),
+                    'line' => $e->getLine()
                 ]);
             }
         }
@@ -318,6 +380,16 @@ class MarketplaceOrderSyncService
                     'order_reference_id' => $orderReferenceId,
                     'error' => $e->getMessage()
                 ]);
+                
+                // Send critical errors to Slack (only for first few to avoid spam)
+                if ($totalErrors <= 5) {
+                    SlackLogService::post('order_sync', 'error', "Error syncing incomplete order: {$e->getMessage()}", [
+                        'order_reference_id' => $orderReferenceId,
+                        'error' => $e->getMessage(),
+                        'file' => $e->getFile(),
+                        'line' => $e->getLine()
+                    ]);
+                }
             }
         }
 
