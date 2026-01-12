@@ -721,14 +721,71 @@ function updateListingRowAfterRestore(listingId, fieldName, restoredValue) {
 /**
  * Load marketplace tables when toggle is opened
  */
+// Global object to store auto-refresh intervals for open marketplace tables
+if (!window.marketplaceAutoRefreshIntervals) {
+    window.marketplaceAutoRefreshIntervals = {};
+}
+
+/**
+ * Start auto-refresh for a marketplace table (Backmarket only)
+ * Refreshes prices every 5 seconds while table is open
+ */
+function startMarketplaceAutoRefresh(variationId, marketplaceId) {
+    // Only auto-refresh for Backmarket (marketplace_id = 1)
+    if (marketplaceId !== 1) {
+        return;
+    }
+    
+    const intervalKey = `${variationId}_${marketplaceId}`;
+    
+    // Clear any existing interval for this table
+    if (window.marketplaceAutoRefreshIntervals[intervalKey]) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[intervalKey]);
+    }
+    
+    // Start new interval: refresh prices every 5 seconds
+    window.marketplaceAutoRefreshIntervals[intervalKey] = setInterval(function() {
+        // Refresh prices from API and reload listings
+        window.refreshPricesFromAPI(variationId, function() {
+            // After refresh, reload the listings table
+            const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
+            if (container.length > 0 && container.data('loaded') === true) {
+                // Reload listings without showing loading state
+                loadMarketplaceTables(variationId, marketplaceId, true);
+            }
+        });
+    }, 5000); // 5 seconds
+}
+
+/**
+ * Stop auto-refresh for a marketplace table
+ */
+function stopMarketplaceAutoRefresh(variationId, marketplaceId) {
+    const intervalKey = `${variationId}_${marketplaceId}`;
+    if (window.marketplaceAutoRefreshIntervals[intervalKey]) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[intervalKey]);
+        delete window.marketplaceAutoRefreshIntervals[intervalKey];
+    }
+}
+
+/**
+ * Clear all auto-refresh intervals (on page unload)
+ */
+function clearAllMarketplaceAutoRefresh() {
+    Object.keys(window.marketplaceAutoRefreshIntervals).forEach(function(key) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[key]);
+    });
+    window.marketplaceAutoRefreshIntervals = {};
+}
+
+// Clear all intervals on page unload
+$(window).on('beforeunload', function() {
+    clearAllMarketplaceAutoRefresh();
+});
+
 $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     const toggleElement = $(this);
     const container = toggleElement.find('.marketplace-tables-container');
-    
-    // Check if already loaded
-    if (container.data('loaded') === true) {
-        return;
-    }
     
     // Extract variationId and marketplaceId from the toggle ID
     const toggleId = toggleElement.attr('id');
@@ -740,11 +797,37 @@ $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     const variationId = parseInt(matches[1]);
     const marketplaceId = parseInt(matches[2]);
     
+    // Check if already loaded
+    if (container.data('loaded') === true) {
+        // Table already loaded, just start auto-refresh
+        startMarketplaceAutoRefresh(variationId, marketplaceId);
+        return;
+    }
+    
     // Show loading state
     container.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading tables...</p></div>');
     
     // Load listings for this marketplace
-    loadMarketplaceTables(variationId, marketplaceId);
+    loadMarketplaceTables(variationId, marketplaceId, false, function() {
+        // After table is loaded, start auto-refresh
+        startMarketplaceAutoRefresh(variationId, marketplaceId);
+    });
+});
+
+// Stop auto-refresh when marketplace table is closed
+$(document).on('hide.bs.collapse', '.marketplace-toggle-content', function() {
+    const toggleElement = $(this);
+    const toggleId = toggleElement.attr('id');
+    const matches = toggleId.match(/marketplace_toggle_(\d+)_(\d+)/);
+    if (!matches) {
+        return;
+    }
+    
+    const variationId = parseInt(matches[1]);
+    const marketplaceId = parseInt(matches[2]);
+    
+    // Stop auto-refresh for this table
+    stopMarketplaceAutoRefresh(variationId, marketplaceId);
 });
 
 /**
