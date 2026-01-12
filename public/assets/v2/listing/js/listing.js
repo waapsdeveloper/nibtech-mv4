@@ -429,10 +429,28 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                     const restorableFields = ['min_price', 'price', 'min_handler', 'price_handler', 'buybox', 'buybox_price'];
                     const canRestore = restorableFields.includes(item.field_name) && item.old_value !== null && item.old_value !== '';
                     
-                    // Build restore button
-                    let restoreButton = '';
+                    // Build action buttons (record snapshot + restore)
+                    let actionButtons = '<div class="d-flex align-items-center justify-content-center gap-1">';
+                    
+                    // Add record button if snapshot exists
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        const snapshotId = `record_${item.id}`;
+                        // Store snapshot in global object if not already stored
+                        if (!window.listingSnapshots) {
+                            window.listingSnapshots = {};
+                        }
+                        window.listingSnapshots[snapshotId] = item.row_snapshot;
+                        actionButtons += `
+                            <button class="btn btn-sm btn-outline-info" 
+                                    onclick="showRecordSnapshot('${snapshotId}')"
+                                    title="View record snapshot">
+                                <i class="fas fa-database"></i>
+                            </button>`;
+                    }
+                    
+                    // Add restore button if available
                     if (canRestore) {
-                        restoreButton = `
+                        actionButtons += `
                             <button class="btn btn-sm btn-outline-primary restore-history-btn" 
                                     data-history-id="${item.id}"
                                     data-field-name="${item.field_name}"
@@ -442,8 +460,13 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                                     onclick="restoreListingHistory(${item.id}, '${item.field_name}', ${item.old_value}, '${fieldLabel.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-undo me-1"></i>Restore
                             </button>`;
-                    } else {
-                        restoreButton = '<span class="text-muted small">-</span>';
+                    }
+                    
+                    actionButtons += '</div>';
+                    
+                    // If no buttons, show dash
+                    if (!item.row_snapshot && !canRestore) {
+                        actionButtons = '<span class="text-muted small">-</span>';
                     }
                     
                     historyTable += `
@@ -455,7 +478,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
                             <td>${item.change_reason || '-'}</td>
-                            <td class="text-center">${restoreButton}</td>
+                            <td class="text-center">${actionButtons}</td>
                         </tr>`;
                 });
             } else {
@@ -469,6 +492,90 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
         }
     });
 }
+
+/**
+ * Show record snapshot (JSON data) in a modal
+ * @param {string} snapshotId - Unique ID for the snapshot
+ */
+window.showRecordSnapshot = function(snapshotId) {
+    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        alert('Snapshot data not found');
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const jsonString = JSON.stringify(snapshot, null, 2);
+    
+    // Create or get modal for displaying snapshot
+    let modal = $('#recordSnapshotModal');
+    if (modal.length === 0) {
+        // Create modal if it doesn't exist
+        $('body').append(`
+            <div class="modal fade" id="recordSnapshotModal" tabindex="-1" aria-labelledby="recordSnapshotModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="recordSnapshotModalLabel">Record Snapshot</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="recordSnapshotContent" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 70vh; overflow: auto; font-size: 0.85rem; line-height: 1.5;"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="copyRecordSnapshot()">Copy JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        modal = $('#recordSnapshotModal');
+    }
+    
+    // Set the JSON content
+    $('#recordSnapshotContent').text(jsonString);
+    
+    // Store snapshot ID for copy function
+    modal.data('snapshot-id', snapshotId);
+    
+    // Show modal
+    modal.modal('show');
+};
+
+/**
+ * Copy record snapshot JSON to clipboard
+ */
+window.copyRecordSnapshot = function() {
+    const modal = $('#recordSnapshotModal');
+    const snapshotId = modal.data('snapshot-id');
+    
+    if (!snapshotId || !window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        alert('Snapshot data not found');
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const jsonString = JSON.stringify(snapshot, null, 2);
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(jsonString).then(function() {
+        alert('JSON copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy:', err);
+        // Fallback: select text
+        const textArea = document.createElement('textarea');
+        textArea.value = jsonString;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert('JSON copied to clipboard!');
+        } catch (err) {
+            alert('Failed to copy. Please select and copy manually.');
+        }
+        document.body.removeChild(textArea);
+    });
+};
 
 /**
  * Restore listing field to previous value from history
@@ -961,13 +1068,22 @@ function updateBestPrice(variationId, marketplaceId, prices) {
     }
     
     let bestPrice = '0.00';
+    let averageCost = 0;
     if (prices.length > 0) {
-        let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
+        averageCost = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
         // Calculate best_price: (average_cost + 20) / 0.88 (same formula as original)
-        bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
+        bestPrice = ((parseFloat(averageCost) + 20) / 0.88).toFixed(2);
         bestPriceElement.text(bestPrice);
+        
+        // Store average cost as data attribute and add tooltip
+        bestPriceElement.attr('data-average-cost', averageCost.toFixed(2));
+        bestPriceElement.attr('title', `Average Cost: €${averageCost.toFixed(2)}`);
+        bestPriceElement.css('cursor', 'help');
     } else {
         bestPriceElement.text('0.00');
+        bestPriceElement.removeAttr('data-average-cost');
+        bestPriceElement.removeAttr('title');
+        bestPriceElement.css('cursor', '');
     }
     
     // Update breakeven tooltips for all non-EUR listings in this marketplace

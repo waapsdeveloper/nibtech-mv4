@@ -132,7 +132,7 @@
                         LS: <span id="listed_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $listedStock }}</span>
                     </span>
                     <span class="mx-1">|</span>
-                    <span class="text-warning" title="Pending Orders - Orders for this marketplace">
+                    <span class="text-danger" title="Pending Orders - Orders for this marketplace">
                         PO: <span id="pending_orders_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingOrdersCount }}</span>
                     </span>
                 </span>
@@ -172,7 +172,7 @@
         
         {{-- Line 3: Forms and order summary - Can wrap on small screens --}}
         <div class="d-flex justify-content-between align-items-center flex-wrap" style="gap: 0.5rem;">
-            <div class="d-flex align-items-center flex-wrap" style="gap: 0.5rem;">
+            <div class="d-flex align-items-center flex-wrap" style="gap: 5.5rem;">
                 <form class="d-inline-flex gap-1 align-items-center" method="POST" id="change_all_handler_{{ $variationId }}_{{ $marketplaceId }}" onsubmit="return false;">
                     @csrf
                     <div class="form-floating" style="width: 75px;">
@@ -198,7 +198,18 @@
                     <button type="button" class="btn btn-sm btn-success" style="height: 31px; line-height: 1;">Push</button>
                 </form>
             </div>
-            <div class="small fw-bold text-end" style="min-width: fit-content;">{{ $orderSummary }}</div>
+            <div class="small fw-bold text-end" style="min-width: fit-content;">
+                @php
+                    // Split order summary into parts
+                    $parts = explode(' - ', $orderSummary);
+                    // First line: Today and Yesterday (first 2 parts)
+                    $firstLine = implode(' - ', array_slice($parts, 0, 2));
+                    // Second line: 7 days, 14 days, 30 days (remaining parts)
+                    $secondLine = implode(' - ', array_slice($parts, 2));
+                @endphp
+                <div>{{ $firstLine }}</div>
+                <div>{{ $secondLine }}</div>
+            </div>
         </div>
     </div>
     <div class="marketplace-toggle-content collapse" id="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}">
