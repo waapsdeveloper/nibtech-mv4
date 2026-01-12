@@ -69,6 +69,17 @@ class SyncMarketplaceOrders extends Command
         }
         $this->newLine();
 
+        // Log sync start to Slack
+        $marketplaceInfo = $marketplaceId ? "Marketplace ID: {$marketplaceId}" : "All marketplaces";
+        SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+            'command' => 'v2:sync-orders',
+            'type' => $type,
+            'marketplace_id' => $marketplaceId,
+            'marketplace_info' => $marketplaceInfo,
+            'page_size' => $pageSize,
+            'days_back' => $daysBack
+        ], true);
+
         $startTime = microtime(true);
         $results = [];
 
