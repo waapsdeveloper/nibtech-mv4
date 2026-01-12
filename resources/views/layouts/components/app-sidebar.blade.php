@@ -81,7 +81,7 @@
                                             </ul>
                                         </li>
                                         @endif
-                                        @if ($isSuperAdmin && $user->hasPermission('view_listing'))
+                                        @if ($isSuperAdmin)
                                         <li class="slide has-sub">
                                             <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2LogsMenu" role="button" aria-expanded="false" aria-controls="v2LogsMenu">
                                                 Logs
