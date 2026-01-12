@@ -272,16 +272,15 @@ function clearAllFailedJobs() {
             'Content-Type': 'application/json'
         }
     })
-    .then(response => {
-        if (response.ok) {
-            showAlert('success', 'All failed jobs cleared');
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'All failed jobs cleared successfully');
             setTimeout(() => {
                 window.location.reload();
             }, 1000);
         } else {
-            return response.json().then(data => {
-                showAlert('danger', data.error || 'Failed to clear jobs');
-            });
+            showAlert('danger', data.error || 'Failed to clear jobs');
         }
     })
     .catch(error => {
