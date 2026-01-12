@@ -333,8 +333,10 @@ class Order extends Component
                     'orderItems' => $order->order_items,
                 ];
 
-                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
-                sleep(2);
+                // TEMPORARILY DISABLED: InvoiceMail sending disabled to prevent queue/system hogging
+                // TODO: Re-enable when queue is stable
+                // Mail::to($order->customer->email)->send(new InvoiceMail($data2));
+                // sleep(2);
 
             }
             // return redirect()->back();
@@ -547,7 +549,9 @@ class Order extends Component
                     'customer' => $order->customer,
                     'orderItems' => $order->order_items,
                 ];
-                Mail::to($order->customer->email)->send(new InvoiceMail($data2));
+                // TEMPORARILY DISABLED: InvoiceMail sending disabled to prevent queue/system hogging
+                // TODO: Re-enable when queue is stable
+                // Mail::to($order->customer->email)->send(new InvoiceMail($data2));
 
             }
             // return redirect()->back();
@@ -2672,7 +2676,9 @@ class Order extends Component
 
         // dd($pdfContent);
         // Send the invoice via email
-
+        // TEMPORARILY DISABLED: InvoiceMail queue calls disabled to prevent queue hogging
+        // TODO: Re-enable when queue is stable
+        /*
         try {
             Mail::to($order->customer->email)->queue(new InvoiceMail($data));
         } catch (\Exception $e) {
@@ -2683,6 +2689,7 @@ class Order extends Component
             session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
             }
         }
+        */
 
         $pdfContent = $pdf->Output('', 'S');
         // Return a response or redirect
@@ -2741,8 +2748,10 @@ class Order extends Component
             session()->put('error', 'Customer Email Not Found');
             return view('livewire.invoice_new')->with($data);
         }
+        // TEMPORARILY DISABLED: InvoiceMail queue calls disabled to prevent queue hogging
+        // TODO: Re-enable when queue is stable
         // Mail::to($order->customer->email)->queue(new InvoiceMail($data));
-
+        /*
         try {
             Mail::to($order->customer->email)->queue(new InvoiceMail($data));
         } catch (\Exception $e) {
@@ -2753,6 +2762,7 @@ class Order extends Component
             session()->put('error', 'Failed to send invoice email: ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
             }
         }
+        */
 
         $view = $packingMode ? 'livewire.invoice_2_new' : 'livewire.invoice_new';
 
@@ -3286,6 +3296,9 @@ class Order extends Component
                 'orderItems' => $order_items,
             ];
 
+            // TEMPORARILY DISABLED: InvoiceMail queue calls disabled to prevent queue hogging
+            // TODO: Re-enable when queue is stable
+            /*
             try {
                 Mail::to($order->customer->email)->queue(new InvoiceMail($data));
             } catch (\Exception $e) {
@@ -3295,6 +3308,7 @@ class Order extends Component
                     Log::error('Failed to send invoice email for order '.$id.': ' . $e->getMessage() . ' | Retry failed: ' . $e2->getMessage());
                 }
             }
+            */
         }
         // $order = Order_model::find($order->id);
         if(isset($detail->orderlines) && $detail->orderlines[0]->imei == null && $detail->orderlines[0]->serial_number  == null){
