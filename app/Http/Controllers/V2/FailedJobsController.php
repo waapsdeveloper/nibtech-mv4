@@ -232,16 +232,36 @@ class FailedJobsController extends Controller
     }
     
     /**
-     * Delete all failed jobs
+     * Delete all failed jobs - truncates the entire table
      */
     public function clear()
     {
         try {
+            // Truncate the entire failed_jobs table
             DB::table('failed_jobs')->truncate();
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'All failed jobs cleared successfully'
+                ]);
+            }
             
             return redirect()->route('v2.logs.failed-jobs')
                 ->with('success', 'All failed jobs cleared');
         } catch (\Exception $e) {
+            Log::error('FailedJobsController::clear error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to clear jobs: ' . $e->getMessage()
+                ], 500);
+            }
+            
             return redirect()->route('v2.logs.failed-jobs')
                 ->with('error', 'Failed to clear jobs: ' . $e->getMessage());
         }
