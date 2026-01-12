@@ -86,6 +86,26 @@
         $pendingStock = $totalLocked;
     }
     
+    // Calculate pending orders for this specific marketplace
+    // For Backmarket (marketplace_id = 1), include orders with marketplace_id = 1 or null
+    // For other marketplaces, only include orders with that specific marketplace_id
+    $pendingOrdersCount = \App\Models\Order_model::whereHas('order_items', function($q) use ($variationId) {
+            $q->where('variation_id', $variationId);
+        })
+        ->where(function($q) use ($marketplaceIdInt) {
+            if ($marketplaceIdInt == 1) {
+                // Backmarket: include orders with marketplace_id = 1 or null
+                $q->whereNull('marketplace_id')
+                  ->orWhere('marketplace_id', 1);
+            } else {
+                // Other marketplaces: only orders with this marketplace_id
+                $q->where('marketplace_id', $marketplaceIdInt);
+            }
+        })
+        ->where('status', 2)  // Pending status
+        ->where('order_type_id', 3)  // Sales orders
+        ->count();
+    
     // Debug: Uncomment the line below to see what's being queried (remove after debugging)
     // {{-- Debug: variation_id={{ $variationId }}, marketplace_id={{ $marketplaceIdInt }}, found={{ $marketplaceStock ? 'yes' : 'no' }}, stock={{ $currentStock }} --}}
     
@@ -106,20 +126,15 @@
         <div class="d-flex justify-content-between align-items-center flex-wrap mb-2" style="gap: 0.5rem;">
             <div class="fw-bold d-flex align-items-center flex-wrap" style="gap: 0.5rem; flex: 1; min-width: 0;">
                 <span id="marketplace_name_{{ $variationId }}_{{ $marketplaceId }}">{{ $marketplaceName }}</span>
-                <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span>
+                {{-- <span id="marketplace_count_{{ $variationId }}_{{ $marketplaceId }}" class="text-muted small"></span> --}}
                 <span class="text-muted small d-flex align-items-center flex-wrap" style="gap: 0.25rem;">
                     <span class="text-primary" title="Listed Stock - Total allocated to this marketplace">
-                        Listed: <span id="listed_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $listedStock }}</span>
+                        LS: <span id="listed_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $listedStock }}</span>
                     </span>
                     <span class="mx-1">|</span>
-                    <span class="text-success" title="Available Stock - Available for sale (Listed - Locked)">
-                        Avail: <span id="available_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $availableStock }}</span>
+                    <span class="text-warning" title="Pending Orders - Orders for this marketplace">
+                        PO: <span id="pending_orders_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingOrdersCount }}</span>
                     </span>
-                    {{-- Commented out: Pending/Locked Stock display - functionality preserved but hidden from UI --}}
-                    {{-- <span class="mx-1">|</span>
-                    <span class="text-warning" title="Pending/Locked Stock - Reserved/Pending orders">
-                        Pending: <span id="pending_stock_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingStock }}</span>
-                    </span> --}}
                 </span>
                 {{-- Real-time Backmarket Stock Badge (only for Backmarket) --}}
                 @if($marketplaceIdInt === 1)
@@ -138,19 +153,21 @@
                         <i class="fe fe-lock me-1"></i>{{ $totalLocked }} Locked
                     </span>
                 @endif --}}
-                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
-                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
-                    {{ $state }}
-                </span>
                 {{-- Buybox flags - will wrap to next line on small screens only --}}
                 <div class="d-flex align-items-center flex-wrap buybox-flags-container" style="gap: 0.25rem;">
                     {!! $buyboxFlags !!}
                 </div>
             </div>
-            <button class="btn btn-primary btn-sm flex-shrink-0" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 40px; padding: 6px 12px; font-weight: 600;">
-                <i class="fas fa-chevron-down me-1"></i>
-                <span>Listings</span>
-            </button>
+            <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                <span class="badge bg-light text-dark d-flex align-items-center gap-1">
+                    <span style="width: 8px; height: 8px; background-color: #28a745; border-radius: 50%; display: inline-block;"></span>
+                    {{ $state }}
+                </span>
+                <button class="btn btn-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" aria-expanded="false" aria-controls="marketplace_toggle_{{ $variationId }}_{{ $marketplaceId }}" style="min-width: 40px; padding: 6px 12px; font-weight: 600;">
+                    <i class="fas fa-chevron-down me-1"></i>
+                    <span>Listings</span>
+                </button>
+            </div>
         </div>
         
         {{-- Line 3: Forms and order summary - Can wrap on small screens --}}
