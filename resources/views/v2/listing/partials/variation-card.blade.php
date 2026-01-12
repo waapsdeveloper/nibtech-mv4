@@ -120,29 +120,14 @@
                     <i class="fas fa-history"></i>
                 </a>
             </h5>
-            <div id="sales_{{ $variationId }}" class="small text-muted mb-1">
-                <span class="text-muted">Loading sales data...</span>
+            <div id="sales_{{ $variationId }}" class="small mb-1" style="opacity: 1; font-weight: bold;">
+                <span>Loading sales data...</span>
             </div>
-            <div class="d-flex align-items-center gap-2 flex-wrap">
-                <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
-                    <h6 class="mb-0">
-                        <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
-                            Pending Order Items: {{ $pendingCount }} (BM Orders: {{ $pendingBmCount }})
-                        </a>
-                    </h6>
-                    <span class="text-muted">|</span>
-                    <h6 class="mb-0" id="available_stock_{{ $variationId }}">
-                        <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
-                            Available: {{ $availableCount }}
-                        </a>
-                    </h6>
-                    <span class="text-muted">|</span>
-                    <h6 class="mb-0">Difference: {{ $difference }}</h6>
-                </div>
+            {{-- <div class="d-flex align-items-center gap-2 flex-wrap">
                 <a href="javascript:void(0)" class="btn btn-link" id="stock_comparison_{{ $variationId }}" onclick="showStockComparison({{ $variationId }})" title="View Stock Comparison">
                     <i class="fas fa-cog"></i>
                 </a>
-            </div>
+            </div> --}}
         </div>
 
         <div class="d-flex flex-column align-items-end gap-2">
@@ -155,13 +140,29 @@
             
             {{-- Listing Total Quantity and Average Cost --}}
             <div class="d-flex flex-row align-items-center gap-2" style="font-size: 0.85rem;">
-                <div class="text-muted">
+                {{-- <div class="text-muted">
                     <span>Listing Total: </span>
                     <strong id="listing_total_quantity_{{ $variationId }}">{{ $totalStock }}</strong>
                 </div>
                 <div class="text-muted">
                     <span>Average Cost: </span>
                     <strong id="average_cost_display_{{ $variationId }}">€{{ number_format($averageCost, 2, '.', '') }}</strong>
+                </div> --}}
+                {{-- ststs --}}
+                <div class="d-flex align-items-center justify-content-start gap-2 flex-wrap">
+                    <h6 class="mb-0">
+                        <a class="" href="{{url('order').'?sku='}}{{$sku}}&status=2" target="_blank">
+                            PO: {{ $pendingCount }}
+                        </a>
+                    </h6>
+                    <span class="text-muted">|</span>
+                    <h6 class="mb-0" id="available_stock_{{ $variationId }}">
+                        <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
+                            AV: {{ $availableCount }}
+                        </a>
+                    </h6>
+                    <span class="text-muted">|</span>
+                    <h6 class="mb-0">DF: {{ $difference }}</h6>
                 </div>
                 {{-- expansion chevron right left --}}
                 <a href="javascript:void(0)" class="btn btn-link p-0" id="stock_expand_toggle_{{ $variationId }}" onclick="toggleStockPanel({{ $variationId }})" style="min-width: 24px;">

@@ -53,7 +53,7 @@ class RefurbedAPIController extends Controller
         // If API key is missing, set default values and return early
         // This allows the application to run without Refurbed integration
         if ($this->apiKey === '') {
-            Log::info('Refurbed API key is not configured. Refurbed integration will be disabled.');
+            // Log::info('Refurbed API key is not configured. Refurbed integration will be disabled.');
             $this->baseUrl = 'https://api.refurbed.com';
             $this->authScheme = 'Plain';
             $this->userAgent = config('app.name', 'nibritaintech') . '/RefurbedConnector';

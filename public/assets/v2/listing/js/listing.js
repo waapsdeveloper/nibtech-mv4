@@ -429,10 +429,28 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                     const restorableFields = ['min_price', 'price', 'min_handler', 'price_handler', 'buybox', 'buybox_price'];
                     const canRestore = restorableFields.includes(item.field_name) && item.old_value !== null && item.old_value !== '';
                     
-                    // Build restore button
-                    let restoreButton = '';
+                    // Build action buttons (record snapshot + restore)
+                    let actionButtons = '<div class="d-flex align-items-center justify-content-center gap-1">';
+                    
+                    // Add record button if snapshot exists
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        const snapshotId = `record_${item.id}`;
+                        // Store snapshot in global object if not already stored
+                        if (!window.listingSnapshots) {
+                            window.listingSnapshots = {};
+                        }
+                        window.listingSnapshots[snapshotId] = item.row_snapshot;
+                        actionButtons += `
+                            <button class="btn btn-sm btn-outline-info" 
+                                    onclick="showRecordSnapshot('${snapshotId}')"
+                                    title="View record snapshot">
+                                <i class="fas fa-database"></i>
+                            </button>`;
+                    }
+                    
+                    // Add restore button if available
                     if (canRestore) {
-                        restoreButton = `
+                        actionButtons += `
                             <button class="btn btn-sm btn-outline-primary restore-history-btn" 
                                     data-history-id="${item.id}"
                                     data-field-name="${item.field_name}"
@@ -442,8 +460,13 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                                     onclick="restoreListingHistory(${item.id}, '${item.field_name}', ${item.old_value}, '${fieldLabel.replace(/'/g, "\\'")}')">
                                 <i class="fas fa-undo me-1"></i>Restore
                             </button>`;
-                    } else {
-                        restoreButton = '<span class="text-muted small">-</span>';
+                    }
+                    
+                    actionButtons += '</div>';
+                    
+                    // If no buttons, show dash
+                    if (!item.row_snapshot && !canRestore) {
+                        actionButtons = '<span class="text-muted small">-</span>';
                     }
                     
                     historyTable += `
@@ -455,7 +478,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
                             <td>${item.change_reason || '-'}</td>
-                            <td class="text-center">${restoreButton}</td>
+                            <td class="text-center">${actionButtons}</td>
                         </tr>`;
                 });
             } else {
@@ -469,6 +492,90 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
         }
     });
 }
+
+/**
+ * Show record snapshot (JSON data) in a modal
+ * @param {string} snapshotId - Unique ID for the snapshot
+ */
+window.showRecordSnapshot = function(snapshotId) {
+    if (!window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        alert('Snapshot data not found');
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const jsonString = JSON.stringify(snapshot, null, 2);
+    
+    // Create or get modal for displaying snapshot
+    let modal = $('#recordSnapshotModal');
+    if (modal.length === 0) {
+        // Create modal if it doesn't exist
+        $('body').append(`
+            <div class="modal fade" id="recordSnapshotModal" tabindex="-1" aria-labelledby="recordSnapshotModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-lg modal-dialog-scrollable">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="recordSnapshotModalLabel">Record Snapshot</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body">
+                            <pre id="recordSnapshotContent" style="background-color: #f8f9fa; padding: 15px; border-radius: 5px; max-height: 70vh; overflow: auto; font-size: 0.85rem; line-height: 1.5;"></pre>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" onclick="copyRecordSnapshot()">Copy JSON</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `);
+        modal = $('#recordSnapshotModal');
+    }
+    
+    // Set the JSON content
+    $('#recordSnapshotContent').text(jsonString);
+    
+    // Store snapshot ID for copy function
+    modal.data('snapshot-id', snapshotId);
+    
+    // Show modal
+    modal.modal('show');
+};
+
+/**
+ * Copy record snapshot JSON to clipboard
+ */
+window.copyRecordSnapshot = function() {
+    const modal = $('#recordSnapshotModal');
+    const snapshotId = modal.data('snapshot-id');
+    
+    if (!snapshotId || !window.listingSnapshots || !window.listingSnapshots[snapshotId]) {
+        alert('Snapshot data not found');
+        return;
+    }
+    
+    const snapshot = window.listingSnapshots[snapshotId];
+    const jsonString = JSON.stringify(snapshot, null, 2);
+    
+    // Copy to clipboard
+    navigator.clipboard.writeText(jsonString).then(function() {
+        alert('JSON copied to clipboard!');
+    }).catch(function(err) {
+        console.error('Failed to copy:', err);
+        // Fallback: select text
+        const textArea = document.createElement('textarea');
+        textArea.value = jsonString;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            alert('JSON copied to clipboard!');
+        } catch (err) {
+            alert('Failed to copy. Please select and copy manually.');
+        }
+        document.body.removeChild(textArea);
+    });
+};
 
 /**
  * Restore listing field to previous value from history
@@ -614,14 +721,71 @@ function updateListingRowAfterRestore(listingId, fieldName, restoredValue) {
 /**
  * Load marketplace tables when toggle is opened
  */
+// Global object to store auto-refresh intervals for open marketplace tables
+if (!window.marketplaceAutoRefreshIntervals) {
+    window.marketplaceAutoRefreshIntervals = {};
+}
+
+/**
+ * Start auto-refresh for a marketplace table (Backmarket only)
+ * Refreshes prices every 5 seconds while table is open
+ */
+function startMarketplaceAutoRefresh(variationId, marketplaceId) {
+    // Only auto-refresh for Backmarket (marketplace_id = 1)
+    if (marketplaceId !== 1) {
+        return;
+    }
+    
+    const intervalKey = `${variationId}_${marketplaceId}`;
+    
+    // Clear any existing interval for this table
+    if (window.marketplaceAutoRefreshIntervals[intervalKey]) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[intervalKey]);
+    }
+    
+    // Start new interval: refresh prices every 5 seconds
+    window.marketplaceAutoRefreshIntervals[intervalKey] = setInterval(function() {
+        // Refresh prices from API and reload listings
+        window.refreshPricesFromAPI(variationId, function() {
+            // After refresh, reload the listings table
+            const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
+            if (container.length > 0 && container.data('loaded') === true) {
+                // Reload listings without showing loading state
+                loadMarketplaceTables(variationId, marketplaceId, true);
+            }
+        });
+    }, 5000); // 5 seconds
+}
+
+/**
+ * Stop auto-refresh for a marketplace table
+ */
+function stopMarketplaceAutoRefresh(variationId, marketplaceId) {
+    const intervalKey = `${variationId}_${marketplaceId}`;
+    if (window.marketplaceAutoRefreshIntervals[intervalKey]) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[intervalKey]);
+        delete window.marketplaceAutoRefreshIntervals[intervalKey];
+    }
+}
+
+/**
+ * Clear all auto-refresh intervals (on page unload)
+ */
+function clearAllMarketplaceAutoRefresh() {
+    Object.keys(window.marketplaceAutoRefreshIntervals).forEach(function(key) {
+        clearInterval(window.marketplaceAutoRefreshIntervals[key]);
+    });
+    window.marketplaceAutoRefreshIntervals = {};
+}
+
+// Clear all intervals on page unload
+$(window).on('beforeunload', function() {
+    clearAllMarketplaceAutoRefresh();
+});
+
 $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     const toggleElement = $(this);
     const container = toggleElement.find('.marketplace-tables-container');
-    
-    // Check if already loaded
-    if (container.data('loaded') === true) {
-        return;
-    }
     
     // Extract variationId and marketplaceId from the toggle ID
     const toggleId = toggleElement.attr('id');
@@ -633,11 +797,37 @@ $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     const variationId = parseInt(matches[1]);
     const marketplaceId = parseInt(matches[2]);
     
+    // Check if already loaded
+    if (container.data('loaded') === true) {
+        // Table already loaded, just start auto-refresh
+        startMarketplaceAutoRefresh(variationId, marketplaceId);
+        return;
+    }
+    
     // Show loading state
     container.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading tables...</p></div>');
     
     // Load listings for this marketplace
-    loadMarketplaceTables(variationId, marketplaceId);
+    loadMarketplaceTables(variationId, marketplaceId, false, function() {
+        // After table is loaded, start auto-refresh
+        startMarketplaceAutoRefresh(variationId, marketplaceId);
+    });
+});
+
+// Stop auto-refresh when marketplace table is closed
+$(document).on('hide.bs.collapse', '.marketplace-toggle-content', function() {
+    const toggleElement = $(this);
+    const toggleId = toggleElement.attr('id');
+    const matches = toggleId.match(/marketplace_toggle_(\d+)_(\d+)/);
+    if (!matches) {
+        return;
+    }
+    
+    const variationId = parseInt(matches[1]);
+    const marketplaceId = parseInt(matches[2]);
+    
+    // Stop auto-refresh for this table
+    stopMarketplaceAutoRefresh(variationId, marketplaceId);
 });
 
 /**
@@ -698,8 +888,12 @@ function refreshPricesButtonClick(variationId, marketplaceId) {
  * Load marketplace tables
  * When marketplace expands, automatically refresh prices from API (for Backmarket)
  * This matches the behavior of clicking the refresh button
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {boolean} skipRefresh - Skip price refresh for Backmarket
+ * @param {function} callback - Optional callback to execute after table is loaded
  */
-function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) {
+function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false, callback = null) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
     // For Backmarket (marketplace_id = 1), refresh prices from API first (like V1)
@@ -708,19 +902,23 @@ function loadMarketplaceTables(variationId, marketplaceId, skipRefresh = false) 
         // Call refreshPricesFromAPI when expanding - same functionality as refresh button
         window.refreshPricesFromAPI(variationId, function() {
             // After refresh, load listings
-            loadListingsAfterRefresh(variationId, marketplaceId, container);
+            loadListingsAfterRefresh(variationId, marketplaceId, container, callback);
         });
         return;
     }
     
     // For other marketplaces, just load listings directly
-    loadListingsAfterRefresh(variationId, marketplaceId, container);
+    loadListingsAfterRefresh(variationId, marketplaceId, container, callback);
 }
 
 /**
  * Load listings after price refresh (or directly for non-Backmarket)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {jQuery} container
+ * @param {function} callback - Optional callback to execute after table is rendered
  */
-function loadListingsAfterRefresh(variationId, marketplaceId, container) {
+function loadListingsAfterRefresh(variationId, marketplaceId, container, callback = null) {
     // Get listings for this marketplace
     $.ajax({
         url: window.ListingConfig.urls.getListings + '/' + variationId,
@@ -888,6 +1086,15 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container) {
             // Render listings table first
             renderMarketplaceTables(variationId, marketplaceId, listingsTable);
             
+            // Execute callback after table is rendered (e.g., to highlight changed prices)
+            if (callback && typeof callback === 'function') {
+                // Delay to ensure DOM is ready and inputs are fully rendered
+                // Use a slightly longer delay to match the setTimeout in renderMarketplaceTables (200ms)
+                setTimeout(function() {
+                    callback();
+                }, 250);
+            }
+            
             // Load stocks only to calculate best_price (for marketplace 1 only, stocks are common)
             if (marketplaceId === 1) {
                 loadStocksForBestPrice(variationId, marketplaceId);
@@ -944,13 +1151,22 @@ function updateBestPrice(variationId, marketplaceId, prices) {
     }
     
     let bestPrice = '0.00';
+    let averageCost = 0;
     if (prices.length > 0) {
-        let average = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
+        averageCost = prices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / prices.length;
         // Calculate best_price: (average_cost + 20) / 0.88 (same formula as original)
-        bestPrice = ((parseFloat(average) + 20) / 0.88).toFixed(2);
+        bestPrice = ((parseFloat(averageCost) + 20) / 0.88).toFixed(2);
         bestPriceElement.text(bestPrice);
+        
+        // Store average cost as data attribute and add tooltip
+        bestPriceElement.attr('data-average-cost', averageCost.toFixed(2));
+        bestPriceElement.attr('title', `Average Cost: €${averageCost.toFixed(2)}`);
+        bestPriceElement.css('cursor', 'help');
     } else {
         bestPriceElement.text('0.00');
+        bestPriceElement.removeAttr('data-average-cost');
+        bestPriceElement.removeAttr('title');
+        bestPriceElement.css('cursor', '');
     }
     
     // Update breakeven tooltips for all non-EUR listings in this marketplace
@@ -1001,6 +1217,169 @@ function updateBreakevenTooltips(variationId, marketplaceId, bestPrice) {
         const breakevenPrice = (bestPrice * parseFloat(rate)).toFixed(2);
         const tooltipText = `Break Even: ${currencySign}${breakevenPrice}`;
         pmAppendSpan.attr('title', tooltipText);
+    });
+}
+
+/**
+ * Highlight changed prices with green background after bulk price update
+ * Compares old values (stored before update) with new values (from rendered table)
+ * Matches the behavior of individual input updates (green background on change)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {object} oldPrices - Object containing old price values keyed by listing ID
+ */
+function highlightChangedPrices(variationId, marketplaceId, oldPrices) {
+    if (!oldPrices || typeof oldPrices !== 'object') {
+        return;
+    }
+    
+    // Get all price inputs in the table
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length === 0) {
+        return;
+    }
+    
+    // Compare old and new values for each listing
+    listingsContainer.find('[id^="min_price_"], [id^="price_"]').each(function() {
+        const input = $(this);
+        const inputId = input.attr('id');
+        const listingId = inputId.replace(/^(min_price_|price_)/, '');
+        
+        if (!oldPrices[listingId]) {
+            return; // No old value stored for this listing
+        }
+        
+        // Get new value from input (handle empty strings)
+        const newValueStr = input.val();
+        const newValue = (newValueStr && newValueStr.trim() !== '') ? parseFloat(newValueStr) : null;
+        let oldValue = null;
+        let isChanged = false;
+        
+        if (inputId.startsWith('min_price_')) {
+            oldValue = oldPrices[listingId].min_price;
+            // Check if value changed (accounting for floating point precision)
+            // Compare null/undefined cases and numeric differences
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        } else if (inputId.startsWith('price_')) {
+            oldValue = oldPrices[listingId].price;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        }
+        
+        // Add green background if value changed (same as individual input updates)
+        if (isChanged) {
+            input.addClass('bg-green');
+            
+            // Update original value in ChangeDetection so future individual changes work correctly
+            if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+                const currentValue = input.val() || '';
+                window.ChangeDetection.originalValues[inputId] = {
+                    value: currentValue,
+                    fieldName: inputId.startsWith('min_price_') ? 'Min Price' : 'Price',
+                    listingId: listingId
+                };
+            }
+            
+            // Run validation check (like individual input updates) - validates min_price vs price relationship
+            if (typeof window.checkMinPriceDiff === 'function') {
+                window.checkMinPriceDiff(listingId);
+            }
+        }
+    });
+}
+
+/**
+ * Highlight changed handlers with green background after bulk handler update
+ * Compares old values (stored before update) with new values (from rendered table)
+ * Matches the behavior of individual input updates (green background on change)
+ * @param {number} variationId
+ * @param {number} marketplaceId
+ * @param {object} oldHandlers - Object containing old handler values keyed by listing ID
+ */
+function highlightChangedHandlers(variationId, marketplaceId, oldHandlers) {
+    if (!oldHandlers || typeof oldHandlers !== 'object') {
+        return;
+    }
+    
+    // Get all handler inputs in the table (min_price_limit and price_limit)
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length === 0) {
+        return;
+    }
+    
+    // Compare old and new values for each listing
+    listingsContainer.find('[id^="min_price_limit_"], [id^="price_limit_"]').each(function() {
+        const input = $(this);
+        const inputId = input.attr('id');
+        const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
+        
+        if (!oldHandlers[listingId]) {
+            return; // No old value stored for this listing
+        }
+        
+        // Get new value from input (handle empty strings)
+        const newValueStr = input.val();
+        const newValue = (newValueStr && newValueStr.trim() !== '') ? parseFloat(newValueStr) : null;
+        let oldValue = null;
+        let isChanged = false;
+        
+        if (inputId.startsWith('min_price_limit_')) {
+            oldValue = oldHandlers[listingId].min_price_limit;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        } else if (inputId.startsWith('price_limit_')) {
+            oldValue = oldHandlers[listingId].price_limit;
+            // Check if value changed (accounting for floating point precision)
+            if (oldValue === null || oldValue === undefined) {
+                isChanged = (newValue !== null && newValue !== undefined);
+            } else if (newValue === null || newValue === undefined) {
+                isChanged = true;
+            } else {
+                // Both have values - check if they differ by more than 0.01 (accounting for floating point)
+                isChanged = Math.abs(oldValue - newValue) > 0.01;
+            }
+        }
+        
+        // Add green background if value changed (same as individual input updates)
+        if (isChanged) {
+            input.addClass('bg-green');
+            
+            // Update original value in ChangeDetection so future individual changes work correctly
+            if (window.ChangeDetection && window.ChangeDetection.originalValues) {
+                const currentValue = input.val() || '';
+                window.ChangeDetection.originalValues[inputId] = {
+                    value: currentValue,
+                    fieldName: inputId.startsWith('min_price_limit_') ? 'Min Price Handler' : 'Price Handler',
+                    listingId: listingId
+                };
+            }
+            
+            // Run validation check (like individual input updates) - validates min_price vs price relationship
+            if (typeof window.checkMinPriceDiff === 'function') {
+                window.checkMinPriceDiff(listingId);
+            }
+        }
     });
 }
 
@@ -1914,6 +2293,24 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
         return;
     }
     
+    // Store old handler values before update (for green highlighting after reload)
+    const oldHandlers = {};
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length > 0) {
+        listingsContainer.find('[id^="min_price_limit_"], [id^="price_limit_"]').each(function() {
+            const inputId = $(this).attr('id');
+            const listingId = inputId.replace(/^(min_price_limit_|price_limit_)/, '');
+            if (!oldHandlers[listingId]) {
+                oldHandlers[listingId] = {};
+            }
+            if (inputId.startsWith('min_price_limit_')) {
+                oldHandlers[listingId].min_price_limit = $(this).val() ? parseFloat($(this).val()) : null;
+            } else if (inputId.startsWith('price_limit_')) {
+                oldHandlers[listingId].price_limit = $(this).val() ? parseFloat($(this).val()) : null;
+            }
+        });
+    }
+    
     const button = $(this);
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
@@ -1941,7 +2338,11 @@ $(document).on('click', '[id^="change_all_handler_"] button[type="button"]', fun
         success: function(response) {
             if (response.success) {
                 // Reload the listings table to show updated values
-                loadMarketplaceTables(variationId, marketplaceId);
+                // Skip API refresh to ensure we highlight the changes from the form, not API
+                // Pass oldHandlers directly to the callback for better handler change detection
+                loadMarketplaceTables(variationId, marketplaceId, true, function() {
+                    highlightChangedHandlers(variationId, marketplaceId, oldHandlers);
+                });
                 
                 // Log success (no alert to avoid disturbance)
                 // Handlers updated successfully
@@ -1984,6 +2385,24 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         return;
     }
     
+    // Store old price values before update (for green highlighting after reload)
+    const oldPrices = {};
+    const listingsContainer = $(`#listings_${variationId}_${marketplaceId}`);
+    if (listingsContainer.length > 0) {
+        listingsContainer.find('[id^="min_price_"], [id^="price_"]').each(function() {
+            const inputId = $(this).attr('id');
+            const listingId = inputId.replace(/^(min_price_|price_)/, '');
+            if (!oldPrices[listingId]) {
+                oldPrices[listingId] = {};
+            }
+            if (inputId.startsWith('min_price_')) {
+                oldPrices[listingId].min_price = $(this).val() ? parseFloat($(this).val()) : null;
+            } else if (inputId.startsWith('price_')) {
+                oldPrices[listingId].price = $(this).val() ? parseFloat($(this).val()) : null;
+            }
+        });
+    }
+    
     const button = $(this);
     const originalText = button.html();
     button.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span>');
@@ -2010,7 +2429,11 @@ $(document).on('click', '[id^="change_all_price_"] button[type="button"]', funct
         success: function(response) {
             if (response.success) {
                 // Reload the listings table to show updated values
-                loadMarketplaceTables(variationId, marketplaceId);
+                // Skip API refresh to ensure we highlight the changes from the form, not API
+                // Pass oldPrices directly to the callback for better price change detection
+                loadMarketplaceTables(variationId, marketplaceId, true, function() {
+                    highlightChangedPrices(variationId, marketplaceId, oldPrices);
+                });
                 // Log success (no alert to avoid disturbance)
                 // Prices updated successfully
             }
