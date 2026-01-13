@@ -45,10 +45,16 @@ Route::prefix('v2')->group(function () {
     // Stock Formula routes
     Route::get('marketplace/stock-formula', [MarketplaceStockFormulaController::class, 'index'])->name('v2.marketplace.stock_formula');
     Route::get('marketplace/stock-formula/search', [MarketplaceStockFormulaController::class, 'searchVariations'])->name('v2.marketplace.stock_formula.search');
+    Route::get('marketplace/stock-formula/{variationId}/modal', [MarketplaceStockFormulaController::class, 'getModalContent'])->name('v2.marketplace.stock_formula.modal');
     Route::get('marketplace/stock-formula/{variationId}/stocks', [MarketplaceStockFormulaController::class, 'getMarketplaceStocks'])->name('v2.marketplace.stock_formula.stocks');
     Route::post('marketplace/stock-formula/{variationId}/formula/{marketplaceId}', [MarketplaceStockFormulaController::class, 'saveFormula'])->name('v2.marketplace.stock_formula.save');
     Route::delete('marketplace/stock-formula/{variationId}/formula/{marketplaceId}', [MarketplaceStockFormulaController::class, 'deleteFormula'])->name('v2.marketplace.stock_formula.delete');
     Route::post('marketplace/stock-formula/{variationId}/stock/{marketplaceId}/reset', [MarketplaceStockFormulaController::class, 'resetStock'])->name('v2.marketplace.stock_formula.reset_stock');
+    
+    // Default Formula routes
+    Route::post('marketplace/stock-formula/global-default/{marketplaceId}', [MarketplaceStockFormulaController::class, 'saveGlobalDefault'])->name('v2.marketplace.stock_formula.save_global_default');
+    Route::post('marketplace/stock-formula/{variationId}/variation-default', [MarketplaceStockFormulaController::class, 'saveVariationDefault'])->name('v2.marketplace.stock_formula.save_variation_default');
+    Route::get('marketplace/stock-formula/global-defaults', [MarketplaceStockFormulaController::class, 'getGlobalDefaults'])->name('v2.marketplace.stock_formula.get_global_defaults');
     
     // V2 Listing API routes
     Route::post('listings/add_quantity/{id}', [V2ListingController::class, 'add_quantity'])->name('v2.listing.add_quantity');

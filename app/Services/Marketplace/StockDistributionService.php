@@ -51,6 +51,62 @@ class StockDistributionService
             $totalStock = $variation->listed_stock;
         }
 
+        // Check min_stock_required before allowing additions (check marketplace stock first, then defaults)
+        if (!$isSubtraction && $stockChange > 0) {
+            $minStockRequired = null;
+            
+            // Check if any marketplace stock has min_stock_required set
+            foreach ($existingStocks as $stock) {
+                if ($stock->min_stock_required !== null) {
+                    $minStockRequired = $stock->min_stock_required;
+                    break;
+                }
+            }
+            
+            // If not found, check defaults (variation default first, then global)
+            if ($minStockRequired === null) {
+                $defaultThresholds = $this->getDefaultThresholds($variation, 1); // Check marketplace 1 for global defaults
+                $minStockRequired = $defaultThresholds['min_stock_required'];
+            }
+            
+            if ($minStockRequired !== null && $totalStock < $minStockRequired) {
+                Log::info("Stock addition blocked: total stock ({$totalStock}) is below minimum required ({$minStockRequired}) for variation {$variationId}");
+                return [
+                    'success' => false, 
+                    'message' => "Cannot add stock: Total stock ({$totalStock}) is below minimum required ({$minStockRequired})"
+                ];
+            }
+        }
+
+        // Check if total stock is below min_threshold - if so, only add to BackMarket (marketplace 1)
+        // Check marketplace stocks first, then defaults
+        $shouldOnlyAddToBackMarket = false;
+        if (!$isSubtraction && $stockChange > 0) {
+            $minThreshold = null;
+            
+            // Check if any marketplace stock has a min_threshold
+            foreach ($existingStocks as $stock) {
+                if ($stock->min_threshold !== null) {
+                    $minThreshold = $stock->min_threshold;
+                    if ($totalStock < $minThreshold) {
+                        $shouldOnlyAddToBackMarket = true;
+                        Log::info("Total stock ({$totalStock}) is below min_threshold ({$minThreshold}) for variation {$variationId}. Only adding to BackMarket.");
+                        break;
+                    }
+                }
+            }
+            
+            // If not found in marketplace stocks, check defaults
+            if (!$shouldOnlyAddToBackMarket) {
+                $defaultThresholds = $this->getDefaultThresholds($variation, 1); // Check marketplace 1 for global defaults
+                $minThreshold = $defaultThresholds['min_threshold'];
+                if ($minThreshold !== null && $totalStock < $minThreshold) {
+                    $shouldOnlyAddToBackMarket = true;
+                    Log::info("Total stock ({$totalStock}) is below default min_threshold ({$minThreshold}) for variation {$variationId}. Only adding to BackMarket.");
+                }
+            }
+        }
+
         // Get admin ID for creating new records
         $adminId = auth()->id() ?? session('user_id') ?? 1;
 
@@ -60,13 +116,17 @@ class StockDistributionService
             ? $allMarketplaces->reverse() 
             : $allMarketplaces;
 
-        // Apply each marketplace's formula
-        foreach ($marketplacesToProcess as $marketplace) {
-            // For addition: skip marketplace 1 - it will get remaining stock at the end
-            // For subtraction: process marketplace 1 first
-            if (!$isSubtraction && $marketplace->id == 1) {
-                continue;
-            }
+        // If below threshold and adding stock, skip formula distribution and add all to marketplace 1
+        if (!$isSubtraction && $shouldOnlyAddToBackMarket) {
+            // Skip the formula loop - we'll add all stock to marketplace 1 at the end
+        } else {
+            // Apply each marketplace's formula
+            foreach ($marketplacesToProcess as $marketplace) {
+                // For addition: skip marketplace 1 - it will get remaining stock at the end
+                // For subtraction: process marketplace 1 first
+                if (!$isSubtraction && $marketplace->id == 1) {
+                    continue;
+                }
 
             // Get or create marketplace stock record
             $marketplaceStock = $existingStocks->get($marketplace->id);
@@ -87,6 +147,25 @@ class StockDistributionService
             }
 
             $formula = $marketplaceStock->formula;
+
+            // If no specific formula, check for defaults (variation default first, then global default)
+            if (!$formula || !isset($formula['value']) || !isset($formula['type'])) {
+                $formula = $this->getDefaultFormula($variation, $marketplace->id);
+                
+                // If we got a default formula, also apply default thresholds if marketplace stock doesn't have them
+                if ($formula && isset($formula['value']) && isset($formula['type'])) {
+                    $defaultThresholds = $this->getDefaultThresholds($variation, $marketplace->id);
+                    if ($marketplaceStock->min_threshold === null && isset($defaultThresholds['min_threshold'])) {
+                        $marketplaceStock->min_threshold = $defaultThresholds['min_threshold'];
+                    }
+                    if ($marketplaceStock->max_threshold === null && isset($defaultThresholds['max_threshold'])) {
+                        $marketplaceStock->max_threshold = $defaultThresholds['max_threshold'];
+                    }
+                    if ($marketplaceStock->min_stock_required === null && isset($defaultThresholds['min_stock_required'])) {
+                        $marketplaceStock->min_stock_required = $defaultThresholds['min_stock_required'];
+                    }
+                }
+            }
 
             // For subtraction without formula, subtract proportionally or from marketplace 1
             if (!$formula || !isset($formula['value']) || !isset($formula['type'])) {
@@ -158,6 +237,17 @@ class StockDistributionService
                 } else {
                     // For addition: add the calculated amount
                     $actualDistribution = min($distribution, $remainingStock);
+                    
+                    // Check max_threshold if set
+                    if ($marketplaceStock->max_threshold !== null) {
+                        $maxAllowed = $marketplaceStock->max_threshold;
+                        $potentialNewValue = $oldValue + $actualDistribution;
+                        if ($potentialNewValue > $maxAllowed) {
+                            $actualDistribution = max(0, $maxAllowed - $oldValue);
+                            Log::info("Distribution capped by max_threshold for marketplace {$marketplace->id}: {$actualDistribution} units (max: {$maxAllowed})");
+                        }
+                    }
+                    
                     $newValue = $oldValue + $actualDistribution;
                 }
 
@@ -181,9 +271,11 @@ class StockDistributionService
                 $action = $isSubtraction ? 'Subtracted' : 'Distributed';
                 Log::info("{$action} {$actualDistribution} units " . ($isSubtraction ? 'from' : 'to') . " marketplace {$marketplaceStock->marketplace_id} ({$marketplace->name}) for variation {$variationId}");
             }
+            }
         }
 
         // For addition: Distribute remaining stock to marketplace 1 if there's any left (unless ignoreRemaining is true)
+        // If below threshold, all stock should go to marketplace 1
         if (!$isSubtraction && $remainingStock > 0 && !$ignoreRemaining) {
             // Get or create marketplace 1 stock record
             $marketplace1Stock = $existingStocks->get(1);
@@ -200,6 +292,22 @@ class StockDistributionService
             }
 
             $oldValue = $marketplace1Stock->listed_stock;
+            
+            // If below threshold, all stock goes to marketplace 1
+            if ($shouldOnlyAddToBackMarket) {
+                $remainingStock = abs($stockChange); // Use all the stock change
+            }
+            
+            // Check max_threshold for marketplace 1
+            if ($marketplace1Stock->max_threshold !== null) {
+                $maxAllowed = $marketplace1Stock->max_threshold;
+                $potentialNewValue = $oldValue + $remainingStock;
+                if ($potentialNewValue > $maxAllowed) {
+                    $remainingStock = max(0, $maxAllowed - $oldValue);
+                    Log::info("Marketplace 1 distribution capped by max_threshold: {$remainingStock} units (max: {$maxAllowed})");
+                }
+            }
+            
             $newValue = $oldValue + $remainingStock;
 
             $marketplace1Stock->reserve_old_value = $oldValue;
@@ -328,6 +436,82 @@ class StockDistributionService
                     'reserve_new_value' => $stock->reserve_new_value,
                 ];
             });
+    }
+
+    /**
+     * Get default formula for a marketplace (checks variation default first, then global default)
+     *
+     * @param \App\Models\Variation_model $variation
+     * @param int $marketplaceId
+     * @return array|null Formula array or null if no default found
+     */
+    private function getDefaultFormula($variation, $marketplaceId)
+    {
+        // Priority 1: Check variation-specific default formula
+        if ($variation && $variation->default_stock_formula && is_array($variation->default_stock_formula)) {
+            $variationDefault = $variation->default_stock_formula;
+            if (isset($variationDefault['value']) && isset($variationDefault['type'])) {
+                Log::info("Using variation default formula for variation {$variation->id}, marketplace {$marketplaceId}");
+                return $variationDefault;
+            }
+        }
+
+        // Priority 2: Check global marketplace default formula
+        $globalDefault = \App\Models\MarketplaceDefaultFormula::getActiveForMarketplace($marketplaceId);
+        if ($globalDefault && $globalDefault->formula && is_array($globalDefault->formula)) {
+            $globalFormula = $globalDefault->formula;
+            if (isset($globalFormula['value']) && isset($globalFormula['type'])) {
+                Log::info("Using global default formula for marketplace {$marketplaceId}");
+                return $globalFormula;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * Get default thresholds for a marketplace (checks variation default first, then global default)
+     *
+     * @param \App\Models\Variation_model $variation
+     * @param int $marketplaceId
+     * @return array Array with min_threshold, max_threshold, min_stock_required keys
+     */
+    private function getDefaultThresholds($variation, $marketplaceId)
+    {
+        $thresholds = [
+            'min_threshold' => null,
+            'max_threshold' => null,
+            'min_stock_required' => null,
+        ];
+
+        // Priority 1: Check variation-specific default thresholds
+        if ($variation) {
+            if ($variation->default_min_threshold !== null) {
+                $thresholds['min_threshold'] = $variation->default_min_threshold;
+            }
+            if ($variation->default_max_threshold !== null) {
+                $thresholds['max_threshold'] = $variation->default_max_threshold;
+            }
+            if ($variation->default_min_stock_required !== null) {
+                $thresholds['min_stock_required'] = $variation->default_min_stock_required;
+            }
+        }
+
+        // Priority 2: Check global marketplace default thresholds (only if variation doesn't have them)
+        $globalDefault = \App\Models\MarketplaceDefaultFormula::getActiveForMarketplace($marketplaceId);
+        if ($globalDefault) {
+            if ($thresholds['min_threshold'] === null && $globalDefault->min_threshold !== null) {
+                $thresholds['min_threshold'] = $globalDefault->min_threshold;
+            }
+            if ($thresholds['max_threshold'] === null && $globalDefault->max_threshold !== null) {
+                $thresholds['max_threshold'] = $globalDefault->max_threshold;
+            }
+            if ($thresholds['min_stock_required'] === null && $globalDefault->min_stock_required !== null) {
+                $thresholds['min_stock_required'] = $globalDefault->min_stock_required;
+            }
+        }
+
+        return $thresholds;
     }
 }
 

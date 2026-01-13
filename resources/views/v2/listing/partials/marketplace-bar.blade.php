@@ -136,6 +136,32 @@
                         PO: <span id="pending_orders_{{ $variationId }}_{{ $marketplaceId }}">{{ $pendingOrdersCount }}</span>
                     </span>
                 </span>
+                {{-- Stock Formula Badge --}}
+                @if($marketplaceStock && $marketplaceStock->formula && isset($marketplaceStock->formula['value']) && isset($marketplaceStock->formula['type']))
+                    @php
+                        $formula = $marketplaceStock->formula;
+                        $formulaValue = $formula['value'] ?? '';
+                        $formulaType = $formula['type'] ?? 'percentage';
+                        $formulaDisplay = $formulaType == 'percentage' ? '(' . $formulaValue . '%)' : '(' . $formulaValue . 'P)';
+                        
+                        // Add threshold display if available
+                        $thresholdDisplay = '';
+                        if (($marketplaceStock->min_threshold !== null) || ($marketplaceStock->max_threshold !== null)) {
+                            $minThreshold = $marketplaceStock->min_threshold ?? '';
+                            $maxThreshold = $marketplaceStock->max_threshold ?? '';
+                            if ($minThreshold !== '' && $maxThreshold !== '') {
+                                $thresholdDisplay = ' ' . $minThreshold . '~' . $maxThreshold;
+                            } elseif ($minThreshold !== '') {
+                                $thresholdDisplay = ' ' . $minThreshold . '~';
+                            } elseif ($maxThreshold !== '') {
+                                $thresholdDisplay = ' ~' . $maxThreshold;
+                            }
+                        }
+                    @endphp
+                    <span class="text-dark" style="font-size: 0.7rem; font-weight: 600;">
+                        {{ $formulaDisplay }}{{ $thresholdDisplay }}
+                    </span>
+                @endif
                 {{-- Real-time Backmarket Stock Badge (only for Backmarket) --}}
                 @if($marketplaceIdInt === 1)
                     <span id="backmarket_stock_badge_{{ $variationId }}_{{ $marketplaceId }}" class="badge bg-secondary text-white" style="font-size: 0.7rem; font-weight: 600; letter-spacing: 0.5px;">

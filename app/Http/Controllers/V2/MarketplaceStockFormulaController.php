@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Variation_model;
 use App\Models\Marketplace_model;
 use App\Models\MarketplaceStockModel;
+use App\Models\MarketplaceDefaultFormula;
 use App\Services\Marketplace\StockDistributionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -126,6 +127,9 @@ class MarketplaceStockFormulaController extends Controller
             'value' => 'required|numeric|min:0',
             'type' => 'required|in:percentage,fixed',
             'apply_to' => 'required|in:pushed,total',
+            'min_threshold' => 'nullable|integer|min:0',
+            'max_threshold' => 'nullable|integer|min:0',
+            'min_stock_required' => 'nullable|integer|min:0',
         ]);
 
         $formula = [
@@ -146,8 +150,11 @@ class MarketplaceStockFormulaController extends Controller
             ]
         );
 
-        // Update formula
+        // Update formula and thresholds
         $marketplaceStock->formula = $formula;
+        $marketplaceStock->min_threshold = $request->input('min_threshold') ? (int)$request->input('min_threshold') : null;
+        $marketplaceStock->max_threshold = $request->input('max_threshold') ? (int)$request->input('max_threshold') : null;
+        $marketplaceStock->min_stock_required = $request->input('min_stock_required') ? (int)$request->input('min_stock_required') : null;
         $marketplaceStock->admin_id = session('user_id');
         $marketplaceStock->save();
 
@@ -242,6 +249,50 @@ class MarketplaceStockFormulaController extends Controller
     }
 
     /**
+     * Get stock formula modal content for a variation
+     */
+    public function getModalContent(Request $request, $variationId)
+    {
+        $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id', 'available_stocks', 'pending_orders', 'pending_bm_orders'])
+            ->find($variationId);
+
+        if (!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+
+        // Load reference data for variation display
+        $colors = session('dropdown_data')['colors'] ?? [];
+        $storages = session('dropdown_data')['storages'] ?? [];
+        $grades = session('dropdown_data')['grades'] ?? [];
+
+        // Load all marketplaces
+        $marketplaces = Marketplace_model::orderBy('name', 'ASC')->get();
+        $marketplaceStocks = $this->loadMarketplaceStocks($variationId, $marketplaces);
+
+        // Load global default formulas
+        $globalDefaults = [];
+        foreach ($marketplaces as $marketplace) {
+            $default = MarketplaceDefaultFormula::getActiveForMarketplace($marketplace->id);
+            if ($default) {
+                $globalDefaults[$marketplace->id] = $default;
+            }
+        }
+
+        // Render the modal content
+        $html = view('v2.marketplace.stock-formula.partials.modal-content', [
+            'selectedVariation' => $variation,
+            'marketplaceStocks' => $marketplaceStocks,
+            'marketplaces' => $marketplaces,
+            'colors' => $colors,
+            'storages' => $storages,
+            'grades' => $grades,
+            'globalDefaults' => $globalDefaults,
+        ])->render();
+
+        return response()->json(['html' => $html]);
+    }
+
+    /**
      * Load marketplace stocks for a variation
      */
     private function loadMarketplaceStocks($variationId, $marketplaces)
@@ -262,9 +313,120 @@ class MarketplaceStockFormulaController extends Controller
                 'formula' => $stock && $stock->formula ? $stock->formula : null,
                 'has_formula' => $stock && $stock->formula ? true : false,
                 'stock_id' => $stock ? $stock->id : null,
+                'min_threshold' => $stock ? $stock->min_threshold : null,
+                'max_threshold' => $stock ? $stock->max_threshold : null,
+                'min_stock_required' => $stock ? $stock->min_stock_required : null,
             ];
         }
 
         return $marketplaceStocks;
+    }
+
+    /**
+     * Save global default formula for a marketplace
+     */
+    public function saveGlobalDefault(Request $request, $marketplaceId)
+    {
+        $request->validate([
+            'value' => 'required|numeric|min:0',
+            'type' => 'required|in:percentage,fixed',
+            'apply_to' => 'required|in:pushed,total',
+            'min_threshold' => 'nullable|integer|min:0',
+            'max_threshold' => 'nullable|integer|min:0',
+            'min_stock_required' => 'nullable|integer|min:0',
+        ]);
+
+        $formula = [
+            'value' => (float)$request->input('value'),
+            'type' => $request->input('type'),
+            'apply_to' => $request->input('apply_to'),
+        ];
+
+        // Deactivate all existing defaults for this marketplace
+        MarketplaceDefaultFormula::where('marketplace_id', $marketplaceId)
+            ->update(['is_active' => false]);
+
+        // Create new active default
+        $defaultFormula = MarketplaceDefaultFormula::create([
+            'marketplace_id' => $marketplaceId,
+            'formula' => $formula,
+            'min_threshold' => $request->input('min_threshold') ? (int)$request->input('min_threshold') : null,
+            'max_threshold' => $request->input('max_threshold') ? (int)$request->input('max_threshold') : null,
+            'min_stock_required' => $request->input('min_stock_required') ? (int)$request->input('min_stock_required') : null,
+            'is_active' => true,
+            'admin_id' => session('user_id'),
+            'notes' => $request->input('notes'),
+        ]);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Global default formula saved successfully',
+            'default_formula' => $defaultFormula
+        ]);
+    }
+
+    /**
+     * Save per-variation default formula
+     */
+    public function saveVariationDefault(Request $request, $variationId)
+    {
+        $request->validate([
+            'value' => 'required|numeric|min:0',
+            'type' => 'required|in:percentage,fixed',
+            'apply_to' => 'required|in:pushed,total',
+            'min_threshold' => 'nullable|integer|min:0',
+            'max_threshold' => 'nullable|integer|min:0',
+            'min_stock_required' => 'nullable|integer|min:0',
+        ]);
+
+        $variation = Variation_model::find($variationId);
+        if (!$variation) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Variation not found'
+            ], 404);
+        }
+
+        $formula = [
+            'value' => (float)$request->input('value'),
+            'type' => $request->input('type'),
+            'apply_to' => $request->input('apply_to'),
+        ];
+
+        $variation->default_stock_formula = $formula;
+        $variation->default_min_threshold = $request->input('min_threshold') ? (int)$request->input('min_threshold') : null;
+        $variation->default_max_threshold = $request->input('max_threshold') ? (int)$request->input('max_threshold') : null;
+        $variation->default_min_stock_required = $request->input('min_stock_required') ? (int)$request->input('min_stock_required') : null;
+        $variation->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Variation default formula saved successfully',
+            'formula' => $formula
+        ]);
+    }
+
+    /**
+     * Get global default formulas for all marketplaces
+     */
+    public function getGlobalDefaults()
+    {
+        $marketplaces = Marketplace_model::orderBy('name', 'ASC')->get();
+        $defaults = [];
+
+        foreach ($marketplaces as $marketplace) {
+            $default = MarketplaceDefaultFormula::getActiveForMarketplace($marketplace->id);
+            $defaults[$marketplace->id] = $default ? [
+                'formula' => $default->formula,
+                'min_threshold' => $default->min_threshold,
+                'max_threshold' => $default->max_threshold,
+                'min_stock_required' => $default->min_stock_required,
+                'has_default' => true,
+            ] : [
+                'has_default' => false,
+            ];
+        }
+
+        return response()->json(['defaults' => $defaults]);
     }
 }

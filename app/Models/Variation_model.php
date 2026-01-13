@@ -25,7 +25,19 @@ class Variation_model extends Model
         'grade',
         'sub_grade',
         'state',
+        'default_stock_formula',
+        'default_min_threshold',
+        'default_max_threshold',
+        'default_min_stock_required',
     ];
+
+    protected $casts = [
+        'default_stock_formula' => 'array',
+        'default_min_threshold' => 'integer',
+        'default_max_threshold' => 'integer',
+        'default_min_stock_required' => 'integer',
+    ];
+
     // protected static function booted()
     // {
     //     static::addGlobalScope(new Status_not_3_scope);

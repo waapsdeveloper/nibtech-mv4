@@ -119,15 +119,13 @@
                 <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, '{{ $sku }} {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}')" title="View History">
                     <i class="fas fa-history"></i>
                 </a>
+                <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="stock_formula_{{ $variationId }}" onclick="showStockFormulaModal({{ $variationId }})" title="Configure Stock Formula">
+                    <i class="fe fe-percent"></i>
+                </a>
             </h5>
             <div id="sales_{{ $variationId }}" class="small mb-1" style="opacity: 1; font-weight: bold;">
                 <span>Loading sales data...</span>
             </div>
-            {{-- <div class="d-flex align-items-center gap-2 flex-wrap">
-                <a href="javascript:void(0)" class="btn btn-link" id="stock_comparison_{{ $variationId }}" onclick="showStockComparison({{ $variationId }})" title="View Stock Comparison">
-                    <i class="fas fa-cog"></i>
-                </a>
-            </div> --}}
         </div>
 
         <div class="d-flex flex-column align-items-end gap-2">
