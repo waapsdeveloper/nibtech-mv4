@@ -726,7 +726,7 @@
                                         @endif
 
                                         @if ($item->status > 3)
-                                            <strong class="text-danger">{{ $order_statuses[$order->status] }}</strong>
+                                            <strong class="text-danger">{{ $order_statuses[$order->status] ?? "Unknown Status" }}</strong>
                                         @endif
                                         @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
                                         @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
