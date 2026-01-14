@@ -710,14 +710,6 @@
                                     @endif
                                     @if ($itemIndex == 0 && $order->status != 3)
                                     <td style="width:240px" rowspan="{{ count($items) }}">
-                                        @if ($item->status > 3)
-                                            <strong class="text-danger">{{ $order_statuses[$order->status] }}</strong>
-                                        @endif
-                                        @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
-                                        @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
-
-                                        @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
-                                        @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
                                         @if ((isset($stock) && $item->status == 2 && !session()->has('refresh')) || $order->status == 0)
                                             @if (request('marketplace') == 4)
@@ -732,6 +724,15 @@
                                             </script>
                                             @endif
                                         @endif
+
+                                        @if ($item->status > 3)
+                                            <strong class="text-danger">{{ $order_statuses[$order->status] }}</strong>
+                                        @endif
+                                        @isset($stock->imei) {{ $stock->imei }}&nbsp; @endisset
+                                        @isset($stock->serial_number) {{ $stock->serial_number }}&nbsp; @endisset
+
+                                        @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
+                                        @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
                                         @if ($item->status == 2)
                                             @if (count($items) < 2 && $item->quantity < 2)
