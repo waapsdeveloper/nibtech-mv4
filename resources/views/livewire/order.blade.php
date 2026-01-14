@@ -719,7 +719,7 @@
                                         @isset($order->processed_by) | {{ $admins[$order->processed_by][0] }} | @endisset
                                         @isset($stock->tester) ({{ $stock->tester }}) @endisset
 
-                                        @if (isset($stock) && $item->status == 2 && !session()->has('refresh'))
+                                        @if ((isset($stock) && $item->status == 2 && !session()->has('refresh')) || $order->status == 0)
                                             @if (request('marketplace') == 4)
                                             @else
                                             @php
