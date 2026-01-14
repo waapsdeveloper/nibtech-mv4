@@ -119,7 +119,7 @@
                 <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="variation_history_{{ $variationId }}" onclick="show_variation_history({{ $variationId }}, '{{ $sku }} {{ $productModel }} {{ $storageName }} {{ $colorName }} {{ $gradeName }}')" title="View History">
                     <i class="fas fa-history"></i>
                 </a>
-                <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="stock_formula_{{ $variationId }}" onclick="showStockFormulaModal({{ $variationId }})" title="Configure Stock Formula">
+                <a href="javascript:void(0)" class="btn btn-sm btn-link p-0" id="stock_formula_{{ $variationId }}" onclick="showStockFormulaModal({{ $variationId }}, '{{ $sku }}', '{{ $productModel }}', '{{ $storageName }}', '{{ $colorName }}', '{{ $gradeName }}', '{{ $colorCode }}')" title="Configure Stock Formula">
                     <i class="fe fe-percent"></i>
                 </a>
             </h5>

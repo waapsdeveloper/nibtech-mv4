@@ -56,6 +56,23 @@ class MarketplaceStockFormulaController extends Controller
             }
         }
 
+        // Load global defaults for all marketplaces
+        $data['globalDefaults'] = [];
+        foreach ($data['marketplaces'] as $marketplace) {
+            $default = MarketplaceDefaultFormula::with('admin')
+                ->where('marketplace_id', $marketplace->id)
+                ->where('is_active', true)
+                ->orderBy('created_at', 'desc')
+                ->first();
+            
+            if ($default) {
+                $data['globalDefaults'][$marketplace->id] = $default;
+            }
+        }
+
+        // Get active tab from request
+        $data['activeTab'] = $request->input('tab', 'variations');
+
         return view('v2.marketplace.stock-formula.index')->with($data);
     }
 
@@ -271,10 +288,12 @@ class MarketplaceStockFormulaController extends Controller
 
         // Load global default formulas
         $globalDefaults = [];
+        $hasGlobalDefaults = false;
         foreach ($marketplaces as $marketplace) {
             $default = MarketplaceDefaultFormula::getActiveForMarketplace($marketplace->id);
             if ($default) {
                 $globalDefaults[$marketplace->id] = $default;
+                $hasGlobalDefaults = true;
             }
         }
 
@@ -289,7 +308,10 @@ class MarketplaceStockFormulaController extends Controller
             'globalDefaults' => $globalDefaults,
         ])->render();
 
-        return response()->json(['html' => $html]);
+        return response()->json([
+            'html' => $html,
+            'is_global' => $hasGlobalDefaults
+        ]);
     }
 
     /**
@@ -327,6 +349,14 @@ class MarketplaceStockFormulaController extends Controller
      */
     public function saveGlobalDefault(Request $request, $marketplaceId)
     {
+        // Prevent saving global defaults for BackMarket (marketplace ID 1)
+        if ($marketplaceId == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'BackMarket is locked and cannot have a global default formula'
+            ], 403);
+        }
+
         $request->validate([
             'value' => 'required|numeric|min:0',
             'type' => 'required|in:percentage,fixed',
@@ -407,7 +437,15 @@ class MarketplaceStockFormulaController extends Controller
     }
 
     /**
-     * Get global default formulas for all marketplaces
+     * Display global default formulas admin panel (redirects to main page with tab)
+     */
+    public function globalDefaults()
+    {
+        return redirect()->route('v2.marketplace.stock_formula', ['tab' => 'global']);
+    }
+
+    /**
+     * Get global default formulas for all marketplaces (API)
      */
     public function getGlobalDefaults()
     {
@@ -428,5 +466,37 @@ class MarketplaceStockFormulaController extends Controller
         }
 
         return response()->json(['defaults' => $defaults]);
+    }
+
+    /**
+     * Delete global default formula for a marketplace
+     */
+    public function deleteGlobalDefault($marketplaceId)
+    {
+        // Prevent deleting global defaults for BackMarket (marketplace ID 1)
+        if ($marketplaceId == 1) {
+            return response()->json([
+                'success' => false,
+                'message' => 'BackMarket is locked and cannot have a global default formula'
+            ], 403);
+        }
+
+        try {
+            // Deactivate all active defaults for this marketplace
+            $deleted = MarketplaceDefaultFormula::where('marketplace_id', $marketplaceId)
+                ->where('is_active', true)
+                ->update(['is_active' => false]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Global default formula deleted successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error("Error deleting global default formula: " . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error deleting global default formula'
+            ], 500);
+        }
     }
 }

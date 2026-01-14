@@ -158,7 +158,7 @@
     }
 
     // Function to show stock formula modal
-    function showStockFormulaModal(variationId) {
+    function showStockFormulaModal(variationId, sku, productModel, storageName, colorName, gradeName, colorCode) {
         const modal = new bootstrap.Modal(document.getElementById('stockFormulaModal'));
         const modalBody = document.getElementById('stockFormulaModalBody');
         const modalFooter = document.getElementById('stockFormulaModalFooter');
@@ -166,8 +166,23 @@
         // Hide footer initially
         modalFooter.style.display = 'none';
         
-        // Show loading state
-        modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock formulas...</p></div>';
+        // Build variation heading HTML
+        const variationHeading = `
+            <div class="mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{url('inventory')}}?sku=${sku}" title="View Inventory" target="_blank" class="text-decoration-none">
+                        <span style="background-color: ${colorCode}; width: 30px; height: 16px; display: inline-block; vertical-align: middle;"></span>
+                        <strong>${sku}</strong>
+                    </a>
+                    <a href="https://www.backmarket.fr/bo-seller/listings/active?sku=${sku}" title="View BM Ad" target="_blank" class="text-decoration-none text-muted">
+                        - ${productModel} ${storageName} ${colorName} ${gradeName}
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        // Show loading state with variation heading
+        modalBody.innerHTML = variationHeading + '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock formulas...</p></div>';
         modal.show();
         
         // Load stock formula modal content via API
@@ -177,13 +192,22 @@
             dataType: 'json',
             success: function(response) {
                 if (response.html) {
-                    modalBody.innerHTML = response.html;
+                    // Prepend variation heading to the loaded content
+                    modalBody.innerHTML = variationHeading + response.html;
+                    
+                    // Set global toggle
+                    const isGlobal = response.is_global || false;
+                    const globalToggle = $('#stockFormulaGlobalToggle');
+                    globalToggle.prop('checked', isGlobal);
+                    globalToggle.prop('disabled', false);
+                    $('#stockFormulaGlobalLabel small').text(isGlobal ? 'Global' : 'Per-Variation');
+                    
                     // Show footer
                     modalFooter.style.display = 'flex';
                     // Setup save all button handler
                     setupSaveAllFormulas(variationId);
                 } else {
-                    modalBody.innerHTML = '<div class="alert alert-danger">Error: Invalid response format</div>';
+                    modalBody.innerHTML = variationHeading + '<div class="alert alert-danger">Error: Invalid response format</div>';
                     modalFooter.style.display = 'flex';
                 }
             },
@@ -195,7 +219,8 @@
                 } else if (xhr.responseText) {
                     errorMsg = xhr.responseText;
                 }
-                modalBody.innerHTML = '<div class="alert alert-danger">' + errorMsg + '</div>';
+                modalBody.innerHTML = variationHeading + '<div class="alert alert-danger">' + errorMsg + '</div>';
+                modalFooter.style.display = 'flex';
             }
         });
     }

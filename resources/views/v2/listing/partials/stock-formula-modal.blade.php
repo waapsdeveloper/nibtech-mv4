@@ -3,9 +3,19 @@
     <div class="modal-dialog modal-lg modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header py-2">
-                <h5 class="modal-title" id="stockFormulaModalLabel">
-                    <i class="fe fe-percent me-2"></i><span id="stockFormulaModalTitle">Stock Formula</span>
-                </h5>
+                <div class="flex-grow-1">
+                    <h5 class="modal-title mb-1" id="stockFormulaModalLabel">
+                        <i class="fe fe-percent me-2"></i><span id="stockFormulaModalTitle">Stock Formula</span>
+                    </h5>
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="form-check form-switch ms-auto">
+                            <input class="form-check-input" type="checkbox" id="stockFormulaGlobalToggle" disabled>
+                            <label class="form-check-label" for="stockFormulaGlobalToggle" id="stockFormulaGlobalLabel">
+                                <small>Global</small>
+                            </label>
+                        </div>
+                    </div>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
                     <i data-feather="x" class="fas fa-times"></i>
                 </button>
