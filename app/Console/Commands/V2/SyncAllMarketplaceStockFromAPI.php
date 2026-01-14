@@ -7,6 +7,7 @@ use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use App\Models\StockSyncLog;
 use App\Http\Controllers\BackMarketAPIController;
+use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
@@ -119,6 +120,16 @@ class SyncAllMarketplaceStockFromAPI extends Command
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            
+            // Send error to Slack
+            SlackLogService::post('stock_sync', 'error', "V2 Stock Sync Command Failed: {$e->getMessage()}", [
+                'command' => 'v2:sync-all-marketplace-stock-from-api',
+                'log_id' => $logEntry->id,
+                'marketplace_id' => $marketplaceId,
+                'error' => $e->getMessage(),
+                'file' => $e->getFile(),
+                'line' => $e->getLine()
+            ], true);
             
             return 1;
         }
@@ -255,6 +266,16 @@ class SyncAllMarketplaceStockFromAPI extends Command
                     'marketplace_id' => $marketplaceId,
                     'error' => $e->getMessage()
                 ]);
+                
+                // Send critical errors to Slack (only for first few to avoid spam)
+                if ($errorCount <= 5) {
+                    SlackLogService::post('stock_sync', 'error', "Error syncing variation stock: {$e->getMessage()}", [
+                        'variation_id' => $variation->id ?? null,
+                        'reference_id' => $variation->reference_id ?? null,
+                        'marketplace_id' => $marketplaceId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
             
             $bar->advance();
@@ -371,6 +392,16 @@ class SyncAllMarketplaceStockFromAPI extends Command
                     'marketplace_id' => $marketplaceId,
                     'error' => $e->getMessage()
                 ]);
+                
+                // Send critical errors to Slack (only for first few to avoid spam)
+                if ($errorCount <= 5) {
+                    SlackLogService::post('stock_sync', 'error', "Error syncing variation stock: {$e->getMessage()}", [
+                        'variation_id' => $variation->id ?? null,
+                        'reference_id' => $variation->reference_id ?? null,
+                        'marketplace_id' => $marketplaceId,
+                        'error' => $e->getMessage()
+                    ]);
+                }
             }
             
             $bar->advance();
@@ -494,6 +525,17 @@ class SyncAllMarketplaceStockFromAPI extends Command
                     $this->error("  Variation ID {$error['variation_id']}: {$error['error']}");
                 }
             }
+            
+            // Send error summary to Slack
+            SlackLogService::post('stock_sync', 'warning', "V2 Stock Sync: {$errorCount} error(s) occurred", [
+                'command' => 'v2:sync-all-marketplace-stock-from-api',
+                'log_id' => $logEntry->id,
+                'marketplace_id' => $marketplaceId,
+                'total_records' => $totalRecords,
+                'synced_count' => $syncedCount,
+                'error_count' => $errorCount,
+                'duration_seconds' => $duration
+            ], true);
         }
         
         return $errorCount > 0 ? 1 : 0;
