@@ -3,7 +3,10 @@
     <div class="modal-dialog modal-lg modal-dialog-scrollable">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title" id="stockComparisonModalLabel">Stock Comparison</h5>
+                <div class="flex-grow-1">
+                    <h5 class="modal-title mb-1" id="stockComparisonModalLabel">Stock Comparison</h5>
+                    <small class="text-muted" id="stockComparisonVariationHeading">Loading variation details...</small>
+                </div>
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">

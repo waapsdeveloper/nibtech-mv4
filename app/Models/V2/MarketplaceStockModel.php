@@ -27,6 +27,9 @@ class MarketplaceStockModel extends Model
         'formula',
         'reserve_old_value',
         'reserve_new_value',
+        'min_threshold',
+        'max_threshold',
+        'min_stock_required',
     ];
     
     /**
@@ -40,6 +43,9 @@ class MarketplaceStockModel extends Model
         'reserve_new_value' => 'integer',
         'buffer_percentage' => 'decimal:2',
         'last_synced_at' => 'datetime',
+        'min_threshold' => 'integer',
+        'max_threshold' => 'integer',
+        'min_stock_required' => 'integer',
     ];
     
     /**

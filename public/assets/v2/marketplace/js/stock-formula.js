@@ -11,12 +11,18 @@
         initializeStockFormula();
     });
 
-    function initializeStockFormula() {
+    // Expose initializeStockFormula globally for dynamic content loading
+    window.initializeStockFormula = function() {
         setupSearchInput();
         setupInlineForms();
         setupResetStockForms();
         setupTotalStockForm();
         setupAutoHideAlerts();
+    };
+    
+    // Alias for backward compatibility
+    function initializeStockFormula() {
+        window.initializeStockFormula();
     }
 
     /**

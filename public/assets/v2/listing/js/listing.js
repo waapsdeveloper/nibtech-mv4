@@ -2535,6 +2535,15 @@ window.showStockComparison = function(variationId) {
         },
         success: function(response) {
             if (response.success) {
+                // Populate variation heading
+                if (response.variation_details) {
+                    const details = response.variation_details;
+                    const variationText = `${details.sku} - ${details.model} ${details.storage} ${details.color} ${details.grade}`;
+                    $('#stockComparisonVariationHeading').text(variationText);
+                } else {
+                    $('#stockComparisonVariationHeading').text(response.variation_sku || 'N/A');
+                }
+                
                 // Populate modal with data
                 $('#comparisonVariationSku').text(response.variation_sku || 'N/A');
                 
