@@ -738,23 +738,7 @@ function startMarketplaceAutoRefresh(variationId, marketplaceId) {
     
     const intervalKey = `${variationId}_${marketplaceId}`;
     
-    // Clear any existing interval for this table
-    if (window.marketplaceAutoRefreshIntervals[intervalKey]) {
-        clearInterval(window.marketplaceAutoRefreshIntervals[intervalKey]);
-    }
-    
-    // Start new interval: refresh prices every 5 seconds
-    window.marketplaceAutoRefreshIntervals[intervalKey] = setInterval(function() {
-        // Refresh prices from API and reload listings
-        window.refreshPricesFromAPI(variationId, function() {
-            // After refresh, reload the listings table
-            const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
-            if (container.length > 0 && container.data('loaded') === true) {
-                // Reload listings without showing loading state
-                loadMarketplaceTables(variationId, marketplaceId, true);
-            }
-        });
-    }, 5000); // 5 seconds
+    // Auto-refresh feature removed - no longer refreshing prices automatically
 }
 
 /**
@@ -1076,10 +1060,23 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
             
             // Load stocks only to calculate best_price (for marketplace 1 only, stocks are common)
             if (marketplaceId === 1) {
-                loadStocksForBestPrice(variationId, marketplaceId);
+                // Ensure best_price element exists before calling loadStocksForBestPrice
+                // If it doesn't exist yet, wait a bit for DOM to be ready
+                const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
+                if (bestPriceElement.length > 0) {
+                    loadStocksForBestPrice(variationId, marketplaceId);
+                } else {
+                    // Wait for DOM to be ready
+                    setTimeout(function() {
+                        loadStocksForBestPrice(variationId, marketplaceId);
+                    }, 100);
+                }
             } else {
-                // For other marketplaces, set best_price to empty or calculate from listings
-                $(`#best_price_${variationId}_${marketplaceId}`).text('0.00');
+                // For other marketplaces, only set to 0.00 if not already set
+                const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
+                if (bestPriceElement.length > 0 && !bestPriceElement.text().trim()) {
+                    bestPriceElement.text('0.00');
+                }
             }
         },
         error: function(xhr) {
@@ -1112,8 +1109,16 @@ function loadStocksForBestPrice(variationId, marketplaceId) {
             updateBestPrice(variationId, marketplaceId, stockPrices);
         },
         error: function() {
-            // Set default best_price on error
-            $(`#best_price_${variationId}_${marketplaceId}`).text('0.00');
+            // Only set to 0.00 on error if element is empty or already 0.00
+            // Don't overwrite existing valid value
+            const bestPriceElement = $(`#best_price_${variationId}_${marketplaceId}`);
+            if (bestPriceElement.length > 0) {
+                const currentValue = bestPriceElement.text().trim();
+                if (!currentValue || currentValue === '0.00') {
+                    bestPriceElement.text('0.00');
+                }
+                // If there's a valid value, preserve it even on error
+            }
         }
     });
 }
@@ -1368,6 +1373,10 @@ function highlightChangedHandlers(variationId, marketplaceId, oldHandlers) {
 function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
     const container = $(`#marketplace_toggle_${variationId}_${marketplaceId} .marketplace-tables-container`);
     
+    // Preserve existing best_price value before reloading table
+    const existingBestPrice = $(`#best_price_${variationId}_${marketplaceId}`).text();
+    const preservedBestPrice = existingBestPrice && existingBestPrice !== '0.00' ? existingBestPrice : '';
+    
     if (listingsTable === '') {
         listingsTable = '<tr><td colspan="8" class="text-center text-muted">No listings for this marketplace</td></tr>';
     }
@@ -1381,7 +1390,7 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                         <th width="80"><small><b>BuyBox</b></small></th>
-                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}"></b>)</small></th>
+                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}">${preservedBestPrice}</b>)</small></th>
                         <th width="120">
                             <small><b>Price</b></small>
                             ${marketplaceId == 1 ? `<button type="button" class="btn btn-link btn-sm p-0 ms-1" id="refresh_prices_btn_${variationId}_${marketplaceId}" onclick="refreshPricesButtonClick(${variationId}, ${marketplaceId})" title="Refresh prices from API" style="font-size: 0.7rem; line-height: 1; padding: 0 2px;">
