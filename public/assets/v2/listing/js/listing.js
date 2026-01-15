@@ -2073,6 +2073,20 @@ $(document).on('submit', '[id^="change_min_price_"], [id^="change_price_"]', fun
         return;
     }
     
+    // Validate 8% price difference rule BEFORE submission
+    if (typeof window.validatePriceDifference === 'function') {
+        const isValid = window.validatePriceDifference(listingId);
+        if (!isValid) {
+            // Invalid: highlight both inputs in red and prevent submission
+            if (typeof window.checkMinPriceDiff === 'function') {
+                window.checkMinPriceDiff(listingId);
+            }
+            // Show alert to user
+            alert('Price cannot exceed min_price by more than 8%. Please adjust the values.');
+            return; // Prevent form submission
+        }
+    }
+    
     // Record change detection (only fires on Enter key submission, not blur)
     if (window.ChangeDetection && window.ChangeDetection.originalValues) {
         const inputId = input.attr('id');

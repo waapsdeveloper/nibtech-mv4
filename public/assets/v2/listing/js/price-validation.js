@@ -7,6 +7,31 @@
     'use strict';
 
     /**
+     * Validate 8% price difference rule
+     * Returns true if valid, false if invalid
+     * @param {number} listingId - Listing ID
+     * @returns {boolean} - true if valid, false if invalid
+     */
+    window.validatePriceDifference = function(listingId) {
+        if (!listingId) return true;
+
+        const minPriceInput = document.getElementById('min_price_' + listingId);
+        const priceInput = document.getElementById('price_' + listingId);
+
+        if (!minPriceInput || !priceInput) return true;
+
+        const minVal = parseFloat(minPriceInput.value) || 0;
+        const priceVal = parseFloat(priceInput.value) || 0;
+
+        // Validation: min_price should be <= price AND price should be <= min_price * 1.08
+        // Invalid if: min_price > price OR price > min_price * 1.08
+        if (minVal > priceVal || (minVal > 0 && priceVal > 0 && minVal * 1.08 < priceVal)) {
+            return false;
+        }
+        return true;
+    };
+
+    /**
      * Check minimum price difference and highlight accordingly
      * Matches V1 behavior: validates that price doesn't exceed min_price by more than 8%
      * @param {number} listingId - Listing ID
@@ -56,7 +81,8 @@
         style.id = 'price-validation-styles';
         style.textContent = `
             .bg-red {
-                background-color: #ffcccc !important;
+                background-color: #ff0000 !important;
+                opacity: 1 !important;
             }
             .bg-green {
                 background-color: #ccffcc !important;
