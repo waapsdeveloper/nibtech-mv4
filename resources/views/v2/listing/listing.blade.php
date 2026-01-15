@@ -73,6 +73,10 @@
     {{-- Variation History Modal --}}
     @include('v2.listing.partials.variation-history-modal')
     {{-- /Variation History Modal --}}
+
+    {{-- Stock Formula Modal --}}
+    @include('v2.listing.partials.stock-formula-modal')
+    {{-- /Stock Formula Modal --}}
 @endsection
 
 @section('scripts')
@@ -111,7 +115,8 @@
             getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}",
             fixStockMismatch: "{{ url('v2/listings/fix_stock_mismatch') }}",
             restoreListingHistory: "{{ url('v2/listings/restore_history') }}",
-            getVariationHistory: "{{ url('v2/listings/get_variation_history') }}"
+            getVariationHistory: "{{ url('v2/listings/get_variation_history') }}",
+            getStockFormulaModal: "{{ url('v2/marketplace/stock-formula') }}"
         },
         csrfToken: "{{ csrf_token() }}",
         flagsPath: "{{ asset('assets/img/flags') }}"
@@ -151,6 +156,218 @@
             }
         });
     }
+
+    // Function to show stock formula modal
+    function showStockFormulaModal(variationId, sku, productModel, storageName, colorName, gradeName, colorCode) {
+        const modal = new bootstrap.Modal(document.getElementById('stockFormulaModal'));
+        const modalBody = document.getElementById('stockFormulaModalBody');
+        const modalFooter = document.getElementById('stockFormulaModalFooter');
+        
+        // Hide footer initially
+        modalFooter.style.display = 'none';
+        
+        // Build variation heading HTML
+        const variationHeading = `
+            <div class="mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <a href="{{url('inventory')}}?sku=${sku}" title="View Inventory" target="_blank" class="text-decoration-none">
+                        <span style="background-color: ${colorCode}; width: 30px; height: 16px; display: inline-block; vertical-align: middle;"></span>
+                        <strong>${sku}</strong>
+                    </a>
+                    <a href="https://www.backmarket.fr/bo-seller/listings/active?sku=${sku}" title="View BM Ad" target="_blank" class="text-decoration-none text-muted">
+                        - ${productModel} ${storageName} ${colorName} ${gradeName}
+                    </a>
+                </div>
+            </div>
+        `;
+        
+        // Show loading state with variation heading
+        modalBody.innerHTML = variationHeading + '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock formulas...</p></div>';
+        modal.show();
+        
+        // Load stock formula modal content via API
+        $.ajax({
+            url: window.ListingConfig.urls.getStockFormulaModal + '/' + variationId + '/modal',
+            type: 'GET',
+            dataType: 'json',
+            success: function(response) {
+                if (response.html) {
+                    // Prepend variation heading to the loaded content
+                    modalBody.innerHTML = variationHeading + response.html;
+                    
+                    // Set global toggle
+                    const isGlobal = response.is_global || false;
+                    const globalToggle = $('#stockFormulaGlobalToggle');
+                    globalToggle.prop('checked', isGlobal);
+                    globalToggle.prop('disabled', false);
+                    $('#stockFormulaGlobalLabel small').text(isGlobal ? 'Global' : 'Per-Variation');
+                    
+                    // Show footer
+                    modalFooter.style.display = 'flex';
+                    // Setup save all button handler
+                    setupSaveAllFormulas(variationId);
+                } else {
+                    modalBody.innerHTML = variationHeading + '<div class="alert alert-danger">Error: Invalid response format</div>';
+                    modalFooter.style.display = 'flex';
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('Error loading stock formula modal:', error);
+                let errorMsg = 'Error loading stock formulas';
+                if (xhr.responseJSON && xhr.responseJSON.error) {
+                    errorMsg = xhr.responseJSON.error;
+                } else if (xhr.responseText) {
+                    errorMsg = xhr.responseText;
+                }
+                modalBody.innerHTML = variationHeading + '<div class="alert alert-danger">' + errorMsg + '</div>';
+                modalFooter.style.display = 'flex';
+            }
+        });
+    }
+    
+    // Setup save all formulas button
+    function setupSaveAllFormulas(variationId) {
+        $('#saveAllFormulasBtn').off('click').on('click', function() {
+            const btn = $(this);
+            const originalText = btn.html();
+            btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
+            
+            // Collect all formula forms
+            const forms = $('.formula-inline-form');
+            let savedCount = 0;
+            let errorCount = 0;
+            const totalForms = forms.length;
+            
+            // Count forms with values
+            let formsWithValues = 0;
+            forms.each(function() {
+                const value = $(this).find('input[name="value"]').val().trim();
+                if (value && value !== '') {
+                    formsWithValues++;
+                }
+            });
+            
+            if (formsWithValues === 0) {
+                btn.prop('disabled', false).html(originalText);
+                // Don't show alert, just return silently
+                return;
+            }
+            
+            // Collect all form data first
+            const formsToSave = [];
+            forms.each(function() {
+                const form = $(this);
+                const marketplaceId = form.data('marketplace-id');
+                const valueInput = form.find(`#formula_value_${marketplaceId}`);
+                const value = valueInput.val().trim();
+                
+                // Skip if value is empty
+                if (!value || value === '') {
+                    return;
+                }
+                
+                const numValue = parseFloat(value);
+                const type = form.find(`#formula_type_${marketplaceId}`).val();
+                const applyTo = form.find(`#formula_apply_to_${marketplaceId}`).val();
+                
+                if (isNaN(numValue) || numValue < 0) {
+                    errorCount++;
+                    return;
+                }
+                
+                const minThreshold = form.find(`#min_threshold_${marketplaceId}`).val();
+                const maxThreshold = form.find(`#max_threshold_${marketplaceId}`).val();
+                
+                const saveUrl = (window.StockFormulaConfig && window.StockFormulaConfig.urls && window.StockFormulaConfig.urls.saveFormula) 
+                    ? window.StockFormulaConfig.urls.saveFormula + variationId + '/formula/' + marketplaceId
+                    : window.ListingConfig.urls.getStockFormulaModal + '/' + variationId + '/formula/' + marketplaceId;
+                
+                formsToSave.push({
+                    url: saveUrl,
+                    marketplaceId: marketplaceId,
+                    data: {
+                        value: numValue,
+                        type: type,
+                        apply_to: applyTo,
+                        min_threshold: minThreshold ? parseInt(minThreshold) : null,
+                        max_threshold: maxThreshold ? parseInt(maxThreshold) : null,
+                        _token: (window.StockFormulaConfig && window.StockFormulaConfig.csrfToken ? window.StockFormulaConfig.csrfToken : window.ListingConfig.csrfToken)
+                    }
+                });
+            });
+            
+            // Save forms sequentially using promises
+            let savePromise = Promise.resolve();
+            formsToSave.forEach(function(formData) {
+                savePromise = savePromise.then(function() {
+                    return new Promise(function(resolve) {
+                        // Get fresh CSRF token from meta tag or config
+                        const csrfToken = $('meta[name="csrf-token"]').attr('content') 
+                            || (window.StockFormulaConfig && window.StockFormulaConfig.csrfToken)
+                            || window.ListingConfig.csrfToken;
+                        
+                        // Update token in form data
+                        formData.data._token = csrfToken;
+                        
+                        $.ajax({
+                            url: formData.url,
+                            type: 'POST',
+                            data: formData.data,
+                            headers: {
+                                'X-CSRF-TOKEN': csrfToken,
+                                'X-Requested-With': 'XMLHttpRequest'
+                            },
+                            success: function(response) {
+                                if (response.success) {
+                                    savedCount++;
+                                } else {
+                                    errorCount++;
+                                    console.error('Failed to save formula for marketplace ' + formData.marketplaceId, response);
+                                }
+                                resolve();
+                            },
+                            error: function(xhr, status, error) {
+                                console.error('Error saving formula for marketplace ' + formData.marketplaceId, {
+                                    status: status,
+                                    error: error,
+                                    response: xhr.responseJSON || xhr.responseText
+                                });
+                                errorCount++;
+                                resolve();
+                            }
+                        });
+                    });
+                });
+            });
+            
+            // Wait for all saves to complete
+            savePromise.then(function() {
+                // Show result
+                btn.prop('disabled', false).html(originalText);
+                
+                if (errorCount === 0) {
+                    // Close the modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('stockFormulaModal'));
+                    if (modal) {
+                        modal.hide();
+                    }
+                    
+                    // Refresh the variation card to show updated thresholds
+                    // Reload the page or refresh the specific variation card
+                    location.reload();
+                } else {
+                    // Only show error if there were failures
+                    alert(`Error: ${errorCount} of ${formsToSave.length} formulas failed to save. Please try again.`);
+                }
+            });
+            
+            return; // Exit early, promise will handle the result
+            
+        });
+    }
+    
+    // Also expose on window for global access
+    window.showStockFormulaModal = showStockFormulaModal;
 </script>
 <script src="{{asset('assets/v2/listing/js/total-stock-form.js')}}"></script>
 <script src="{{asset('assets/v2/listing/js/keyboard-navigation.js')}}"></script>

@@ -2074,7 +2074,7 @@ class ListingController extends Controller
     public function getMarketplaceStockComparison(int $variationId)
     {
         try {
-            $variation = Variation_model::find($variationId);
+            $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id'])->find($variationId);
             if (!$variation) {
                 return response()->json([
                     'success' => false,
@@ -2142,10 +2142,34 @@ class ListingController extends Controller
             // Get total stock from variation (this is the total stock we have in the system)
             $totalStock = (int) ($variation->listed_stock ?? 0);
 
+            // Get variation details for display
+            $productModel = $variation->product->model ?? 'N/A';
+            $storageName = $variation->storage_id->name ?? 'N/A';
+            $colorName = $variation->color_id->name ?? 'N/A';
+            $gradeName = $variation->grade_id->name ?? 'N/A';
+
+            // Check if default formulas are applied globally (check if any marketplace has global default formula)
+            $hasGlobalDefaults = false;
+            try {
+                $globalDefaults = \App\Models\MarketplaceDefaultFormula::where('is_active', true)->exists();
+                $hasGlobalDefaults = $globalDefaults;
+            } catch (\Exception $e) {
+                // If table doesn't exist or error, assume false
+                $hasGlobalDefaults = false;
+            }
+
             return response()->json([
                 'success' => true,
                 'variation_id' => $variationId,
                 'variation_sku' => $variation->sku ?? '',
+                'variation_details' => [
+                    'sku' => $variation->sku ?? '',
+                    'model' => $productModel,
+                    'storage' => $storageName,
+                    'color' => $colorName,
+                    'grade' => $gradeName,
+                ],
+                'is_global' => $hasGlobalDefaults, // Whether default formulas are applied globally
                 'total_stock' => $totalStock, // Total stock we have in the system
                 'api_stock' => $apiStock,
                 'marketplaces' => $comparisonData,
