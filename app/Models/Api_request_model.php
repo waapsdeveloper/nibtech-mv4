@@ -727,7 +727,7 @@ class Api_request_model extends Model
     }
 
     public function send_to_eg(){
-        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+        if(config('app.url') == 'https://egpos.nibritaintech.com'){
             return;
         }
 
@@ -769,7 +769,7 @@ class Api_request_model extends Model
     }
 
     public function send_to_yk(){
-        if(config('app.url') != 'https://sdpos.nibritaintech.com'){
+        if(config('app.url') == 'https://ykpos.nibritaintech.com'){
             return;
         }
 
