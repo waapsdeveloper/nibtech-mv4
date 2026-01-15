@@ -778,10 +778,7 @@ function clearAllMarketplaceAutoRefresh() {
     window.marketplaceAutoRefreshIntervals = {};
 }
 
-// Clear all intervals on page unload
-$(window).on('beforeunload', function() {
-    clearAllMarketplaceAutoRefresh();
-});
+// Auto-refresh feature removed - no longer clearing intervals on page unload
 
 $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     const toggleElement = $(this);
@@ -799,8 +796,7 @@ $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     
     // Check if already loaded
     if (container.data('loaded') === true) {
-        // Table already loaded, just start auto-refresh
-        startMarketplaceAutoRefresh(variationId, marketplaceId);
+        // Table already loaded
         return;
     }
     
@@ -808,27 +804,10 @@ $(document).on('show.bs.collapse', '.marketplace-toggle-content', function() {
     container.html('<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading tables...</p></div>');
     
     // Load listings for this marketplace
-    loadMarketplaceTables(variationId, marketplaceId, false, function() {
-        // After table is loaded, start auto-refresh
-        startMarketplaceAutoRefresh(variationId, marketplaceId);
-    });
+    loadMarketplaceTables(variationId, marketplaceId, false);
 });
 
-// Stop auto-refresh when marketplace table is closed
-$(document).on('hide.bs.collapse', '.marketplace-toggle-content', function() {
-    const toggleElement = $(this);
-    const toggleId = toggleElement.attr('id');
-    const matches = toggleId.match(/marketplace_toggle_(\d+)_(\d+)/);
-    if (!matches) {
-        return;
-    }
-    
-    const variationId = parseInt(matches[1]);
-    const marketplaceId = parseInt(matches[2]);
-    
-    // Stop auto-refresh for this table
-    stopMarketplaceAutoRefresh(variationId, marketplaceId);
-});
+// Auto-refresh feature removed - no longer stopping refresh on table close
 
 /**
  * Refresh prices from API (for Backmarket only)
