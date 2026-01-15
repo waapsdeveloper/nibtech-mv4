@@ -984,11 +984,15 @@
                 }
             });
         }
-        function getStocks(variationId){
-
+        function getStocks(variationId, page = 1){
+            // Show loader
+            $('#stocks_'+variationId).html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
+            
             let stocksTable = '';
             let stockPrices = [];
             let params = {
+                page: page,
+                per_page: 50
                 // csrf: "{{ csrf_token() }}"
             };
             let queryString = $.param(params);
@@ -999,6 +1003,8 @@
                 success: function(data) {
                     datass = '';
                     count = 0;
+                    // Calculate starting row number based on pagination
+                    let startRow = data.pagination ? ((data.pagination.current_page - 1) * data.pagination.per_page) : 0;
                     data.stocks.forEach(function(item, index) {
                         count++;
                         // console.log(data.stock_costs[item.id]);
@@ -1010,21 +1016,80 @@
                         // Load stock cost via AJAX
                         datass += `
                             <tr>
-                                <td>${index + 1}</td>
+                                <td>${startRow + index + 1}</td>
                                 <td data-stock="${item.id}" title="${topup_ref}">
                                     <a href="{{ url('imei?imei=') }}${item.imei ?? item.serial_number}" target="_blank">
                                         ${item.imei ?? item.serial_number ?? ''}
                                     </a>
                                 </td>
-                                <td id="cost_${item.id}" title="${reference_id}">€${price} (${vendor})</td>
+                                <td id="cost_${item.id}" title="${reference_id}"><strong>€${price}</strong> (${vendor})</td>
 
                             </tr>`;
 
 
                     });
-                    updateAverageCost(variationId, stockPrices);
+                    // Calculate average cost value first (before updating header)
+                    let averageCostValue = '€0.00';
+                    if (data.average_cost !== undefined) {
+                        averageCostValue = `€${parseFloat(data.average_cost).toFixed(2)}`;
+                    } else {
+                        // Fallback to client-side calculation if server doesn't provide it
+                        if (stockPrices.length > 0) {
+                            let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
+                            averageCostValue = `€${average.toFixed(2)}`;
+                        }
+                    }
                     stocksTable = datass;
                     $('#stocks_'+variationId).html(datass);
+                    
+                    // Create pagination HTML function
+                    function createPaginationHtml(pagination, variationId, isHeader = false) {
+                        let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
+                        
+                        if (pagination.current_page > 1) {
+                            paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="getStocks(${variationId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
+                                <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                            </button>`;
+                        } else {
+                            paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                                <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                            </button>`;
+                        }
+                        
+                        // Show current/total format for both header and bottom
+                        paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
+                        
+                        if (pagination.current_page < pagination.last_page) {
+                            paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="getStocks(${variationId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                            </button>`;
+                        } else {
+                            paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                                <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                            </button>`;
+                        }
+                        
+                        paginationHtml += '</div>';
+                        return paginationHtml;
+                    }
+                    
+                    // Add pagination controls if pagination data exists
+                    if (data.pagination) {
+                        // Update header with pagination - include average cost value in the HTML
+                        let headerPaginationHtml = createPaginationHtml(data.pagination, variationId, true);
+                        let costHeader = $('#stocks_'+variationId).closest('table').find('thead th').last();
+                        if (costHeader.length) {
+                            costHeader.html(`<div class="d-flex justify-content-between align-items-center"><div><small><b>Cost</b> (<b id="average_cost_${variationId}">${averageCostValue}</b>)</small></div><div>${headerPaginationHtml}</div></div>`);
+                        }
+                        
+                        // Add pagination on bottom (after tbody)
+                        $('#stocks_pagination_bottom_'+variationId).remove();
+                        let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, false);
+                        $('#stocks_'+variationId).closest('table').after('<div id="stocks_pagination_bottom_'+variationId+'" class="mt-2">' + bottomPaginationHtml + '</div>');
+                    } else {
+                        // If no pagination, just set the average cost normally
+                        $(`#average_cost_${variationId}`).text(averageCostValue);
+                    }
                     // $('#available_stock_'+variationId).html(count + ' Available');
                 },
                 error: function(xhr) {
@@ -1626,7 +1691,7 @@
                                 <div class="card-body p-2 collapse multi_collapse" id="details_${variation.id}">
                                     <div class="col-md-auto">
                                         <div class="table-responsive">
-                                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                            <table class="table table-bordered table-hover mb-0 text-md-nowrap" style="font-size: 1.1rem;">
                                                 <thead>
                                                     <tr>
                                                         <th><small><b>No</b></small></th>

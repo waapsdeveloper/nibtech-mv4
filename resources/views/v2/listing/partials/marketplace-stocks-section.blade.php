@@ -88,15 +88,15 @@
     };
     
     // Function to load stocks for selected marketplace
-    window.loadStocksForMarketplace = function(variationId, marketplaceId) {
+    window.loadStocksForMarketplace = function(variationId, marketplaceId, page = 1) {
         const stocksTableBody = $('#stocks_table_' + variationId);
         const averageCostElement = $('#average_cost_stocks_' + variationId);
         
-        // Show loading state
-        stocksTableBody.html('<tr><td colspan="3" class="text-center text-muted small">Loading stocks...</td></tr>');
+        // Show loader
+        stocksTableBody.html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
         
         $.ajax({
-            url: window.ListingConfig.urls.getVariationStocks + '/' + variationId,
+            url: window.ListingConfig.urls.getVariationStocks + '/' + variationId + '?page=' + page + '&per_page=50',
             type: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -104,9 +104,13 @@
                 let stockPrices = [];
                 
                 if (data.stocks && data.stocks.length > 0) {
+                    // Calculate starting row number based on pagination
+                    let startRow = data.pagination ? ((data.pagination.current_page - 1) * data.pagination.per_page) : 0;
                     data.stocks.forEach(function(item, index) {
                         let price = data.stock_costs[item.id] || 0;
                         let topup_ref = data.topup_reference[data.latest_topup_items[item.id]] || '';
+                        let vendor = data.vendors && data.po && data.po[item.order_id] ? (data.vendors[data.po[item.order_id]] || '') : '';
+                        let reference_id = data.reference && data.reference[item.order_id] ? data.reference[item.order_id] : '';
                         
                         // Collect price for average calculation
                         if (price) {
@@ -116,7 +120,7 @@
                         const imeiUrl = window.ListingConfig.urls.imei || '';
                         stocksTable += `
                             <tr>
-                                <td><small>${index + 1}</small></td>
+                                <td><small>${startRow + index + 1}</small></td>
                                 <td data-stock="${item.id}" title="${topup_ref}">
                                     <small>
                                         <a href="${imeiUrl}?imei=${item.imei || item.serial_number}" target="_blank">
@@ -124,7 +128,7 @@
                                         </a>
                                     </small>
                                 </td>
-                                <td><small>€${price ? parseFloat(price).toFixed(2) : '0.00'}</small></td>
+                                <td><small title="${reference_id}"><strong>€${price ? parseFloat(price).toFixed(2) : '0.00'}</strong>${vendor ? ' (' + vendor + ')' : ''}</small></td>
                             </tr>`;
                     });
                 } else {
@@ -133,12 +137,65 @@
                 
                 stocksTableBody.html(stocksTable);
                 
-                // Calculate and display average cost
-                if (stockPrices.length > 0) {
-                    let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
-                    averageCostElement.text(`€${average.toFixed(2)}`);
+                // Calculate average cost value first (before updating header)
+                let averageCostValue = '€0.00';
+                if (data.average_cost !== undefined) {
+                    averageCostValue = `€${parseFloat(data.average_cost).toFixed(2)}`;
                 } else {
-                    averageCostElement.text('€0.00');
+                    // Fallback to client-side calculation if server doesn't provide it
+                    if (stockPrices.length > 0) {
+                        let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
+                        averageCostValue = `€${average.toFixed(2)}`;
+                    }
+                }
+                
+                // Create pagination HTML function
+                function createPaginationHtml(pagination, variationId, marketplaceId, isHeader = false) {
+                    let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
+                    
+                    if (pagination.current_page > 1) {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
+                            <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    } else {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                            <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    }
+                    
+                    // Show current/total format for both header and bottom
+                    paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
+                    
+                    if (pagination.current_page < pagination.last_page) {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
+                            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    } else {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    }
+                    
+                    paginationHtml += '</div>';
+                    return paginationHtml;
+                }
+                
+                // Add pagination controls if pagination data exists
+                if (data.pagination) {
+                    // Update header with pagination - include average cost value in the HTML
+                    let headerPaginationHtml = createPaginationHtml(data.pagination, variationId, marketplaceId, true);
+                    let costHeader = stocksTableBody.closest('table').find('thead th').last();
+                    if (costHeader.length) {
+                        costHeader.html(`<div class="d-flex justify-content-between align-items-center"><div><small><b>Cost</b> (<b id="average_cost_stocks_${variationId}">${averageCostValue}</b>)</small></div><div>${headerPaginationHtml}</div></div>`);
+                    }
+                    
+                    // Add pagination on bottom (after tbody)
+                    $('#stocks_pagination_'+variationId+'_bottom').remove();
+                    let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, marketplaceId, false);
+                    stocksTableBody.closest('table').after('<div id="stocks_pagination_'+variationId+'_bottom" class="mt-2 px-3 pb-2">' + bottomPaginationHtml + '</div>');
+                } else {
+                    // If no pagination, just set the average cost normally
+                    averageCostElement.text(averageCostValue);
                 }
             },
             error: function() {

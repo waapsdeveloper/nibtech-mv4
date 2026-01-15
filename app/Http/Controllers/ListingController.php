@@ -503,21 +503,35 @@ class ListingController extends Controller
     }
     public function get_variation_available_stocks($id){
         $variation = Variation_model::find($id);
-        // if ($variation->product->brand == 2) {
-        //     $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
-        //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
-        // } elseif (in_array($variation->product->category, [3, 6])) {
-        //     $variation_ids = Variation_model::where('product_storage_sort_id', $variation->product_storage_sort_id)->whereIn('grade',[1,2,3,4,5,7,9])->pluck('id');
-        //     $stocks = Stock_model::whereIn('variation_id', $variation_ids)->where('status', 1)->whereHas('active_order')->get();
-        // } else {
-            $stocks = Stock_model::where('variation_id', $id)->where('status', 1)
-            ->whereHas('latest_listing_or_topup')
-            ->get();
-        // }
+        
+        // Get pagination parameters
+        $page = request('page', 1);
+        $perPage = request('per_page', 50); // Default 50 items per page
+        
+        // Remove restrictive whereHas filter to show ALL available stocks
+        // Previously: ->whereHas('latest_listing_or_topup') was limiting results
+        $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1);
+        
+        // Order by ID descending (latest stocks first)
+        $stocks = $stocksQuery->orderByDesc('id')->paginate($perPage, ['*'], 'page', $page);
+        
+        // Get stock IDs from paginated items (for current page)
+        $stockIds = $stocks->pluck('id');
+        
+        // Get ALL stock IDs for this variation (for average cost calculation)
+        $allStockIds = Stock_model::where('variation_id', $id)->where('status', 1)->pluck('id');
 
+        // Get stock costs for current page stocks
         $stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
-        })->whereIn('stock_id',$stocks->pluck('id'))->pluck('price','stock_id');
+        })->whereIn('stock_id', $stockIds)->pluck('price','stock_id');
+        
+        // Calculate average cost from ALL stocks (not just current page)
+        $all_stock_costs = Order_item_model::whereHas('order', function($q){
+            $q->where('order_type_id',1);
+        })->whereIn('stock_id', $allStockIds)->pluck('price');
+        
+        $average_cost = $all_stock_costs->count() > 0 ? $all_stock_costs->average() : 0;
 
         $vendors = Customer_model::whereNotNull('is_vendor')->pluck('last_name','id');
 
@@ -527,11 +541,11 @@ class ListingController extends Controller
 
         $topup_reference = Process_model::whereIn('process_type_id',[21,22])->pluck('reference_id','id');
 
-        $latest_topup_items = Process_stock_model::whereIn('process_id', $topup_reference->keys())->whereIn('stock_id',$stocks->pluck('id'))->pluck('process_id','stock_id');
+        $latest_topup_items = Process_stock_model::whereIn('process_id', $topup_reference->keys())->whereIn('stock_id', $stockIds)->pluck('process_id','stock_id');
 
-        if($stock_costs->count() > 0){
-
-            $breakeven_price = ($stock_costs->average()+20)/0.88;
+        // Calculate breakeven price from average cost of ALL stocks
+        if($average_cost > 0){
+            $breakeven_price = ($average_cost + 20) / 0.88;
 
             if($breakeven_price != $variation->breakeven_price){
                 $variation->breakeven_price = $breakeven_price;
@@ -557,7 +571,7 @@ class ListingController extends Controller
         }
 
         return response()->json([
-            'stocks'=>$stocks, 
+            'stocks'=>$stocks->items(), // Get items from paginated collection
             'stock_costs'=>$stock_costs, 
             'vendors'=>$vendors, 
             'po'=>$po, 
@@ -565,7 +579,16 @@ class ListingController extends Controller
             'breakeven_price'=>$breakeven_price, 
             'latest_topup_items'=>$latest_topup_items, 
             'topup_reference'=>$topup_reference,
-            'updatedQuantity' => (int)$updatedQuantity
+            'updatedQuantity' => (int)$updatedQuantity,
+            'average_cost' => $average_cost, // Server-calculated average cost from ALL stocks
+            'pagination' => [
+                'current_page' => $stocks->currentPage(),
+                'last_page' => $stocks->lastPage(),
+                'per_page' => $stocks->perPage(),
+                'total' => $stocks->total(),
+                'from' => $stocks->firstItem(),
+                'to' => $stocks->lastItem()
+            ]
         ]);
 
     }
