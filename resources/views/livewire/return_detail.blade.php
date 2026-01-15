@@ -412,7 +412,7 @@
                                         @endif
                                         @if ($order->status != 3)
                                         <td style="width:240px" title="{{ $item->stock_id }}">
-                                                <strong class="text-danger">{{ $order->order_status->name }}</strong>
+                                                <strong class="text-danger">{{ $order->order_status->name ?? "Unknown Status Error" }}</strong>
                                             @isset($item->stock->imei) {{ $item->stock->imei }}&nbsp; @endisset
                                             @isset($item->stock->serial_number) {{ $item->stock->serial_number }}&nbsp; @endisset
                                             @isset($item->admin_id) | {{ $item->admin->first_name }} |
