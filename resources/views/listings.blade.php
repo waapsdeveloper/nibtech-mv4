@@ -1090,6 +1090,17 @@
                         // If no pagination, just set the average cost normally
                         $(`#average_cost_${variationId}`).text(averageCostValue);
                     }
+                    
+                    // Update best_price (breakeven price) from server response
+                    // Formula: (average_cost + 20) / 0.88 - already calculated server-side
+                    if (data.breakeven_price !== undefined && data.breakeven_price > 0) {
+                        $('#best_price_'+variationId).text(parseFloat(data.breakeven_price).toFixed(2));
+                    } else if (data.average_cost !== undefined && data.average_cost > 0) {
+                        // Fallback: calculate client-side if server doesn't provide breakeven_price
+                        let breakevenPrice = ((parseFloat(data.average_cost) + 20) / 0.88).toFixed(2);
+                        $('#best_price_'+variationId).text(breakevenPrice);
+                    }
+                    
                     // $('#available_stock_'+variationId).html(count + ' Available');
                 },
                 error: function(xhr) {
