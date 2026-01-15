@@ -212,9 +212,12 @@
                         <div class="p-3 border-bottom flex-shrink-0">
                             <div class="d-flex justify-content-between align-items-center">
                                 <h6 class="mb-0">Stock List</h6>
-                                <button type="button" class="btn btn-sm btn-link p-0" onclick="toggleStockPanel({{ $variationId }})" style="min-width: 24px;">
-                                    <i class="fas fa-times"></i>
-                                </button>
+                                <div class="d-flex align-items-center gap-2">
+                                    <div id="stocks_pagination_panel_header_{{ $variationId }}"></div>
+                                    <button type="button" class="btn btn-sm btn-link p-0" onclick="toggleStockPanel({{ $variationId }})" style="min-width: 24px;">
+                                        <i class="fas fa-times"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <div class="flex-grow-1 overflow-auto" style="overflow-y: auto;">
@@ -287,7 +290,7 @@
         }
     }
     
-    function loadStocksForPanel(variationId) {
+    function loadStocksForPanel(variationId, page = 1) {
         const stocksTableBody = $('#stocks_table_panel_' + variationId);
         const averageCostElement = $('#average_cost_stocks_panel_' + variationId);
         
@@ -296,8 +299,11 @@
             return;
         }
         
+        // Show loader
+        stocksTableBody.html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
+        
         $.ajax({
-            url: window.ListingConfig.urls.getVariationStocks + '/' + variationId,
+            url: window.ListingConfig.urls.getVariationStocks + '/' + variationId + '?page=' + page + '&per_page=50',
             type: 'GET',
             dataType: 'json',
             success: function(data) {
@@ -305,9 +311,13 @@
                 let stockPrices = [];
                 
                 if (data.stocks && data.stocks.length > 0) {
+                    // Calculate starting row number based on pagination
+                    let startRow = data.pagination ? ((data.pagination.current_page - 1) * data.pagination.per_page) : 0;
                     data.stocks.forEach(function(item, index) {
                         let price = data.stock_costs[item.id] || 0;
                         let topup_ref = data.topup_reference[data.latest_topup_items[item.id]] || '';
+                        let vendor = data.vendors && data.po && data.po[item.order_id] ? (data.vendors[data.po[item.order_id]] || '') : '';
+                        let reference_id = data.reference && data.reference[item.order_id] ? data.reference[item.order_id] : '';
                         
                         // Collect price for average calculation
                         if (price) {
@@ -317,7 +327,7 @@
                         const imeiUrl = window.ListingConfig.urls.imei || '';
                         stocksTable += `
                             <tr>
-                                <td><small>${index + 1}</small></td>
+                                <td><small>${startRow + index + 1}</small></td>
                                 <td data-stock="${item.id}" title="${topup_ref}">
                                     <small>
                                         <a href="${imeiUrl}?imei=${item.imei || item.serial_number}" target="_blank">
@@ -325,7 +335,7 @@
                                         </a>
                                     </small>
                                 </td>
-                                <td><small>€${price ? parseFloat(price).toFixed(2) : '0.00'}</small></td>
+                                <td><small title="${reference_id}"><strong>€${price ? parseFloat(price).toFixed(2) : '0.00'}</strong>${vendor ? ' (' + vendor + ')' : ''}</small></td>
                             </tr>`;
                     });
                 } else {
@@ -334,12 +344,71 @@
                 
                 stocksTableBody.html(stocksTable);
                 
-                // Calculate and display average cost
-                if (stockPrices.length > 0) {
-                    let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
-                    averageCostElement.text(`€${average.toFixed(2)}`);
+                // Calculate average cost value first (before updating header)
+                let averageCostValue = '€0.00';
+                if (data.average_cost !== undefined) {
+                    averageCostValue = `€${parseFloat(data.average_cost).toFixed(2)}`;
                 } else {
-                    averageCostElement.text('€0.00');
+                    // Fallback to client-side calculation if server doesn't provide it
+                    if (stockPrices.length > 0) {
+                        let average = stockPrices.reduce((a, b) => parseFloat(a) + parseFloat(b), 0) / stockPrices.length;
+                        averageCostValue = `€${average.toFixed(2)}`;
+                    }
+                }
+                
+                // Create pagination HTML function
+                function createPaginationHtml(pagination, variationId, isHeader = false) {
+                    let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
+                    
+                    if (pagination.current_page > 1) {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForPanel(${variationId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
+                            <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    } else {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                            <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    }
+                    
+                    // Show current/total format for both header and bottom
+                    paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
+                    
+                    if (pagination.current_page < pagination.last_page) {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForPanel(${variationId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
+                            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    } else {
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                            <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                    }
+                    
+                    paginationHtml += '</div>';
+                    return paginationHtml;
+                }
+                
+                // Set average cost in table header (without pagination)
+                let costHeader = $('#stocks_table_panel_' + variationId).closest('table').find('thead th').last();
+                if (costHeader.length) {
+                    costHeader.html(`<small><b>Cost</b> (<b id="average_cost_stocks_panel_${variationId}">${averageCostValue}</b>)</small>`);
+                } else {
+                    // Fallback: set average cost if header not found
+                    averageCostElement.text(averageCostValue);
+                }
+                
+                // Add pagination controls if pagination data exists
+                if (data.pagination) {
+                    // Add pagination to parent header (next to "Stock List")
+                    let headerPaginationHtml = createPaginationHtml(data.pagination, variationId, true);
+                    $('#stocks_pagination_panel_header_'+variationId).html(headerPaginationHtml);
+                    
+                    // Add pagination on bottom (after tbody)
+                    $('#stocks_pagination_panel_bottom_'+variationId).remove();
+                    let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, false);
+                    $('#stocks_table_panel_' + variationId).closest('table').after('<div id="stocks_pagination_panel_bottom_'+variationId+'" class="mt-2 px-3 pb-2">' + bottomPaginationHtml + '</div>');
+                } else {
+                    // Clear pagination from header if no pagination
+                    $('#stocks_pagination_panel_header_'+variationId).html('');
                 }
             },
             error: function() {
