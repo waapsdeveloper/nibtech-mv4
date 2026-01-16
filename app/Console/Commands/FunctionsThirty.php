@@ -8,10 +8,13 @@ use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
+use App\Models\Listing_stock_comparison_model;
+use App\Models\Order_item_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use App\Services\V2\SlackLogService;
 
 class FunctionsThirty extends Command
 {
@@ -41,29 +44,275 @@ class FunctionsThirty extends Command
 
     public function handle()
     {
+        $startTime = microtime(true);
+        
+        // Check if local sync mode is enabled
+        $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
+        
+        // Log command start
+        SlackLogService::post(
+            'listing_sync',
+            'info',
+            "🔄 Functions:thirty command started (BackMarket listings sync)",
+            [
+                'command' => 'functions:thirty',
+                'started_at' => now()->toDateTimeString(),
+                'local_mode' => $syncDataInLocal
+            ]
+        );
+        
+        if ($syncDataInLocal) {
+            $this->info("⚠️  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
+            SlackLogService::post(
+                'listing_sync',
+                'info',
+                "⚠️  Functions:thirty running in LOCAL MODE - Only fetching data, no API modifications",
+                [
+                    'command' => 'functions:thirty',
+                    'local_mode' => true
+                ]
+            );
+        }
 
         ini_set('max_execution_time', 1200);
-        // $this->get_refurbed_listings();
-        $this->get_listings();
-        echo 'sad';
-        $this->get_listingsBi();
+        
+        // Statistics tracking
+        $overallStats = [
+            'get_listings' => [
+                'countries_processed' => 0,
+                'listings_fetched' => 0,
+                'variations_created' => 0,
+                'variations_updated' => 0,
+                'listings_created' => 0,
+                'listings_updated' => 0,
+                'archived_skipped' => 0,
+            ],
+            'get_listingsBi' => [
+                'countries_processed' => 0,
+                'listings_fetched' => 0,
+                'variations_updated' => 0,
+                'listings_created' => 0,
+                'listings_updated' => 0,
+                'variations_not_found' => 0,
+            ]
+        ];
+        
+        // Run get_listings
+        $this->get_listings($overallStats['get_listings']);
+        
+        // Run get_listingsBi
+        $this->get_listingsBi($overallStats['get_listingsBi']);
+        
+        // Create stock comparison records
+        $comparisonStats = $this->createStockComparisons();
+        
+        // Calculate duration
+        $duration = round(microtime(true) - $startTime, 2);
+        
+        // Prepare summary message
+        $summaryParts = [];
+        
+        // get_listings summary
+        $glStats = $overallStats['get_listings'];
+        if ($glStats['listings_fetched'] > 0 || $glStats['variations_updated'] > 0 || $glStats['listings_updated'] > 0) {
+            $glParts = [];
+            if ($glStats['listings_fetched'] > 0) {
+                $glParts[] = "Listings: {$glStats['listings_fetched']}";
+            }
+            if ($glStats['variations_updated'] > 0) {
+                $glParts[] = "Variations: {$glStats['variations_updated']}";
+            }
+            if ($glStats['listings_updated'] > 0) {
+                $glParts[] = "Synced: {$glStats['listings_updated']}";
+            }
+            if ($glStats['archived_skipped'] > 0) {
+                $glParts[] = "Archived: {$glStats['archived_skipped']}";
+            }
+            $summaryParts[] = "get_listings(" . implode(", ", $glParts) . ")";
+        }
+        
+        // get_listingsBi summary
+        $glBiStats = $overallStats['get_listingsBi'];
+        if ($glBiStats['listings_fetched'] > 0 || $glBiStats['variations_updated'] > 0 || $glBiStats['listings_updated'] > 0) {
+            $glBiParts = [];
+            if ($glBiStats['listings_fetched'] > 0) {
+                $glBiParts[] = "Listings: {$glBiStats['listings_fetched']}";
+            }
+            if ($glBiStats['variations_updated'] > 0) {
+                $glBiParts[] = "Variations: {$glBiStats['variations_updated']}";
+            }
+            if ($glBiStats['listings_updated'] > 0) {
+                $glBiParts[] = "Synced: {$glBiStats['listings_updated']}";
+            }
+            $summaryParts[] = "get_listingsBi(" . implode(", ", $glBiParts) . ")";
+        }
+        
+        $summaryText = !empty($summaryParts) 
+            ? " | " . implode(" | ", $summaryParts)
+            : " | No listings processed";
+        
+        // Log command completion with statistics
+        SlackLogService::post(
+            'listing_sync',
+            'info',
+            "✅ Functions:thirty command completed{$summaryText} | Duration: {$duration}s",
+            [
+                'command' => 'functions:thirty',
+                'completed_at' => now()->toDateTimeString(),
+                'duration_seconds' => $duration,
+                'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+                'statistics' => $overallStats,
+                'comparison_stats' => $comparisonStats,
+                'total_duration' => $duration
+            ]
+        );
 
         return 0;
     }
-    public function get_listings(){
+    
+    /**
+     * Create stock comparison records for all listings
+     * Compares BackMarket API stock vs our stock and pending orders
+     */
+    private function createStockComparisons()
+    {
         $bm = new BackMarketAPIController();
+        $listings = $bm->getAllListings();
+        
+        $stats = [
+            'total_compared' => 0,
+            'perfect_matches' => 0,
+            'discrepancies' => 0,
+            'shortages' => 0,
+            'excesses' => 0,
+        ];
+        
+        $comparisons = [];
+        
+        foreach($listings as $countryCode => $lists) {
+            foreach($lists as $list) {
+                // Skip archived listings
+                if ($list->publication_state == 4) {
+                    continue;
+                }
+                
+                $variation = Variation_model::where([
+                    'reference_id' => trim($list->listing_id),
+                    'sku' => trim($list->sku)
+                ])->first();
+                
+                if (!$variation) {
+                    continue;
+                }
+                
+                // Get stock values
+                $apiStock = (int)($list->quantity ?? 0);
+                $ourStock = (int)($variation->listed_stock ?? 0);
+                
+                // Get pending orders
+                $pendingOrders = Order_item_model::where('variation_id', $variation->id)
+                    ->whereHas('order', function($q) {
+                        $q->where('order_type_id', 3) // Marketplace orders
+                          ->whereIn('status', [1, 2]); // Pending statuses
+                    })
+                    ->get();
+                
+                $pendingOrdersCount = $pendingOrders->count();
+                $pendingOrdersQuantity = $pendingOrders->sum('quantity');
+                
+                // Calculate differences
+                $stockDifference = $ourStock - $apiStock;
+                $availableAfterPending = $ourStock - $pendingOrdersQuantity;
+                $apiVsPendingDifference = $apiStock - $pendingOrdersQuantity;
+                
+                // Determine status flags
+                $isPerfect = ($ourStock == $apiStock);
+                $hasDiscrepancy = ($ourStock != $apiStock);
+                $hasShortage = ($ourStock < $apiStock);
+                $hasExcess = ($ourStock > $apiStock);
+                
+                // Create comparison record
+                $comparison = Listing_stock_comparison_model::create([
+                    'variation_id' => $variation->id,
+                    'variation_sku' => $variation->sku,
+                    'marketplace_id' => 1, // BackMarket
+                    'country_code' => $countryCode,
+                    'api_stock' => $apiStock,
+                    'our_stock' => $ourStock,
+                    'pending_orders_count' => $pendingOrdersCount,
+                    'pending_orders_quantity' => $pendingOrdersQuantity,
+                    'stock_difference' => $stockDifference,
+                    'available_after_pending' => $availableAfterPending,
+                    'api_vs_pending_difference' => $apiVsPendingDifference,
+                    'is_perfect' => $isPerfect,
+                    'has_discrepancy' => $hasDiscrepancy,
+                    'has_shortage' => $hasShortage,
+                    'has_excess' => $hasExcess,
+                    'compared_at' => now(),
+                ]);
+                
+                $stats['total_compared']++;
+                if ($isPerfect) {
+                    $stats['perfect_matches']++;
+                } else {
+                    $stats['discrepancies']++;
+                    if ($hasShortage) {
+                        $stats['shortages']++;
+                    }
+                    if ($hasExcess) {
+                        $stats['excesses']++;
+                    }
+                }
+            }
+        }
+        
+        // Log comparison summary
+        SlackLogService::post(
+            'listing_sync',
+            'info',
+            "📊 Stock Comparison: {$stats['total_compared']} listings compared | Perfect: {$stats['perfect_matches']} | Discrepancies: {$stats['discrepancies']} (Shortages: {$stats['shortages']}, Excesses: {$stats['excesses']})",
+            [
+                'command' => 'functions:thirty',
+                'comparison_stats' => $stats,
+                'compared_at' => now()->toDateTimeString(),
+            ]
+        );
+        
+        return $stats;
+    }
+    public function get_listings(&$stats = null){
+        $bm = new BackMarketAPIController();
+
+        // Initialize stats if not provided
+        if ($stats === null) {
+            $stats = [
+                'countries_processed' => 0,
+                'listings_fetched' => 0,
+                'variations_created' => 0,
+                'variations_updated' => 0,
+                'listings_created' => 0,
+                'listings_updated' => 0,
+                'archived_skipped' => 0,
+            ];
+        }
 
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListings();
 
         foreach($listings as $country => $lists){
+            $stats['countries_processed']++;
+            
             foreach($lists as $list){
+                $stats['listings_fetched']++;
 
                 $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
                 if( $list->publication_state == 4) {
                     // If the listing is archived, we skip it
+                    $stats['archived_skipped']++;
                     continue;
                 }
+                
+                $isNewVariation = false;
                 if($variation == null){
                     // $list = $bm->getOneListing($list->listing_id);
                     $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
@@ -74,8 +323,10 @@ class FunctionsThirty extends Command
                     }
                     $variation->status = 1;
                     // ... other fields
+                    $isNewVariation = !$variation->exists;
                     echo $list->listing_id." ";
                 }
+                
                 if($variation->name == null){
                     $variation->name = $list->title;
                 }
@@ -87,15 +338,26 @@ class FunctionsThirty extends Command
                     $variation->state = $list->publication_state;
                     echo $list->publication_state." ";
                 }
-                $variation->save();
+                
+                // Check if variation needs to be saved
+                $variationIsDirty = $variation->isDirty();
+                if ($isNewVariation || $variationIsDirty) {
+                    $variation->save();
+                    if ($isNewVariation) {
+                        $stats['variations_created']++;
+                    } else if ($variationIsDirty) {
+                        $stats['variations_updated']++;
+                    }
+                }
 
                 $curr = $list->price->currency ?? $list->currency;
                 $currency = Currency_model::where('code',$curr)->first();
                 // echo $list->currency;
-                if($variation == null){
-                    echo $list->sku." ";
-                }else{
+                if($variation != null){
+                    $isNewListing = false;
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
+                    $isNewListing = !$listing->exists;
+                    
                     $listing->max_price = $list->max_price;
                     $listing->min_price = $list->min_price;
                     $variation->listed_stock = $list->quantity;
@@ -107,17 +369,36 @@ class FunctionsThirty extends Command
                     $listing->reference_uuid = $list->id;
                     // ... other fields
                     $listing->save();
+                    
+                    if ($isNewListing) {
+                        $stats['listings_created']++;
+                    } else if ($listing->wasChanged()) {
+                        $stats['listings_updated']++;
+                    }
+                    
                     if($variation->reference_uuid == null){
                         $variation->reference_uuid = $list->id;
+                        $variation->save();
                     }
-                    $variation->save();
                 }
             }
         }
         // $list = $bm->getOneListing($itemObj->listing_id);
     }
-    public function get_listingsBi(){
+    public function get_listingsBi(&$stats = null){
         $bm = new BackMarketAPIController();
+
+        // Initialize stats if not provided
+        if ($stats === null) {
+            $stats = [
+                'countries_processed' => 0,
+                'listings_fetched' => 0,
+                'variations_updated' => 0,
+                'listings_created' => 0,
+                'listings_updated' => 0,
+                'variations_not_found' => 0,
+            ];
+        }
 
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
@@ -125,21 +406,41 @@ class FunctionsThirty extends Command
         // Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
         foreach($listings as $country => $lists){
+            $stats['countries_processed']++;
+            
             foreach($lists as $list){
+                $stats['listings_fetched']++;
+                
                 $variation = Variation_model::where('sku',$list->sku)->first();
                 $currency = Currency_model::where('code',$list->currency)->first();
                 if($variation == null){
+                    $stats['variations_not_found']++;
                     echo $list->sku." ";
                 }else{
+                    $isNewListing = false;
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
+                    $isNewListing = !$listing->exists;
+                    
                     $variation->listed_stock = $list->quantity;
+                    $variationIsDirty = $variation->isDirty();
+                    
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
                     $listing->currency_id = $currency->id;
                     // ... other fields
                     $listing->save();
-                    $variation->save();
+                    
+                    if ($isNewListing) {
+                        $stats['listings_created']++;
+                    } else if ($listing->wasChanged()) {
+                        $stats['listings_updated']++;
+                    }
+                    
+                    if ($variationIsDirty) {
+                        $variation->save();
+                        $stats['variations_updated']++;
+                    }
                 }
             }
         }
@@ -818,6 +1119,28 @@ class FunctionsThirty extends Command
     private function pushRefurbedPriceUpdates(RefurbedAPIController $refurbed, ?string $sku, array $setMarketPrices): void
     {
         if (empty($sku) || empty($setMarketPrices)) {
+            return;
+        }
+
+        // Check if local sync mode is enabled - prevent live data updates to Refurbed
+        $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
+        
+        if ($syncDataInLocal) {
+            // Skip live API update when in local testing mode
+            // Log through SlackLogService to named log file
+            SlackLogService::post(
+                'listing_sync', 
+                'info', 
+                "FunctionsThirty: Skipping Refurbed price update API call (SYNC_DATA_IN_LOCAL=true) - SKU: {$sku}",
+                [
+                    'sku' => $sku,
+                    'market_prices' => array_keys($setMarketPrices),
+                    'would_update' => true,
+                    'command' => 'functions:thirty',
+                    'local_mode' => true
+                ]
+            );
+            $this->info("⚠️  Local Mode: Skipping Refurbed price update for SKU {$sku}");
             return;
         }
 

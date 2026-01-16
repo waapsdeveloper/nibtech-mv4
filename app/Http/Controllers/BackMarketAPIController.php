@@ -726,8 +726,19 @@ class BackMarketAPIController extends Controller
         // $result0 = $this->apiGet($end_point_0);
         $result1 = $this->apiGet($end_point_1);
 
+        // Check if API call was successful and has results property
+        if (!$result1 || !is_object($result1) || !isset($result1->results)) {
+            // Return empty array if API call failed or response doesn't have results
+            Log::warning("BackMarketAPIController::getNewOrders: API response missing results property", [
+                'endpoint' => $end_point_1,
+                'result_type' => gettype($result1),
+                'result' => $result1
+            ]);
+            return [];
+        }
+
         // $res0_array = $result0->results;
-        $res1_array = $result1->results;
+        $res1_array = $result1->results ?? [];
 
         // $result0_next = $result0;
         $result1_next = $result1;
@@ -735,17 +746,27 @@ class BackMarketAPIController extends Controller
 
         $page1 = 1;
 
-        while (($result1_next->next) != null) {
-            if($result1_next->results){
+        while (isset($result1_next->next) && ($result1_next->next) != null) {
+            if(isset($result1_next->results) && $result1_next->results){
                 $page1++;
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point_1 . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
+                
+                // Check if pagination API call was successful
+                if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
+                    break; // Stop pagination if API call fails
+                }
+                
                 $result_next1_array = $result1_next->results;
 
-                foreach ($result_next1_array as $key => $value) {
-                    array_push($res1_array, $result_next1_array[$key]);
+                if (is_array($result_next1_array)) {
+                    foreach ($result_next1_array as $key => $value) {
+                        array_push($res1_array, $result_next1_array[$key]);
+                    }
                 }
+            } else {
+                break; // Stop if no results in current page
             }
         }
 
