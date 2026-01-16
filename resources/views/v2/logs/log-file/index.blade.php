@@ -90,6 +90,39 @@
                     <!-- Controls -->
                     <div class="card mb-4">
                         <div class="card-body">
+                            <div class="d-flex justify-content-between align-items-center flex-wrap gap-2 mb-3">
+                                <div class="d-flex gap-2 align-items-center flex-wrap">
+                                    <form method="GET" action="{{ url('v2/logs/log-file') }}" class="d-flex gap-2 align-items-center" id="logFileForm">
+                                        <label class="form-label mb-0"><strong>Log File:</strong></label>
+                                        <select name="file" class="form-control form-select" style="width: auto; min-width: 200px;" onchange="this.form.submit()">
+                                            @if(isset($logFiles) && count($logFiles) > 0)
+                                                @foreach($logFiles as $logFile)
+                                                    <option value="{{ $logFile['name'] }}" {{ $selectedFile == $logFile['name'] ? 'selected' : '' }}>
+                                                        {{ $logFile['name'] }}
+                                                        @if($logFile['is_slack_log'])
+                                                            ({{ $logFile['size_formatted'] }})
+                                                        @endif
+                                                    </option>
+                                                @endforeach
+                                            @else
+                                                <option value="laravel.log" {{ $selectedFile == 'laravel.log' ? 'selected' : '' }}>laravel.log</option>
+                                            @endif
+                                        </select>
+                                        <input type="hidden" name="page" value="1">
+                                        <input type="hidden" name="per_page" value="{{ $perPage }}">
+                                    </form>
+                                </div>
+                                
+                                <div class="d-flex gap-2">
+                                    <button type="button" class="btn btn-danger btn-sm" onclick="clearLogFile()">
+                                        <i class="fe fe-trash-2"></i> Clear Log File
+                                    </button>
+                                    <a href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}" class="btn btn-secondary btn-sm">
+                                        <i class="fe fe-refresh-cw"></i> Refresh
+                                    </a>
+                                </div>
+                            </div>
+                            
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div class="d-flex gap-2 align-items-center">
                                     <form method="GET" action="{{ url('v2/logs/log-file') }}" class="d-flex gap-2 align-items-center">
@@ -101,6 +134,7 @@
                                             <option value="5000" {{ $perPage == 5000 ? 'selected' : '' }}>5,000</option>
                                         </select>
                                         <input type="hidden" name="page" value="{{ $page }}">
+                                        <input type="hidden" name="file" value="{{ $selectedFile }}">
                                     </form>
                                     
                                     <span class="text-muted small">
@@ -110,15 +144,6 @@
                                         @endif
                                     </span>
                                 </div>
-                                
-                                <div class="d-flex gap-2">
-                                    <button type="button" class="btn btn-danger btn-sm" onclick="clearLogFile()">
-                                        <i class="fe fe-trash-2"></i> Clear Log File
-                                    </button>
-                                    <a href="{{ url('v2/logs/log-file') }}" class="btn btn-secondary btn-sm">
-                                        <i class="fe fe-refresh-cw"></i> Refresh
-                                    </a>
-                                </div>
                             </div>
                         </div>
                     </div>
@@ -126,7 +151,16 @@
                     <!-- Log Content -->
             <div class="card">
                 <div class="card-header">
-                    <h5 class="card-title mb-0">Laravel Log File</h5>
+                    <h5 class="card-title mb-0">
+                        Log File: <code>{{ $selectedFile }}</code>
+                        @if(isset($logFiles))
+                            @foreach($logFiles as $logFile)
+                                @if($logFile['name'] == $selectedFile)
+                                    <small class="text-muted">({{ $logFile['size_formatted'] }})</small>
+                                @endif
+                            @endforeach
+                        @endif
+                    </h5>
                 </div>
                 <div class="card-body p-0">
                     @if($totalLines > 0)
@@ -158,19 +192,19 @@
                             <nav aria-label="Log file pagination">
                                 <ul class="pagination mb-0 justify-content-center">
                                     <li class="page-item {{ !$hasPrevPage ? 'disabled' : '' }}">
-                                        <a class="page-link" href="{{ url('v2/logs/log-file') }}?page={{ $page - 1 }}&per_page={{ $perPage }}" {{ !$hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' }}>
+                                        <a class="page-link" href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}&page={{ $page - 1 }}&per_page={{ $perPage }}" {{ !$hasPrevPage ? 'tabindex="-1" aria-disabled="true"' : '' }}>
                                             <i class="fe fe-chevron-left"></i> Previous
                                         </a>
                                     </li>
                                     
                                     @for($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++)
                                         <li class="page-item {{ $i == $page ? 'active' : '' }}">
-                                            <a class="page-link" href="{{ url('v2/logs/log-file') }}?page={{ $i }}&per_page={{ $perPage }}">{{ $i }}</a>
+                                            <a class="page-link" href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}&page={{ $i }}&per_page={{ $perPage }}">{{ $i }}</a>
                                         </li>
                                     @endfor
                                     
                                     <li class="page-item {{ !$hasNextPage ? 'disabled' : '' }}">
-                                        <a class="page-link" href="{{ url('v2/logs/log-file') }}?page={{ $page + 1 }}&per_page={{ $perPage }}" {{ !$hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' }}>
+                                        <a class="page-link" href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}&page={{ $page + 1 }}&per_page={{ $perPage }}" {{ !$hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' }}>
                                             Next <i class="fe fe-chevron-right"></i>
                                         </a>
                                     </li>
@@ -246,6 +280,9 @@
                                                         <div class="btn-group btn-group-sm">
                                                             <button type="button" class="btn btn-sm btn-primary" onclick="editLogSetting({{ $setting->id }})" title="Edit">
                                                                 <i class="fe fe-edit"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-info" onclick="duplicateLogSetting({{ $setting->id }})" title="Duplicate">
+                                                                <i class="fe fe-copy"></i>
                                                             </button>
                                                             <button type="button" class="btn btn-sm btn-danger" onclick="deleteLogSetting({{ $setting->id }})" title="Delete">
                                                                 <i class="fe fe-trash-2"></i>
@@ -364,11 +401,13 @@ $(document).ready(function() {
 });
 
 function clearLogFile() {
-    if (!confirm('Are you sure you want to clear the entire log file? This action cannot be undone.')) {
+    const selectedFile = document.querySelector('select[name="file"]').value;
+    
+    if (!confirm('Are you sure you want to clear the log file "' + selectedFile + '"? This action cannot be undone.')) {
         return;
     }
     
-    fetch('{{ url("v2/logs/log-file") }}', {
+    fetch('{{ url("v2/logs/log-file") }}?file=' + encodeURIComponent(selectedFile), {
         method: 'DELETE',
         headers: {
             'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
@@ -381,7 +420,8 @@ function clearLogFile() {
         if (data.success) {
             showAlert('success', data.message || 'Log file cleared successfully');
             setTimeout(() => {
-                window.location.reload();
+                const selectedFile = document.querySelector('select[name="file"]').value;
+                window.location.href = '{{ url("v2/logs/log-file") }}?file=' + encodeURIComponent(selectedFile);
             }, 1000);
         } else {
             showAlert('danger', data.error || 'Failed to clear log file');
@@ -483,6 +523,36 @@ function deleteLogSetting(id) {
     .catch(error => {
         console.error('Error deleting log setting:', error);
         showAlert('danger', 'An error occurred while deleting the log setting');
+    });
+}
+
+function duplicateLogSetting(id) {
+    if (!confirm('Are you sure you want to duplicate this log setting? A copy will be created with the same settings but a different name.')) {
+        return;
+    }
+    
+    fetch('{{ url("v2/logs/log-settings") }}/' + id + '/duplicate', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Log setting duplicated successfully');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1000);
+        } else {
+            showAlert('danger', data.error || 'Failed to duplicate log setting');
+        }
+    })
+    .catch(error => {
+        console.error('Error duplicating log setting:', error);
+        showAlert('danger', 'An error occurred while duplicating the log setting');
     });
 }
 

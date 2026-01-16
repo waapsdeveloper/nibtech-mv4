@@ -115,6 +115,7 @@ Route::prefix('v2')->group(function () {
     Route::put('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'updateLogSetting'])->name('v2.logs.log-settings.update');
     Route::delete('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'deleteLogSetting'])->name('v2.logs.log-settings.delete');
     Route::get('logs/log-settings/{id}', [\App\Http\Controllers\V2\LogFileController::class, 'getLogSetting'])->name('v2.logs.log-settings.show');
+    Route::post('logs/log-settings/{id}/duplicate', [\App\Http\Controllers\V2\LogFileController::class, 'duplicateLogSetting'])->name('v2.logs.log-settings.duplicate');
     
     // Team Management (Options > Teams)
     Route::prefix('options/teams')->group(function () {

@@ -4,6 +4,7 @@ namespace App\Services\V2;
 
 use App\Models\LogSetting;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
@@ -92,6 +93,11 @@ class SlackLogService
                 }
             }
             
+            // Determine log file name: prioritize channel_name from setting, fallback to logType
+            $logFileName = $setting && $setting->channel_name 
+                ? $setting->channel_name 
+                : $logType;
+            
             // If no matching setting found, don't post to Slack (only log to file)
             if (!$setting || !$setting->is_enabled) {
                 // DEBUG: Log why not posting
@@ -107,8 +113,8 @@ class SlackLogService
                         'is_enabled' => $setting->is_enabled
                     ]);
                 }
-                // Log to file only (default Laravel log)
-                self::logToFile($level, $message, $context);
+                // Log to file (default Laravel log + named log file based on logType or channel_name)
+                self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
             
@@ -118,8 +124,8 @@ class SlackLogService
                     'log_type' => $logType,
                     'level' => $level
                 ]);
-                // Still log to file even if rate limited
-                self::logToFile($level, $message, $context);
+                // Still log to file even if rate limited (use channel_name or logType)
+                self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
             
@@ -130,7 +136,7 @@ class SlackLogService
                     'setting_name' => $setting->name,
                     'channel_name' => $setting->channel_name
                 ]);
-                self::logToFile($level, $message, $context);
+                self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
             
@@ -159,8 +165,8 @@ class SlackLogService
             if ($response->successful()) {
                 // Update rate limit cache
                 self::updateRateLimit($logType, $level);
-                // Also log to file for backup
-                self::logToFile($level, $message, $context);
+                // Also log to file for backup (use channel_name or logType)
+                self::logToFile($level, $message, $context, $logFileName);
                 Log::debug("SlackLogService: Successfully posted to Slack");
                 return true;
             } else {
@@ -170,12 +176,26 @@ class SlackLogService
                     'log_type' => $logType,
                     'level' => $level
                 ]);
-                self::logToFile($level, $message, $context);
+                self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
             
         } catch (\Exception $e) {
             // If any error occurs, log to file and log the error
+            // Try to get channel_name from setting if available, otherwise use logType
+            $logFileName = $logType; // Default to logType
+            try {
+                $setting = LogSetting::getActiveForType($logType, $level);
+                if (!$setting) {
+                    $setting = LogSetting::getActiveForKeywords($message, $level);
+                }
+                if ($setting && $setting->channel_name) {
+                    $logFileName = $setting->channel_name;
+                }
+            } catch (\Exception $ex) {
+                // Ignore errors when trying to get channel name, use logType as fallback
+            }
+            
             Log::error("SlackLogService: Error posting to Slack: " . $e->getMessage(), [
                 'log_type' => $logType,
                 'level' => $level,
@@ -183,7 +203,7 @@ class SlackLogService
                 'exception' => get_class($e),
                 'trace' => $e->getTraceAsString()
             ]);
-            self::logToFile($level, $message, $context);
+            self::logToFile($level, $message, $context, $logFileName);
             return false;
         }
     }
@@ -220,7 +240,17 @@ class SlackLogService
         self::$buffer[$key]['last_occurrence'] = now();
         
         // Always log to file immediately (backup)
-        self::logToFile($level, $message, $context);
+        // Try to get channel_name from setting, otherwise use logType
+        $logFileName = $logType; // Default to logType
+        try {
+            $setting = LogSetting::getActiveForType($logType, $level);
+            if ($setting && $setting->channel_name) {
+                $logFileName = $setting->channel_name;
+            }
+        } catch (\Exception $e) {
+            // Ignore errors, use logType as fallback
+        }
+        self::logToFile($level, $message, $context, $logFileName);
     }
     
     /**
@@ -839,10 +869,17 @@ class SlackLogService
     }
     
     /**
-     * Log to file (default Laravel log channel)
+     * Log to file (default Laravel log channel and named log file)
+     * Always uses a named log file - prioritizes channel_name, falls back to logType
+     * 
+     * @param string $level Log level
+     * @param string $message Log message
+     * @param array $context Additional context
+     * @param string|null $logFileName Optional log file name (channel_name or logType). If null, will not create named file.
      */
-    private static function logToFile(string $level, string $message, array $context = []): void
+    private static function logToFile(string $level, string $message, array $context = [], ?string $logFileName = null): void
     {
+        // Always log to default Laravel log file for backward compatibility
         match(strtolower($level)) {
             'error' => Log::error($message, $context),
             'warning' => Log::warning($message, $context),
@@ -850,5 +887,47 @@ class SlackLogService
             'debug' => Log::debug($message, $context),
             default => Log::info($message, $context),
         };
+        
+        // Always log to named file if logFileName is provided (prioritized approach)
+        if ($logFileName) {
+            self::logToNamedFile($level, $message, $context, $logFileName);
+        }
+    }
+    
+    /**
+     * Log to a named log file based on channel name or logType
+     * 
+     * @param string $level Log level
+     * @param string $message Log message
+     * @param array $context Additional context
+     * @param string $logFileName Log file name (channel_name or logType - will be sanitized for filename)
+     */
+    private static function logToNamedFile(string $level, string $message, array $context, string $logFileName): void
+    {
+        try {
+            // Sanitize log file name for filename (remove special characters, keep alphanumeric, hyphens, underscores)
+            $sanitizedFileName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $logFileName);
+            $finalLogFileName = 'slack-' . strtolower($sanitizedFileName) . '.log';
+            $logFilePath = storage_path('logs/' . $finalLogFileName);
+            
+            // Format log entry similar to Laravel's log format
+            $timestamp = now()->format('Y-m-d H:i:s');
+            $levelUpper = strtoupper($level);
+            
+            // Format message with context
+            $contextString = '';
+            if (!empty($context)) {
+                $contextString = ' ' . json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            }
+            
+            $logEntry = "[{$timestamp}] local.{$levelUpper}: {$message}{$contextString}" . PHP_EOL;
+            
+            // Append to file (create if doesn't exist)
+            File::append($logFilePath, $logEntry);
+        } catch (\Exception $e) {
+            // If writing to named file fails, log error to default log but don't throw
+            // This prevents named log file errors from breaking the main logging flow
+            Log::warning("SlackLogService: Failed to write to named log file '{$logFileName}': " . $e->getMessage());
+        }
     }
 }
