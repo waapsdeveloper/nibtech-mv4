@@ -78,6 +78,16 @@
                                                         Artisan Commands
                                                     </a>
                                                 </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-deduction-logs')}}">                                                        
+                                                        Stock Deduction Logs
+                                                    </a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/listing-stock-comparisons')}}">                                                        
+                                                        Stock Comparisons
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </li>
                                         @endif

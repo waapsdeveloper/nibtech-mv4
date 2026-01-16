@@ -11,6 +11,8 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
+use App\Models\V2\MarketplaceStockModel;
+use App\Models\Stock_deduction_log_model;
 use Carbon\Carbon;
 
 
@@ -176,10 +178,22 @@ class RefreshNew extends Command
 
         $orderObj = $bm->getOneOrder($order_id);
         if(isset($orderObj->order_id)){
+            
+            // Get order before update to check if it's new or status changed
+            $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+            $existingOrder = Order_model::where('reference_id', $orderObj->order_id)
+                ->where('marketplace_id', $marketplaceId)
+                ->first();
+            
+            $isNewOrder = $existingOrder === null;
+            $oldStatus = $existingOrder ? $existingOrder->status : null;
 
             $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+            
+            // Deduct listed_stock if conditions are met
+            $this->deductListedStockForOrder($orderObj, $isNewOrder, $oldStatus);
         }
 
 
@@ -219,6 +233,159 @@ class RefreshNew extends Command
         $result = $bm->apiPost($end_point, $request_JSON);
 
         return $result;
+    }
+
+    /**
+     * Deduct listed_stock when order arrives with status 1 or when status changes from 1 to 2
+     * 
+     * Rules:
+     * - New order with status 1: Deduct 1
+     * - Existing order status changes from 1 → 2: Deduct 1
+     * - New order with status 2: NO deduction (remain as is)
+     * - Always deduct 1 (not by quantity)
+     * - Update both variations.listed_stock and marketplace_stock.listed_stock
+     * - Allow negative stock values
+     */
+    private function deductListedStockForOrder($orderObj, $isNewOrder, $oldStatus)
+    {
+        // Get the saved order
+        $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+        $order = Order_model::where('reference_id', $orderObj->order_id)
+            ->where('marketplace_id', $marketplaceId)
+            ->first();
+        
+        if (!$order) {
+            return;
+        }
+        
+        // Only process marketplace orders (order_type_id = 3)
+        if ($order->order_type_id != 3) {
+            return;
+        }
+        
+        // Determine if we should deduct stock
+        $shouldDeduct = false;
+        $deductionReason = '';
+        
+        if ($isNewOrder && $order->status == 1) {
+            // New order with status 1 (Pending)
+            $shouldDeduct = true;
+            $deductionReason = 'new_order_status_1';
+        } elseif (!$isNewOrder && $oldStatus == 1 && $order->status == 2) {
+            // Existing order status changed from 1 → 2 (Pending → Accepted)
+            $shouldDeduct = true;
+            $deductionReason = 'status_change_1_to_2';
+        }
+        
+        if (!$shouldDeduct) {
+            return;
+        }
+        
+        // Get order items
+        $orderItems = Order_item_model::where('order_id', $order->id)->get();
+        
+        if ($orderItems->isEmpty()) {
+            return;
+        }
+        
+        $deductions = [];
+        
+        foreach ($orderItems as $item) {
+            if (!$item->variation_id) {
+                continue;
+            }
+            
+            $variation = Variation_model::find($item->variation_id);
+            if (!$variation) {
+                continue;
+            }
+            
+            // Deduct from variations.listed_stock (always deduct 1, not by quantity)
+            $oldVariationStock = $variation->listed_stock ?? 0;
+            $newVariationStock = $oldVariationStock - 1; // Allow negative
+            $variation->listed_stock = $newVariationStock;
+            $variation->save();
+            
+            // Deduct from marketplace_stock.listed_stock
+            $marketplaceStock = MarketplaceStockModel::firstOrNew([
+                'variation_id' => $variation->id,
+                'marketplace_id' => $marketplaceId,
+            ]);
+            
+            $oldMarketplaceStock = $marketplaceStock->listed_stock ?? 0;
+            $newMarketplaceStock = $oldMarketplaceStock - 1; // Allow negative
+            $marketplaceStock->listed_stock = $newMarketplaceStock;
+            $marketplaceStock->save();
+            
+            // Record deduction in database for tracking
+            Stock_deduction_log_model::create([
+                'variation_id' => $variation->id,
+                'marketplace_id' => $marketplaceId,
+                'order_id' => $order->id,
+                'order_reference_id' => $order->reference_id,
+                'variation_sku' => $variation->sku,
+                'before_variation_stock' => $oldVariationStock,
+                'before_marketplace_stock' => $oldMarketplaceStock,
+                'after_variation_stock' => $newVariationStock,
+                'after_marketplace_stock' => $newMarketplaceStock,
+                'deduction_reason' => $deductionReason,
+                'order_status' => $order->status,
+                'is_new_order' => $isNewOrder,
+                'old_order_status' => $oldStatus,
+                'deduction_at' => now(),
+            ]);
+            
+            $deductions[] = [
+                'variation_id' => $variation->id,
+                'variation_sku' => $variation->sku,
+                'old_variation_stock' => $oldVariationStock,
+                'new_variation_stock' => $newVariationStock,
+                'old_marketplace_stock' => $oldMarketplaceStock,
+                'new_marketplace_stock' => $newMarketplaceStock,
+            ];
+            
+            // Log individual deduction
+            SlackLogService::post(
+                'order_sync',
+                'info',
+                "RefreshNew: Deducted listed_stock - Order: {$order->reference_id}, Variation: {$variation->sku}, Reason: {$deductionReason}",
+                [
+                    'order_id' => $order->id,
+                    'order_reference' => $order->reference_id,
+                    'variation_id' => $variation->id,
+                    'variation_sku' => $variation->sku,
+                    'marketplace_id' => $marketplaceId,
+                    'old_variation_stock' => $oldVariationStock,
+                    'new_variation_stock' => $newVariationStock,
+                    'old_marketplace_stock' => $oldMarketplaceStock,
+                    'new_marketplace_stock' => $newMarketplaceStock,
+                    'order_status' => $order->status,
+                    'is_new_order' => $isNewOrder,
+                    'old_status' => $oldStatus,
+                    'deduction_reason' => $deductionReason,
+                ]
+            );
+        }
+        
+        // Log summary if multiple items
+        if (count($deductions) > 1) {
+            SlackLogService::post(
+                'order_sync',
+                'info',
+                "RefreshNew: Deducted listed_stock for " . count($deductions) . " variation(s) - Order: {$order->reference_id}, Reason: {$deductionReason}",
+                [
+                    'order_id' => $order->id,
+                    'order_reference' => $order->reference_id,
+                    'marketplace_id' => $marketplaceId,
+                    'order_status' => $order->status,
+                    'is_new_order' => $isNewOrder,
+                    'old_status' => $oldStatus,
+                    'deduction_reason' => $deductionReason,
+                    'deductions_count' => count($deductions),
+                    'deductions' => $deductions,
+                ]
+            );
+        }
     }
 
 }

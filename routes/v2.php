@@ -132,5 +132,23 @@ Route::prefix('v2')->group(function () {
         Route::post('toggle-allow-unknown-ip/{userId}', [TeamController::class, 'toggle_allow_unknown_ip'])->name('v2.options.teams.toggle-allow-unknown-ip');
         Route::get('check-allow-unknown-ip/{userId}', [TeamController::class, 'check_allow_unknown_ip'])->name('v2.options.teams.check-allow-unknown-ip');
     });
+    
+    // Stock Deduction Logs (Extras)
+    Route::prefix('stock-deduction-logs')->group(function () {
+        Route::get('/', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'index'])->name('v2.stock-deduction-logs.index');
+        Route::get('create', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'create'])->name('v2.stock-deduction-logs.create');
+        Route::post('store', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'store'])->name('v2.stock-deduction-logs.store');
+        Route::get('{id}', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'show'])->name('v2.stock-deduction-logs.show');
+        Route::get('{id}/edit', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'edit'])->name('v2.stock-deduction-logs.edit');
+        Route::match(['put', 'patch'], '{id}', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'update'])->name('v2.stock-deduction-logs.update');
+        Route::delete('{id}', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'destroy'])->name('v2.stock-deduction-logs.destroy');
+    });
+    
+    // Listing Stock Comparisons (Extras)
+    Route::prefix('listing-stock-comparisons')->group(function () {
+        Route::get('/', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'index'])->name('v2.listing-stock-comparisons.index');
+        Route::get('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'show'])->name('v2.listing-stock-comparisons.show');
+        Route::delete('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'destroy'])->name('v2.listing-stock-comparisons.destroy');
+    });
 });
 

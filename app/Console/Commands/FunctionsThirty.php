@@ -8,6 +8,8 @@ use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
+use App\Models\Listing_stock_comparison_model;
+use App\Models\Order_item_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -101,6 +103,9 @@ class FunctionsThirty extends Command
         // Run get_listingsBi
         $this->get_listingsBi($overallStats['get_listingsBi']);
         
+        // Create stock comparison records
+        $comparisonStats = $this->createStockComparisons();
+        
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
         
@@ -157,11 +162,123 @@ class FunctionsThirty extends Command
                 'duration_seconds' => $duration,
                 'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
                 'statistics' => $overallStats,
+                'comparison_stats' => $comparisonStats,
                 'total_duration' => $duration
             ]
         );
 
         return 0;
+    }
+    
+    /**
+     * Create stock comparison records for all listings
+     * Compares BackMarket API stock vs our stock and pending orders
+     */
+    private function createStockComparisons()
+    {
+        $bm = new BackMarketAPIController();
+        $listings = $bm->getAllListings();
+        
+        $stats = [
+            'total_compared' => 0,
+            'perfect_matches' => 0,
+            'discrepancies' => 0,
+            'shortages' => 0,
+            'excesses' => 0,
+        ];
+        
+        $comparisons = [];
+        
+        foreach($listings as $countryCode => $lists) {
+            foreach($lists as $list) {
+                // Skip archived listings
+                if ($list->publication_state == 4) {
+                    continue;
+                }
+                
+                $variation = Variation_model::where([
+                    'reference_id' => trim($list->listing_id),
+                    'sku' => trim($list->sku)
+                ])->first();
+                
+                if (!$variation) {
+                    continue;
+                }
+                
+                // Get stock values
+                $apiStock = (int)($list->quantity ?? 0);
+                $ourStock = (int)($variation->listed_stock ?? 0);
+                
+                // Get pending orders
+                $pendingOrders = Order_item_model::where('variation_id', $variation->id)
+                    ->whereHas('order', function($q) {
+                        $q->where('order_type_id', 3) // Marketplace orders
+                          ->whereIn('status', [1, 2]); // Pending statuses
+                    })
+                    ->get();
+                
+                $pendingOrdersCount = $pendingOrders->count();
+                $pendingOrdersQuantity = $pendingOrders->sum('quantity');
+                
+                // Calculate differences
+                $stockDifference = $ourStock - $apiStock;
+                $availableAfterPending = $ourStock - $pendingOrdersQuantity;
+                $apiVsPendingDifference = $apiStock - $pendingOrdersQuantity;
+                
+                // Determine status flags
+                $isPerfect = ($ourStock == $apiStock);
+                $hasDiscrepancy = ($ourStock != $apiStock);
+                $hasShortage = ($ourStock < $apiStock);
+                $hasExcess = ($ourStock > $apiStock);
+                
+                // Create comparison record
+                $comparison = Listing_stock_comparison_model::create([
+                    'variation_id' => $variation->id,
+                    'variation_sku' => $variation->sku,
+                    'marketplace_id' => 1, // BackMarket
+                    'country_code' => $countryCode,
+                    'api_stock' => $apiStock,
+                    'our_stock' => $ourStock,
+                    'pending_orders_count' => $pendingOrdersCount,
+                    'pending_orders_quantity' => $pendingOrdersQuantity,
+                    'stock_difference' => $stockDifference,
+                    'available_after_pending' => $availableAfterPending,
+                    'api_vs_pending_difference' => $apiVsPendingDifference,
+                    'is_perfect' => $isPerfect,
+                    'has_discrepancy' => $hasDiscrepancy,
+                    'has_shortage' => $hasShortage,
+                    'has_excess' => $hasExcess,
+                    'compared_at' => now(),
+                ]);
+                
+                $stats['total_compared']++;
+                if ($isPerfect) {
+                    $stats['perfect_matches']++;
+                } else {
+                    $stats['discrepancies']++;
+                    if ($hasShortage) {
+                        $stats['shortages']++;
+                    }
+                    if ($hasExcess) {
+                        $stats['excesses']++;
+                    }
+                }
+            }
+        }
+        
+        // Log comparison summary
+        SlackLogService::post(
+            'listing_sync',
+            'info',
+            "📊 Stock Comparison: {$stats['total_compared']} listings compared | Perfect: {$stats['perfect_matches']} | Discrepancies: {$stats['discrepancies']} (Shortages: {$stats['shortages']}, Excesses: {$stats['excesses']})",
+            [
+                'command' => 'functions:thirty',
+                'comparison_stats' => $stats,
+                'compared_at' => now()->toDateTimeString(),
+            ]
+        );
+        
+        return $stats;
     }
     public function get_listings(&$stats = null){
         $bm = new BackMarketAPIController();
