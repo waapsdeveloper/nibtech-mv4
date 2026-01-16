@@ -7,7 +7,7 @@ module.exports = {
       name: 'sdpos-queue',
 
       script: 'artisan',
-      args: 'queue:work --sleep=3 --tries=3 --timeout=90',
+      args: 'queue:work database --queue=api-requests,default --sleep=3 --tries=3 --timeout=90',
 
       interpreter: 'php',
       cwd: '/var/www/sdpos', // 🔒 Explicit path = safer than process.cwd()
