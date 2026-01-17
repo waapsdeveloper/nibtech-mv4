@@ -16,6 +16,16 @@ class SendApiRequestPayload implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     /**
+     * Limit retries to avoid recycling timeouts forever.
+     */
+    public int $tries = 1;
+
+    /**
+     * Worker-level timeout (seconds).
+     */
+    public int $timeout = 30;
+
+    /**
      * The remote endpoint URL.
      */
     protected string $endpoint;
@@ -71,6 +81,13 @@ class SendApiRequestPayload implements ShouldQueue
                 ]);
                 $response->throw();
             }
+        } catch (\Illuminate\Http\Client\ConnectionException $e) {
+            // Fail fast on timeouts/connection issues to avoid clogging the queue
+            Log::warning('SendApiRequestPayload connection issue - skipping', [
+                'endpoint' => $this->endpoint,
+                'message' => $e->getMessage(),
+            ]);
+            return; // Do not rethrow: treat as handled to drop the job
         } catch (\Throwable $e) {
             Log::error('SendApiRequestPayload exception', [
                 'endpoint' => $this->endpoint,
