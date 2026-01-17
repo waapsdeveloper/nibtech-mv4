@@ -34,7 +34,7 @@
                                     </a>
                                     <ul class="collapse ps-5" id="v2Menu">
                                         <li class="slide">
-                                            <a class="side-menu__item ps-0" href="{{url('v2/listings')}}">Listings</a>
+                                            <a class="side-menu__item ps-0" href="{{url('listings')}}">Old Listings</a>
                                         </li>
                                         @if ($isSuperAdmin && $user->hasPermission('view_marketplace'))
                                         <li class="slide">
@@ -69,22 +69,22 @@
                                             </a>
                                             <ul class="collapse ps-3" id="v2ExtrasMenu">
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">
                                                         Stock Locks
                                                     </a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">
                                                         Artisan Commands
                                                     </a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-deduction-logs')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-deduction-logs')}}">
                                                         Stock Deduction Logs
                                                     </a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/listing-stock-comparisons')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/listing-stock-comparisons')}}">
                                                         Stock Comparisons
                                                     </a>
                                                 </li>
@@ -99,17 +99,17 @@
                                             </a>
                                             <ul class="collapse ps-3" id="v2LogsMenu">
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/stock-sync')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/stock-sync')}}">
                                                         Stock Sync
                                                     </a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/log-file')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/log-file')}}">
                                                         Log File
                                                     </a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/failed-jobs')}}">                                                        
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/logs/failed-jobs')}}">
                                                         Failed Jobs
                                                     </a>
                                                 </li>
@@ -131,7 +131,7 @@
                                 @endif
                                 @if($user->hasPermission('view_listing'))
 								<li class="slide">
-									<a class="side-menu__item" href="{{url('listing')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
+									<a class="side-menu__item" href="{{url('v2/listing')}}"><svg xmlns="http://www.w3.org/2000/svg" class="side-menu__icon" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="url(#iconGradient)" stroke-width="1.75" opacity="1" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 2 7 12 12 22 7 12 2"></polygon><polyline points="2 17 12 22 22 17"></polyline><polyline points="2 12 12 17 22 12"></polyline></svg>
                                         <span class="side-menu__label">Listings</span></a>
 								</li>
                                 @endif
