@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 class SendApiRequestPayload implements ShouldQueue
 {
@@ -76,6 +77,9 @@ class SendApiRequestPayload implements ShouldQueue
                 'message' => $e->getMessage(),
             ]);
             throw $e;
+        } finally {
+            // Release database connection to prevent connection pool exhaustion
+            DB::disconnect();
         }
     }
 }

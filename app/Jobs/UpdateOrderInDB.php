@@ -16,6 +16,7 @@ use Carbon\Carbon;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Currency_model;
 use App\Models\Country_model;
+use Illuminate\Support\Facades\DB;
 
 class UpdateOrderInDB implements ShouldQueue
 {
@@ -88,8 +89,15 @@ class UpdateOrderInDB implements ShouldQueue
 
         $this->updateOrderItemsInDB();
 
+    }
 
-
+    /**
+     * Clean up after job completes to prevent connection leaks
+     */
+    public function __destruct()
+    {
+        // Release database connection when job finishes
+        DB::disconnect();
     }
 
     private function mapStateToStatus()

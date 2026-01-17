@@ -9,6 +9,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Job to execute artisan commands asynchronously
@@ -46,9 +47,9 @@ class ExecuteArtisanCommandJob implements ShouldQueue
             'memory_usage' => memory_get_usage(true),
             'pid' => getmypid()
         ]);
-        
+
         $commandStartTime = microtime(true);
-        
+
         Log::info("ExecuteArtisanCommandJob: Starting command execution", [
             'command' => $this->command,
             'options' => $this->options,
@@ -64,11 +65,11 @@ class ExecuteArtisanCommandJob implements ShouldQueue
                     'note' => 'This may take several minutes. Check logs for progress.'
                 ]);
             }
-            
+
             // Execute command
             $exitCode = Artisan::call($this->command, $this->options);
             $output = Artisan::output();
-            
+
             $commandDuration = round(microtime(true) - $commandStartTime, 2);
 
             // Log detailed output for debugging
@@ -80,7 +81,7 @@ class ExecuteArtisanCommandJob implements ShouldQueue
                 'job_id' => $this->job->getJobId(),
                 'output_preview' => substr($output, 0, 500) // First 500 chars for preview
             ]);
-            
+
             // Log full output if it's not too long (for debugging)
             if (strlen($output) > 0 && strlen($output) < 10000) {
                 Log::debug("ExecuteArtisanCommandJob: Full command output", [
@@ -113,6 +114,9 @@ class ExecuteArtisanCommandJob implements ShouldQueue
             ]);
 
             throw $e;
+        } finally {
+            // Always disconnect to prevent connection pool exhaustion
+            DB::disconnect();
         }
     }
 
