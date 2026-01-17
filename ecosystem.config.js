@@ -35,6 +35,39 @@ module.exports = {
 
     {
       // =========================
+      // API Requests Queue (burst)
+      // =========================
+      name: 'sdpos-queue-api',
+
+      script: 'artisan',
+      args: 'queue:work database --queue=api-requests --sleep=1 --timeout=120 --tries=1 --max-jobs=500 --max-time=1800',
+
+      interpreter: 'php',
+      cwd: '/var/www/sdpos',
+
+      exec_mode: 'fork',
+      instances: 1,
+
+      autorestart: true,
+      watch: false,
+
+      max_memory_restart: '256M',
+
+      error_file: '/var/www/sdpos/storage/logs/pm2-queue-api-error.log',
+      out_file: '/var/www/sdpos/storage/logs/pm2-queue-api-out.log',
+      log_file: '/var/www/sdpos/storage/logs/pm2-queue-api.log',
+
+      time: true,
+      merge_logs: true,
+
+      env: {
+        APP_ENV: 'production',
+        APP_DEBUG: 'false'
+      }
+    },
+
+    {
+      // =========================
       // Laravel Scheduler
       // =========================
       name: 'sdpos-scheduler',
