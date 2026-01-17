@@ -19,7 +19,17 @@ class LogFileController extends Controller
         $data['title_page'] = "Log File Viewer";
         session()->put('page_title', $data['title_page']);
         
-        $logPath = storage_path('logs/laravel.log');
+        // Get selected log file from request (default to laravel.log)
+        $selectedFile = $request->get('file', 'laravel.log');
+        $logPath = storage_path('logs/' . $selectedFile);
+        
+        // Security: Only allow log files (prevent directory traversal)
+        $selectedFile = basename($selectedFile);
+        if (!preg_match('/\.log$/', $selectedFile)) {
+            $selectedFile = 'laravel.log';
+            $logPath = storage_path('logs/' . $selectedFile);
+        }
+        
         $logContent = '';
         $lineCount = 0;
         $totalLines = 0;
@@ -51,10 +61,63 @@ class LogFileController extends Controller
         $hasNextPage = $page < $totalPages; // Next page = older entries
         $hasPrevPage = $page > 1; // Previous page = newer entries
         
+        // Get available log files (laravel.log and all slack-*.log files)
+        $logFiles = $this->getAvailableLogFiles();
+        
         // Get log settings for CRUD interface
         $logSettings = LogSetting::orderBy('created_at', 'desc')->get();
         
-        return view('v2.logs.log-file.index', compact('lines', 'lineCount', 'totalLines', 'page', 'perPage', 'totalPages', 'hasNextPage', 'hasPrevPage', 'data', 'logSettings'));
+        return view('v2.logs.log-file.index', compact('lines', 'lineCount', 'totalLines', 'page', 'perPage', 'totalPages', 'hasNextPage', 'hasPrevPage', 'data', 'logSettings', 'logFiles', 'selectedFile'));
+    }
+    
+    /**
+     * Get list of available log files
+     */
+    private function getAvailableLogFiles(): array
+    {
+        $logsDirectory = storage_path('logs');
+        $files = [];
+        
+        if (!File::isDirectory($logsDirectory)) {
+            return $files;
+        }
+        
+        // Get all .log files
+        $logFiles = File::glob($logsDirectory . '/*.log');
+        
+        foreach ($logFiles as $filePath) {
+            $fileName = basename($filePath);
+            $fileSize = File::size($filePath);
+            $modifiedAt = File::lastModified($filePath);
+            
+            $files[] = [
+                'name' => $fileName,
+                'size' => $fileSize,
+                'size_formatted' => $this->formatFileSize($fileSize),
+                'modified_at' => date('Y-m-d H:i:s', $modifiedAt),
+                'is_slack_log' => strpos($fileName, 'slack-') === 0,
+            ];
+        }
+        
+        // Sort by modified date (newest first)
+        usort($files, function ($a, $b) {
+            return strcmp($b['modified_at'], $a['modified_at']);
+        });
+        
+        return $files;
+    }
+    
+    /**
+     * Format file size in human-readable format
+     */
+    private function formatFileSize(int $bytes): string
+    {
+        $units = ['B', 'KB', 'MB', 'GB'];
+        $bytes = max($bytes, 0);
+        $pow = floor(($bytes ? log($bytes) : 0) / log(1024));
+        $pow = min($pow, count($units) - 1);
+        $bytes /= (1 << (10 * $pow));
+        return round($bytes, 2) . ' ' . $units[$pow];
     }
     
     /**
@@ -62,7 +125,16 @@ class LogFileController extends Controller
      */
     public function clear(Request $request)
     {
-        $logPath = storage_path('logs/laravel.log');
+        // Get file from request (default to laravel.log)
+        $selectedFile = $request->get('file', 'laravel.log');
+        
+        // Security: Only allow log files (prevent directory traversal)
+        $selectedFile = basename($selectedFile);
+        if (!preg_match('/\.log$/', $selectedFile)) {
+            $selectedFile = 'laravel.log';
+        }
+        
+        $logPath = storage_path('logs/' . $selectedFile);
         
         if (File::exists($logPath)) {
             File::put($logPath, '');
@@ -74,7 +146,7 @@ class LogFileController extends Controller
                 ]);
             }
             
-            return redirect()->route('v2.logs.log-file')
+            return redirect()->route('v2.logs.log-file', ['file' => $selectedFile])
                 ->with('success', 'Log file cleared successfully');
         }
         
@@ -85,7 +157,7 @@ class LogFileController extends Controller
             ], 404);
         }
         
-        return redirect()->route('v2.logs.log-file')
+        return redirect()->route('v2.logs.log-file', ['file' => $selectedFile])
             ->with('error', 'Log file not found');
     }
     
@@ -210,6 +282,44 @@ class LogFileController extends Controller
         return response()->json([
             'success' => true,
             'data' => $logSetting
+        ]);
+    }
+    
+    /**
+     * Duplicate a log setting
+     */
+    public function duplicateLogSetting($id)
+    {
+        $originalSetting = LogSetting::findOrFail($id);
+        
+        // Generate a unique name for the duplicate
+        $baseName = $originalSetting->name;
+        $newName = $baseName . ' (Copy)';
+        $counter = 1;
+        
+        // Check if name exists and increment counter until we find a unique name
+        while (LogSetting::where('name', $newName)->exists()) {
+            $counter++;
+            $newName = $baseName . ' (Copy ' . $counter . ')';
+        }
+        
+        // Create duplicate with same settings but new name
+        $duplicatedSetting = LogSetting::create([
+            'name' => $newName,
+            'channel_name' => $originalSetting->channel_name,
+            'webhook_url' => $originalSetting->webhook_url,
+            'log_level' => $originalSetting->log_level,
+            'log_type' => $originalSetting->log_type,
+            'keywords' => $originalSetting->keywords,
+            'description' => $originalSetting->description,
+            'is_enabled' => $originalSetting->is_enabled,
+            'admin_id' => session('user_id') ?? $originalSetting->admin_id,
+        ]);
+        
+        return response()->json([
+            'success' => true,
+            'message' => 'Log setting duplicated successfully',
+            'data' => $duplicatedSetting
         ]);
     }
 }
