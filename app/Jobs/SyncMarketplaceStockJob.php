@@ -67,8 +67,11 @@ class SyncMarketplaceStockJob implements ShouldQueue
                 'trace' => $e->getTraceAsString(),
                 'job_id' => $this->job->getJobId()
             ]);
-            
+
             throw $e; // Re-throw to mark job as failed
+        } finally {
+            // Always disconnect to prevent connection leaks
+            DB::disconnect();
         }
     }
 
