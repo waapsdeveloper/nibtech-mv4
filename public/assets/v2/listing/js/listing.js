@@ -1385,10 +1385,8 @@ function highlightChangedHandlers(variationId, marketplaceId, oldHandlers) {
                 };
             }
             
-            // Run validation check (like individual input updates) - validates min_price vs price relationship
-            if (typeof window.checkMinPriceDiff === 'function') {
-                window.checkMinPriceDiff(listingId);
-            }
+            // NOTE: Removed 8% validation for handlers - handlers should be independent
+            // Unlike min/max prices (min_price and price) which still have the 8% validation
         }
     });
 }
@@ -2239,10 +2237,9 @@ $(document).on('submit', '[id^="change_limit_"]', function(e) {
                 minLimitInput.addClass('bg-green');
                 priceLimitInput.addClass('bg-green');
                 
-                // Run 8% validation formula (like V1) - validates min_price vs price relationship
-                if (typeof window.checkMinPriceDiff === 'function') {
-                    window.checkMinPriceDiff(listingId);
-                }
+                // NOTE: Removed 8% validation for min/max handlers (min_price_limit and price_limit)
+                // Client requested that handlers should be independent and not dependent on 8% condition
+                // Unlike min/max prices (min_price and price) which still have the 8% validation
             }
             minLimitInput.prop('disabled', false);
             priceLimitInput.prop('disabled', false);
