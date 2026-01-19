@@ -312,28 +312,59 @@ class RefreshNew extends Command
                 'marketplace_id' => $marketplaceId,
             ]);
             
-            $oldMarketplaceStock = $marketplaceStock->listed_stock ?? 0;
+            // FIX 1: Reload to get actual current value from database (handles firstOrNew edge case)
+            if ($marketplaceStock->exists) {
+                $marketplaceStock->refresh();
+            }
+            
+            // Get the actual "before" value from database
+            $oldMarketplaceStock = (int)($marketplaceStock->listed_stock ?? 0);
             $newMarketplaceStock = $oldMarketplaceStock - 1; // Allow negative
             $marketplaceStock->listed_stock = $newMarketplaceStock;
             $marketplaceStock->save();
             
-            // Record deduction in database for tracking
-            Stock_deduction_log_model::create([
-                'variation_id' => $variation->id,
-                'marketplace_id' => $marketplaceId,
-                'order_id' => $order->id,
-                'order_reference_id' => $order->reference_id,
-                'variation_sku' => $variation->sku,
-                'before_variation_stock' => $oldVariationStock,
-                'before_marketplace_stock' => $oldMarketplaceStock,
-                'after_variation_stock' => $newVariationStock,
-                'after_marketplace_stock' => $newMarketplaceStock,
-                'deduction_reason' => $deductionReason,
-                'order_status' => $order->status,
-                'is_new_order' => $isNewOrder,
-                'old_order_status' => $oldStatus,
-                'deduction_at' => now(),
-            ]);
+            // FIX 2: Only log if stock actually decreased (prevent logging increases)
+            $variationStockDecreased = ($newVariationStock < $oldVariationStock);
+            $marketplaceStockDecreased = ($newMarketplaceStock < $oldMarketplaceStock);
+            
+            // Only create log entry if at least one stock value decreased
+            if ($variationStockDecreased || $marketplaceStockDecreased) {
+                // Record deduction in database for tracking
+                Stock_deduction_log_model::create([
+                    'variation_id' => $variation->id,
+                    'marketplace_id' => $marketplaceId,
+                    'order_id' => $order->id,
+                    'order_reference_id' => $order->reference_id,
+                    'variation_sku' => $variation->sku,
+                    'before_variation_stock' => $oldVariationStock,
+                    'before_marketplace_stock' => $oldMarketplaceStock,
+                    'after_variation_stock' => $newVariationStock,
+                    'after_marketplace_stock' => $newMarketplaceStock,
+                    'deduction_reason' => $deductionReason,
+                    'order_status' => $order->status,
+                    'is_new_order' => $isNewOrder,
+                    'old_order_status' => $oldStatus,
+                    'deduction_at' => now(),
+                ]);
+            } else {
+                // Log warning if stock didn't decrease (shouldn't happen in normal flow)
+                SlackLogService::post(
+                    'order_sync',
+                    'warning',
+                    "RefreshNew: Skipped stock deduction log - Stock did not decrease - Order: {$order->reference_id}, Variation: {$variation->sku}",
+                    [
+                        'order_id' => $order->id,
+                        'order_reference' => $order->reference_id,
+                        'variation_id' => $variation->id,
+                        'variation_sku' => $variation->sku,
+                        'old_variation_stock' => $oldVariationStock,
+                        'new_variation_stock' => $newVariationStock,
+                        'old_marketplace_stock' => $oldMarketplaceStock,
+                        'new_marketplace_stock' => $newMarketplaceStock,
+                        'deduction_reason' => $deductionReason,
+                    ]
+                );
+            }
             
             $deductions[] = [
                 'variation_id' => $variation->id,
