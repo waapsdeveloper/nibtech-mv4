@@ -9,6 +9,7 @@ use App\Models\Grade_model;
 use App\Models\Marketplace_model;
 use App\Models\Storage_model;
 use App\Models\Variation_model;
+use App\Models\V2\MarketplaceStockModel;
 use App\Http\Controllers\BackMarketAPIController;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -114,6 +115,7 @@ class ListingDataService
 
     /**
      * Get updated stock quantity from Backmarket API for a variation
+     * Also updates marketplace stock and variation's listed_stock when syncing
      * 
      * @param int $variationId
      * @return array ['quantity' => int, 'sku' => string, 'state' => int, 'updated' => bool, 'error' => string|null]
@@ -141,12 +143,86 @@ class ListingDataService
                 $sku = isset($apiResponse->sku) ? $apiResponse->sku : $variation->sku;
                 $state = isset($apiResponse->publication_state) ? $apiResponse->publication_state : $variation->state;
                 
+                // Update marketplace stock (Backmarket = marketplace_id 1) and variation's listed_stock
+                try {
+                    // Get or create marketplace stock for Backmarket (marketplace_id = 1)
+                    $marketplaceStock = MarketplaceStockModel::firstOrCreate(
+                        [
+                            'variation_id' => $variationId,
+                            'marketplace_id' => 1
+                        ],
+                        [
+                            'listed_stock' => 0,
+                            'admin_id' => session('user_id') ?? 1
+                        ]
+                    );
+                    
+                    // Only update if API stock is greater than or equal to current listed stock
+                    // This prevents accidental stock reductions from API sync
+                    $currentListedStock = (int)($marketplaceStock->listed_stock ?? 0);
+                    $apiStock = (int)$quantity;
+                    
+                    if ($apiStock >= $currentListedStock) {
+                        // Update marketplace stock with API quantity (only if API stock is higher or equal)
+                        $marketplaceStock->listed_stock = $apiStock;
+                        $marketplaceStock->admin_id = session('user_id') ?? 1;
+                        $marketplaceStock->save();
+                        
+                        // Calculate total stock across all marketplaces
+                        $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
+                            ->sum('listed_stock');
+                        
+                        // Update variation's listed_stock to reflect total
+                        $variation->listed_stock = $totalStock;
+                        $variation->save();
+                        
+                        // Return total stock in response for frontend update
+                        return [
+                            'quantity' => $quantity,
+                            'sku' => $sku,
+                            'state' => $state,
+                            'updated' => true,
+                            'error' => null,
+                            'total_stock' => $totalStock, // Include total stock for frontend update
+                            'stock_updated' => true // Indicate that stock was actually updated
+                        ];
+                    } else {
+                        // API stock is less than current - don't update, but still return current values
+                        Log::info("API stock ({$apiStock}) is less than current listed stock ({$currentListedStock}) - skipping update", [
+                            'variation_id' => $variationId,
+                            'api_stock' => $apiStock,
+                            'current_listed_stock' => $currentListedStock
+                        ]);
+                        
+                        // Calculate total stock without updating (use current values)
+                        $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
+                            ->sum('listed_stock');
+                        
+                        return [
+                            'quantity' => $quantity,
+                            'sku' => $sku,
+                            'state' => $state,
+                            'updated' => true, // API call was successful
+                            'error' => null,
+                            'total_stock' => $totalStock, // Return current total stock
+                            'stock_updated' => false // Indicate that stock was NOT updated (API stock was lower)
+                        ];
+                    }
+                } catch (\Exception $updateError) {
+                    // Log error but don't fail the API call
+                    Log::warning("Error updating stock during API sync: " . $updateError->getMessage(), [
+                        'variation_id' => $variationId,
+                        'error' => $updateError->getMessage()
+                    ]);
+                }
+                
                 return [
                     'quantity' => $quantity,
                     'sku' => $sku,
                     'state' => $state,
                     'updated' => true,
-                    'error' => null
+                    'error' => null,
+                    'total_stock' => $variation->listed_stock ?? 0 // Fallback to variation's listed_stock
                 ];
             }
             

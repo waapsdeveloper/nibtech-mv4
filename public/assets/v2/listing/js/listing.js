@@ -2480,7 +2480,11 @@ window.fetchBackmarketStockQuantity = function(variationId, marketplaceId) {
         }
     }).then(function(response) {
         if (response.success && response.quantity !== undefined) {
-            return response.quantity;
+            // Return both quantity and total_stock for frontend updates
+            return {
+                quantity: response.quantity,
+                total_stock: response.total_stock || null
+            };
         }
         return null;
     }).catch(function(xhr, status, error) {
@@ -2742,6 +2746,17 @@ window.fixStockMismatchSilently = function(variationId) {
                                 listingTotalElement.text(fix.new_value);
                                 updateCount++;
                             }
+                            
+                            // Also update total_stock input field
+                            const totalStockElement = $('#total_stock_' + variationId);
+                            if (totalStockElement.length) {
+                                totalStockElement.val(fix.new_value);
+                                // Also update the data attribute if it exists
+                                const addTotalElement = $('#add_total_' + variationId);
+                                if (addTotalElement.length) {
+                                    addTotalElement.attr('data-current-total', fix.new_value);
+                                }
+                            }
                         }
                     }
                 });
@@ -2785,8 +2800,23 @@ window.fixStockMismatchSilently = function(variationId) {
     });
 };
 
-window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantity) {
+window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantityOrResponse) {
     const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
+    
+    // Handle both old format (just quantity) and new format (object with quantity and total_stock)
+    let quantity = null;
+    let totalStock = null;
+    
+    if (quantityOrResponse !== null && quantityOrResponse !== undefined) {
+        if (typeof quantityOrResponse === 'object' && quantityOrResponse.quantity !== undefined) {
+            // New format: object with quantity and total_stock
+            quantity = quantityOrResponse.quantity;
+            totalStock = quantityOrResponse.total_stock;
+        } else {
+            // Old format: just quantity number
+            quantity = quantityOrResponse;
+        }
+    }
     
     if (badgeElement.length) {
         if (quantity !== null && quantity !== undefined) {
@@ -2795,6 +2825,25 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 .removeClass('bg-secondary d-none')
                 .addClass('bg-primary')
                 .html('<span class="stock-value">' + quantity + '</span> <small class="ms-1">(API)</small>');
+            
+            // Update total stock display if available
+            if (totalStock !== null && totalStock !== undefined) {
+                const totalStockElement = $('#total_stock_' + variationId);
+                if (totalStockElement.length) {
+                    totalStockElement.val(totalStock);
+                    // Also update the data attribute if it exists
+                    const addTotalElement = $('#add_total_' + variationId);
+                    if (addTotalElement.length) {
+                        addTotalElement.attr('data-current-total', totalStock);
+                    }
+                }
+                
+                // Also update listing_total_quantity if it exists
+                const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                if (listingTotalElement.length) {
+                    listingTotalElement.text(totalStock);
+                }
+            }
             
             // NOTE: Available stock comparison removed
             // Available stock comes from inventory (variation-level physical stock count)
@@ -2807,6 +2856,11 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 const listedStockText = listedStockElement.text().trim();
                 const ourListedStock = parseInt(listedStockText.replace(/\D/g, '')) || 0;
                 const apiStock = parseInt(quantity) || 0;
+                
+                // Update listed stock display if it differs
+                if (ourListedStock !== apiStock) {
+                    listedStockElement.text(apiStock);
+                }
                 
                 // If listed stock differs from API stock, fix the mismatch
                 // This will sync listed_stock with API, but NOT change available_stock
