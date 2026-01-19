@@ -448,7 +448,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             </button>`;
                     }
                     
-                    // Add restore button if available
+                    // Add restore button if available (icon only)
                     if (canRestore) {
                         actionButtons += `
                             <button class="btn btn-sm btn-outline-primary restore-history-btn" 
@@ -458,7 +458,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                                     data-field-label="${fieldLabel}"
                                     title="Restore to: ${oldValue}"
                                     onclick="restoreListingHistory(${item.id}, '${item.field_name}', ${item.old_value}, '${fieldLabel.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-undo me-1"></i>Restore
+                                <i class="fas fa-undo"></i>
                             </button>`;
                     }
                     
@@ -469,26 +469,46 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                         actionButtons = '<span class="text-muted small">-</span>';
                     }
                     
+                    // Get buybox price from row_snapshot or item data
+                    let buyboxValue = '-';
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        // Try to get buybox_price from snapshot
+                        if (item.row_snapshot.buybox_price !== undefined && item.row_snapshot.buybox_price !== null && item.row_snapshot.buybox_price !== '') {
+                            // Format as currency with 2 decimal places
+                            buyboxValue = parseFloat(item.row_snapshot.buybox_price).toFixed(2);
+                        } else if (item.row_snapshot.buybox !== undefined) {
+                            // If no buybox_price but buybox exists, show status
+                            buyboxValue = item.row_snapshot.buybox === 1 || item.row_snapshot.buybox === true || item.row_snapshot.buybox === '1' ? 'Yes' : 'No';
+                        }
+                    } else if (item.buybox_price !== undefined && item.buybox_price !== null && item.buybox_price !== '') {
+                        // Fallback to item buybox_price if available
+                        buyboxValue = parseFloat(item.buybox_price).toFixed(2);
+                    } else if (item.buybox !== undefined) {
+                        // Fallback to item buybox status if available
+                        buyboxValue = item.buybox === 1 || item.buybox === true || item.buybox === '1' ? 'Yes' : 'No';
+                    }
+                    
                     historyTable += `
                         <tr>
-                            <td>${changedDate}</td>
                             <td><strong>${fieldLabel}</strong></td>
                             <td class="${oldValueClass}">${oldValue}${snapshotIcon}</td>
                             <td class="${newValueClass}">${newValue}</td>
+                            <td class="text-center">${buyboxValue}</td>
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
                             <td>${item.change_reason || '-'}</td>
+                            <td>${changedDate}</td>
                             <td class="text-center">${actionButtons}</td>
                         </tr>`;
                 });
             } else {
-                historyTable = '<tr><td colspan="8" class="text-center text-muted">No history found for this listing</td></tr>';
+                historyTable = '<tr><td colspan="9" class="text-center text-muted">No history found for this listing</td></tr>';
             }
             $('#listingHistoryTable').html(historyTable);
         },
         error: function(xhr) {
             console.error('Error loading listing history:', xhr.responseText);
-            $('#listingHistoryTable').html('<tr><td colspan="8" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
+            $('#listingHistoryTable').html('<tr><td colspan="9" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
         }
     });
 }
@@ -1020,6 +1040,11 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <!-- 
+                                    NOTE: Toggle listing enable/disable feature - DISABLED FOR NOW
+                                    Client requested to remove this feature temporarily. 
+                                    Keep this code for future use if needed.
+                                    
                                     <div class="form-check form-switch d-inline-block">
                                         <input 
                                             class="form-check-input toggle-listing-enable" 
@@ -1031,6 +1056,7 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                                             style="cursor: pointer;">
                                         <label class="form-check-label" for="toggle_listing_${listing.id}"></label>
                                     </div>
+                                    -->
                                     <a href="javascript:void(0)" 
                                        class="btn btn-link btn-sm p-0" 
                                        id="listing_history_${listing.id}" 
@@ -1416,7 +1442,8 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
     // All four main inputs: min_price_limit, price_limit, min_price, price
     // Note: buybox_price is not user-editable, it's updated programmatically
     setTimeout(function() {
-        const selector = `#listings_${variationId}_${marketplaceId} [id^="min_price_limit_"], #listings_${variationId}_${marketplaceId} [id^="price_limit_"], #listings_${variationId}_${marketplaceId} [id^="min_price_"], #listings_${variationId}_${marketplaceId} [id^="price_"], #listings_${variationId}_${marketplaceId} .toggle-listing-enable`;
+        // NOTE: Removed .toggle-listing-enable from selector - feature disabled for now
+        const selector = `#listings_${variationId}_${marketplaceId} [id^="min_price_limit_"], #listings_${variationId}_${marketplaceId} [id^="price_limit_"], #listings_${variationId}_${marketplaceId} [id^="min_price_"], #listings_${variationId}_${marketplaceId} [id^="price_"]`;
         const elements = $(selector);
         
         elements.each(function() {
@@ -1521,6 +1548,11 @@ $(document).on('keypress', '[id^="add_marketplace_"]', function(e) {
 /**
  * Handle listing enable/disable toggle
  */
+/* 
+ * NOTE: Toggle listing enable/disable feature - DISABLED FOR NOW
+ * Client requested to remove this feature temporarily.
+ * Keep this code for future use if needed.
+ * 
 $(document).on('change', '.toggle-listing-enable', function() {
     const toggle = $(this);
     const listingId = toggle.data('listing-id');
@@ -1590,6 +1622,7 @@ $(document).on('change', '.toggle-listing-enable', function() {
         }
     });
 });
+*/
 
 /**
  * Initialize marketplace visibility on page load
@@ -2028,6 +2061,11 @@ function initializeChangeDetection() {
     // Note: Price validation (visual feedback) still works on blur via price-validation.js
     
     // Handle checkbox/toggle changes
+    /* 
+     * NOTE: Toggle listing enable/disable change detection - DISABLED FOR NOW
+     * Client requested to remove this feature temporarily.
+     * Keep this code for future use if needed.
+     * 
     $(document).on('change', '.toggle-listing-enable', function() {
         const id = $(this).attr('id');
         const listingId = $(this).data('listing-id');
@@ -2058,6 +2096,7 @@ function initializeChangeDetection() {
             window.ChangeDetection.recordChange(changeInfo);
         }
     });
+    */
 }
 
 /**
