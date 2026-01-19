@@ -91,16 +91,34 @@ class SyncMarketplaceOrders extends Command
             ]
         ]);
 
-        // Log sync start to Slack (using 'warning' level to match existing log settings)
+        // Log sync start to Slack (suppress if logged in last hour to prevent spam)
+        $syncStartKey = 'slack_sync_start:' . $type . ':' . ($marketplaceId ?? 'all') . ':' . date('Y-m-d-H');
         $marketplaceInfo = $marketplaceId ? "Marketplace ID: {$marketplaceId}" : "All marketplaces";
-        SlackLogService::post('order_sync', 'warning', "🔄 V2 Marketplace Order Sync Started", [
-            'command' => 'v2:sync-orders',
-            'type' => $type,
-            'marketplace_id' => $marketplaceId,
-            'marketplace_info' => $marketplaceInfo,
-            'page_size' => $pageSize,
-            'days_back' => $daysBack
-        ], true);
+        
+        if (!\Illuminate\Support\Facades\Cache::has($syncStartKey)) {
+            // First time in this hour - post to Slack AND file
+            SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+                'command' => 'v2:sync-orders',
+                'type' => $type,
+                'marketplace_id' => $marketplaceId,
+                'marketplace_info' => $marketplaceInfo,
+                'page_size' => $pageSize,
+                'days_back' => $daysBack
+            ], true, false); // allowInLoop=true, skipSlack=false (post to Slack)
+            // Cache for 1 hour to prevent repeated "started" messages
+            \Illuminate\Support\Facades\Cache::put($syncStartKey, true, now()->addHour());
+        } else {
+            // Suppressed - log to file only (skip Slack)
+            SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+                'command' => 'v2:sync-orders',
+                'type' => $type,
+                'marketplace_id' => $marketplaceId,
+                'marketplace_info' => $marketplaceInfo,
+                'page_size' => $pageSize,
+                'days_back' => $daysBack,
+                'note' => 'Suppressed from Slack (logged once per hour).'
+            ], true, true); // allowInLoop=true, skipSlack=true (file only)
+        }
 
         $startTime = microtime(true);
         $results = [];

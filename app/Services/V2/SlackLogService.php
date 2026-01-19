@@ -28,8 +28,11 @@ class SlackLogService
     
     /**
      * Default rate limit: max 1 message per minute per log type
+     * For info/warning: 1 per 5 seconds (stricter to prevent Slack rate limits)
+     * For error: 1 per minute (less strict for critical issues)
      */
     private const DEFAULT_RATE_LIMIT_MINUTES = 1;
+    private const INFO_RATE_LIMIT_SECONDS = 5; // Stricter for info/warning to prevent 429
     
     /**
      * Default threshold: only alert after X occurrences
@@ -47,9 +50,10 @@ class SlackLogService
      * @param string $message Log message
      * @param array $context Additional context data (optional)
      * @param bool $allowInLoop Allow posting even if in batch mode (default: false)
+     * @param bool $skipSlack Skip Slack API call but still log to files (default: false)
      * @return bool Success status
      */
-    public static function post(string $logType, string $level, string $message, array $context = [], bool $allowInLoop = false): bool
+    public static function post(string $logType, string $level, string $message, array $context = [], bool $allowInLoop = false, bool $skipSlack = false): bool
     {
         // DEBUG: Log entry attempt
         Log::debug("SlackLogService::post called", [
@@ -98,6 +102,17 @@ class SlackLogService
                 ? $setting->channel_name 
                 : $logType;
             
+            // If skipSlack is true, only log to file and return (used for suppressed messages)
+            if ($skipSlack) {
+                Log::debug("SlackLogService: Skipping Slack (skipSlack=true) - logging to file only", [
+                    'log_type' => $logType,
+                    'level' => $level,
+                    'channel_name' => $logFileName
+                ]);
+                self::logToFile($level, $message, $context, $logFileName);
+                return true; // Return true since file logging succeeded
+            }
+            
             // If no matching setting found, don't post to Slack (only log to file)
             if (!$setting || !$setting->is_enabled) {
                 // DEBUG: Log why not posting
@@ -118,13 +133,32 @@ class SlackLogService
                 return false;
             }
             
-            // Check rate limiting
-            if (!self::checkRateLimit($logType, $level)) {
+            // Check rate limiting (per channel to prevent cross-channel interference)
+            $channelName = $setting->channel_name ?? $logType;
+            if (!self::checkRateLimit($logType, $level, $channelName)) {
                 Log::debug("SlackLogService: Rate limited - logging to file only", [
                     'log_type' => $logType,
-                    'level' => $level
+                    'level' => $level,
+                    'channel_name' => $channelName
                 ]);
                 // Still log to file even if rate limited (use channel_name or logType)
+                self::logToFile($level, $message, $context, $logFileName);
+                return false;
+            }
+            
+            // Check if channel is blocked due to 429 error
+            $rateLimitBlockedKey = 'slack_rate_limit_blocked:' . $channelName;
+            $blockedUntil = Cache::get($rateLimitBlockedKey);
+            if ($blockedUntil && now()->lt($blockedUntil)) {
+                $secondsRemaining = now()->diffInSeconds($blockedUntil);
+                Log::debug("SlackLogService: Channel blocked due to previous 429 error - logging to file only", [
+                    'log_type' => $logType,
+                    'level' => $level,
+                    'channel_name' => $channelName,
+                    'blocked_until' => $blockedUntil->toDateTimeString(),
+                    'seconds_remaining' => $secondsRemaining
+                ]);
+                // Still log to file
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
@@ -164,11 +198,30 @@ class SlackLogService
             
             if ($response->successful()) {
                 // Update rate limit cache
-                self::updateRateLimit($logType, $level);
+                self::updateRateLimit($logType, $level, $setting->channel_name);
                 // Also log to file for backup (use channel_name or logType)
                 self::logToFile($level, $message, $context, $logFileName);
                 Log::debug("SlackLogService: Successfully posted to Slack");
                 return true;
+            } elseif ($response->status() === 429) {
+                // Handle rate limit (429) - implement exponential backoff
+                $rateLimitKey = 'slack_rate_limit_blocked:' . $setting->channel_name;
+                $blockedUntil = Cache::get($rateLimitKey);
+                
+                if (!$blockedUntil || now()->gt($blockedUntil)) {
+                    // Block this channel for 60 seconds to prevent further 429s
+                    Cache::put($rateLimitKey, now()->addSeconds(60), now()->addSeconds(60));
+                    Log::warning("SlackLogService: Rate limit (429) hit for channel {$setting->channel_name}. Blocking for 60 seconds.", [
+                        'response_body' => $response->body(),
+                        'log_type' => $logType,
+                        'level' => $level,
+                        'channel_name' => $setting->channel_name
+                    ]);
+                }
+                
+                // Still log to file
+                self::logToFile($level, $message, $context, $logFileName);
+                return false;
             } else {
                 // If Slack post fails, still log to file
                 Log::warning("SlackLogService: Failed to post to Slack channel {$setting->channel_name}. Status: {$response->status()}", [
@@ -293,18 +346,33 @@ class SlackLogService
                 continue;
             }
             
-            // Check rate limiting for batch summary
-            if (!self::checkRateLimit($logType, $level)) {
+            // Find setting for batch post
+            $setting = LogSetting::getActiveForType($logType, $level);
+            if (!$setting || !$setting->is_enabled || empty($setting->webhook_url)) {
+                continue;
+            }
+            
+            // Check rate limiting for batch summary (per channel)
+            $channelName = $setting->channel_name ?? $logType;
+            if (!self::checkRateLimit($logType, $level, $channelName)) {
                 Log::info("SlackLogService: Batch summary rate limited, skipping", [
                     'log_type' => $logType,
                     'level' => $level,
+                    'channel_name' => $channelName,
                 ]);
                 continue;
             }
             
-            // Find setting for batch post
-            $setting = LogSetting::getActiveForType($logType, $level);
-            if (!$setting || !$setting->is_enabled || empty($setting->webhook_url)) {
+            // Check if channel is blocked due to 429 error
+            $rateLimitBlockedKey = 'slack_rate_limit_blocked:' . $channelName;
+            $blockedUntil = Cache::get($rateLimitBlockedKey);
+            if ($blockedUntil && now()->lt($blockedUntil)) {
+                Log::info("SlackLogService: Channel blocked due to previous 429 error - skipping batch summary", [
+                    'log_type' => $logType,
+                    'level' => $level,
+                    'channel_name' => $channelName,
+                    'blocked_until' => $blockedUntil->toDateTimeString(),
+                ]);
                 continue;
             }
             
@@ -321,8 +389,18 @@ class SlackLogService
                     ->post($setting->webhook_url, $slackPayload);
                 
                 if ($response->successful()) {
-                    self::updateRateLimit($logType, $level);
+                    self::updateRateLimit($logType, $level, $channelName);
                     $results[$key] = true;
+                } elseif ($response->status() === 429) {
+                    // Handle rate limit (429) - block channel for 60 seconds
+                    $rateLimitKey = 'slack_rate_limit_blocked:' . $channelName;
+                    Cache::put($rateLimitKey, now()->addSeconds(60), now()->addSeconds(60));
+                    Log::warning("SlackLogService: Rate limit (429) hit for channel {$channelName} during batch post. Blocking for 60 seconds.", [
+                        'response_body' => $response->body(),
+                        'log_type' => $logType,
+                        'level' => $level,
+                    ]);
+                    $results[$key] = false;
                 } else {
                     $results[$key] = false;
                 }
@@ -761,16 +839,24 @@ class SlackLogService
     }
     
     /**
-     * Check rate limiting for log type
+     * Check rate limiting for log type and channel
+     * Uses stricter limits for info/warning to prevent Slack 429 errors
      */
-    private static function checkRateLimit(string $logType, string $level): bool
+    private static function checkRateLimit(string $logType, string $level, ?string $channelName = null): bool
     {
-        $key = self::RATE_LIMIT_PREFIX . $logType . '_' . $level;
+        // Use channel name if provided, otherwise use log_type+level
+        $identifier = $channelName ?? ($logType . '_' . $level);
+        $key = self::RATE_LIMIT_PREFIX . $identifier;
         $lastSent = Cache::get($key);
         
         if ($lastSent) {
-            // If sent within last minute, rate limit (unless it's a critical error)
-            if ($level !== 'error' && now()->diffInSeconds($lastSent) < 60) {
+            // Stricter rate limiting for info/warning (5 seconds) to prevent Slack 429 errors
+            // Errors can still be sent once per minute (less strict for critical issues)
+            $rateLimitSeconds = in_array($level, ['info', 'warning', 'debug']) 
+                ? self::INFO_RATE_LIMIT_SECONDS 
+                : 60;
+            
+            if (now()->diffInSeconds($lastSent) < $rateLimitSeconds) {
                 return false;
             }
         }
@@ -781,10 +867,18 @@ class SlackLogService
     /**
      * Update rate limit cache
      */
-    private static function updateRateLimit(string $logType, string $level): void
+    private static function updateRateLimit(string $logType, string $level, ?string $channelName = null): void
     {
-        $key = self::RATE_LIMIT_PREFIX . $logType . '_' . $level;
-        Cache::put($key, now(), now()->addMinutes(self::DEFAULT_RATE_LIMIT_MINUTES));
+        // Use channel name if provided, otherwise use log_type+level
+        $identifier = $channelName ?? ($logType . '_' . $level);
+        $key = self::RATE_LIMIT_PREFIX . $identifier;
+        
+        // Use appropriate cache duration based on level
+        $cacheDuration = in_array($level, ['info', 'warning', 'debug']) 
+            ? now()->addSeconds(self::INFO_RATE_LIMIT_SECONDS)
+            : now()->addMinutes(self::DEFAULT_RATE_LIMIT_MINUTES);
+        
+        Cache::put($key, now(), $cacheDuration);
     }
     
     /**
