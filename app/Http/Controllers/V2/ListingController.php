@@ -2049,6 +2049,7 @@ class ListingController extends Controller
                 'quantity' => $result['quantity'],
                 'sku' => $result['sku'],
                 'state' => $result['state'],
+                'total_stock' => $result['total_stock'] ?? null, // Include total stock for frontend update
                 'error' => $result['error'] ?? null
             ]);
         } catch (\Exception $e) {
