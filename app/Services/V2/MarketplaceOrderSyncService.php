@@ -9,6 +9,7 @@ use App\Http\Controllers\BackMarketAPIController;
 use App\Services\V2\OrderSyncService;
 use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Cache;
 use Carbon\Carbon;
 
 /**
@@ -119,19 +120,70 @@ class MarketplaceOrderSyncService
                 }
             } catch (\Exception $e) {
                 $totalErrors++;
-                Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
-                    'marketplace_id' => $marketplace->id,
-                    'error' => $e->getMessage()
-                ]);
+                $errorMessage = $e->getMessage();
                 
-                // Send marketplace-level errors to Slack
-                SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$e->getMessage()}", [
-                    'marketplace_id' => $marketplace->id,
-                    'marketplace_name' => $marketplace->name ?? 'unknown',
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]);
+                // Check if this is a known expected error (No API controller configured)
+                $isExpectedError = str_contains($errorMessage, 'No API controller configured');
+                
+                if ($isExpectedError) {
+                    // For expected errors, only log to file and suppress Slack
+                    // Only log to Slack once per day per marketplace to avoid spam
+                    $suppressionKey = 'slack_suppress_expected_error:' . $marketplace->id . ':' . date('Y-m-d');
+                    
+                    if (!Cache::has($suppressionKey)) {
+                        // Log once per day as info (not error) to Slack AND file
+                        SlackLogService::post('order_sync', 'info', "ℹ️ Marketplace not configured: {$marketplace->name} (ID: {$marketplace->id}) - API controller not available", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'note' => 'This is expected for marketplaces without API controllers. Will only log once per day.',
+                        ], false, false); // allowInLoop=false, skipSlack=false (first time, post to Slack)
+                        // Cache for 24 hours to prevent repeated messages
+                        Cache::put($suppressionKey, true, now()->addDay());
+                    } else {
+                        // Suppressed - log to file only (skip Slack)
+                        SlackLogService::post('order_sync', 'info', "ℹ️ Marketplace not configured: {$marketplace->name} (ID: {$marketplace->id}) - API controller not available", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'note' => 'This is expected for marketplaces without API controllers. Suppressed from Slack (logged once per day).',
+                        ], false, true); // allowInLoop=false, skipSlack=true (suppressed, file only)
+                    }
+                    
+                    // Also log to default Laravel log for debugging
+                    Log::debug("MarketplaceOrderSyncService: Expected error (no API controller)", [
+                        'marketplace_id' => $marketplace->id,
+                        'marketplace_name' => $marketplace->name,
+                        'error' => $errorMessage
+                    ]);
+                } else {
+                    // For unexpected errors, log normally
+                    Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
+                        'marketplace_id' => $marketplace->id,
+                        'error' => $errorMessage
+                    ]);
+                    
+                    // Send marketplace-level errors to Slack (only once per hour to prevent spam)
+                    $errorSuppressionKey = 'slack_error_suppress:' . md5($errorMessage . $marketplace->id) . ':' . date('Y-m-d-H');
+                    if (!Cache::has($errorSuppressionKey)) {
+                        SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine()
+                        ], false, false); // allowInLoop=false, skipSlack=false (first time, post to Slack)
+                        Cache::put($errorSuppressionKey, true, now()->addHour());
+                    } else {
+                        // Suppressed - log to file only (skip Slack)
+                        SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'note' => 'Suppressed from Slack (logged once per hour).'
+                        ], false, true); // allowInLoop=false, skipSlack=true (suppressed, file only)
+                    }
+                }
             }
         }
 
@@ -210,19 +262,63 @@ class MarketplaceOrderSyncService
                 }
             } catch (\Exception $e) {
                 $totalErrors++;
-                Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
-                    'marketplace_id' => $marketplace->id,
-                    'error' => $e->getMessage()
-                ]);
+                $errorMessage = $e->getMessage();
                 
-                // Send marketplace-level errors to Slack
-                SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$e->getMessage()}", [
-                    'marketplace_id' => $marketplace->id,
-                    'marketplace_name' => $marketplace->name ?? 'unknown',
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]);
+                // Check if this is a known expected error (No API controller configured)
+                $isExpectedError = str_contains($errorMessage, 'No API controller configured');
+                
+                if ($isExpectedError) {
+                    // For expected errors, only log to file (debug level) and suppress Slack
+                    // Only log to Slack once per day per marketplace to avoid spam
+                    $suppressionKey = 'slack_suppress_expected_error:' . $marketplace->id . ':' . date('Y-m-d');
+                    
+                    if (!Cache::has($suppressionKey)) {
+                        // Log once per day as info (not error) to Slack
+                        SlackLogService::post('order_sync', 'info', "ℹ️ Marketplace not configured: {$marketplace->name} (ID: {$marketplace->id}) - API controller not available", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'note' => 'This is expected for marketplaces without API controllers. Will only log once per day.',
+                        ]);
+                        // Cache for 24 hours to prevent repeated messages
+                        Cache::put($suppressionKey, true, now()->addDay());
+                    }
+                    
+                    // Still log to file for debugging
+                    Log::debug("MarketplaceOrderSyncService: Expected error (no API controller)", [
+                        'marketplace_id' => $marketplace->id,
+                        'marketplace_name' => $marketplace->name,
+                        'error' => $errorMessage
+                    ]);
+                } else {
+                    // For unexpected errors, log normally
+                    Log::error("MarketplaceOrderSyncService: Error syncing marketplace", [
+                        'marketplace_id' => $marketplace->id,
+                        'error' => $errorMessage
+                    ]);
+                    
+                    // Send marketplace-level errors to Slack (only once per hour to prevent spam)
+                    $errorSuppressionKey = 'slack_error_suppress:' . md5($errorMessage . $marketplace->id) . ':' . date('Y-m-d-H');
+                    if (!Cache::has($errorSuppressionKey)) {
+                        SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine()
+                        ], false, false); // allowInLoop=false, skipSlack=false (first time, post to Slack)
+                        Cache::put($errorSuppressionKey, true, now()->addHour());
+                    } else {
+                        // Suppressed - log to file only (skip Slack)
+                        SlackLogService::post('order_sync', 'error', "Error syncing marketplace: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'note' => 'Suppressed from Slack (logged once per hour).'
+                        ], false, true); // allowInLoop=false, skipSlack=true (suppressed, file only)
+                    }
+                }
             }
         }
 
@@ -312,19 +408,63 @@ class MarketplaceOrderSyncService
                 }
             } catch (\Exception $e) {
                 $totalErrors++;
-                Log::error("MarketplaceOrderSyncService: Error syncing care records", [
-                    'marketplace_id' => $marketplace->id,
-                    'error' => $e->getMessage()
-                ]);
+                $errorMessage = $e->getMessage();
                 
-                // Send marketplace-level errors to Slack
-                SlackLogService::post('order_sync', 'error', "Error syncing care records: {$e->getMessage()}", [
-                    'marketplace_id' => $marketplace->id,
-                    'marketplace_name' => $marketplace->name ?? 'unknown',
-                    'error' => $e->getMessage(),
-                    'file' => $e->getFile(),
-                    'line' => $e->getLine()
-                ]);
+                // Check if this is a known expected error (No API controller configured)
+                $isExpectedError = str_contains($errorMessage, 'No API controller configured');
+                
+                if ($isExpectedError) {
+                    // For expected errors, only log to file (debug level) and suppress Slack
+                    // Only log to Slack once per day per marketplace to avoid spam
+                    $suppressionKey = 'slack_suppress_expected_error:' . $marketplace->id . ':' . date('Y-m-d');
+                    
+                    if (!Cache::has($suppressionKey)) {
+                        // Log once per day as info (not error) to Slack
+                        SlackLogService::post('order_sync', 'info', "ℹ️ Marketplace not configured: {$marketplace->name} (ID: {$marketplace->id}) - API controller not available", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'note' => 'This is expected for marketplaces without API controllers. Will only log once per day.',
+                        ]);
+                        // Cache for 24 hours to prevent repeated messages
+                        Cache::put($suppressionKey, true, now()->addDay());
+                    }
+                    
+                    // Still log to file for debugging
+                    Log::debug("MarketplaceOrderSyncService: Expected error (no API controller)", [
+                        'marketplace_id' => $marketplace->id,
+                        'marketplace_name' => $marketplace->name,
+                        'error' => $errorMessage
+                    ]);
+                } else {
+                    // For unexpected errors, log normally
+                    Log::error("MarketplaceOrderSyncService: Error syncing care records", [
+                        'marketplace_id' => $marketplace->id,
+                        'error' => $errorMessage
+                    ]);
+                    
+                    // Send marketplace-level errors to Slack (only once per hour to prevent spam)
+                    $errorSuppressionKey = 'slack_error_suppress:' . md5($errorMessage . $marketplace->id) . ':' . date('Y-m-d-H');
+                    if (!Cache::has($errorSuppressionKey)) {
+                        SlackLogService::post('order_sync', 'error', "Error syncing care records: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine()
+                        ], false, false); // allowInLoop=false, skipSlack=false (first time, post to Slack)
+                        Cache::put($errorSuppressionKey, true, now()->addHour());
+                    } else {
+                        // Suppressed - log to file only (skip Slack)
+                        SlackLogService::post('order_sync', 'error', "Error syncing care records: {$errorMessage}", [
+                            'marketplace_id' => $marketplace->id,
+                            'marketplace_name' => $marketplace->name ?? 'unknown',
+                            'error' => $errorMessage,
+                            'file' => $e->getFile(),
+                            'line' => $e->getLine(),
+                            'note' => 'Suppressed from Slack (logged once per hour).'
+                        ], false, true); // allowInLoop=false, skipSlack=true (suppressed, file only)
+                    }
+                }
             }
         }
 

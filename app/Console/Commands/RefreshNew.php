@@ -290,6 +290,9 @@ class RefreshNew extends Command
         
         $deductions = [];
         
+        // FIX: Use batch mode for loop-based Slack logging to prevent rate limit issues
+        SlackLogService::startBatch();
+        
         foreach ($orderItems as $item) {
             if (!$item->variation_id) {
                 continue;
@@ -346,24 +349,6 @@ class RefreshNew extends Command
                     'old_order_status' => $oldStatus,
                     'deduction_at' => now(),
                 ]);
-            } else {
-                // Log warning if stock didn't decrease (shouldn't happen in normal flow)
-                SlackLogService::post(
-                    'order_sync',
-                    'warning',
-                    "RefreshNew: Skipped stock deduction log - Stock did not decrease - Order: {$order->reference_id}, Variation: {$variation->sku}",
-                    [
-                        'order_id' => $order->id,
-                        'order_reference' => $order->reference_id,
-                        'variation_id' => $variation->id,
-                        'variation_sku' => $variation->sku,
-                        'old_variation_stock' => $oldVariationStock,
-                        'new_variation_stock' => $newVariationStock,
-                        'old_marketplace_stock' => $oldMarketplaceStock,
-                        'new_marketplace_stock' => $newMarketplaceStock,
-                        'deduction_reason' => $deductionReason,
-                    ]
-                );
             }
             
             $deductions[] = [
@@ -374,49 +359,12 @@ class RefreshNew extends Command
                 'old_marketplace_stock' => $oldMarketplaceStock,
                 'new_marketplace_stock' => $newMarketplaceStock,
             ];
-            
-            // Log individual deduction
-            SlackLogService::post(
-                'order_sync',
-                'info',
-                "RefreshNew: Deducted listed_stock - Order: {$order->reference_id}, Variation: {$variation->sku}, Reason: {$deductionReason}",
-                [
-                    'order_id' => $order->id,
-                    'order_reference' => $order->reference_id,
-                    'variation_id' => $variation->id,
-                    'variation_sku' => $variation->sku,
-                    'marketplace_id' => $marketplaceId,
-                    'old_variation_stock' => $oldVariationStock,
-                    'new_variation_stock' => $newVariationStock,
-                    'old_marketplace_stock' => $oldMarketplaceStock,
-                    'new_marketplace_stock' => $newMarketplaceStock,
-                    'order_status' => $order->status,
-                    'is_new_order' => $isNewOrder,
-                    'old_status' => $oldStatus,
-                    'deduction_reason' => $deductionReason,
-                ]
-            );
         }
         
-        // Log summary if multiple items
-        if (count($deductions) > 1) {
-            SlackLogService::post(
-                'order_sync',
-                'info',
-                "RefreshNew: Deducted listed_stock for " . count($deductions) . " variation(s) - Order: {$order->reference_id}, Reason: {$deductionReason}",
-                [
-                    'order_id' => $order->id,
-                    'order_reference' => $order->reference_id,
-                    'marketplace_id' => $marketplaceId,
-                    'order_status' => $order->status,
-                    'is_new_order' => $isNewOrder,
-                    'old_status' => $oldStatus,
-                    'deduction_reason' => $deductionReason,
-                    'deductions_count' => count($deductions),
-                    'deductions' => $deductions,
-                ]
-            );
-        }
+        // Post batch summary instead of individual messages (prevents Slack rate limiting)
+        SlackLogService::postBatch(1); // Threshold of 1 to always post summary
+        
+        // Summary is now handled by postBatch() above, no need for separate summary log
     }
 
 }
