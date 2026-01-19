@@ -1001,7 +1001,7 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             <td>
                                 <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit || ''}" form="change_limit_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                             </td>
-                            <td>${listing.buybox_price || ''}
+                            <td><b>${listing.buybox_price || ''}</b>
                                 <span class="text-danger" title="Buybox Winner Price">
                                     ${listing.buybox !== 1 ? '(' + (listing.buybox_winner_price || '') + ')' : ''}
                                 </span>
@@ -1032,7 +1032,12 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             </td>
                             <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
                                 ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
-                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                    // Existing condition: best_price > 0 && best_price < buybox_price
+                                    const existingCondition = best_price > 0 && best_price < listing.buybox_price;
+                                    // New condition: buybox_price > min_price AND min_price < buybox_price (and min_price exists)
+                                    const newCondition = listing.min_price > 0 && listing.buybox_price > listing.min_price && listing.min_price < listing.buybox_price;
+                                    // Button is green if either condition is true
+                                    const buttonClass = (existingCondition || newCondition) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
                                     return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
                                                 Get Buybox
                                             </button>`;
@@ -1414,7 +1419,7 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                         <th width="80"><small><b>BuyBox</b></small></th>
-                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}">${preservedBestPrice}</b>)</small></th>
+                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}" style="color: blue;">${preservedBestPrice}</b>)</small></th>
                         <th width="120">
                             <small><b>Price</b></small>
                             ${marketplaceId == 1 ? `<button type="button" class="btn btn-link btn-sm p-0 ms-1" id="refresh_prices_btn_${variationId}_${marketplaceId}" onclick="refreshPricesButtonClick(${variationId}, ${marketplaceId})" title="Refresh prices from API" style="font-size: 0.7rem; line-height: 1; padding: 0 2px;">
