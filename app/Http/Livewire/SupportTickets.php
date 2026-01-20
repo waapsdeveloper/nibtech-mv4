@@ -1274,9 +1274,13 @@ class SupportTickets extends Component
             return;
         }
 
-        $returnedItemIds = Order_item_model::query()
+        $allItems = Order_item_model::with(['stock', 'replacement.stock', 'replacement.replacement.stock'])
             ->where('order_id', $order->id)
-            ->whereHas('stock', fn ($stock) => $stock->where('status', 1))
+            ->get()
+            ->map(fn ($itm) => $this->applyReplacementOverlay($itm));
+
+        $returnedItemIds = $allItems
+            ->filter(fn ($itm) => ($itm->effective_status ?? optional($itm->stock)->status) === 1)
             ->pluck('id')
             ->all();
 
@@ -1300,9 +1304,8 @@ class SupportTickets extends Component
             $statusMessages[] = 'Refund invoice sent for returned items (' . count($returnedItemIds) . ').';
         }
 
-        $remainingItemIds = Order_item_model::query()
-            ->where('order_id', $order->id)
-            ->whereNotIn('id', $returnedItemIds)
+        $remainingItemIds = $allItems
+            ->reject(fn ($itm) => in_array($itm->id, $returnedItemIds, true))
             ->pluck('id')
             ->all();
 
@@ -1551,6 +1554,10 @@ class SupportTickets extends Component
     {
         $collection = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
 
+        $collection = $collection->map(function ($item) {
+            return $this->applyReplacementOverlay($item);
+        });
+
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
         }
@@ -1576,6 +1583,41 @@ class SupportTickets extends Component
 
             return $item;
         });
+    }
+
+    protected function applyReplacementOverlay($item)
+    {
+        $effective = $this->finalReplacement($item);
+
+        if ($effective && $effective->id !== $item->id) {
+            if ($effective->stock) {
+                $item->stock = $effective->stock;
+            }
+            if ($item->price === null && $effective->price !== null) {
+                $item->price = $effective->price;
+            }
+            if ($item->selling_price === null && $effective->selling_price !== null) {
+                $item->selling_price = $effective->selling_price;
+            }
+            $item->reference_id = $item->reference_id ?? $effective->reference_id;
+        }
+
+        $item->effective_stock = $item->stock;
+        $item->effective_imei = optional($item->stock)->imei ?? optional($item->stock)->serial_number;
+        $item->effective_status = optional($item->stock)->status;
+
+        return $item;
+    }
+
+    protected function finalReplacement($item)
+    {
+        $candidate = $item;
+
+        while ($candidate && $candidate->replacement) {
+            $candidate = $candidate->replacement;
+        }
+
+        return $candidate;
     }
 
     protected function isBackmarketOrder(Order_model $order, ?SupportThread $thread = null): bool
