@@ -1247,6 +1247,89 @@ class SupportTickets extends Component
         $this->closePartialRefundModal();
     }
 
+    public function sendSplitReturnInvoices(): void
+    {
+        $this->invoiceActionStatus = null;
+        $this->invoiceActionError = null;
+
+        if (! $this->selectedThreadId) {
+            $this->invoiceActionError = 'Select a thread before sending invoices.';
+
+            return;
+        }
+
+        $thread = $this->selectedThread;
+
+        if (! $thread) {
+            $this->invoiceActionError = 'Thread not found.';
+
+            return;
+        }
+
+        $order = $thread->order;
+
+        if (! $order) {
+            $this->invoiceActionError = 'No internal order is linked to this ticket.';
+
+            return;
+        }
+
+        $returnedItemIds = Order_item_model::query()
+            ->where('order_id', $order->id)
+            ->whereHas('stock', fn ($stock) => $stock->where('status', 1))
+            ->pluck('id')
+            ->all();
+
+        if (empty($returnedItemIds)) {
+            $this->invoiceActionError = 'No returned items detected for this order (stock status: available).';
+
+            return;
+        }
+
+        $statusMessages = [];
+
+        $this->selectedOrderItems = $returnedItemIds;
+        $this->partialRefundAmount = '';
+        $this->dispatchInvoice(true, true);
+
+        if ($this->invoiceActionError) {
+            return;
+        }
+
+        if ($this->invoiceActionStatus) {
+            $statusMessages[] = 'Refund invoice sent for returned items (' . count($returnedItemIds) . ').';
+        }
+
+        $remainingItemIds = Order_item_model::query()
+            ->where('order_id', $order->id)
+            ->whereNotIn('id', $returnedItemIds)
+            ->pluck('id')
+            ->all();
+
+        if (! empty($remainingItemIds)) {
+            $this->selectedOrderItems = $remainingItemIds;
+            $this->partialRefundAmount = '';
+            $this->dispatchInvoice(false, true);
+
+            if ($this->invoiceActionError) {
+                return;
+            }
+
+            if ($this->invoiceActionStatus) {
+                $statusMessages[] = 'Invoice sent for remaining items (' . count($remainingItemIds) . ').';
+            }
+        } else {
+            $statusMessages[] = 'No remaining items to invoice.';
+        }
+
+        if (! empty($statusMessages)) {
+            $this->invoiceActionStatus = implode(' ', $statusMessages);
+        }
+
+        $this->selectedOrderItems = [];
+        $this->partialRefundAmount = '';
+    }
+
     protected function dispatchInvoice(bool $isRefund, bool $isPartial = false): void
     {
         $this->invoiceActionStatus = null;

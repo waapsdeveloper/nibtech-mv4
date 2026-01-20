@@ -283,6 +283,8 @@
                             $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : null;
                             $marketplaceReference = $selectedThread->order_reference
                                 ?? ($order->reference_id ?? $order->reference ?? null);
+                            $returnedItems = $orderItems->filter(fn($itm) => optional($itm->stock)->status === 1);
+                            $remainingItems = $orderItems->filter(fn($itm) => optional($itm->stock)->status !== 1);
                         @endphp
 
                         <div class="support-order-panel mb-2">
@@ -308,6 +310,7 @@
                                     <button type="button" class="btn btn-outline-success btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendOrderInvoice" wire:loading.attr="disabled" wire:target="sendOrderInvoice" @if (! $canSendInvoice) disabled @endif>Invoice</button>
                                     <button type="button" class="btn btn-outline-info btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>Refund</button>
                                     <button type="button" class="btn btn-outline-warning btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>Partial</button>
+                                    <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendSplitReturnInvoices" wire:loading.attr="disabled" wire:target="sendSplitReturnInvoices" @if (! $canSendInvoice || $returnedItems->isEmpty()) disabled @endif>Split refund</button>
                                 </div>
                             @endif
 
@@ -358,6 +361,22 @@
                             </div>
 
                             @if ($order && $orderItems->count() > 0)
+                                @if ($returnedItems->isNotEmpty())
+                                    <div class="alert alert-warning py-1 px-2 mb-2" style="font-size: 0.75rem;">
+                                        Returned items detected (stock status available). Use <strong>Split refund</strong> to issue a refund for returned items and a separate invoice for remaining items.
+                                        <ul class="mb-0 ps-3">
+                                            @foreach ($returnedItems as $itm)
+                                                @php $idVal = $itm->stock->imei ?? $itm->stock->serial_number; @endphp
+                                                <li>
+                                                    {{ optional($itm->variation)->sku ?? $itm->reference ?? 'Item' }}
+                                                    @if ($idVal)
+                                                        – IMEI: <a href="{{ url('imei') }}?imei={{ $idVal }}" target="_blank" rel="noopener">{{ $idVal }}</a>
+                                                    @endif
+                                                </li>
+                                            @endforeach
+                                        </ul>
+                                    </div>
+                                @endif
                                 <div class="mt-1">
                                     <div class="small fw-semibold mb-1">Items ({{ $orderItems->count() }})</div>
                                     @foreach ($orderItems as $item)
