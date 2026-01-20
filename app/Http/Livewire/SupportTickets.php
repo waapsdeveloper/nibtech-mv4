@@ -82,6 +82,7 @@ class SupportTickets extends Component
     public $aiSummary = null;
     public $aiDraft = null;
     public $aiError = null;
+    public $includeReplacementItems = false;
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -1217,6 +1218,11 @@ class SupportTickets extends Component
         $this->dispatchInvoice(true);
     }
 
+    public function sendReplacementInvoice(): void
+    {
+        $this->dispatchInvoice(false, false, true);
+    }
+
     public function openPartialRefundModal(): void
     {
         $this->showPartialRefundModal = true;
@@ -1243,7 +1249,7 @@ class SupportTickets extends Component
             return;
         }
 
-        $this->dispatchInvoice(true, true);
+        $this->dispatchInvoice(true, true, false);
         $this->closePartialRefundModal();
     }
 
@@ -1294,7 +1300,7 @@ class SupportTickets extends Component
 
         $this->selectedOrderItems = $returnedItemIds;
         $this->partialRefundAmount = '';
-        $this->dispatchInvoice(true, false);
+        $this->dispatchInvoice(true, false, false);
 
         if ($this->invoiceActionError) {
             return;
@@ -1313,7 +1319,7 @@ class SupportTickets extends Component
             // Send a normal invoice (non-refund) for the remaining items; rely on stock status filtering to exclude returned items.
             $this->selectedOrderItems = $remainingItemIds;
             $this->partialRefundAmount = '';
-            $this->dispatchInvoice(false, false);
+            $this->dispatchInvoice(false, false, false);
 
             if ($this->invoiceActionError) {
                 return;
@@ -1334,7 +1340,7 @@ class SupportTickets extends Component
         $this->partialRefundAmount = '';
     }
 
-    protected function dispatchInvoice(bool $isRefund, bool $isPartial = false): void
+    protected function dispatchInvoice(bool $isRefund, bool $isPartial = false, bool $includeReplacements = false): void
     {
         $this->invoiceActionStatus = null;
         $this->invoiceActionError = null;
@@ -1373,7 +1379,7 @@ class SupportTickets extends Component
             $this->careAttachmentRequest = null;
             $this->careAttachmentResponse = null;
 
-            $payload = $this->buildInvoicePayload($order, $isPartial, $isRefund, $thread);
+            $payload = $this->buildInvoicePayload($order, $isPartial, $isRefund, $thread, $includeReplacements);
             $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund, $isPartial);
 
             $isCareThread = $thread->marketplace_source === 'backmarket_care';
@@ -1490,7 +1496,7 @@ class SupportTickets extends Component
         return (string) $value;
     }
 
-    protected function buildInvoicePayload(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null): array
+    protected function buildInvoicePayload(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null, bool $includeReplacements = false): array
     {
         $order->loadMissing([
             'customer',
@@ -1504,7 +1510,7 @@ class SupportTickets extends Component
             'marketplace',
         ]);
 
-        $orderItems = $this->resolveInvoiceOrderItems($order, $isPartial, $isRefund, $thread);
+        $orderItems = $this->resolveInvoiceOrderItems($order, $isPartial, $isRefund, $thread, $includeReplacements);
 
         return [
             'order' => $order,
@@ -1515,7 +1521,7 @@ class SupportTickets extends Component
         ];
     }
 
-    protected function resolveInvoiceOrderItems(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null)
+    protected function resolveInvoiceOrderItems(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null, bool $includeReplacements = false)
     {
         $query = Order_item_model::with([
             'variation.product',
@@ -1523,6 +1529,9 @@ class SupportTickets extends Component
             'variation.color_id',
             'stock',
             'replacement',
+            'replacement.stock',
+            'replacement.replacement',
+            'replacement.replacement.stock',
         ])->where('order_id', $order->id);
 
         if ($isRefund && !empty($this->selectedOrderItems)) {
@@ -1533,7 +1542,7 @@ class SupportTickets extends Component
             $query->whereHas('stock', function ($stockQuery) {
                 $stockQuery->where('status', 1);
             });
-        } else {
+        } elseif (! $includeReplacements) {
             $count = (clone $query)->count();
 
             if ($count > 1) {
@@ -1547,16 +1556,20 @@ class SupportTickets extends Component
 
         $items = $query->get();
 
-        return $this->normalizeBackmarketItemPrices($order, $items, $thread);
+        return $this->normalizeBackmarketItemPrices($order, $items, $thread, $includeReplacements);
     }
 
-    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null): \Illuminate\Support\Collection
+    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null, bool $includeReplacements = false): \Illuminate\Support\Collection
     {
         $collection = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
 
         $collection = $collection->map(function ($item) {
             return $this->applyReplacementOverlay($item);
         });
+
+        if ($includeReplacements) {
+            return $collection;
+        }
 
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
