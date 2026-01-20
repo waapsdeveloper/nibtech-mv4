@@ -1556,6 +1556,17 @@ class SupportTickets extends Component
 
         $items = $query->get();
 
+        if ($includeReplacements) {
+            $items = $items
+                ->map(fn ($itm) => $this->applyReplacementOverlay($itm))
+                ->unique(function ($itm) {
+                    return optional($itm->effective_stock)->id
+                        ?? ($itm->effective_imei ?? null)
+                        ?? $itm->id;
+                })
+                ->values();
+        }
+
         return $this->normalizeBackmarketItemPrices($order, $items, $thread, $includeReplacements);
     }
 
@@ -1566,10 +1577,6 @@ class SupportTickets extends Component
         $collection = $collection->map(function ($item) {
             return $this->applyReplacementOverlay($item);
         });
-
-        if ($includeReplacements) {
-            return $collection;
-        }
 
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
