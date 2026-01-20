@@ -1290,7 +1290,7 @@ class SupportTickets extends Component
 
         $this->selectedOrderItems = $returnedItemIds;
         $this->partialRefundAmount = '';
-        $this->dispatchInvoice(true, true);
+        $this->dispatchInvoice(true, false);
 
         if ($this->invoiceActionError) {
             return;
@@ -1307,9 +1307,10 @@ class SupportTickets extends Component
             ->all();
 
         if (! empty($remainingItemIds)) {
+            // Send a normal invoice (non-refund) for the remaining items; rely on stock status filtering to exclude returned items.
             $this->selectedOrderItems = $remainingItemIds;
             $this->partialRefundAmount = '';
-            $this->dispatchInvoice(false, true);
+            $this->dispatchInvoice(false, false);
 
             if ($this->invoiceActionError) {
                 return;
@@ -1521,19 +1522,21 @@ class SupportTickets extends Component
             'replacement',
         ])->where('order_id', $order->id);
 
-        if ($isPartial && !empty($this->selectedOrderItems)) {
+        if ($isRefund && !empty($this->selectedOrderItems)) {
             $query->whereIn('id', $this->selectedOrderItems);
+        } elseif ($isPartial && !empty($this->selectedOrderItems)) {
+            $query->whereIn('id', $this->selectedOrderItems);
+        } elseif ($isRefund) {
+            $query->whereHas('stock', function ($stockQuery) {
+                $stockQuery->where('status', 1);
+            });
         } else {
             $count = (clone $query)->count();
 
             if ($count > 1) {
-                $query->whereHas('stock', function ($stockQuery) use ($isRefund) {
-                    $stockQuery->where(function ($inner) use ($isRefund) {
-                        if ($isRefund) {
-                            $inner->where('status', 1);
-                        } else {
-                            $inner->where('status', 2)->orWhereNull('status');
-                        }
+                $query->whereHas('stock', function ($stockQuery) {
+                    $stockQuery->where(function ($inner) {
+                        $inner->where('status', 2)->orWhereNull('status');
                     });
                 });
             }
