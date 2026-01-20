@@ -1567,6 +1567,11 @@ class SupportTickets extends Component
                         ? strtolower($imei)
                         : ($stockId !== null ? 'stock:' . $stockId : 'item:' . $itm->id);
                 })
+                ->map(function ($itm) {
+                    // Ensure each replacement line is treated as a single unit
+                    $itm->quantity = 1;
+                    return $itm;
+                })
                 ->values();
         }
 
