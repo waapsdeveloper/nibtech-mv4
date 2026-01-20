@@ -279,6 +279,11 @@
                             $isBackmarket = str_contains($marketplaceSource, 'backmarket')
                                 || str_contains(strtolower(optional($order->marketplace)->name ?? ''), 'back');
                             $orderItems = $orderItems->map(function ($itm) use ($order, $isBackmarket) {
+                                $effectiveStock = optional($itm->replacement?->replacement?->stock ?? $itm->replacement?->stock ?? $itm->stock);
+                                $itm->effective_stock = $effectiveStock;
+                                $itm->effective_imei = $effectiveStock->imei ?? $effectiveStock->serial_number;
+                                $itm->effective_status = $effectiveStock->status ?? null;
+
                                 $qty = (int) ($itm->quantity ?? 1);
                                 $qty = $qty > 0 ? $qty : 1;
                                 $price = (float) ($itm->price ?? 0);
@@ -302,8 +307,8 @@
                             $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : null;
                             $marketplaceReference = $selectedThread->order_reference
                                 ?? ($order->reference_id ?? $order->reference ?? null);
-                            $returnedItems = $orderItems->filter(fn($itm) => optional($itm->stock)->status === 1);
-                            $remainingItems = $orderItems->filter(fn($itm) => optional($itm->stock)->status !== 1);
+                            $returnedItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) === 1);
+                            $remainingItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) !== 1);
                         @endphp
 
                         <div class="support-order-panel mb-2">
@@ -385,7 +390,7 @@
                                         Returned items detected (stock status available). Use <strong>Split refund</strong> to issue a refund for returned items and a separate invoice for remaining items.
                                         <ul class="mb-0 ps-3">
                                             @foreach ($returnedItems as $itm)
-                                                @php $idVal = $itm->stock->imei ?? $itm->stock->serial_number; @endphp
+                                                @php $idVal = $itm->effective_imei ?? $itm->stock->imei ?? $itm->stock->serial_number; @endphp
                                                 <li>
                                                     {{ optional($itm->variation)->sku ?? $itm->reference ?? 'Item' }}
                                                     @if ($idVal)
@@ -403,11 +408,22 @@
                                             <div class="text-truncate" style="max-width: 60%;">
                                                 <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
                                                 <span class="text-muted ms-1">({{ $item->quantity ?? 1 }})</span>
-                                                @if (!empty($item->stock_id))
-                                                    @php $idValue = $item->stock->imei ?? $item->stock->serial_number; @endphp
-                                                    @if ($idValue)
-                                                        <div class="text-muted small" title="IMEI / Serial Number">IMEI: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
-                                                    @endif
+                                                @php
+                                                    $idValue = $item->effective_imei ?? $item->stock->imei ?? $item->stock->serial_number;
+                                                    $replacementImei = null;
+                                                    if (!empty($item->replacement)) {
+                                                        $rep = $item->replacement;
+                                                        while ($rep && $rep->replacement) {
+                                                            $rep = $rep->replacement;
+                                                        }
+                                                        $replacementImei = optional($rep->stock)->imei ?? optional($rep->stock)->serial_number;
+                                                    }
+                                                @endphp
+                                                @if ($idValue)
+                                                    <div class="text-muted small" title="IMEI / Serial Number">IMEI: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
+                                                @endif
+                                                @if ($replacementImei && $replacementImei !== $idValue)
+                                                    <div class="text-muted small" title="Replacement IMEI">Replacement: <a href="{{ url('imei') }}?imei={{ $replacementImei }}" target="_blank" rel="noopener">{{ $replacementImei }}</a></div>
                                                 @endif
                                             </div>
                                             <div class="text-end">
@@ -852,11 +868,22 @@
                                                         </div>
                                                     @endif
                                                     <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
-                                                    @if (!empty($item->stock_id))
-                                                        @php $idValue = $item->stock->imei ?? $item->stock->serial_number; @endphp
-                                                        @if ($idValue)
-                                                            <div class="text-muted small">IMEI/Serial: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
-                                                        @endif
+                                                    @php
+                                                        $idValue = $item->effective_imei ?? $item->stock->imei ?? $item->stock->serial_number;
+                                                        $replacementImei = null;
+                                                        if (!empty($item->replacement)) {
+                                                            $rep = $item->replacement;
+                                                            while ($rep && $rep->replacement) {
+                                                                $rep = $rep->replacement;
+                                                            }
+                                                            $replacementImei = optional($rep->stock)->imei ?? optional($rep->stock)->serial_number;
+                                                        }
+                                                    @endphp
+                                                    @if ($idValue)
+                                                        <div class="text-muted small">IMEI/Serial: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
+                                                    @endif
+                                                    @if ($replacementImei && $replacementImei !== $idValue)
+                                                        <div class="text-muted small">Replacement: <a href="{{ url('imei') }}?imei={{ $replacementImei }}" target="_blank" rel="noopener">{{ $replacementImei }}</a></div>
                                                     @endif
                                                 </div>
                                                 <div class="text-end">
