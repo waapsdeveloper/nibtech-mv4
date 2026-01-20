@@ -363,10 +363,13 @@
                                             <div class="text-truncate" style="max-width: 60%;">
                                                 <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
                                                 <span class="text-muted ms-1">({{ $item->quantity ?? 1 }})</span>
+                                                @if (!empty($item->stock_id))
+                                                    <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number ?? 'n/a' }}</div>
+                                                @endif
                                             </div>
                                             <div class="text-end">
                                                 @if ($item->price !== null)
-                                                    {{ number_format((float) $item->price, 2) }} {{ $item->currency ?? $orderCurrency ?? '' }}
+                                                    {{ number_format((float) $item->price, 2) }} {{ $item->currency_id->sign ?? $orderCurrency ?? '' }}
                                                 @else
                                                     n/a
                                                 @endif
