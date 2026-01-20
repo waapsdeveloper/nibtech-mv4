@@ -157,22 +157,31 @@ class ListingDataService
                         ]
                     );
                     
-                    // Only update if API stock is greater than or equal to current listed stock
-                    // This prevents accidental stock reductions from API sync
+                    // IMPORTANT: Only update listed_stock from API (never touch manual_adjustment)
+                    // listed_stock = API-synced stock
+                    // manual_adjustment = manual pushes (separate, never synced)
+                    // Total = listed_stock + manual_adjustment
                     $currentListedStock = (int)($marketplaceStock->listed_stock ?? 0);
                     $apiStock = (int)$quantity;
                     
                     if ($apiStock >= $currentListedStock) {
                         // Update marketplace stock with API quantity (only if API stock is higher or equal)
+                        // This updates listed_stock only - manual_adjustment remains unchanged
                         $marketplaceStock->listed_stock = $apiStock;
                         $marketplaceStock->admin_id = session('user_id') ?? 1;
+                        // NOTE: manual_adjustment is NOT touched - it's a separate offset
                         $marketplaceStock->save();
                         
-                        // Calculate total stock across all marketplaces
-                        $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
+                        // Calculate total stock: sum of listed_stock + sum of manual_adjustment
+                        // listed_stock = API-synced stock
+                        // manual_adjustment = manual pushes (separate, never synced)
+                        $totalListedStock = MarketplaceStockModel::where('variation_id', $variationId)
                             ->sum('listed_stock');
+                        $totalManualAdjustment = MarketplaceStockModel::where('variation_id', $variationId)
+                            ->sum('manual_adjustment');
+                        $totalStock = (int)$totalListedStock + (int)$totalManualAdjustment;
                         
-                        // Update variation's listed_stock to reflect total
+                        // Update variation's listed_stock to reflect total (for backward compatibility)
                         $variation->listed_stock = $totalStock;
                         $variation->save();
                         

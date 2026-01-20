@@ -135,7 +135,9 @@
                         listingTotalElement.text(totalStock);
                     }
                     
-                    // Update marketplace stock displays
+                    // Update marketplace stock displays - use marketplace_stocks (actual saved values)
+                    // distribution_preview is just for reference, marketplace_stocks has the correct values
+                    // Only update once to avoid double updates
                     updateMarketplaceStockDisplays(variationId, marketplaceStocks);
                     
                     // Update current total for next push
@@ -209,7 +211,14 @@
         Object.keys(marketplaceStocks).forEach(function(marketplaceId) {
             const stockValue = marketplaceStocks[marketplaceId];
             
-            // Update in marketplace bar (format: stock_{variationId}_{marketplaceId})
+            // Update in marketplace bar - Listed Stock (LS:) display
+            // Format: listed_stock_{variationId}_{marketplaceId}
+            const listedStockElement = $('#listed_stock_' + variationId + '_' + marketplaceId);
+            if (listedStockElement.length) {
+                listedStockElement.text(stockValue);
+            }
+            
+            // Also update stock_{variationId}_{marketplaceId} if it exists (for backward compatibility)
             const barStockElement = $('#stock_' + variationId + '_' + marketplaceId);
             if (barStockElement.length) {
                 barStockElement.text(stockValue);

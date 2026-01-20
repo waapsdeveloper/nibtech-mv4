@@ -193,12 +193,16 @@ class SyncMarketplaceStock extends Command
             throw new \Exception("Could not fetch stock from marketplace API");
         }
         
-        // Update marketplace stock (reconciliation)
+        // IMPORTANT: Only update listed_stock from API (never touch manual_adjustment)
+        // listed_stock = API-synced stock
+        // manual_adjustment = manual pushes (separate, never synced)
+        // Total = listed_stock + manual_adjustment
         $oldListedStock = $marketplaceStock->listed_stock;
         $marketplaceStock->listed_stock = $apiQuantity;
         $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
         $marketplaceStock->last_synced_at = now();
         $marketplaceStock->last_api_quantity = $apiQuantity;
+        // NOTE: manual_adjustment is NOT touched - it's a separate offset that persists through syncs
         $marketplaceStock->save();
         
         Log::info("V2 SyncMarketplaceStock: Stock updated", [
