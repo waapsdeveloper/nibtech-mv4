@@ -805,9 +805,15 @@
                                                     </div>
                                                 @endif
                                                 <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
+                                                @if (!empty($item->stock_id))
+                                                    <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number }}</div>
+                                                @endif
                                             </div>
                                             <div class="text-end">
-                                                <strong class="text-primary">{{ $item->selling_price ? number_format($item->selling_price, 2) : '0.00' }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
+                                                @php
+                                                    $refundPrice = $item->price ?? $item->selling_price ?? 0;
+                                                @endphp
+                                                <strong class="text-primary">{{ number_format($refundPrice, 2) }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
                                                 <div class="text-muted small">Qty: {{ $item->quantity ?? 1 }}</div>
                                             </div>
                                         </div>
