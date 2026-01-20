@@ -309,6 +309,7 @@
                                 ?? ($order->reference_id ?? $order->reference ?? null);
                             $returnedItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) === 1);
                             $remainingItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) !== 1);
+                            $hasReplacements = $orderItems->contains(fn($itm) => $itm->replacement || optional($itm->replacement)->replacement);
                         @endphp
 
                         <div class="support-order-panel mb-2">
@@ -335,6 +336,7 @@
                                     <button type="button" class="btn btn-outline-info btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendRefundInvoice" wire:loading.attr="disabled" wire:target="sendRefundInvoice" @if (! $canSendInvoice) disabled @endif>Refund</button>
                                     <button type="button" class="btn btn-outline-warning btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="openPartialRefundModal" wire:loading.attr="disabled" wire:target="openPartialRefundModal" @if (! $canSendInvoice) disabled @endif>Partial</button>
                                     <button type="button" class="btn btn-outline-secondary btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendSplitReturnInvoices" wire:loading.attr="disabled" wire:target="sendSplitReturnInvoices" @if (! $canSendInvoice || $returnedItems->isEmpty()) disabled @endif>Split refund</button>
+                                    <button type="button" class="btn btn-outline-dark btn-sm py-0 px-1" style="font-size: 0.7rem;" wire:click="sendReplacementInvoice" wire:loading.attr="disabled" wire:target="sendReplacementInvoice" @if (! $canSendInvoice || ! $hasReplacements) disabled @endif>Replacement invoice</button>
                                 </div>
                             @endif
 
