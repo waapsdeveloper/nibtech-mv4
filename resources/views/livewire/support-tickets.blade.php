@@ -364,7 +364,10 @@
                                                 <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
                                                 <span class="text-muted ms-1">({{ $item->quantity ?? 1 }})</span>
                                                 @if (!empty($item->stock_id))
-                                                    <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number ?? 'n/a' }}</div>
+                                                    @php $idValue = $item->stock->imei ?? $item->stock->serial_number; @endphp
+                                                    @if ($idValue)
+                                                        <div class="text-muted small">IMEI/Serial: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
+                                                    @endif
                                                 @endif
                                             </div>
                                             <div class="text-end">
@@ -810,7 +813,10 @@
                                                     @endif
                                                     <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
                                                     @if (!empty($item->stock_id))
-                                                        <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number }}</div>
+                                                        @php $idValue = $item->stock->imei ?? $item->stock->serial_number; @endphp
+                                                        @if ($idValue)
+                                                            <div class="text-muted small">IMEI/Serial: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
+                                                        @endif
                                                     @endif
                                                 </div>
                                                 <div class="text-end">
