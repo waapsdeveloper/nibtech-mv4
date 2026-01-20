@@ -275,6 +275,25 @@
                         @php
                             $order = $selectedThread->order;
                             $orderItems = $order?->order_items ?? collect();
+                            $marketplaceSource = strtolower($selectedThread->marketplace_source ?? '');
+                            $isBackmarket = str_contains($marketplaceSource, 'backmarket')
+                                || str_contains(strtolower(optional($order->marketplace)->name ?? ''), 'back');
+                            $orderItems = $orderItems->map(function ($itm) use ($order, $isBackmarket) {
+                                $qty = (int) ($itm->quantity ?? 1);
+                                $qty = $qty > 0 ? $qty : 1;
+                                $price = (float) ($itm->price ?? 0);
+                                $orderTotal = (float) ($order->price ?? 0);
+
+                                if ($isBackmarket && $qty > 1 && $orderTotal > 0 && abs($price - $orderTotal) < 0.01) {
+                                    $unitPrice = round($orderTotal / $qty, 2);
+                                    $itm->price = $unitPrice;
+                                    if (! $itm->selling_price) {
+                                        $itm->selling_price = $unitPrice;
+                                    }
+                                }
+
+                                return $itm;
+                            });
                             $orderValue = $order && isset($order->price) ? number_format((float) $order->price, 2) : null;
                             $orderCurrency = $order?->currency_id->sign
                                 ?? $order?->currency_id->code
@@ -815,7 +834,7 @@
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select order items to refund:</label>
                             <div class="border rounded p-2" style="max-height: 360px; overflow-y: auto;">
-                                @foreach ($selectedThread->order->order_items as $item)
+                                @foreach ($orderItems as $item)
                                     <div class="form-check mb-2 p-3 border rounded bg-white">
                                         <input class="form-check-input" type="checkbox" wire:model="selectedOrderItems" value="{{ $item->id }}" id="item-{{ $item->id }}">
                                         <label class="form-check-label w-100" for="item-{{ $item->id }}">

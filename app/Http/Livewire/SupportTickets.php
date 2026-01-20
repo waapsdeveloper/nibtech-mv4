@@ -1369,7 +1369,7 @@ class SupportTickets extends Component
             $this->careAttachmentRequest = null;
             $this->careAttachmentResponse = null;
 
-            $payload = $this->buildInvoicePayload($order, $isPartial);
+            $payload = $this->buildInvoicePayload($order, $isPartial, $isRefund, $thread);
             $emailHtml = $this->renderInvoiceEmailBody($payload, $isRefund, $isPartial);
 
             $isCareThread = $thread->marketplace_source === 'backmarket_care';
@@ -1486,7 +1486,7 @@ class SupportTickets extends Component
         return (string) $value;
     }
 
-    protected function buildInvoicePayload(Order_model $order, bool $isPartial = false): array
+    protected function buildInvoicePayload(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null): array
     {
         $order->loadMissing([
             'customer',
@@ -1500,7 +1500,7 @@ class SupportTickets extends Component
             'marketplace',
         ]);
 
-        $orderItems = $this->resolveInvoiceOrderItems($order->id, $isPartial);
+        $orderItems = $this->resolveInvoiceOrderItems($order, $isPartial, $isRefund, $thread);
 
         return [
             'order' => $order,
@@ -1511,7 +1511,7 @@ class SupportTickets extends Component
         ];
     }
 
-    protected function resolveInvoiceOrderItems(int $orderId, bool $isPartial = false)
+    protected function resolveInvoiceOrderItems(Order_model $order, bool $isPartial = false, bool $isRefund = false, ?SupportThread $thread = null)
     {
         $query = Order_item_model::with([
             'variation.product',
@@ -1519,7 +1519,7 @@ class SupportTickets extends Component
             'variation.color_id',
             'stock',
             'replacement',
-        ])->where('order_id', $orderId);
+        ])->where('order_id', $order->id);
 
         if ($isPartial && !empty($this->selectedOrderItems)) {
             $query->whereIn('id', $this->selectedOrderItems);
@@ -1527,15 +1527,75 @@ class SupportTickets extends Component
             $count = (clone $query)->count();
 
             if ($count > 1) {
-                $query->whereHas('stock', function ($stockQuery) {
-                    $stockQuery->where(function ($inner) {
-                        $inner->where('status', 2)->orWhereNull('status');
+                $query->whereHas('stock', function ($stockQuery) use ($isRefund) {
+                    $stockQuery->where(function ($inner) use ($isRefund) {
+                        if ($isRefund) {
+                            $inner->where('status', 1);
+                        } else {
+                            $inner->where('status', 2)->orWhereNull('status');
+                        }
                     });
                 });
             }
         }
 
-        return $query->get();
+        $items = $query->get();
+
+        return $this->normalizeBackmarketItemPrices($order, $items, $thread);
+    }
+
+    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null): \Illuminate\Support\Collection
+    {
+        $collection = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
+
+        if (! $this->isBackmarketOrder($order, $thread)) {
+            return $collection;
+        }
+
+        $orderTotal = (float) ($order->price ?? 0);
+
+        if ($orderTotal <= 0) {
+            return $collection;
+        }
+
+        return $collection->map(function ($item) use ($orderTotal) {
+            $qty = (int) ($item->quantity ?? 1);
+            $qty = $qty > 0 ? $qty : 1;
+            $price = (float) ($item->price ?? 0);
+
+            if ($qty > 1 && abs($price - $orderTotal) < 0.01) {
+                $unitPrice = round($orderTotal / $qty, 2);
+                $item->price = $unitPrice;
+                if (! $item->selling_price) {
+                    $item->selling_price = $unitPrice;
+                }
+            }
+
+            return $item;
+        });
+    }
+
+    protected function isBackmarketOrder(Order_model $order, ?SupportThread $thread = null): bool
+    {
+        $name = strtolower((string) optional($order->marketplace)->name);
+
+        if ($name !== '' && str_contains($name, 'back')) {
+            return true;
+        }
+
+        $source = strtolower((string) ($thread->marketplace_source ?? ''));
+
+        if ($source !== '' && str_contains($source, 'backmarket')) {
+            return true;
+        }
+
+        $marketplaceId = (int) ($order->marketplace_id ?? 0);
+
+        if ($marketplaceId === 4) { // refurbed id
+            return false;
+        }
+
+        return $marketplaceId > 0;
     }
 
     protected function sendInvoiceMail(Order_model $order, string $recipient, array $data, bool $isRefund, bool $isPartial = false): void
