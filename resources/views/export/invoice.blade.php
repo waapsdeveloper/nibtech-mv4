@@ -174,39 +174,26 @@
                     @endphp
                     @foreach ($orderItems as $item)
                         @php
-                            if($item->stock_id == null){
+                            $stock = $item->effective_stock ?? $item->stock;
+                            if (!$stock) {
                                 continue;
                             }
-                            $itemTotal = $item->price;
-                            $totalAmount += $itemTotal;
-                            $totalQty += 1;
 
-                            if($item->variation->storage_id){
-                                $storage = $item->variation->storage_id->name . " - " ;
-                            }else {
-                                $storage = null;
-                            }
-                            if($item->variation->color_id){
-                                $color = $item->variation->color_id->name . " - " ;
-                            }else {
-                                $color = null;
-                            }
-                            if ($order->exchange_items->count() > 0){
-                                $item = $order->exchange_items[0];
-                            }
-                            if($item->replacement){
-                                $replacement = $item->replacement;
-                                while ($replacement != null){
-                                    $item = $replacement;
-                                    $replacement = $replacement->replacement;
-                                }
-                            }
+                            $itemPrice = $item->price ?? $item->selling_price ?? 0;
+                            $itemTotal = $itemPrice * max(1, (int) ($item->quantity ?? 1));
+                            $totalAmount += $itemTotal;
+                            $totalQty += max(1, (int) ($item->quantity ?? 1));
+
+                            $storage = $item->variation->storage_id ? $item->variation->storage_id->name . " - " : '';
+                            $color = $item->variation->color_id ? $item->variation->color_id->name . " - " : '';
+                            $productName = $item->variation->product->model ?? $item->variation->product->name ?? 'Product';
+                            $imei = $stock->imei ?? $stock->serial_number ?? '';
                         @endphp
                         <tr>
-                            <td width="320">{{ $item->variation->product->model . " - " . $storage . $color }} <br> {{  $item->stock->imei . $item->stock->serial_number . " - " . $item->stock->tester }}</td>
-                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
-                            <td width="40"> 1 </td>
-                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($item->price,2) }}</td>
+                            <td width="320">{{ $productName . " - " . $storage . $color }} <br> {{ $imei }}</td>
+                            <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($itemPrice,2) }}</td>
+                            <td width="40">{{ max(1, (int) ($item->quantity ?? 1)) }}</td>
+                            <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($itemTotal,2) }}</td>
                         </tr>
                     @endforeach
                         <tr>

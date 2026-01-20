@@ -1560,9 +1560,12 @@ class SupportTickets extends Component
             $items = $items
                 ->map(fn ($itm) => $this->applyReplacementOverlay($itm))
                 ->unique(function ($itm) {
-                    return optional($itm->effective_stock)->id
-                        ?? ($itm->effective_imei ?? null)
-                        ?? $itm->id;
+                    $imei = trim((string) ($itm->effective_imei ?? ''));
+                    $stockId = optional($itm->effective_stock)->id ?? $itm->stock_id;
+
+                    return $imei !== ''
+                        ? strtolower($imei)
+                        : ($stockId !== null ? 'stock:' . $stockId : 'item:' . $itm->id);
                 })
                 ->values();
         }
@@ -1578,11 +1581,15 @@ class SupportTickets extends Component
             return $this->applyReplacementOverlay($item);
         });
 
+        $orderTotal = (float) ($order->price ?? 0);
+
+        if ($includeReplacements) {
+            $collection = $this->rebalanceReplacementPrices($collection, $orderTotal);
+        }
+
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
         }
-
-        $orderTotal = (float) ($order->price ?? 0);
 
         if ($orderTotal <= 0) {
             return $collection;
@@ -1605,6 +1612,37 @@ class SupportTickets extends Component
         });
     }
 
+    protected function rebalanceReplacementPrices($collection, float $orderTotal)
+    {
+        if ($orderTotal <= 0) {
+            return $collection;
+        }
+
+        $count = $collection->count();
+
+        if ($count === 0) {
+            return $collection;
+        }
+
+        $currentSum = $collection->reduce(function ($carry, $itm) {
+            $price = $itm->price ?? $itm->selling_price ?? 0;
+            return $carry + (float) $price;
+        }, 0.0);
+
+        if (abs($currentSum - $orderTotal) < 0.01) {
+            return $collection;
+        }
+
+        $unit = round($orderTotal / $count, 2);
+
+        return $collection->map(function ($itm) use ($unit) {
+            $itm->price = $unit;
+            $itm->selling_price = $itm->selling_price ?? $unit;
+
+            return $itm;
+        });
+    }
+
     protected function applyReplacementOverlay($item)
     {
         $effective = $this->finalReplacement($item);
@@ -1613,10 +1651,10 @@ class SupportTickets extends Component
             if ($effective->stock) {
                 $item->stock = $effective->stock;
             }
-            if ($item->price === null && $effective->price !== null) {
+            if (($item->price === null || $item->price <= 0) && $effective->price !== null) {
                 $item->price = $effective->price;
             }
-            if ($item->selling_price === null && $effective->selling_price !== null) {
+            if (($item->selling_price === null || $item->selling_price <= 0) && $effective->selling_price !== null) {
                 $item->selling_price = $effective->selling_price;
             }
             $item->reference_id = $item->reference_id ?? $effective->reference_id;
