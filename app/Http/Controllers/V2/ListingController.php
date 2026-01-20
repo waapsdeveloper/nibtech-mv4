@@ -1225,7 +1225,7 @@ class ListingController extends Controller
                     'change_type' => $item->change_type,
                     'change_reason' => $item->change_reason,
                     'admin_id' => $item->admin_id,
-                    'admin_name' => $item->admin ? (trim(($item->admin->first_name ?? '') . ' ' . ($item->admin->last_name ?? '')) ?: ($item->admin->username ?? 'Admin #' . $item->admin_id)) : 'System',
+                    'admin_name' => $item->admin ? (trim($item->admin->first_name ?? '') ?: ($item->admin->username ?? 'Admin #' . $item->admin_id)) : 'System',
                     'changed_at' => $item->changed_at ? $item->changed_at->toDateTimeString() : null,
                 ];
             });
@@ -2049,6 +2049,7 @@ class ListingController extends Controller
                 'quantity' => $result['quantity'],
                 'sku' => $result['sku'],
                 'state' => $result['state'],
+                'total_stock' => $result['total_stock'] ?? null, // Include total stock for frontend update
                 'error' => $result['error'] ?? null
             ]);
         } catch (\Exception $e) {

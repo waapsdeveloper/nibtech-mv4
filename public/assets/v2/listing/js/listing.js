@@ -448,7 +448,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                             </button>`;
                     }
                     
-                    // Add restore button if available
+                    // Add restore button if available (icon only)
                     if (canRestore) {
                         actionButtons += `
                             <button class="btn btn-sm btn-outline-primary restore-history-btn" 
@@ -458,7 +458,7 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                                     data-field-label="${fieldLabel}"
                                     title="Restore to: ${oldValue}"
                                     onclick="restoreListingHistory(${item.id}, '${item.field_name}', ${item.old_value}, '${fieldLabel.replace(/'/g, "\\'")}')">
-                                <i class="fas fa-undo me-1"></i>Restore
+                                <i class="fas fa-undo"></i>
                             </button>`;
                     }
                     
@@ -469,26 +469,46 @@ function show_listing_history(listingId, variationId, marketplaceId, countryId, 
                         actionButtons = '<span class="text-muted small">-</span>';
                     }
                     
+                    // Get buybox price from row_snapshot or item data
+                    let buyboxValue = '-';
+                    if (item.row_snapshot && typeof item.row_snapshot === 'object') {
+                        // Try to get buybox_price from snapshot
+                        if (item.row_snapshot.buybox_price !== undefined && item.row_snapshot.buybox_price !== null && item.row_snapshot.buybox_price !== '') {
+                            // Format as currency with 2 decimal places
+                            buyboxValue = parseFloat(item.row_snapshot.buybox_price).toFixed(2);
+                        } else if (item.row_snapshot.buybox !== undefined) {
+                            // If no buybox_price but buybox exists, show status
+                            buyboxValue = item.row_snapshot.buybox === 1 || item.row_snapshot.buybox === true || item.row_snapshot.buybox === '1' ? 'Yes' : 'No';
+                        }
+                    } else if (item.buybox_price !== undefined && item.buybox_price !== null && item.buybox_price !== '') {
+                        // Fallback to item buybox_price if available
+                        buyboxValue = parseFloat(item.buybox_price).toFixed(2);
+                    } else if (item.buybox !== undefined) {
+                        // Fallback to item buybox status if available
+                        buyboxValue = item.buybox === 1 || item.buybox === true || item.buybox === '1' ? 'Yes' : 'No';
+                    }
+                    
                     historyTable += `
                         <tr>
-                            <td>${changedDate}</td>
                             <td><strong>${fieldLabel}</strong></td>
                             <td class="${oldValueClass}">${oldValue}${snapshotIcon}</td>
                             <td class="${newValueClass}">${newValue}</td>
+                            <td class="text-center">${buyboxValue}</td>
                             <td><span class="badge bg-info">${item.change_type || 'listing'}</span></td>
                             <td>${item.admin_name || item.admin_id || 'System'}</td>
                             <td>${item.change_reason || '-'}</td>
+                            <td>${changedDate}</td>
                             <td class="text-center">${actionButtons}</td>
                         </tr>`;
                 });
             } else {
-                historyTable = '<tr><td colspan="8" class="text-center text-muted">No history found for this listing</td></tr>';
+                historyTable = '<tr><td colspan="9" class="text-center text-muted">No history found for this listing</td></tr>';
             }
             $('#listingHistoryTable').html(historyTable);
         },
         error: function(xhr) {
             console.error('Error loading listing history:', xhr.responseText);
-            $('#listingHistoryTable').html('<tr><td colspan="8" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
+            $('#listingHistoryTable').html('<tr><td colspan="9" class="text-center text-danger">Error loading history. Please try again later.</td></tr>');
         }
     });
 }
@@ -981,7 +1001,7 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             <td>
                                 <input type="number" class="form-control ${listing.handler_status == 2 ? 'text-danger':''}" id="price_limit_${listing.id}" name="price_limit" step="0.01" value="${listing.price_limit || ''}" form="change_limit_${listing.id}" ${!isEnabled ? 'disabled' : ''}>
                             </td>
-                            <td>${listing.buybox_price || ''}
+                            <td><b>${listing.buybox_price || ''}</b>
                                 <span class="text-danger" title="Buybox Winner Price">
                                     ${listing.buybox !== 1 ? '(' + (listing.buybox_winner_price || '') + ')' : ''}
                                 </span>
@@ -1012,7 +1032,12 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             </td>
                             <td>${listing.updated_at ? new Date(listing.updated_at).toLocaleString('en-GB', { timeZone: 'Europe/London', hour12: true }) : ''}
                                 ${listing.buybox !== 1 && listing.buybox_price > 0 ? (() => {
-                                    const buttonClass = (best_price > 0 && best_price < listing.buybox_price) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
+                                    // Existing condition: best_price > 0 && best_price < buybox_price
+                                    const existingCondition = best_price > 0 && best_price < listing.buybox_price;
+                                    // New condition: buybox_price > min_price AND min_price < buybox_price (and min_price exists)
+                                    const newCondition = listing.min_price > 0 && listing.buybox_price > listing.min_price && listing.min_price < listing.buybox_price;
+                                    // Button is green if either condition is true
+                                    const buttonClass = (existingCondition || newCondition) ? 'btn btn-success btn-sm' : 'btn btn-warning btn-sm';
                                     return `<button class="${buttonClass}" id="get_buybox_${listing.id}" onclick="getBuybox(${listing.id}, ${variationId}, ${listing.buybox_price})" style="margin-left: 5px;">
                                                 Get Buybox
                                             </button>`;
@@ -1020,6 +1045,11 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                             </td>
                             <td class="text-center">
                                 <div class="d-flex align-items-center justify-content-center gap-2">
+                                    <!-- 
+                                    NOTE: Toggle listing enable/disable feature - DISABLED FOR NOW
+                                    Client requested to remove this feature temporarily. 
+                                    Keep this code for future use if needed.
+                                    
                                     <div class="form-check form-switch d-inline-block">
                                         <input 
                                             class="form-check-input toggle-listing-enable" 
@@ -1031,6 +1061,7 @@ function loadListingsAfterRefresh(variationId, marketplaceId, container, callbac
                                             style="cursor: pointer;">
                                         <label class="form-check-label" for="toggle_listing_${listing.id}"></label>
                                     </div>
+                                    -->
                                     <a href="javascript:void(0)" 
                                        class="btn btn-link btn-sm p-0" 
                                        id="listing_history_${listing.id}" 
@@ -1359,10 +1390,8 @@ function highlightChangedHandlers(variationId, marketplaceId, oldHandlers) {
                 };
             }
             
-            // Run validation check (like individual input updates) - validates min_price vs price relationship
-            if (typeof window.checkMinPriceDiff === 'function') {
-                window.checkMinPriceDiff(listingId);
-            }
+            // NOTE: Removed 8% validation for handlers - handlers should be independent
+            // Unlike min/max prices (min_price and price) which still have the 8% validation
         }
     });
 }
@@ -1390,7 +1419,7 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
                         <th width="100" title="Minimum Price Handler"><small><b>Min Hndlr</b></small></th>
                         <th width="100" title="Price Handler"><small><b>Price Hndlr</b></small></th>
                         <th width="80"><small><b>BuyBox</b></small></th>
-                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}">${preservedBestPrice}</b>)</small></th>
+                        <th title="Min Price" width="120"><small><b>Min </b>(€<b id="best_price_${variationId}_${marketplaceId}" style="color: blue;">${preservedBestPrice}</b>)</small></th>
                         <th width="120">
                             <small><b>Price</b></small>
                             ${marketplaceId == 1 ? `<button type="button" class="btn btn-link btn-sm p-0 ms-1" id="refresh_prices_btn_${variationId}_${marketplaceId}" onclick="refreshPricesButtonClick(${variationId}, ${marketplaceId})" title="Refresh prices from API" style="font-size: 0.7rem; line-height: 1; padding: 0 2px;">
@@ -1416,7 +1445,8 @@ function renderMarketplaceTables(variationId, marketplaceId, listingsTable) {
     // All four main inputs: min_price_limit, price_limit, min_price, price
     // Note: buybox_price is not user-editable, it's updated programmatically
     setTimeout(function() {
-        const selector = `#listings_${variationId}_${marketplaceId} [id^="min_price_limit_"], #listings_${variationId}_${marketplaceId} [id^="price_limit_"], #listings_${variationId}_${marketplaceId} [id^="min_price_"], #listings_${variationId}_${marketplaceId} [id^="price_"], #listings_${variationId}_${marketplaceId} .toggle-listing-enable`;
+        // NOTE: Removed .toggle-listing-enable from selector - feature disabled for now
+        const selector = `#listings_${variationId}_${marketplaceId} [id^="min_price_limit_"], #listings_${variationId}_${marketplaceId} [id^="price_limit_"], #listings_${variationId}_${marketplaceId} [id^="min_price_"], #listings_${variationId}_${marketplaceId} [id^="price_"]`;
         const elements = $(selector);
         
         elements.each(function() {
@@ -1521,6 +1551,11 @@ $(document).on('keypress', '[id^="add_marketplace_"]', function(e) {
 /**
  * Handle listing enable/disable toggle
  */
+/* 
+ * NOTE: Toggle listing enable/disable feature - DISABLED FOR NOW
+ * Client requested to remove this feature temporarily.
+ * Keep this code for future use if needed.
+ * 
 $(document).on('change', '.toggle-listing-enable', function() {
     const toggle = $(this);
     const listingId = toggle.data('listing-id');
@@ -1590,6 +1625,7 @@ $(document).on('change', '.toggle-listing-enable', function() {
         }
     });
 });
+*/
 
 /**
  * Initialize marketplace visibility on page load
@@ -2028,6 +2064,11 @@ function initializeChangeDetection() {
     // Note: Price validation (visual feedback) still works on blur via price-validation.js
     
     // Handle checkbox/toggle changes
+    /* 
+     * NOTE: Toggle listing enable/disable change detection - DISABLED FOR NOW
+     * Client requested to remove this feature temporarily.
+     * Keep this code for future use if needed.
+     * 
     $(document).on('change', '.toggle-listing-enable', function() {
         const id = $(this).attr('id');
         const listingId = $(this).data('listing-id');
@@ -2058,6 +2099,7 @@ function initializeChangeDetection() {
             window.ChangeDetection.recordChange(changeInfo);
         }
     });
+    */
 }
 
 /**
@@ -2200,10 +2242,9 @@ $(document).on('submit', '[id^="change_limit_"]', function(e) {
                 minLimitInput.addClass('bg-green');
                 priceLimitInput.addClass('bg-green');
                 
-                // Run 8% validation formula (like V1) - validates min_price vs price relationship
-                if (typeof window.checkMinPriceDiff === 'function') {
-                    window.checkMinPriceDiff(listingId);
-                }
+                // NOTE: Removed 8% validation for min/max handlers (min_price_limit and price_limit)
+                // Client requested that handlers should be independent and not dependent on 8% condition
+                // Unlike min/max prices (min_price and price) which still have the 8% validation
             }
             minLimitInput.prop('disabled', false);
             priceLimitInput.prop('disabled', false);
@@ -2480,7 +2521,11 @@ window.fetchBackmarketStockQuantity = function(variationId, marketplaceId) {
         }
     }).then(function(response) {
         if (response.success && response.quantity !== undefined) {
-            return response.quantity;
+            // Return both quantity and total_stock for frontend updates
+            return {
+                quantity: response.quantity,
+                total_stock: response.total_stock || null
+            };
         }
         return null;
     }).catch(function(xhr, status, error) {
@@ -2742,6 +2787,17 @@ window.fixStockMismatchSilently = function(variationId) {
                                 listingTotalElement.text(fix.new_value);
                                 updateCount++;
                             }
+                            
+                            // Also update total_stock input field
+                            const totalStockElement = $('#total_stock_' + variationId);
+                            if (totalStockElement.length) {
+                                totalStockElement.val(fix.new_value);
+                                // Also update the data attribute if it exists
+                                const addTotalElement = $('#add_total_' + variationId);
+                                if (addTotalElement.length) {
+                                    addTotalElement.attr('data-current-total', fix.new_value);
+                                }
+                            }
                         }
                     }
                 });
@@ -2785,8 +2841,23 @@ window.fixStockMismatchSilently = function(variationId) {
     });
 };
 
-window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantity) {
+window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantityOrResponse) {
     const badgeElement = $('#backmarket_stock_badge_' + variationId + '_' + marketplaceId);
+    
+    // Handle both old format (just quantity) and new format (object with quantity and total_stock)
+    let quantity = null;
+    let totalStock = null;
+    
+    if (quantityOrResponse !== null && quantityOrResponse !== undefined) {
+        if (typeof quantityOrResponse === 'object' && quantityOrResponse.quantity !== undefined) {
+            // New format: object with quantity and total_stock
+            quantity = quantityOrResponse.quantity;
+            totalStock = quantityOrResponse.total_stock;
+        } else {
+            // Old format: just quantity number
+            quantity = quantityOrResponse;
+        }
+    }
     
     if (badgeElement.length) {
         if (quantity !== null && quantity !== undefined) {
@@ -2795,6 +2866,25 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 .removeClass('bg-secondary d-none')
                 .addClass('bg-primary')
                 .html('<span class="stock-value">' + quantity + '</span> <small class="ms-1">(API)</small>');
+            
+            // Update total stock display if available
+            if (totalStock !== null && totalStock !== undefined) {
+                const totalStockElement = $('#total_stock_' + variationId);
+                if (totalStockElement.length) {
+                    totalStockElement.val(totalStock);
+                    // Also update the data attribute if it exists
+                    const addTotalElement = $('#add_total_' + variationId);
+                    if (addTotalElement.length) {
+                        addTotalElement.attr('data-current-total', totalStock);
+                    }
+                }
+                
+                // Also update listing_total_quantity if it exists
+                const listingTotalElement = $('#listing_total_quantity_' + variationId);
+                if (listingTotalElement.length) {
+                    listingTotalElement.text(totalStock);
+                }
+            }
             
             // NOTE: Available stock comparison removed
             // Available stock comes from inventory (variation-level physical stock count)
@@ -2807,6 +2897,11 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
                 const listedStockText = listedStockElement.text().trim();
                 const ourListedStock = parseInt(listedStockText.replace(/\D/g, '')) || 0;
                 const apiStock = parseInt(quantity) || 0;
+                
+                // Update listed stock display if it differs
+                if (ourListedStock !== apiStock) {
+                    listedStockElement.text(apiStock);
+                }
                 
                 // If listed stock differs from API stock, fix the mismatch
                 // This will sync listed_stock with API, but NOT change available_stock
