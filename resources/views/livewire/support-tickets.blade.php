@@ -774,7 +774,7 @@
     {{-- Partial Refund Modal --}}
     @if ($showPartialRefundModal && $selectedThread && $selectedThread->order)
         <div class="modal fade show" style="display: block; background: rgba(0,0,0,0.5);" tabindex="-1" role="dialog">
-            <div class="modal-dialog modal-lg" role="document">
+            <div class="modal-dialog modal-lg modal-dialog-scrollable" role="document">
                 <div class="modal-content">
                     <div class="modal-header">
                         <h5 class="modal-title">Select Items for Partial Refund</h5>
@@ -787,39 +787,41 @@
 
                         <div class="mb-3">
                             <label class="form-label fw-bold">Select order items to refund:</label>
-                            @foreach ($selectedThread->order->order_items as $item)
-                                <div class="form-check mb-2 p-3 border rounded">
-                                    <input class="form-check-input" type="checkbox" wire:model="selectedOrderItems" value="{{ $item->id }}" id="item-{{ $item->id }}">
-                                    <label class="form-check-label w-100" for="item-{{ $item->id }}">
-                                        <div class="d-flex justify-content-between align-items-start">
-                                            <div>
-                                                <strong>{{ $item->variation->product->name ?? 'Product' }}</strong>
-                                                @if ($item->variation)
-                                                    <div class="text-muted small">
-                                                        @if ($item->variation->storage_id)
-                                                            {{ $item->variation->storage_id->name ?? '' }}
-                                                        @endif
-                                                        @if ($item->variation->color_id)
-                                                            - {{ $item->variation->color_id->name ?? '' }}
-                                                        @endif
-                                                    </div>
-                                                @endif
-                                                <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
-                                                @if (!empty($item->stock_id))
-                                                    <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number }}</div>
-                                                @endif
+                            <div class="border rounded p-2" style="max-height: 360px; overflow-y: auto;">
+                                @foreach ($selectedThread->order->order_items as $item)
+                                    <div class="form-check mb-2 p-3 border rounded bg-white">
+                                        <input class="form-check-input" type="checkbox" wire:model="selectedOrderItems" value="{{ $item->id }}" id="item-{{ $item->id }}">
+                                        <label class="form-check-label w-100" for="item-{{ $item->id }}">
+                                            <div class="d-flex justify-content-between align-items-start">
+                                                <div>
+                                                    <strong>{{ $item->variation->product->name ?? 'Product' }}</strong>
+                                                    @if ($item->variation)
+                                                        <div class="text-muted small">
+                                                            @if ($item->variation->storage_id)
+                                                                {{ $item->variation->storage_id->name ?? '' }}
+                                                            @endif
+                                                            @if ($item->variation->color_id)
+                                                                - {{ $item->variation->color_id->name ?? '' }}
+                                                            @endif
+                                                        </div>
+                                                    @endif
+                                                    <div class="text-muted small">Ref: {{ $item->reference_id ?? 'N/A' }}</div>
+                                                    @if (!empty($item->stock_id))
+                                                        <div class="text-muted small">IMEI/Serial: {{ $item->stock->imei ?? $item->stock->serial_number }}</div>
+                                                    @endif
+                                                </div>
+                                                <div class="text-end">
+                                                    @php
+                                                        $refundPrice = $item->price ?? $item->selling_price ?? 0;
+                                                    @endphp
+                                                    <strong class="text-primary">{{ number_format($refundPrice, 2) }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
+                                                    <div class="text-muted small">Qty: {{ $item->quantity ?? 1 }}</div>
+                                                </div>
                                             </div>
-                                            <div class="text-end">
-                                                @php
-                                                    $refundPrice = $item->price ?? $item->selling_price ?? 0;
-                                                @endphp
-                                                <strong class="text-primary">{{ number_format($refundPrice, 2) }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
-                                                <div class="text-muted small">Qty: {{ $item->quantity ?? 1 }}</div>
-                                            </div>
-                                        </div>
-                                    </label>
-                                </div>
-                            @endforeach
+                                        </label>
+                                    </div>
+                                @endforeach
+                            </div>
                         </div>
 
                         <div class="mb-3">
