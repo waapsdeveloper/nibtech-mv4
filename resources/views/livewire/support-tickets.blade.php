@@ -276,7 +276,9 @@
                             $order = $selectedThread->order;
                             $orderItems = $order?->order_items ?? collect();
                             $orderValue = $order && isset($order->price) ? number_format((float) $order->price, 2) : null;
-                            $orderCurrency = $order?->currency ?? null;
+                            $orderCurrency = $order?->currency_id->sign
+                                ?? $order?->currency_id->code
+                                ?? null;
                             $customer = $order?->customer;
                             $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : null;
                             $marketplaceReference = $selectedThread->order_reference
@@ -366,7 +368,7 @@
                                                 @if (!empty($item->stock_id))
                                                     @php $idValue = $item->stock->imei ?? $item->stock->serial_number; @endphp
                                                     @if ($idValue)
-                                                        <div class="text-muted small">IMEI/Serial: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
+                                                        <div class="text-muted small" title="IMEI / Serial Number">IMEI: <a href="{{ url('imei') }}?imei={{ $idValue }}" target="_blank" rel="noopener">{{ $idValue }}</a></div>
                                                     @endif
                                                 @endif
                                             </div>
