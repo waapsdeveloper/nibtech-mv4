@@ -263,6 +263,8 @@ class Order_model extends Model
             $currencyId = $currencyId
                 ?? Currency_model::orderBy('id')->value('id');
 
+            $status = $this->mapStateToStatus($orderObj) ?? 2;
+
             try {
                 // Use updateOrCreate to prevent race conditions - atomic operation
                 $order = Order_model::updateOrCreate(
@@ -275,6 +277,7 @@ class Order_model extends Model
                         'order_type_id' => 3,
                         'marketplace_id' => $marketplaceId,
                         'currency' => $currencyId,
+                        'status' => $status,
                     ]
                 );
 
@@ -282,7 +285,7 @@ class Order_model extends Model
                 if($order->customer_id == null){
                     $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
                 }
-                $order->status = $this->mapStateToStatus($orderObj);
+                $order->status = $status;
                 if($order->status == null || $order->status == 0){
                     Log::info("Order status is null", $orderObj);
                 }
