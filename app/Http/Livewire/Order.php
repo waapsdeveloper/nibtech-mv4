@@ -1480,6 +1480,59 @@ class Order extends Component
         $data['import_result'] = session('purchase_recovery_result');
         session()->forget('purchase_recovery_result');
 
+        // Manual grouping: derive first variation per stock using earliest stock_operation
+        $stockIds = Stock_model::where('order_id', $order_id)->pluck('id');
+
+        $firstOpIds = $stockIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->select(DB::raw('MIN(id) as id'), 'stock_id')
+                ->whereIn('stock_id', $stockIds)
+                ->groupBy('stock_id')
+                ->pluck('id', 'stock_id');
+
+        $firstVariationByStock = $firstOpIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->whereIn('id', $firstOpIds->values())
+                ->pluck(DB::raw('COALESCE(new_variation_id, old_variation_id)'), 'stock_id');
+
+        $stockVariations = DB::table('stock')
+            ->whereIn('id', $stockIds)
+            ->pluck('variation_id', 'id');
+
+        $resolved = [];
+        foreach ($stockIds as $sid) {
+            $resolved[$sid] = $firstVariationByStock[$sid] ?? $stockVariations[$sid] ?? null;
+        }
+
+        $groups = collect($resolved)
+            ->filter()
+            ->groupBy(function ($variationId) {
+                return $variationId;
+            })
+            ->map(function ($stockList, $variationId) {
+                return [
+                    'variation_id' => (int) $variationId,
+                    'stock_ids'    => $stockList->keys()->values()->all(),
+                    'count'        => $stockList->count(),
+                ];
+            })
+            ->values();
+
+        $variationMeta = Variation_model::with(['product:id,model', 'storage_id:id,name', 'color_id:id,name'])
+            ->whereIn('id', $groups->pluck('variation_id'))
+            ->get()
+            ->keyBy('id');
+
+        $data['manual_groups'] = $groups->map(function ($g) use ($variationMeta) {
+            $v = $variationMeta[$g['variation_id']] ?? null;
+            $label = $v
+                ? trim(($v->product->model ?? '').' '.($v->storage_id->name ?? '').' '.($v->color_id->name ?? ''))
+                : 'Variation '.$g['variation_id'];
+            return array_merge($g, ['label' => $label]);
+        });
+
         return view('livewire.purchase_recovery')->with($data);
     }
 
