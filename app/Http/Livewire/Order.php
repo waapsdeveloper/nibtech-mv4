@@ -1483,6 +1483,17 @@ class Order extends Component
         // Manual grouping: derive first variation per stock using earliest stock_operation
         $stockIds = Stock_model::where('order_id', $order_id)->pluck('id');
 
+        // Purchase item candidates per stock (existing purchase row or linked id from sold items)
+        $purchaseItemsByStock = Order_item_model::withTrashed()
+            ->where('order_id', $order_id)
+            ->pluck('id', 'stock_id');
+
+        $linkedCandidates = Order_item_model::withTrashed()
+            ->whereNotNull('linked_id')
+            ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
+            ->groupBy('stock_id')
+            ->pluck('linked_id', 'stock_id');
+
         $firstOpIds = $stockIds->isEmpty()
             ? collect()
             : DB::table('stock_operations')
@@ -1502,8 +1513,10 @@ class Order extends Component
             ->pluck('variation_id', 'id');
 
         $resolved = [];
+        $stockCandidates = [];
         foreach ($stockIds as $sid) {
             $resolved[$sid] = $firstVariationByStock[$sid] ?? $stockVariations[$sid] ?? null;
+            $stockCandidates[$sid] = $purchaseItemsByStock[$sid] ?? $linkedCandidates[$sid] ?? null;
         }
 
         $groups = collect($resolved)
@@ -1511,11 +1524,17 @@ class Order extends Component
             ->groupBy(function ($variationId) {
                 return $variationId;
             })
-            ->map(function ($stockList, $variationId) {
+            ->map(function ($stockList, $variationId) use ($stockCandidates) {
                 return [
                     'variation_id' => (int) $variationId,
                     'stock_ids'    => $stockList->keys()->values()->all(),
                     'count'        => $stockList->count(),
+                    'candidates'   => $stockList->map(function ($sid) use ($stockCandidates) {
+                        return [
+                            'stock_id' => $sid,
+                            'id'       => $stockCandidates[$sid] ?? null,
+                        ];
+                    })->values()->all(),
                 ];
             })
             ->values();
