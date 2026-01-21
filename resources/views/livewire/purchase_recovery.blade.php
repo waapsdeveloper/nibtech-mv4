@@ -78,6 +78,35 @@
         </div>
     </div>
 
+    <div class="card mt-3">
+        <div class="card-header pb-0">
+            <h6 class="mb-0">Manual add (no sheet)</h6>
+        </div>
+        <div class="card-body">
+            <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/manual-add' }}" class="row g-2">
+                @csrf
+                <div class="col-md-3">
+                    <label class="form-label">Stock ID</label>
+                    <input type="number" class="form-control" name="stock_id" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Price</label>
+                    <input type="number" step="0.01" class="form-control" name="price" required>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label">Order Item ID (optional)</label>
+                    <input type="number" class="form-control" name="id">
+                </div>
+                <div class="col-md-3 d-flex align-items-end">
+                    <button type="submit" class="btn btn-primary w-100">Add Item</button>
+                </div>
+                <div class="col-12">
+                    <small class="text-muted">If ID is empty, the system will look at the stock's linked chain and use the single missing linked_id (if found). No new IDs are generated.</small>
+                </div>
+            </form>
+        </div>
+    </div>
+
     @if($manual_groups && $manual_groups->count())
     <div class="card mt-3">
         <div class="card-header pb-0 d-flex justify-content-between align-items-center">
