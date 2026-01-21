@@ -13,6 +13,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Str;
+use Illuminate\Database\QueryException;
 
 class RefurbedWebhookController extends Controller
 {
@@ -267,35 +268,100 @@ class RefurbedWebhookController extends Controller
         }
 
         // Create or update order
-        $order = Order_model::firstOrNew([
-            'reference_id' => $orderNumber,
-            'marketplace_id' => $marketplace_id,
-        ]);
-        $order->customer_id = $customer->id;
-        $order->currency_id = $currency->id;
-        $order->country_id = $country->id ?? 1;
-        $order->marketplace_id = $marketplace_id;
-        $order->status = $this->mapOrderState($orderState);
+        try {
+            // Use updateOrCreate to prevent race conditions - atomic operation
+            $order = Order_model::updateOrCreate(
+                [
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplace_id,
+                ],
+                [
+                    // Default values only used when creating new order
+                    'marketplace_id' => $marketplace_id,
+                    'status' => $this->mapOrderState($orderState),
+                ]
+            );
+            
+            // Update fields that should always be updated (not just on create)
+            $order->customer_id = $customer->id;
+            $order->currency_id = $currency->id;
+            $order->country_id = $country->id ?? 1;
+            $order->status = $this->mapOrderState($orderState);
 
-        if (! $order->reference) {
-            $order->reference = $orderId;
+            if (! $order->reference) {
+                $order->reference = $orderId;
+            }
+
+            // Set additional fields from order data
+            if (isset($orderData['created_at'])) {
+                $order->created_at = $orderData['created_at'];
+            }
+
+            $settlementTotal = $orderData['settlement_total_paid']
+                ?? $orderData['total_amount']
+                ?? $orderData['total_paid']
+                ?? null;
+
+            if ($settlementTotal !== null) {
+                $order->price = $settlementTotal;
+            }
+
+            $order->save();
+            
+        } catch (QueryException $e) {
+            // Handle duplicate key exception (race condition)
+            if ($e->getCode() == 23000) {
+                // Duplicate entry - fetch existing order and continue
+                $order = Order_model::where([
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplace_id,
+                ])->first();
+                
+                if ($order) {
+                    Log::warning('RefurbedWebhook: Duplicate order creation prevented (race condition)', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplace_id,
+                        'order_id' => $order->id,
+                    ]);
+                    
+                    // Continue with update flow
+                    $order->customer_id = $customer->id;
+                    $order->currency_id = $currency->id;
+                    $order->country_id = $country->id ?? 1;
+                    $order->status = $this->mapOrderState($orderState);
+
+                    if (! $order->reference) {
+                        $order->reference = $orderId;
+                    }
+
+                    // Set additional fields from order data
+                    if (isset($orderData['created_at'])) {
+                        $order->created_at = $orderData['created_at'];
+                    }
+
+                    $settlementTotal = $orderData['settlement_total_paid']
+                        ?? $orderData['total_amount']
+                        ?? $orderData['total_paid']
+                        ?? null;
+
+                    if ($settlementTotal !== null) {
+                        $order->price = $settlementTotal;
+                    }
+
+                    $order->save();
+                } else {
+                    // Order not found even after duplicate error - log and re-throw
+                    Log::error('RefurbedWebhook: Duplicate order error but order not found after retry', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplace_id,
+                    ]);
+                    throw $e;
+                }
+            } else {
+                // Other database errors - re-throw
+                throw $e;
+            }
         }
-
-        // Set additional fields from order data
-        if (isset($orderData['created_at'])) {
-            $order->created_at = $orderData['created_at'];
-        }
-
-        $settlementTotal = $orderData['settlement_total_paid']
-            ?? $orderData['total_amount']
-            ?? $orderData['total_paid']
-            ?? null;
-
-        if ($settlementTotal !== null) {
-            $order->price = $settlementTotal;
-        }
-
-        $order->save();
 
         // Sync order items
         $items = $orderData['items'] ?? $orderData['order_items'] ?? [];
