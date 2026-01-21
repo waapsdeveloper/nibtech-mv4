@@ -1516,7 +1516,25 @@ class Order extends Component
         $stockCandidates = [];
         foreach ($stockIds as $sid) {
             $resolved[$sid] = $firstVariationByStock[$sid] ?? $stockVariations[$sid] ?? null;
-            $stockCandidates[$sid] = $purchaseItemsByStock[$sid] ?? $linkedCandidates[$sid] ?? null;
+
+            $itemsForStock = Order_item_model::withTrashed()
+                ->where('stock_id', $sid)
+                ->get(['id', 'linked_id', 'order_id']);
+
+            $ids = $itemsForStock->pluck('id');
+            $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+            $missingLinked = $linkedIds->diff($ids);
+
+            $candidateId = null;
+            if ($missingLinked->count() === 1) {
+                $candidateId = $missingLinked->first();
+            } elseif (isset($purchaseItemsByStock[$sid])) {
+                $candidateId = $purchaseItemsByStock[$sid];
+            } elseif (isset($linkedCandidates[$sid])) {
+                $candidateId = $linkedCandidates[$sid];
+            }
+
+            $stockCandidates[$sid] = $candidateId;
         }
 
         $groups = collect($resolved)
