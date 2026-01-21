@@ -924,7 +924,8 @@ class ListingController extends Controller
         // Calculate today's summary
         // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
         // For other marketplaces, only that specific marketplace_id
-        $todayAvg = Order_item_model::where('variation_id', $variationId)
+        // Use same currency conversion logic as variation card for consistency
+        $todayOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 if ($marketplaceId == 1) {
                     // Backmarket: include null and 1
@@ -939,29 +940,25 @@ class ListingController extends Controller
                 $q->whereBetween('created_at', [now()->startOfDay(), now()])
                   ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $todayCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                if ($marketplaceId == 1) {
-                    // Backmarket: include null and 1
-                    $q->where(function($query) {
-                        $query->whereNull('marketplace_id')
-                              ->orWhere('marketplace_id', 1);
-                    });
-                } else {
-                    // Other marketplaces: only that specific ID
-                    $q->where('marketplace_id', $marketplaceId);
-                }
-                $q->whereBetween('created_at', [now()->startOfDay(), now()])
-                  ->where('order_type_id', 3);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $todayTotal = $todayOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $todayCount = $todayOrders->count();
+        $todayAvg = $todayCount > 0 ? $todayTotal / $todayCount : 0;
 
         // Calculate yesterday's summary
         // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
         // For other marketplaces, only that specific marketplace_id
-        $yesterdayAvg = Order_item_model::where('variation_id', $variationId)
+        // Use same currency conversion logic as variation card for consistency
+        $yesterdayOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 if ($marketplaceId == 1) {
                     // Backmarket: include null and 1
@@ -976,29 +973,25 @@ class ListingController extends Controller
                 $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
                   ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $yesterdayCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                if ($marketplaceId == 1) {
-                    // Backmarket: include null and 1
-                    $q->where(function($query) {
-                        $query->whereNull('marketplace_id')
-                              ->orWhere('marketplace_id', 1);
-                    });
-                } else {
-                    // Other marketplaces: only that specific ID
-                    $q->where('marketplace_id', $marketplaceId);
-                }
-                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $yesterdayTotal = $yesterdayOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $yesterdayCount = $yesterdayOrders->count();
+        $yesterdayAvg = $yesterdayCount > 0 ? $yesterdayTotal / $yesterdayCount : 0;
 
         // Calculate 7 days summary
         // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
         // For other marketplaces, only that specific marketplace_id
-        $last7DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // Use same currency conversion logic as variation card for consistency
+        $last7DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 if ($marketplaceId == 1) {
                     // Backmarket: include null and 1
@@ -1010,32 +1003,28 @@ class ListingController extends Controller
                     // Other marketplaces: only that specific ID
                     $q->where('marketplace_id', $marketplaceId);
                 }
-                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
+                $q->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()])
                   ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last7DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                if ($marketplaceId == 1) {
-                    // Backmarket: include null and 1
-                    $q->where(function($query) {
-                        $query->whereNull('marketplace_id')
-                              ->orWhere('marketplace_id', 1);
-                    });
-                } else {
-                    // Other marketplaces: only that specific ID
-                    $q->where('marketplace_id', $marketplaceId);
-                }
-                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last7DaysTotal = $last7DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last7DaysCount = $last7DaysOrders->count();
+        $last7DaysAvg = $last7DaysCount > 0 ? $last7DaysTotal / $last7DaysCount : 0;
 
         // Calculate 14 days summary
         // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
         // For other marketplaces, only that specific marketplace_id
-        $last14DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // Use same currency conversion logic as variation card for consistency
+        $last14DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 if ($marketplaceId == 1) {
                     // Backmarket: include null and 1
@@ -1050,29 +1039,25 @@ class ListingController extends Controller
                 $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
                   ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last14DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                if ($marketplaceId == 1) {
-                    // Backmarket: include null and 1
-                    $q->where(function($query) {
-                        $query->whereNull('marketplace_id')
-                              ->orWhere('marketplace_id', 1);
-                    });
-                } else {
-                    // Other marketplaces: only that specific ID
-                    $q->where('marketplace_id', $marketplaceId);
-                }
-                $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last14DaysTotal = $last14DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last14DaysCount = $last14DaysOrders->count();
+        $last14DaysAvg = $last14DaysCount > 0 ? $last14DaysTotal / $last14DaysCount : 0;
 
         // Calculate 30 days summary
         // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
         // For other marketplaces, only that specific marketplace_id
-        $last30DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // Use same currency conversion logic as variation card for consistency
+        $last30DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
                 if ($marketplaceId == 1) {
                     // Backmarket: include null and 1
@@ -1087,24 +1072,19 @@ class ListingController extends Controller
                 $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
                   ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last30DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                if ($marketplaceId == 1) {
-                    // Backmarket: include null and 1
-                    $q->where(function($query) {
-                        $query->whereNull('marketplace_id')
-                              ->orWhere('marketplace_id', 1);
-                    });
-                } else {
-                    // Other marketplaces: only that specific ID
-                    $q->where('marketplace_id', $marketplaceId);
-                }
-                $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last30DaysTotal = $last30DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last30DaysCount = $last30DaysOrders->count();
+        $last30DaysAvg = $last30DaysCount > 0 ? $last30DaysTotal / $last30DaysCount : 0;
 
         // Format the summary string with today and yesterday
         return sprintf(
