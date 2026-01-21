@@ -1808,6 +1808,93 @@ class Order extends Component
         return redirect()->back();
     }
 
+    public function purchase_recovery_manual_add($order_id)
+    {
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        request()->validate([
+            'stock_id' => 'required|integer',
+            'price' => 'required|numeric',
+            'id' => 'nullable|integer',
+        ]);
+
+        $stockId = (int) request('stock_id');
+        $price = request('price');
+        $id = request('id');
+
+        if (! $id) {
+            $itemsForStock = Order_item_model::withTrashed()
+                ->where('stock_id', $stockId)
+                ->get(['id', 'linked_id']);
+
+            $ids = $itemsForStock->pluck('id');
+            $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+            $missingLinked = $linkedIds->diff($ids);
+
+            if ($missingLinked->count() === 1) {
+                $id = $missingLinked->first();
+            }
+        }
+
+        if (! $id) {
+            session()->put('error', 'No candidate id found for this stock. Provide an id manually.');
+            return redirect()->back();
+        }
+
+        if (DB::table('order_items')->where('id', $id)->exists()) {
+            session()->put('error', 'Order item id already exists.');
+            return redirect()->back();
+        }
+
+        $firstOpId = DB::table('stock_operations')
+            ->where('stock_id', $stockId)
+            ->min('id');
+
+        $variationId = null;
+        if ($firstOpId) {
+            $variationId = DB::table('stock_operations')
+                ->where('id', $firstOpId)
+                ->value(DB::raw('COALESCE(new_variation_id, old_variation_id)'));
+        }
+
+        if (! $variationId) {
+            $variationId = DB::table('stock')->where('id', $stockId)->value('variation_id');
+        }
+
+        if (! $variationId) {
+            session()->put('error', 'Variation not found for this stock.');
+            return redirect()->back();
+        }
+
+        DB::table('order_items')->insert([
+            'id'           => $id,
+            'order_id'     => $order_id,
+            'reference_id' => null,
+            'care_id'      => null,
+            'reference'    => null,
+            'variation_id' => $variationId,
+            'stock_id'     => $stockId,
+            'quantity'     => 1,
+            'currency'     => $order->currency ?? 4,
+            'price'        => $price,
+            'discount'     => null,
+            'status'       => 3,
+            'linked_id'    => null,
+            'admin_id'     => session('user_id'),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+            'deleted_at'   => null,
+        ]);
+
+        session()->put('success', 'Manual purchase item created.');
+        return redirect()->back();
+    }
+
     public function export_purchase_sheet($order_id, $invoice = null)
     {
         ini_set('memory_limit', '512M');
