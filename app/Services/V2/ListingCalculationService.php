@@ -345,15 +345,21 @@ class ListingCalculationService
 
     /**
      * Get today's average price and count
+     * NOTE: Since most operations use Backmarket only, filter for Backmarket (marketplace_id = null OR 1)
+     * This matches the marketplace bar calculation for consistency
      */
     private function getTodayAverage(int $variationId): string
     {
         $orderItems = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) {
-                // Include ALL marketplaces (null, 1, 2, 3, 4, etc.) for parent total calculation
-                $q->whereBetween('created_at', [now()->startOfDay(), now()])
+                // Filter for Backmarket only (marketplace_id = null OR 1) to match marketplace bar
+                // Most operations use Backmarket, other marketplaces are disabled/not working
+                $q->where(function($query) {
+                    $query->whereNull('marketplace_id')
+                          ->orWhere('marketplace_id', 1);
+                })
+                  ->whereBetween('created_at', [now()->startOfDay(), now()])
                   ->where('order_type_id', 3);
-                  // No marketplace filter - include all marketplaces
             })
             ->with('order.currency_id')
             ->get();
@@ -377,15 +383,21 @@ class ListingCalculationService
 
     /**
      * Get yesterday's average price and count
+     * NOTE: Since most operations use Backmarket only, filter for Backmarket (marketplace_id = null OR 1)
+     * This matches the marketplace bar calculation for consistency
      */
     private function getYesterdayAverage(int $variationId): string
     {
         $orderItems = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) {
-                // Include ALL marketplaces (null, 1, 2, 3, 4, etc.) for parent total calculation
-                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
+                // Filter for Backmarket only (marketplace_id = null OR 1) to match marketplace bar
+                // Most operations use Backmarket, other marketplaces are disabled/not working
+                $q->where(function($query) {
+                    $query->whereNull('marketplace_id')
+                          ->orWhere('marketplace_id', 1);
+                })
+                  ->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
                   ->where('order_type_id', 3);
-                  // No marketplace filter - include all marketplaces
             })
             ->with('order.currency_id')
             ->get();

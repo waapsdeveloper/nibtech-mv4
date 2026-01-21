@@ -922,87 +922,187 @@ class ListingController extends Controller
         };
 
         // Calculate today's summary
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
         $todayAvg = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->startOfDay(), now()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->avg('price');
 
         $todayCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->startOfDay(), now()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->count();
 
         // Calculate yesterday's summary
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
         $yesterdayAvg = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->avg('price');
 
         $yesterdayCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->count();
 
         // Calculate 7 days summary
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
         $last7DaysAvg = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->avg('price');
 
         $last7DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->count();
 
         // Calculate 14 days summary
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
         $last14DaysAvg = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->avg('price');
 
         $last14DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->count();
 
         // Calculate 30 days summary
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
         $last30DaysAvg = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->avg('price');
 
         $last30DaysCount = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
             ->count();
 
