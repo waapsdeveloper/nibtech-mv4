@@ -7,6 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        if (Schema::hasTable('repair_part_usages')) {
+            return;
+        }
+
         Schema::create('repair_part_usages', function (Blueprint $table) {
             $table->id();
             $table->unsignedInteger('process_id')->nullable();
