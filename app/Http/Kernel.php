@@ -71,5 +71,6 @@ class Kernel extends HttpKernel
         'throttle' => \Illuminate\Routing\Middleware\ThrottleRequests::class,
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'internal.only' => \App\Http\Middleware\InternalOnly::class,
+        'validate.sync.api' => \App\Http\Middleware\ValidateSyncApiKey::class,
     ];
 }
