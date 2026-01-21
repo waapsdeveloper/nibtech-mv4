@@ -1496,6 +1496,8 @@ class Order extends Component
             'recovery_file' => 'required|file|mimes:xlsx,xls,csv',
         ]);
 
+        $priceOnly = request()->boolean('price_only');
+
         $sheet = Excel::toArray([], request()->file('recovery_file'))[0] ?? [];
 
         if (count($sheet) === 0) {
@@ -1569,6 +1571,7 @@ class Order extends Component
             ->values();
 
         $inserted = 0;
+        $updated = 0;
         $skipped = 0;
         $errors = 0;
         $unmapped = 0;
@@ -1582,7 +1585,19 @@ class Order extends Component
 
         $reservedIds = [];
 
-        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes) {
+        // Build first variation per stock from earliest stock_operation
+        $firstOpIds = DB::table('stock_operations')
+            ->select(DB::raw('MIN(id) as id'), 'stock_id')
+            ->groupBy('stock_id')
+            ->pluck('id', 'stock_id');
+
+        $firstVariationByStock = $firstOpIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->whereIn('id', $firstOpIds->values())
+                ->pluck(DB::raw('COALESCE(new_variation_id, old_variation_id)'), 'stock_id');
+
+        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$updated, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes, $priceOnly, $firstVariationByStock) {
             foreach ($chunk as $row) {
                 $id = $map['id'] !== null ? ($row[$map['id']] ?? null) : null;
 
@@ -1634,17 +1649,31 @@ class Order extends Component
                     continue;
                 }
 
-                $existsById = DB::table('order_items')->where('id', $id)->exists();
-                if ($existsById) {
+                $existing = DB::table('order_items')->where('id', $id)->first();
+                if ($existing) {
+                    if ($priceOnly) {
+                        DB::table('order_items')->where('id', $id)->update([
+                            'price' => $price,
+                            'updated_at' => now(),
+                        ]);
+                        $updated++;
+                        continue;
+                    }
+
                     $skipped++;
                     continue;
                 }
 
                 $variationId = $map['variation_id'] !== null ? ($row[$map['variation_id']] ?? null) : null;
                 if (! $variationId && $stockId) {
-                    $stock = Stock_model::withTrashed()->find($stockId);
-                    if ($stock) {
-                        $variationId = $stock->variation_id;
+                    if (isset($firstVariationByStock[$stockId])) {
+                        $variationId = $firstVariationByStock[$stockId];
+                    }
+                    if (! $variationId) {
+                        $stock = Stock_model::withTrashed()->find($stockId);
+                        if ($stock) {
+                            $variationId = $stock->variation_id;
+                        }
                     }
                 }
 
@@ -1680,6 +1709,7 @@ class Order extends Component
 
         session()->put('purchase_recovery_result', [
             'inserted' => $inserted,
+            'updated'  => $updated,
             'skipped'  => $skipped,
             'errors'   => $errors,
             'unmapped' => $unmapped,
