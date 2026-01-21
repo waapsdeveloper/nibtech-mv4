@@ -9,11 +9,11 @@ return new class extends Migration {
     {
         Schema::create('repair_part_usages', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('process_id')->nullable()->constrained('process')->nullOnDelete();
-            $table->foreignId('process_stock_id')->nullable()->constrained('process_stock')->nullOnDelete();
-            $table->foreignId('stock_id')->nullable()->constrained('stock')->nullOnDelete();
+            $table->unsignedInteger('process_id')->nullable();
+            $table->unsignedInteger('process_stock_id')->nullable();
+            $table->unsignedInteger('stock_id')->nullable();
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->foreignId('technician_id')->nullable()->constrained('admin')->nullOnDelete();
+            $table->unsignedInteger('technician_id')->nullable();
             $table->integer('qty')->default(1);
             $table->decimal('unit_cost', 12, 2)->default(0);
             $table->decimal('total_cost', 12, 2)->default(0);
@@ -22,6 +22,11 @@ return new class extends Migration {
             $table->softDeletes();
             $table->index(['process_id', 'process_stock_id']);
             $table->index(['stock_id', 'repair_part_id']);
+
+            $table->foreign('process_id')->references('id')->on('process')->nullOnDelete();
+            $table->foreign('process_stock_id')->references('id')->on('process_stock')->nullOnDelete();
+            $table->foreign('stock_id')->references('id')->on('stock')->nullOnDelete();
+            $table->foreign('technician_id')->references('id')->on('admin')->nullOnDelete();
         });
     }
 
