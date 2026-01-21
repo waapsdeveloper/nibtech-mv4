@@ -9,7 +9,7 @@ return new class extends Migration {
     {
         Schema::create('repair_parts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('product')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->foreignId('product_id')->constrained('products')->cascadeOnUpdate()->cascadeOnDelete();
             $table->string('name');
             $table->string('sku')->nullable();
             $table->string('compatible_device')->nullable();
