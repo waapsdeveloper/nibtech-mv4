@@ -1512,6 +1512,11 @@ class Order extends Component
             ->whereIn('id', $stockIds)
             ->pluck('variation_id', 'id');
 
+        $stockDetails = Stock_model::withTrashed()
+            ->whereIn('id', $stockIds)
+            ->get(['id', 'imei', 'serial_number'])
+            ->keyBy('id');
+
         $resolved = [];
         $stockCandidates = [];
         foreach ($stockIds as $sid) {
@@ -1534,7 +1539,12 @@ class Order extends Component
                 $candidateId = $linkedCandidates[$sid];
             }
 
-            $stockCandidates[$sid] = $candidateId;
+            $stockCandidates[$sid] = [
+                'candidate_id' => $candidateId,
+                'has_purchase' => isset($purchaseItemsByStock[$sid]) && $purchaseItemsByStock[$sid] !== null,
+                'imei' => $stockDetails[$sid]->imei ?? null,
+                'serial' => $stockDetails[$sid]->serial_number ?? null,
+            ];
         }
 
         $groups = collect($resolved)
@@ -1552,7 +1562,10 @@ class Order extends Component
                     'candidates'   => $stockIds->map(function ($sid) use ($stockCandidates) {
                         return [
                             'stock_id' => $sid,
-                            'id'       => $stockCandidates[$sid] ?? null,
+                            'id'       => $stockCandidates[$sid]['candidate_id'] ?? null,
+                            'has_purchase' => $stockCandidates[$sid]['has_purchase'] ?? false,
+                            'imei' => $stockCandidates[$sid]['imei'] ?? null,
+                            'serial' => $stockCandidates[$sid]['serial'] ?? null,
                         ];
                     })->all(),
                 ];

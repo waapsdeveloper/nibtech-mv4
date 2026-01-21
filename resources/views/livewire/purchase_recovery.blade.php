@@ -122,6 +122,7 @@
                             <th>Count</th>
                             <th>Stock IDs</th>
                             <th>Candidate Item IDs</th>
+                            <th>Manual Add</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -135,10 +136,27 @@
                                 <td style="max-width:320px; white-space:normal;">
                                     @php
                                         $pairs = collect($group['candidates'])->map(function($c){
-                                            return $c['stock_id'].' → '.($c['id'] ?? 'none');
+                                            $imei = $c['imei'] ?: ($c['serial'] ?? '');
+                                            $status = $c['has_purchase'] ? 'has purchase' : 'missing';
+                                            return $c['stock_id'].' ('.$imei.') → '.($c['id'] ?? 'none').' · '.$status;
                                         })->implode(', ');
                                     @endphp
                                     {{ $pairs }}
+                                </td>
+                                <td style="min-width:220px;">
+                                    @foreach($group['candidates'] as $candidate)
+                                        @if(!($candidate['has_purchase'] ?? false))
+                                            <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/manual-add' }}" class="d-flex gap-1 mb-1">
+                                                @csrf
+                                                <input type="hidden" name="stock_id" value="{{ $candidate['stock_id'] }}">
+                                                <input type="number" step="0.01" class="form-control form-control-sm" name="price" placeholder="Price" required>
+                                                <input type="number" class="form-control form-control-sm" name="id" value="{{ $candidate['id'] }}" placeholder="ID">
+                                                <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                                            </form>
+                                        @else
+                                            <span class="badge bg-success">Already added</span>
+                                        @endif
+                                    @endforeach
                                 </td>
                             </tr>
                         @endforeach
