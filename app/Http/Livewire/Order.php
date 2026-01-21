@@ -1503,7 +1503,7 @@ class Order extends Component
             return redirect()->back();
         }
 
-        $header = array_map(function ($value) {
+        $header = array_map(static function ($value) {
             return strtolower(trim($value));
         }, $sheet[0]);
 
@@ -1512,7 +1512,8 @@ class Order extends Component
             return $pos === false ? null : $pos;
         };
 
-        $required = ['stock_id', 'price'];
+        // Match add_purchase sheet headers
+        $required = ['name', 'imei', 'cost'];
         foreach ($required as $req) {
             if ($index($req) === null) {
                 session()->put('error', "Missing required column: {$req}");
@@ -1520,9 +1521,16 @@ class Order extends Component
             }
         }
 
+        $imeiIndexes = [];
+        foreach ($header as $idx => $value) {
+            if ($value === 'imei') {
+                $imeiIndexes[] = $idx;
+            }
+        }
+
         $map = [
             'id'           => $index('id'),
-            'order_id'     => $index('order_id'),
+            'linked_id'    => $index('linked_id'),
             'reference_id' => $index('reference_id'),
             'care_id'      => $index('care_id'),
             'reference'    => $index('reference'),
@@ -1530,14 +1538,16 @@ class Order extends Component
             'stock_id'     => $index('stock_id'),
             'quantity'     => $index('quantity'),
             'currency'     => $index('currency'),
-            'price'        => $index('price'),
+            'price'        => $index('cost'),
             'discount'     => $index('discount'),
             'status'       => $index('status'),
-            'linked_id'    => $index('linked_id'),
             'admin_id'     => $index('admin_id'),
             'created_at'   => $index('created_at'),
             'updated_at'   => $index('updated_at'),
             'deleted_at'   => $index('deleted_at'),
+            'color'        => $index('color'),
+            'grade'        => $index('grade'),
+            'notes'        => $index('notes'),
         ];
 
         unset($sheet[0]);
@@ -1545,8 +1555,16 @@ class Order extends Component
         $orderCurrency = $order->currency ?? 4;
 
         $rows = collect($sheet)
-            ->filter(function ($row) use ($map) {
-                return isset($row[$map['id']]) && $row[$map['id']] !== null && $row[$map['id']] !== '';
+            ->filter(function ($row) use ($map, $imeiIndexes) {
+                $hasImei = false;
+                foreach ($imeiIndexes as $i) {
+                    if (isset($row[$i]) && trim((string) $row[$i]) !== '') {
+                        $hasImei = true;
+                        break;
+                    }
+                }
+                $hasCost = isset($row[$map['price']]) && trim((string) $row[$map['price']]) !== '';
+                return $hasImei && $hasCost;
             })
             ->values();
 
@@ -1564,10 +1582,29 @@ class Order extends Component
 
         $reservedIds = [];
 
-        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds) {
+        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes) {
             foreach ($chunk as $row) {
-                $id = $row[$map['id']] ?? null;
-                $stockId = $row[$map['stock_id']] ?? null;
+                $id = $map['id'] !== null ? ($row[$map['id']] ?? null) : null;
+
+                $imeiValue = null;
+                foreach ($imeiIndexes as $i) {
+                    if (isset($row[$i]) && trim((string) $row[$i]) !== '') {
+                        $imeiValue = trim((string) $row[$i]);
+                        break;
+                    }
+                }
+
+                $stockId = $map['stock_id'] !== null ? ($row[$map['stock_id']] ?? null) : null;
+                if (! $stockId && $imeiValue) {
+                    $stock = Stock_model::withTrashed()
+                        ->where('imei', $imeiValue)
+                        ->orWhere('serial_number', $imeiValue)
+                        ->first();
+                    if ($stock) {
+                        $stockId = $stock->id;
+                    }
+                }
+
                 $price = $row[$map['price']] ?? null;
 
                 $price = is_numeric($price) ? $price : null;
@@ -1578,6 +1615,7 @@ class Order extends Component
                 }
 
                 // Derive target id: explicit id -> sheet linked_id -> linked sale item by stock
+                // Require a resolved id; never create a new auto-increment id
                 if ($id === null || $id === '') {
                     if ($map['linked_id'] !== null && isset($row[$map['linked_id']]) && $row[$map['linked_id']] !== '') {
                         $id = $row[$map['linked_id']];
@@ -1615,7 +1653,7 @@ class Order extends Component
                     'order_id'     => $order_id,
                     'reference_id' => $map['reference_id'] !== null ? ($row[$map['reference_id']] ?? null) : null,
                     'care_id'      => $map['care_id'] !== null ? ($row[$map['care_id']] ?? null) : null,
-                    'reference'    => $map['reference'] !== null ? ($row[$map['reference']] ?? null) : null,
+                    'reference'    => $map['reference'] !== null ? ($row[$map['reference']] ?? null) : ($map['notes'] !== null ? ($row[$map['notes']] ?? null) : null),
                     'variation_id' => $variationId,
                     'stock_id'     => $stockId,
                     'quantity'     => $map['quantity'] !== null ? ($row[$map['quantity']] ?? 1) : 1,
