@@ -92,6 +92,7 @@
                             <th>Variation</th>
                             <th>Count</th>
                             <th>Stock IDs</th>
+                            <th>Candidate Item IDs</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -101,6 +102,14 @@
                                 <td>{{ $group['count'] }}</td>
                                 <td style="max-width:520px; white-space:normal;">
                                     {{ implode(', ', $group['stock_ids']) }}
+                                </td>
+                                <td style="max-width:320px; white-space:normal;">
+                                    @php
+                                        $pairs = collect($group['candidates'])->map(function($c){
+                                            return $c['stock_id'].' → '.($c['id'] ?? 'none');
+                                        })->implode(', ');
+                                    @endphp
+                                    {{ $pairs }}
                                 </td>
                             </tr>
                         @endforeach
