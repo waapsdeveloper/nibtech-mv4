@@ -78,6 +78,39 @@
         </div>
     </div>
 
+    @if($manual_groups && $manual_groups->count())
+    <div class="card mt-3">
+        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+            <h6 class="mb-0">Manual recovery (grouped by first variation from stock operations)</h6>
+            <small class="text-muted">Use this grouping to manually add prices/ids without a sheet.</small>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-sm table-hover text-nowrap mb-0">
+                    <thead>
+                        <tr>
+                            <th>Variation</th>
+                            <th>Count</th>
+                            <th>Stock IDs</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($manual_groups as $group)
+                            <tr>
+                                <td>{{ $group['label'] }} ({{ $group['variation_id'] }})</td>
+                                <td>{{ $group['count'] }}</td>
+                                <td style="max-width:520px; white-space:normal;">
+                                    {{ implode(', ', $group['stock_ids']) }}
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    @endif
+
     @if($import_result)
         <div class="alert alert-info alert-dismissible fade show" role="alert">
             <span class="alert-inner--text"><strong>Import result:</strong> Inserted {{ $import_result['inserted'] }}, updated {{ $import_result['updated'] ?? 0 }}, skipped {{ $import_result['skipped'] }}, errors {{ $import_result['errors'] }}, unmapped {{ $import_result['unmapped'] ?? 0 }}.</span>
