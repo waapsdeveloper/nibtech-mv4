@@ -52,6 +52,12 @@
                         <div class="mb-2">
                             <input class="form-control" type="file" name="recovery_file" accept=".xlsx,.xls,.csv" required>
                         </div>
+                        <div class="form-check mb-2">
+                            <input class="form-check-input" type="checkbox" value="1" id="price_only" name="price_only">
+                            <label class="form-check-label" for="price_only">
+                                Update price only (no new rows; matches by id and keeps variation).
+                            </label>
+                        </div>
                         <button type="submit" class="btn btn-success">Run Import</button>
                     </form>
                 </div>
@@ -74,7 +80,7 @@
 
     @if($import_result)
         <div class="alert alert-info alert-dismissible fade show" role="alert">
-            <span class="alert-inner--text"><strong>Import result:</strong> Inserted {{ $import_result['inserted'] }}, skipped {{ $import_result['skipped'] }}, errors {{ $import_result['errors'] }}, unmapped {{ $import_result['unmapped'] ?? 0 }}.</span>
+            <span class="alert-inner--text"><strong>Import result:</strong> Inserted {{ $import_result['inserted'] }}, updated {{ $import_result['updated'] ?? 0 }}, skipped {{ $import_result['skipped'] }}, errors {{ $import_result['errors'] }}, unmapped {{ $import_result['unmapped'] ?? 0 }}.</span>
             <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
         </div>
     @endif
