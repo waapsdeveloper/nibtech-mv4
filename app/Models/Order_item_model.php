@@ -193,11 +193,18 @@ class Order_item_model extends Model
             }
         }
 
+        $processedIds = [];
+
         foreach ($orderlines as $itemObj) {
+            if (isset($itemObj->id) && in_array($itemObj->id, $processedIds, true)) {
+                continue;
+            }
+
             $orderItem = Order_item_model::firstOrNew([
                 'reference_id' => $itemObj->id,
                 'order_id' => $order_id,
             ]);
+            $processedIds[] = $itemObj->id;
 
             $variation = null;
             if (! empty($itemObj->listing_id)) {
