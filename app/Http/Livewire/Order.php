@@ -1541,18 +1541,20 @@ class Order extends Component
             ->filter()
             ->groupBy(function ($variationId) {
                 return $variationId;
-            })
+            }, true)
             ->map(function ($stockList, $variationId) use ($stockCandidates) {
+                $stockIds = $stockList->keys()->values();
+
                 return [
                     'variation_id' => (int) $variationId,
-                    'stock_ids'    => $stockList->keys()->values()->all(),
+                    'stock_ids'    => $stockIds->all(),
                     'count'        => $stockList->count(),
-                    'candidates'   => $stockList->map(function ($sid) use ($stockCandidates) {
+                    'candidates'   => $stockIds->map(function ($sid) use ($stockCandidates) {
                         return [
                             'stock_id' => $sid,
                             'id'       => $stockCandidates[$sid] ?? null,
                         ];
-                    })->values()->all(),
+                    })->all(),
                 ];
             })
             ->values();
