@@ -251,7 +251,18 @@ class Order_model extends Model
         if(isset($orderObj->order_id)){
             $customer_model = new Customer_model();
             $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
-            
+
+            $currencyId = null;
+            if (! empty($orderObj->currency) && isset($currency_codes[$orderObj->currency])) {
+                $currencyId = (int) $currency_codes[$orderObj->currency];
+            }
+            if (! $currencyId && ! empty($orderObj->currency)) {
+                $currencyId = (int) (Currency_model::where('code', $orderObj->currency)->value('id')
+                    ?? Currency_model::where('sign', $orderObj->currency)->value('id'));
+            }
+            $currencyId = $currencyId
+                ?? Currency_model::orderBy('id')->value('id');
+
             try {
                 // Use updateOrCreate to prevent race conditions - atomic operation
                 $order = Order_model::updateOrCreate(
@@ -263,9 +274,10 @@ class Order_model extends Model
                         // Default values only used when creating new order
                         'order_type_id' => 3,
                         'marketplace_id' => $marketplaceId,
+                        'currency' => $currencyId,
                     ]
                 );
-                
+
                 // Update fields that should always be updated (not just on create)
                 if($order->customer_id == null){
                     $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
@@ -274,7 +286,7 @@ class Order_model extends Model
                 if($order->status == null || $order->status == 0){
                     Log::info("Order status is null", $orderObj);
                 }
-                $order->currency = $currency_codes[$orderObj->currency];
+                $order->currency = $currencyId ?? $order->currency;
                 $order->price = $orderObj->price;
                 $order->delivery_note_url = $orderObj->delivery_note;
                 if($order->label_url == null){
@@ -304,7 +316,7 @@ class Order_model extends Model
                 $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
 
                 $order->save();
-                
+
             } catch (QueryException $e) {
                 // Handle duplicate key exception (race condition)
                 if ($e->getCode() == 23000) {
@@ -313,14 +325,14 @@ class Order_model extends Model
                         'reference_id' => $orderObj->order_id,
                         'marketplace_id' => $marketplaceId,
                     ])->first();
-                    
+
                     if ($order) {
                         Log::warning('Duplicate order creation prevented (race condition)', [
                             'reference_id' => $orderObj->order_id,
                             'marketplace_id' => $marketplaceId,
                             'order_id' => $order->id,
                         ]);
-                        
+
                         // Continue with update flow
                         if($order->customer_id == null){
                             $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
@@ -433,7 +445,7 @@ class Order_model extends Model
         }
 
         $marketplaceId = 4;
-        
+
         try {
             // Use updateOrCreate to prevent race conditions - atomic operation
             $order = Order_model::updateOrCreate(
@@ -448,7 +460,7 @@ class Order_model extends Model
                     'currency' => $currencyId,
                 ]
             );
-            
+
             // Update fields that should always be updated (not just on create)
             if (! $order->reference) {
                 $order->reference = $orderData['id'] ?? null;
@@ -486,7 +498,7 @@ class Order_model extends Model
             if (! empty($orderData['updated_at'])) {
                 $order->updated_at = Carbon::parse($orderData['updated_at'])->format('Y-m-d H:i:s');
             }
-            
+
         } catch (QueryException $e) {
             // Handle duplicate key exception (race condition)
             if ($e->getCode() == 23000) {
@@ -495,14 +507,14 @@ class Order_model extends Model
                     'reference_id' => $orderNumber,
                     'marketplace_id' => $marketplaceId,
                 ])->first();
-                
+
                 if ($order) {
                     Log::warning('Duplicate Refurbed order creation prevented (race condition)', [
                         'reference_id' => $orderNumber,
                         'marketplace_id' => $marketplaceId,
                         'order_id' => $order->id,
                     ]);
-                    
+
                     // Continue with update flow
                     if (! $order->reference) {
                         $order->reference = $orderData['id'] ?? null;
@@ -825,7 +837,7 @@ class Order_model extends Model
                     'status' => $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null),
                 ]
             );
-            
+
             // Update fields that should always be updated (not just on create)
             $order->currency = $currencyId ?? $order->currency;
             $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
@@ -865,7 +877,7 @@ class Order_model extends Model
             }
 
             $order->save();
-            
+
         } catch (QueryException $e) {
             // Handle duplicate key exception (race condition)
             if ($e->getCode() == 23000) {
@@ -874,14 +886,14 @@ class Order_model extends Model
                     'reference_id' => $orderNumber,
                     'marketplace_id' => $marketplaceId,
                 ])->first();
-                
+
                 if ($order) {
                     Log::warning('Duplicate BMPRO order creation prevented (race condition)', [
                         'reference_id' => $orderNumber,
                         'marketplace_id' => $marketplaceId,
                         'order_id' => $order->id,
                     ]);
-                    
+
                     // Continue with update flow
                     $order->currency = $currencyId ?? $order->currency;
                     $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
