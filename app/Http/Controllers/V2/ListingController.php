@@ -922,89 +922,169 @@ class ListingController extends Controller
         };
 
         // Calculate today's summary
-        $todayAvg = Order_item_model::where('variation_id', $variationId)
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
+        // Use same currency conversion logic as variation card for consistency
+        $todayOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->startOfDay(), now()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $todayCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->startOfDay(), now()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $todayTotal = $todayOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $todayCount = $todayOrders->count();
+        $todayAvg = $todayCount > 0 ? $todayTotal / $todayCount : 0;
 
         // Calculate yesterday's summary
-        $yesterdayAvg = Order_item_model::where('variation_id', $variationId)
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
+        // Use same currency conversion logic as variation card for consistency
+        $yesterdayOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $yesterdayCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->yesterday()->startOfDay(), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $yesterdayTotal = $yesterdayOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $yesterdayCount = $yesterdayOrders->count();
+        $yesterdayAvg = $yesterdayCount > 0 ? $yesterdayTotal / $yesterdayCount : 0;
 
         // Calculate 7 days summary
-        $last7DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
+        // Use same currency conversion logic as variation card for consistency
+        $last7DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
+                $q->whereBetween('created_at', [now()->subDays(7)->startOfDay(), now()->yesterday()->endOfDay()])
+                  ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last7DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->subDays(7), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last7DaysTotal = $last7DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last7DaysCount = $last7DaysOrders->count();
+        $last7DaysAvg = $last7DaysCount > 0 ? $last7DaysTotal / $last7DaysCount : 0;
 
         // Calculate 14 days summary
-        $last14DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
+        // Use same currency conversion logic as variation card for consistency
+        $last14DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last14DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->subDays(14), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last14DaysTotal = $last14DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last14DaysCount = $last14DaysOrders->count();
+        $last14DaysAvg = $last14DaysCount > 0 ? $last14DaysTotal / $last14DaysCount : 0;
 
         // Calculate 30 days summary
-        $last30DaysAvg = Order_item_model::where('variation_id', $variationId)
+        // For Backmarket (marketplace_id = 1), include orders with marketplace_id = null OR 1
+        // For other marketplaces, only that specific marketplace_id
+        // Use same currency conversion logic as variation card for consistency
+        $last30DaysOrders = Order_item_model::where('variation_id', $variationId)
             ->whereHas('order', function($q) use ($marketplaceId) {
+                if ($marketplaceId == 1) {
+                    // Backmarket: include null and 1
+                    $q->where(function($query) {
+                        $query->whereNull('marketplace_id')
+                              ->orWhere('marketplace_id', 1);
+                    });
+                } else {
+                    // Other marketplaces: only that specific ID
+                    $q->where('marketplace_id', $marketplaceId);
+                }
                 $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
+                  ->where('order_type_id', 3);
             })
-            ->avg('price');
+            ->with('order.currency_id')
+            ->get();
 
-        $last30DaysCount = Order_item_model::where('variation_id', $variationId)
-            ->whereHas('order', function($q) use ($marketplaceId) {
-                $q->whereBetween('created_at', [now()->subDays(30), now()->yesterday()->endOfDay()])
-                  ->where('order_type_id', 3)
-                  ->where('marketplace_id', $marketplaceId);
-            })
-            ->count();
+        // Convert prices to EUR and calculate average (same logic as variation card)
+        $last30DaysTotal = $last30DaysOrders->sum(function($item) {
+            if ($item->order && $item->order->currency != 4 && $item->order->currency_id) {
+                $rate = ExchangeRate::where('target_currency', $item->order->currency_id->code)->first()?->rate ?? 1;
+                return $item->price / $rate;
+            }
+            return $item->price;
+        });
+        $last30DaysCount = $last30DaysOrders->count();
+        $last30DaysAvg = $last30DaysCount > 0 ? $last30DaysTotal / $last30DaysCount : 0;
 
         // Format the summary string with today and yesterday
         return sprintf(
@@ -1049,6 +1129,11 @@ class ListingController extends Controller
             }
         }
         $variation = Variation_model::with('available_stocks')->find($id);
+        
+        // FIX: Store current listed_stock BEFORE update_qty() overwrites it with API value
+        // This ensures we use the actual current value (e.g., 277) instead of API value (e.g., 475)
+        $current_listed_stock = (int)($variation->listed_stock ?? 0);
+        
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
 
@@ -1074,113 +1159,127 @@ class ListingController extends Controller
             if($check_active_verification != null){
                 $new_quantity = $stock - $pending_orders;
                 }else{
-                if($process_id != null && $previous_qty < 0 && $pending_orders == 0){
-                    // Special case: if previous_qty was negative and no pending orders, use stock directly
+                if($process_id != null && $current_listed_stock < 0 && $pending_orders == 0){
+                    // Special case: if current_listed_stock was negative and no pending orders, use stock directly
                     $new_quantity = $stock;
                 }else{
-                    // Normal case: add/subtract stock to/from previous quantity
-                    // If stock is -1, this will subtract 1 from previous_qty
-                    $new_quantity = $previous_qty + $stock;
+                    // FIX: Use current_listed_stock (before API overwrite) instead of previous_qty (from API)
+                    // This ensures we calculate from the actual current value, not the API value
+                    // Normal case: add/subtract stock to/from current listed stock
+                    // If stock is -1, this will subtract 1 from current_listed_stock
+                    $new_quantity = $current_listed_stock + $stock;
                 }
             }
         }
 
-        // Use V2 MarketplaceAPIService (applies buffer automatically)
-        // Default to Back Market (marketplace_id = 1) for backward compatibility
-        $response = $this->marketplaceAPIService->updateStock($variation->id, 1, $new_quantity);
-        if(is_string($response) || is_int($response) || is_null($response)){
-            Log::error("Error updating quantity for variation ID $id: $response");
-            return response()->json([
-                'error' => 'Error updating quantity',
-                'message' => is_string($response) ? $response : 'Unknown error'
-            ], 500);
-        }
-
-        // Check if response is valid object and has quantity property
-        $responseQuantity = null;
-        if($response && is_object($response) && isset($response->quantity)){
-            $responseQuantity = $response->quantity;
-        } elseif($response && is_array($response) && isset($response['offer']['stock'])){
-            // Refurbed response format
-            $responseQuantity = $response['offer']['stock'];
-        } else {
-            // If API response doesn't have quantity, use the buffered quantity
-            // Get the buffered quantity that was actually sent
-            $marketplaceStock = MarketplaceStockModel::where([
-                'variation_id' => $variation->id,
-                'marketplace_id' => 1
-            ])->first();
-            
-            if ($marketplaceStock && $marketplaceStock->last_api_quantity !== null) {
-                $responseQuantity = $marketplaceStock->last_api_quantity;
-            } else {
-                // Fallback: calculate buffered quantity
-                $bufferedQuantity = $this->marketplaceAPIService->getAvailableStockWithBuffer($variation->id, 1);
-                $responseQuantity = $bufferedQuantity > 0 ? $bufferedQuantity : $new_quantity;
-            }
-            
-            Log::warning("V2 ListingController: API response missing quantity property for variation ID $id, using calculated value: $responseQuantity", [
-                'api_response' => $response,
-                'response_type' => gettype($response),
-                'calculated_quantity' => $new_quantity,
-            ]);
-        }
-
-        if($responseQuantity != null){
-            $oldStock = $variation->listed_stock;
-            $variation->listed_stock = $responseQuantity;
-            $variation->save();
-
-            // Calculate stock change
-            if($setExactStock && $exactStockValue !== null){
-                // For exact stock set: calculate the difference
-                $stockChange = $responseQuantity - $oldStock;
-            } else {
-                // For normal addition: use the stock parameter
-                $stockChange = (int)$stock;
-            }
-
-            // Distribute stock to marketplaces based on formulas (synchronously)
-            if($stockChange != 0){
-                // Call distribution service directly to ensure it completes before response
-                // Pass flag to ignore remaining stock if it's an exact set
-                $this->stockDistributionService->distributeStock(
-                    $variation->id,
-                    $stockChange,
-                    $responseQuantity, // Pass total stock for formulas that use apply_to: total
-                    $setExactStock // Pass flag to ignore remaining stock
+        // FIX: For manual pushes, add to manual_adjustment column instead of updating API
+        // This keeps manual adjustments separate from API-synced stock
+        // listed_stock = sum of marketplace stocks (from API/distribution)
+        // manual_adjustment = manual pushes (separate tracking)
+        // Total = listed_stock + manual_adjustment
+        // This keeps manual adjustments separate from API-synced stock
+        // Manual pushes go to marketplace 1 (BackMarket) only
+        $stockChange = (int)$stock; // The pushed value (e.g., +1 or -1)
+        
+        if($stockChange != 0){
+                // Get or create marketplace stock for BackMarket (marketplace_id = 1)
+                $marketplace1Stock = MarketplaceStockModel::firstOrCreate(
+                    [
+                        'variation_id' => $variation->id,
+                        'marketplace_id' => 1
+                    ],
+                    [
+                        'listed_stock' => 0,
+                        'manual_adjustment' => 0,
+                        'locked_stock' => 0,
+                        'admin_id' => session('user_id') ?? 1
+                    ]
                 );
-
-                // Note: Event listener is disabled to prevent double distribution
-                // Distribution is done synchronously above to ensure it completes before response
-                // If you need event logging, add it here without triggering distribution
-            }
-
-            // Get updated marketplace stocks after distribution
-            $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variation->id)
-                ->get()
-                ->mapWithKeys(function($stock) {
-                    return [$stock->marketplace_id => $stock->listed_stock];
-                });
-        } else {
-            $marketplaceStocks = collect();
+                
+                // Add the pushed value to manual_adjustment (separate from listed_stock)
+                $oldManualAdjustment = (int)($marketplace1Stock->manual_adjustment ?? 0);
+                $newManualAdjustment = $oldManualAdjustment + $stockChange;
+                $marketplace1Stock->manual_adjustment = $newManualAdjustment;
+                $marketplace1Stock->admin_id = session('user_id') ?? 1;
+                $marketplace1Stock->save();
+                
+                // Log to history
+                \App\Models\V2\MarketplaceStockHistory::create([
+                    'marketplace_stock_id' => $marketplace1Stock->id,
+                    'variation_id' => $variation->id,
+                    'marketplace_id' => 1,
+                    'listed_stock_before' => $marketplace1Stock->listed_stock,
+                    'listed_stock_after' => $marketplace1Stock->listed_stock, // listed_stock doesn't change
+                    'locked_stock_before' => $marketplace1Stock->locked_stock ?? 0,
+                    'locked_stock_after' => $marketplace1Stock->locked_stock ?? 0,
+                    'available_stock_before' => $marketplace1Stock->available_stock ?? 0,
+                    'available_stock_after' => $marketplace1Stock->available_stock ?? 0,
+                    'quantity_change' => $stockChange,
+                    'change_type' => 'manual',
+                    'admin_id' => session('user_id') ?? 1,
+                    'notes' => "Manual stock adjustment: " . ($stockChange > 0 ? '+' : '') . $stockChange . " (pushed value)"
+                ]);
         }
+
+        // Get updated marketplace stocks (including manual_adjustment) AFTER saving
+        // This ensures we have the correct values after the manual adjustment was saved
+        $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->get()
+            ->mapWithKeys(function($stock) {
+                // Return total: listed_stock + manual_adjustment for display
+                $total = (int)($stock->listed_stock ?? 0) + (int)($stock->manual_adjustment ?? 0);
+                return [$stock->marketplace_id => $total];
+            });
+        
+        // Create distribution preview from actual updated stocks (for consistency)
+        // This ensures preview matches the actual saved values
+        $distributionPreview = [];
+        if($stockChange != 0){
+            foreach($marketplaceStocks as $marketplaceId => $totalStock){
+                $mpStock = MarketplaceStockModel::where('variation_id', $variation->id)
+                    ->where('marketplace_id', $marketplaceId)
+                    ->first();
+                if($mpStock){
+                    $distributionPreview[$marketplaceId] = [
+                        'listed_stock' => (int)($mpStock->listed_stock ?? 0),
+                        'manual_adjustment' => (int)($mpStock->manual_adjustment ?? 0),
+                        'total' => $totalStock
+                    ];
+                }
+            }
+        }
+
+        // Calculate total stock: sum of listed_stock + sum of manual_adjustment
+        $totalListedStock = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('listed_stock');
+        $totalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('manual_adjustment');
+        $calculatedTotalStock = (int)$totalListedStock + (int)$totalManualAdjustment;
+        
+        // Update variation.listed_stock to match calculated total (for backward compatibility)
+        $variation->listed_stock = $calculatedTotalStock;
+        $variation->save();
 
         $listed_stock_verification = new Listed_stock_verification_model();
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
         $listed_stock_verification->pending_orders = $pending_orders;
-        $listed_stock_verification->qty_from = $previous_qty;
+        // FIX: Use current_listed_stock (before API overwrite) for qty_from to show actual value before push
+        $listed_stock_verification->qty_from = $current_listed_stock;
         $listed_stock_verification->qty_change = $stock;
-        $listed_stock_verification->qty_to = $responseQuantity ?? 0;
+        // FIX: Use calculated total (listed_stock + manual_adjustment) instead of API response
+        $listed_stock_verification->qty_to = $calculatedTotalStock;
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
 
         // Always return JSON response for V2 API
+        // Include distribution preview for instant frontend feedback
         return response()->json([
-            'quantity' => (int)($responseQuantity ?? 0),
-            'total_stock' => (int)($responseQuantity ?? 0),
-            'marketplace_stocks' => $marketplaceStocks->toArray()
+            'quantity' => $calculatedTotalStock,
+            'total_stock' => $calculatedTotalStock, // Total = listed_stock + manual_adjustment
+            'marketplace_stocks' => $marketplaceStocks->toArray(),
+            'distribution_preview' => $distributionPreview, // Preview of how stock would be distributed (for instant UI update)
+            'stock_change' => $stockChange // The pushed value for reference
         ]);
     }
 

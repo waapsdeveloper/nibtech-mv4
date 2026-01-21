@@ -45,9 +45,11 @@
     $productModel = $variation->product->model ?? 'N/A';
     $productId = $variation->product_id ?? 0;
     // Calculate total stock and available stock from all marketplaces
-    // Total Stock = Sum of all marketplace listed_stock
-    // Available Stock = Sum of all marketplace listed_stock (no locked stock calculation for simplicity)
+    // Total Stock = Sum of all marketplace listed_stock + Sum of all marketplace manual_adjustment
+    // listed_stock = API-synced stock (from distribution)
+    // manual_adjustment = Manual pushes (separate from API)
     $totalStock = 0;
+    $totalManualAdjustment = 0;
     $totalAvailableStock = 0;
     if(isset($marketplaces) && count($marketplaces) > 0) {
         foreach($marketplaces as $mpId => $mp) {
@@ -57,7 +59,9 @@
                 ->first();
             if($marketplaceStock) {
                 $listedStock = (int)($marketplaceStock->listed_stock ?? 0);
+                $manualAdjustment = (int)($marketplaceStock->manual_adjustment ?? 0);
                 $totalStock += $listedStock;
+                $totalManualAdjustment += $manualAdjustment;
                 
                 // Calculate available stock for this marketplace (simplified: just use listed_stock, no locked calculation)
                 $availableStock = $listedStock;
@@ -65,8 +69,11 @@
             }
         }
     }
+    // Add manual adjustments to total stock
+    $totalStock = $totalStock + $totalManualAdjustment;
+    
     // Fallback to variation.listed_stock if no marketplace stock exists yet
-    if($totalStock == 0) {
+    if($totalStock == 0 && $totalManualAdjustment == 0) {
         $totalStock = $variation->listed_stock ?? 0;
     }
     

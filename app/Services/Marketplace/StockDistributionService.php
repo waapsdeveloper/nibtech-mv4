@@ -3,6 +3,7 @@
 namespace App\Services\Marketplace;
 
 use App\Models\MarketplaceStockModel;
+use App\Models\V2\MarketplaceStockModel as V2MarketplaceStockModel;
 use App\Models\Marketplace_model;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
@@ -46,9 +47,18 @@ class StockDistributionService
         $remainingStock = abs($stockChange); // Use abs only for tracking remaining amount to process
 
         // Get variation to determine total stock if needed
+        // IMPORTANT: Use sum of listed_stock only (exclude manual_adjustment from distribution calculations)
+        // manual_adjustment is a separate offset that should not affect distribution formulas
         $variation = \App\Models\Variation_model::find($variationId);
         if (!$totalStock && $variation) {
-            $totalStock = $variation->listed_stock;
+            // Calculate total as sum of listed_stock only (not including manual_adjustment)
+            // This ensures distribution formulas work on API-synced stock only
+            $totalStock = V2MarketplaceStockModel::where('variation_id', $variationId)
+                ->sum('listed_stock');
+            // Fallback to variation.listed_stock if no marketplace stocks exist
+            if ($totalStock == 0) {
+                $totalStock = $variation->listed_stock;
+            }
         }
 
         // Check min_stock_required before allowing additions (check marketplace stock first, then defaults)
@@ -251,10 +261,14 @@ class StockDistributionService
                     $newValue = $oldValue + $actualDistribution;
                 }
 
-                // Store reserve values
+                // IMPORTANT: Only update listed_stock (never touch manual_adjustment)
+                // Distribution calculates based on listed_stock only (manual_adjustment is separate)
+                // When API is updated, it will be updated with listed_stock value (not including manual_adjustment)
+                // Total displayed = listed_stock + manual_adjustment
                 $marketplaceStock->reserve_old_value = $oldValue;
                 $marketplaceStock->listed_stock = $newValue;
                 $marketplaceStock->reserve_new_value = $newValue;
+                // NOTE: manual_adjustment is NOT touched - it's a separate offset
                 $marketplaceStock->save();
 
                 $totalDistributed += $actualDistribution;

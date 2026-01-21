@@ -18,6 +18,7 @@ class MarketplaceStockModel extends Model
         'variation_id',
         'marketplace_id',
         'listed_stock',
+        'manual_adjustment',
         'locked_stock',
         'available_stock',
         'buffer_percentage',
