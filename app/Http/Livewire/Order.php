@@ -138,7 +138,26 @@ class Order extends Component
             }
         }
 
-        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions', 'order_charges'])
+        // Removed 'customer.orders' from eager loading - it was loading ALL orders for each customer causing massive performance issues
+        // Instead, we'll load customer orders separately with constraints (only recent orders, max 50 per customer)
+        $orders = Order_model::with([
+            'customer' => function($query) {
+                // Load customer with constrained orders (only recent orders, max 50 to prevent performance issues)
+                $query->with(['orders' => function($q) {
+                    $q->where('order_type_id', 3)
+                      ->orderBy('created_at', 'desc')
+                      ->limit(50); // Limit to 50 most recent orders per customer
+                }]);
+            },
+            'order_items',
+            'order_items.variation',
+            'order_items.variation.product',
+            'order_items.variation.grade_id',
+            'order_items.stock',
+            'order_items.replacement',
+            'transactions',
+            'order_charges'
+        ])
         // ->where('orders.order_type_id',3)
         ->when(request('marketplace') != null && request('marketplace') != 0, function ($q) {
             return $q->where('marketplace_id', request('marketplace'));
