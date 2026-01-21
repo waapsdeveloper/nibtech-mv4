@@ -12,7 +12,7 @@
         </div>
         <div class="tx-center">
             <h5 class="mb-1">Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name ?? 'N/A' }}</h5>
-            <h6 class="mb-0">Items (current): {{ $current_count }} | Backup rows: {{ $backup_count }}</h6>
+            <h6 class="mb-0">Items (current): {{ $current_count }}</h6>
         </div>
     </div>
 
@@ -46,7 +46,7 @@
             <div class="card">
                 <div class="card-body">
                     <h6 class="mb-3">Import from Excel</h6>
-                    <p class="mb-3">Uploads the original purchase sheet and inserts rows using the sheet's <strong>ID</strong> values; if an ID is missing, it will try to derive it from linked sold items by <code>stock_id</code>.</p>
+                    <p class="mb-3">Uploads the original purchase sheet (same format as add purchase: name / imei / cost) and inserts rows using the sheet's <strong>ID</strong> values; if an ID is missing, it will try to derive it from linked sold items by <code>stock_id</code>.</p>
                     <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/import' }}" enctype="multipart/form-data" onsubmit="return confirm('Proceed with recovery import?');">
                         @csrf
                         <div class="mb-2">
@@ -62,9 +62,10 @@
                 <div class="card-body">
                     <h6 class="mb-3">Required columns</h6>
                     <ul class="mb-0">
-                        <li><strong>stock_id</strong> (used to link variation and derive missing ids)</li>
-                        <li><strong>price</strong> (purchase cost)</li>
-                        <li>Optional: id (overrides auto-derivation), linked_id (candidate id), reference_id, variation_id, quantity, currency, discount, status, admin_id, care_id, reference, created_at, updated_at, deleted_at</li>
+                        <li><strong>name</strong> (model text)</li>
+                        <li><strong>imei</strong> (IMEI/serial; multiple IMEI columns supported)</li>
+                        <li><strong>cost</strong> (purchase cost)</li>
+                        <li>Optional: id (overrides auto-derivation), linked_id (candidate id), stock_id (will be derived via imei if missing), reference_id, variation_id, quantity, currency, discount, status, admin_id, care_id, reference/notes, created_at, updated_at, deleted_at</li>
                     </ul>
                 </div>
             </div>
