@@ -299,6 +299,29 @@
 
                                 return $itm;
                             });
+                            $currentSum = $orderItems->reduce(function ($carry, $itm) {
+                                $price = $itm->price ?? $itm->selling_price ?? 0;
+                                $qty = (int) ($itm->quantity ?? 1);
+                                $qty = $qty > 0 ? $qty : 1;
+                                return $carry + ($price * $qty);
+                            }, 0);
+                            if (($order->price ?? 0) > 0 && abs($currentSum - (float) $order->price) >= 0.01) {
+                                $totalUnits = $orderItems->reduce(function ($carry, $itm) {
+                                    $qty = (int) ($itm->quantity ?? 1);
+                                    return $carry + ($qty > 0 ? $qty : 1);
+                                }, 0);
+                                $totalUnits = $totalUnits > 0 ? $totalUnits : $orderItems->count();
+                                if ($totalUnits > 0) {
+                                    $unit = round((float) $order->price / $totalUnits, 2);
+                                    $orderItems = $orderItems->map(function ($itm) use ($unit) {
+                                        $itm->price = $unit;
+                                        if (! $itm->selling_price) {
+                                            $itm->selling_price = $unit;
+                                        }
+                                        return $itm;
+                                    });
+                                }
+                            }
                             $orderValue = $order && isset($order->price) ? number_format((float) $order->price, 2) : null;
                             $orderCurrency = $order?->currency_id->sign
                                 ?? $order?->currency_id->code

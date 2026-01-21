@@ -1588,9 +1588,7 @@ class SupportTickets extends Component
 
         $orderTotal = (float) ($order->price ?? 0);
 
-        if ($includeReplacements) {
-            $collection = $this->rebalanceReplacementPrices($collection, $orderTotal);
-        }
+        $collection = $this->rebalanceCollectionPrices($collection, $orderTotal);
 
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
@@ -1617,32 +1615,44 @@ class SupportTickets extends Component
         });
     }
 
-    protected function rebalanceReplacementPrices($collection, float $orderTotal)
+    protected function rebalanceCollectionPrices($collection, float $orderTotal)
     {
         if ($orderTotal <= 0) {
             return $collection;
         }
 
-        $count = $collection->count();
+        $totalUnits = $collection->reduce(function ($carry, $itm) {
+            $qty = (int) ($itm->quantity ?? 1);
+            return $carry + ($qty > 0 ? $qty : 1);
+        }, 0);
 
-        if ($count === 0) {
+        if ($totalUnits <= 0) {
+            $totalUnits = $collection->count();
+        }
+
+        if ($totalUnits <= 0) {
             return $collection;
         }
 
         $currentSum = $collection->reduce(function ($carry, $itm) {
             $price = $itm->price ?? $itm->selling_price ?? 0;
-            return $carry + (float) $price;
+            $qty = (int) ($itm->quantity ?? 1);
+            $qty = $qty > 0 ? $qty : 1;
+
+            return $carry + ((float) $price * $qty);
         }, 0.0);
 
         if (abs($currentSum - $orderTotal) < 0.01) {
             return $collection;
         }
 
-        $unit = round($orderTotal / $count, 2);
+        $unit = round($orderTotal / $totalUnits, 2);
 
         return $collection->map(function ($itm) use ($unit) {
             $itm->price = $unit;
-            $itm->selling_price = $itm->selling_price ?? $unit;
+            if ($itm->selling_price === null || $itm->selling_price <= 0) {
+                $itm->selling_price = $unit;
+            }
 
             return $itm;
         });
