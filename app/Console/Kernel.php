@@ -29,14 +29,16 @@ class Kernel extends ConsoleKernel
     {
         // $schedule->command('inspire')->hourly();
         // $schedule->command('tenant:cron')->everyMinute();
+        // Staggered schedule to avoid connection spikes (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
+        // Every-5-min commands at :01–:04; every-10-min at :05–:09.
         $schedule->command('price:handler')
-            ->everyTenMinutes()
+            ->cron('1,11,21,31,41,51 * * * *') // ~every 10 min at :01, :11, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         $schedule->command('refresh:latest')
-            ->everyFiveMinutes()
+            ->cron('2,7,12,17,22,27,32,37,42,47,52,57 * * * *') // every 5 min at :02, :07, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
@@ -48,25 +50,26 @@ class Kernel extends ConsoleKernel
             ->runInBackground();
 
         $schedule->command('refresh:orders')
-            ->everyFiveMinutes()
+            ->cron('3,8,13,18,23,28,33,38,43,48,53,58 * * * *') // every 5 min at :03, :08, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+
         $schedule->command('refurbed:new')
-            ->everyFiveMinutes()
+            ->cron('4,9,14,19,24,29,34,39,44,49,54,59 * * * *') // every 5 min at :04, :09, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         $schedule->command('refurbed:orders')
-            ->hourly();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
-        $schedule->command('refurbed:link-tickets')
-            ->everyTenMinutes()
+            ->hourly()
             ->withoutOverlapping()
+            ->onOneServer();
+
+        $schedule->command('refurbed:link-tickets')
+            ->cron('5,15,25,35,45,55 * * * *') // ~every 10 min at :05, :15, …
+            ->withoutOverlapping()
+            ->onOneServer()
             ->runInBackground();
         // $schedule->command('refurbed:update-stock')
         //     ->everyThirtyMinutes()
@@ -80,50 +83,44 @@ class Kernel extends ConsoleKernel
         //     ->onOneServer()
         //     ->runInBackground();
         $schedule->command('functions:ten')
-            ->everyTenMinutes()
+            ->cron('6,16,26,36,46,56 * * * *') // ~every 10 min at :06, :16, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
+
         $schedule->command('functions:thirty')
-            ->hourly();
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+            ->hourly()
+            ->withoutOverlapping()
+            ->onOneServer()
+            ->runInBackground();
 
         $schedule->command('backup:email')
             ->hourly()
             ->between('6:00', '02:00');
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
 
         $schedule->command('functions:daily')
             ->everyFourHours();
-            // ->between('6:00', '02:00')
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
+
         $schedule->command('fetch:exchange-rates')
             ->hourly()
             ->between('6:00', '02:00');
-            // ->withoutOverlapping()
-            // ->onOneServer()
-            // ->runInBackground();
 
         $schedule->command('api-request:process')
-            ->everyFiveMinutes()
+            ->cron('0,5,10,15,20,25,30,35,40,45,50,55 * * * *') // every 5 min at :00, :05, … (offset from others)
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         $schedule->command('support:sync')
-            ->everyTenMinutes()
+            ->cron('7,17,27,37,47,57 * * * *') // ~every 10 min at :07, :17, …
             ->withoutOverlapping()
+            ->onOneServer()
             ->runInBackground();
 
         $schedule->command('bmpro:orders')
-            ->everyTenMinutes()
+            ->cron('8,18,28,38,48,58 * * * *') // ~every 10 min at :08, :18, …
             ->withoutOverlapping()
+            ->onOneServer()
             ->runInBackground();
 
         // V2: Marketplace Stock Sync (6-hour interval per marketplace with staggered scheduling)
@@ -188,10 +185,10 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // Retry failed jobs - every 30 minutes
-        $schedule->command('queue:retry all')
-            ->everyThirtyMinutes()
-            ->runInBackground();
+        // queue:retry all removed from schedule (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
+        // Retrying all failed jobs at once can spike connections. Run manually when needed:
+        //   php artisan queue:retry all
+        // or retry specific job IDs: php artisan queue:retry <id>
     }
 
     /**
