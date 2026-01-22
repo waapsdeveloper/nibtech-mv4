@@ -2006,10 +2006,7 @@ class Order extends Component
 
                 $stockIdRaw = $parts[0];
                 $costRaw = $parts[1];
-                $stockId = Stock_model::where('imei', $stockIdRaw)
-                    ->orWhere('serial_number', $stockIdRaw)
-                    ->first()
-                    ?->id;
+                $stockId = is_numeric($stockIdRaw) ? (int) $stockIdRaw : null;
                 $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
 
                 return [
@@ -2022,8 +2019,6 @@ class Order extends Component
             })
             ->filter()
             ->values();
-        session()->put('parsed_rows', $rows);
-        return redirect()->back();
         $invalidRows = $rows->whereNotNull('error');
         $rows = $rows->whereNull('error')->values();
 
