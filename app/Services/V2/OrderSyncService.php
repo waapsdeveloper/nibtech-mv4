@@ -11,6 +11,7 @@ use App\Events\V2\OrderCreated;
 use App\Events\V2\OrderStatusChanged;
 use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Database\QueryException;
 use Carbon\Carbon;
 
 /**
@@ -24,14 +25,29 @@ class OrderSyncService
 
     public function __construct()
     {
-        $this->currencyCodes = Currency_model::pluck('id', 'code')->toArray();
-        $this->countryCodes = Country_model::pluck('id', 'code')->toArray();
+        try {
+            $this->currencyCodes = Currency_model::pluck('id', 'code')->toArray();
+        } catch (QueryException $e) {
+            Log::error('OrderSyncService: Failed to load currency codes', [
+                'error' => $e->getMessage(),
+            ]);
+            $this->currencyCodes = [];
+        }
+
+        try {
+            $this->countryCodes = Country_model::pluck('id', 'code')->toArray();
+        } catch (QueryException $e) {
+            Log::error('OrderSyncService: Failed to load country codes', [
+                'error' => $e->getMessage(),
+            ]);
+            $this->countryCodes = [];
+        }
     }
 
     /**
      * Sync a single order from marketplace API response
      * Fires OrderCreated event if new, OrderStatusChanged if status changed
-     * 
+     *
      * @param object $orderObj Order object from marketplace API
      * @param object $apiController Marketplace API controller instance
      * @param bool $fireEvents Whether to fire events (default: true)
@@ -43,31 +59,80 @@ class OrderSyncService
             Log::warning('OrderSyncService: Order object missing order_id', [
                 'order_obj' => $orderObj
             ]);
-            
+
             // Send warning to Slack
             SlackLogService::post('order_sync', 'warning', "Order object missing order_id", [
                 'order_obj_keys' => is_object($orderObj) ? array_keys((array)$orderObj) : 'not_object'
             ]);
-            
+
             return null;
         }
 
         $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
-        
-        // Find or create order
-        $order = Order_model::firstOrNew([
+
+        // Check if order exists before creating/updating (for event firing)
+        $existingOrder = Order_model::where([
             'reference_id' => $orderObj->order_id,
             'marketplace_id' => $marketplaceId,
-        ]);
+        ])->first();
 
-        $isNewOrder = !$order->exists;
-        $oldStatus = $order->status;
+        $isNewOrder = $existingOrder === null;
+        $oldStatus = $existingOrder ? $existingOrder->status : null;
 
-        // Update order data
-        $this->updateOrderData($order, $orderObj, $apiController, $marketplaceId);
-        
-        // Save order
-        $order->save();
+        try {
+            // Use updateOrCreate to prevent race conditions - atomic operation
+            $order = Order_model::updateOrCreate(
+                [
+                    'reference_id' => $orderObj->order_id,
+                    'marketplace_id' => $marketplaceId,
+                ],
+                [
+                    // Default values only used when creating new order
+                    'marketplace_id' => $marketplaceId,
+                ]
+            );
+
+            // Update order data
+            $this->updateOrderData($order, $orderObj, $apiController, $marketplaceId);
+
+            // Save order
+            $order->save();
+
+        } catch (QueryException $e) {
+            // Handle duplicate key exception (race condition)
+            if ($e->getCode() == 23000) {
+                // Duplicate entry - fetch existing order and continue
+                $order = Order_model::where([
+                    'reference_id' => $orderObj->order_id,
+                    'marketplace_id' => $marketplaceId,
+                ])->first();
+
+                if ($order) {
+                    Log::warning('OrderSyncService: Duplicate order creation prevented (race condition)', [
+                        'reference_id' => $orderObj->order_id,
+                        'marketplace_id' => $marketplaceId,
+                        'order_id' => $order->id,
+                    ]);
+
+                    $isNewOrder = false;
+                    $oldStatus = $order->status;
+
+                    // Continue with update flow
+                    $this->updateOrderData($order, $orderObj, $apiController, $marketplaceId);
+                    $order->save();
+                } else {
+                    // Order not found even after duplicate error - log and re-throw
+                    Log::error('OrderSyncService: Duplicate order error but order not found after retry', [
+                        'reference_id' => $orderObj->order_id,
+                        'marketplace_id' => $marketplaceId,
+                    ]);
+                    throw $e;
+                }
+            } else {
+                // Other database errors - re-throw
+                throw $e;
+            }
+        }
 
         // Sync order items
         $orderItems = $this->syncOrderItems($order, $orderObj, $apiController);
@@ -115,13 +180,13 @@ class OrderSyncService
 
         // Map order status
         $order->status = $this->mapStateToStatus($orderObj);
-        
+
         if ($order->status === null) {
             Log::warning('OrderSyncService: Order status is null', [
                 'order_id' => $orderObj->order_id,
                 'order_obj' => $orderObj
             ]);
-            
+
             // Send warning to Slack
             SlackLogService::post('order_sync', 'warning', "Order status is null", [
                 'order_id' => $orderObj->order_id,
@@ -180,10 +245,10 @@ class OrderSyncService
         }
 
         $orderItemModel = new Order_item_model();
-        
+
         // Update order items (this method handles all items in the order)
         $orderItemModel->updateOrderItemsInDB($orderObj, null, $apiController);
-        
+
         // Get all order items for this order
         $orderItems = Order_item_model::where('order_id', $order->id)->get();
 

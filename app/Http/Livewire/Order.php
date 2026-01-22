@@ -138,7 +138,26 @@ class Order extends Component
             }
         }
 
-        $orders = Order_model::with(['customer','customer.orders','order_items','order_items.variation','order_items.variation.product', 'order_items.variation.grade_id', 'order_items.stock', 'order_items.replacement', 'transactions', 'order_charges'])
+        // Removed 'customer.orders' from eager loading - it was loading ALL orders for each customer causing massive performance issues
+        // Instead, we'll load customer orders separately with constraints (only recent orders, max 50 per customer)
+        $orders = Order_model::with([
+            'customer' => function($query) {
+                // Load customer with constrained orders (only recent orders, max 50 to prevent performance issues)
+                $query->with(['orders' => function($q) {
+                    $q->where('order_type_id', 3)
+                      ->orderBy('created_at', 'desc')
+                      ->limit(50); // Limit to 50 most recent orders per customer
+                }]);
+            },
+            'order_items',
+            'order_items.variation',
+            'order_items.variation.product',
+            'order_items.variation.grade_id',
+            'order_items.stock',
+            'order_items.replacement',
+            'transactions',
+            'order_charges'
+        ])
         // ->where('orders.order_type_id',3)
         ->when(request('marketplace') != null && request('marketplace') != 0, function ($q) {
             return $q->where('marketplace_id', request('marketplace'));
@@ -1443,6 +1462,715 @@ class Order extends Component
 
     }
 
+    public function purchase_recovery($order_id)
+    {
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        $data['title_page'] = 'Purchase Recovery';
+        session()->put('page_title', $data['title_page']);
+
+        $data['order'] = $order;
+        $data['order_id'] = $order_id;
+        $data['current_count'] = Order_item_model::where('order_id', $order_id)->count();
+        $data['import_result'] = session('purchase_recovery_result');
+        session()->forget('purchase_recovery_result');
+
+        // Manual grouping: derive first variation per stock using earliest stock_operation
+        $stockIds = Stock_model::where('order_id', $order_id)->pluck('id');
+
+        // Purchase item candidates per stock (existing purchase row or linked id from sold items)
+        $purchaseItemsByStock = Order_item_model::withTrashed()
+            ->where('order_id', $order_id)
+            ->pluck('id', 'stock_id');
+
+        $linkedCandidates = Order_item_model::withTrashed()
+            ->whereNotNull('linked_id')
+            ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
+            ->groupBy('stock_id')
+            ->pluck('linked_id', 'stock_id');
+
+        $firstOpIds = $stockIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->select(DB::raw('MIN(id) as id'), 'stock_id')
+                ->whereIn('stock_id', $stockIds)
+                ->groupBy('stock_id')
+                ->pluck('id', 'stock_id');
+
+        $firstVariationByStock = $firstOpIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->whereIn('id', $firstOpIds->values())
+                ->pluck(DB::raw('COALESCE(new_variation_id, old_variation_id)'), 'stock_id');
+
+        $stockVariations = DB::table('stock')
+            ->whereIn('id', $stockIds)
+            ->pluck('variation_id', 'id');
+
+        $stockDetails = Stock_model::withTrashed()
+            ->whereIn('id', $stockIds)
+            ->get(['id', 'imei', 'serial_number'])
+            ->keyBy('id');
+
+        $resolved = [];
+        $stockCandidates = [];
+
+        $itemsByStock = $stockIds->isEmpty()
+            ? collect()
+            : Order_item_model::withTrashed()
+                ->whereIn('stock_id', $stockIds)
+                ->get(['id', 'linked_id', 'stock_id'])
+                ->groupBy('stock_id');
+
+        foreach ($stockIds as $sid) {
+            $resolved[$sid] = $firstVariationByStock[$sid] ?? $stockVariations[$sid] ?? null;
+
+            $itemsForStock = $itemsByStock[$sid] ?? collect();
+            $ids = $itemsForStock->pluck('id');
+            $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+            $missingLinked = $linkedIds->diff($ids);
+
+            $candidateId = null;
+            if ($missingLinked->count() === 1) {
+                $candidateId = $missingLinked->first();
+            } elseif (isset($purchaseItemsByStock[$sid])) {
+                $candidateId = $purchaseItemsByStock[$sid];
+            } elseif (isset($linkedCandidates[$sid])) {
+                $candidateId = $linkedCandidates[$sid];
+            }
+
+            $stockCandidates[$sid] = [
+                'candidate_id' => $candidateId,
+                'has_purchase' => isset($purchaseItemsByStock[$sid]) && $purchaseItemsByStock[$sid] !== null,
+                'imei' => $stockDetails[$sid]->imei ?? null,
+                'serial' => $stockDetails[$sid]->serial_number ?? null,
+            ];
+        }
+
+        $groups = collect($resolved)
+            ->filter()
+            ->groupBy(function ($variationId) {
+                return $variationId;
+            }, true)
+            ->map(function ($stockList, $variationId) use ($stockCandidates) {
+                $stockIds = $stockList->keys()->values();
+
+                return [
+                    'variation_id' => (int) $variationId,
+                    'stock_ids'    => $stockIds->all(),
+                    'count'        => $stockList->count(),
+                    'candidates'   => $stockIds->map(function ($sid) use ($stockCandidates) {
+                        return [
+                            'stock_id' => $sid,
+                            'id'       => $stockCandidates[$sid]['candidate_id'] ?? null,
+                            'has_purchase' => $stockCandidates[$sid]['has_purchase'] ?? false,
+                            'imei' => $stockCandidates[$sid]['imei'] ?? null,
+                            'serial' => $stockCandidates[$sid]['serial'] ?? null,
+                        ];
+                    })->all(),
+                ];
+            })
+            ->values();
+
+        $variationMeta = Variation_model::with(['product:id,model', 'storage_id:id,name', 'color_id:id,name'])
+            ->whereIn('id', $groups->pluck('variation_id'))
+            ->get()
+            ->keyBy('id');
+
+        $data['manual_groups'] = $groups->map(function ($g) use ($variationMeta) {
+            $v = $variationMeta[$g['variation_id']] ?? null;
+            $label = $v
+                ? trim(($v->product->model ?? '').' '.($v->storage_id->name ?? '').' '.($v->color_id->name ?? ''))
+                : 'Variation '.$g['variation_id'];
+            return array_merge($g, ['label' => $label]);
+        });
+
+        return view('livewire.purchase_recovery')->with($data);
+    }
+
+    public function purchase_recovery_import($order_id)
+    {
+        ini_set('max_execution_time', '600');
+        ini_set('memory_limit', '2048M');
+
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        request()->validate([
+            'recovery_file' => 'required|file|mimes:xlsx,xls,csv',
+        ]);
+
+        $priceOnly = request()->boolean('price_only');
+
+        $sheet = Excel::toArray([], request()->file('recovery_file'))[0] ?? [];
+
+        if (count($sheet) === 0) {
+            session()->put('error', 'The uploaded file is empty.');
+            return redirect()->back();
+        }
+
+        $header = array_map(static function ($value) {
+            return strtolower(trim($value));
+        }, $sheet[0]);
+
+        $index = function ($name) use ($header) {
+            $pos = array_search($name, $header);
+            return $pos === false ? null : $pos;
+        };
+
+        // Match add_purchase sheet headers
+        $required = ['name', 'imei', 'cost'];
+        foreach ($required as $req) {
+            if ($index($req) === null) {
+                session()->put('error', "Missing required column: {$req}");
+                return redirect()->back();
+            }
+        }
+
+        $imeiIndexes = [];
+        foreach ($header as $idx => $value) {
+            if ($value === 'imei') {
+                $imeiIndexes[] = $idx;
+            }
+        }
+
+        $map = [
+            'id'           => $index('id'),
+            'linked_id'    => $index('linked_id'),
+            'reference_id' => $index('reference_id'),
+            'care_id'      => $index('care_id'),
+            'reference'    => $index('reference'),
+            'variation_id' => $index('variation_id'),
+            'stock_id'     => $index('stock_id'),
+            'quantity'     => $index('quantity'),
+            'currency'     => $index('currency'),
+            'price'        => $index('cost'),
+            'discount'     => $index('discount'),
+            'status'       => $index('status'),
+            'admin_id'     => $index('admin_id'),
+            'created_at'   => $index('created_at'),
+            'updated_at'   => $index('updated_at'),
+            'deleted_at'   => $index('deleted_at'),
+            'color'        => $index('color'),
+            'grade'        => $index('grade'),
+            'notes'        => $index('notes'),
+            'name'         => $index('name'),
+        ];
+
+        unset($sheet[0]);
+
+        $orderCurrency = $order->currency ?? 4;
+
+        $rows = collect($sheet)
+            ->filter(function ($row) use ($map, $imeiIndexes) {
+                $hasImei = false;
+                foreach ($imeiIndexes as $i) {
+                    if (isset($row[$i]) && trim((string) $row[$i]) !== '') {
+                        $hasImei = true;
+                        break;
+                    }
+                }
+                $hasCost = isset($row[$map['price']]) && trim((string) $row[$map['price']]) !== '';
+                $hasName = $map['name'] !== null && isset($row[$map['name']]) && trim((string) $row[$map['name']]) !== '';
+                return $hasImei && $hasCost && $hasName;
+            })
+            ->values();
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
+        $unmapped = 0;
+
+        $allImeis = $rows->flatMap(function ($row) use ($imeiIndexes) {
+            $found = [];
+            foreach ($imeiIndexes as $i) {
+                $val = isset($row[$i]) ? trim((string) $row[$i]) : '';
+                if ($val !== '') {
+                    $found[] = $val;
+                }
+            }
+            return $found;
+        })->unique()->values();
+
+        $stockMap = $allImeis->isEmpty()
+            ? collect()
+            : Stock_model::withTrashed()
+                ->whereIn('imei', $allImeis)
+                ->orWhereIn('serial_number', $allImeis)
+                ->get(['id', 'imei', 'serial_number', 'variation_id'])
+                ->flatMap(function ($stock) {
+                    $map = [];
+                    if ($stock->imei) {
+                        $map[$stock->imei] = $stock;
+                    }
+                    if ($stock->serial_number) {
+                        $map[$stock->serial_number] = $stock;
+                    }
+                    return $map;
+                });
+
+        $stockIdsForItems = $stockMap->map(function ($stock) {
+            return $stock->id;
+        })->unique()->values();
+
+        $itemsByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : Order_item_model::withTrashed()
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->get(['id', 'linked_id', 'stock_id'])
+                ->groupBy('stock_id');
+
+        // Build a quick lookup of linked_id by stock_id from sold items
+        $linkedByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : DB::table('order_items')
+                ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
+                ->whereNotNull('linked_id')
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->groupBy('stock_id')
+                ->pluck('linked_id', 'stock_id');
+
+        $reservedIds = [];
+
+        // Build first variation per stock from earliest stock_operation
+        $firstOpIds = DB::table('stock_operations')
+            ->select(DB::raw('MIN(id) as id'), 'stock_id')
+            ->groupBy('stock_id')
+            ->pluck('id', 'stock_id');
+
+        $firstVariationByStock = $firstOpIds->isEmpty()
+            ? collect()
+            : DB::table('stock_operations')
+                ->whereIn('id', $firstOpIds->values())
+                ->pluck(DB::raw('COALESCE(new_variation_id, old_variation_id)'), 'stock_id');
+
+        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$updated, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes, $priceOnly, $firstVariationByStock, $stockMap, $itemsByStock) {
+            foreach ($chunk as $row) {
+                $id = $map['id'] !== null ? ($row[$map['id']] ?? null) : null;
+
+                $nameValue = $map['name'] !== null ? trim((string) ($row[$map['name']] ?? '')) : '';
+                $imeiValue = null;
+                foreach ($imeiIndexes as $i) {
+                    if (isset($row[$i]) && trim((string) $row[$i]) !== '') {
+                        $imeiValue = trim((string) $row[$i]);
+                        break;
+                    }
+                }
+
+                if ($nameValue === '' || ! $imeiValue) {
+                    $errors++;
+                    continue;
+                }
+
+                $stockId = null;
+                $stock = $stockMap[$imeiValue] ?? null;
+                if ($stock) {
+                    $stockId = $stock->id;
+                }
+
+                $price = $row[$map['price']] ?? null;
+
+                $price = is_numeric($price) ? $price : null;
+
+                if ($stockId === null || $price === null || $price === '') {
+                    $errors++;
+                    continue;
+                }
+
+                // Derive target id: explicit id -> sheet linked_id -> missing linked_id in chain -> linked sale item by stock
+                // Require a resolved id; never create a new auto-increment id
+                if ($id === null || $id === '') {
+                    if ($map['linked_id'] !== null && isset($row[$map['linked_id']]) && $row[$map['linked_id']] !== '') {
+                        $id = $row[$map['linked_id']];
+                    } else {
+                        $itemsForStock = $itemsByStock[$stockId] ?? collect();
+                        $ids = $itemsForStock->pluck('id');
+                        $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+                        $missingLinked = $linkedIds->diff($ids);
+
+                        if ($missingLinked->count() === 1) {
+                            $id = $missingLinked->first();
+                        } elseif (isset($linkedByStock[$stockId])) {
+                            $id = $linkedByStock[$stockId];
+                        }
+                    }
+                }
+
+                if ($id === null || $id === '') {
+                    $unmapped++;
+                    continue;
+                }
+
+                if (isset($reservedIds[$id])) {
+                    $skipped++;
+                    continue;
+                }
+
+                $existing = DB::table('order_items')->where('id', $id)->first();
+                if ($existing) {
+                    if ($priceOnly) {
+                        DB::table('order_items')->where('id', $id)->update([
+                            'price' => $price,
+                            'updated_at' => now(),
+                        ]);
+                        $updated++;
+                        continue;
+                    }
+
+                    $skipped++;
+                    continue;
+                }
+
+                $variationId = $map['variation_id'] !== null ? ($row[$map['variation_id']] ?? null) : null;
+                if (! $variationId && $stockId) {
+                    if (isset($firstVariationByStock[$stockId])) {
+                        $variationId = $firstVariationByStock[$stockId];
+                    }
+                    if (! $variationId) {
+                        $stock = Stock_model::withTrashed()->find($stockId);
+                        if ($stock) {
+                            $variationId = $stock->variation_id;
+                        }
+                    }
+                }
+
+                $record = [
+                    'id'           => $id,
+                    'order_id'     => $order_id,
+                    'reference_id' => $map['reference_id'] !== null ? ($row[$map['reference_id']] ?? null) : null,
+                    'care_id'      => $map['care_id'] !== null ? ($row[$map['care_id']] ?? null) : null,
+                    'reference'    => $map['reference'] !== null ? ($row[$map['reference']] ?? null) : ($map['notes'] !== null ? ($row[$map['notes']] ?? null) : null),
+                    'variation_id' => $variationId,
+                    'stock_id'     => $stockId,
+                    'quantity'     => $map['quantity'] !== null ? ($row[$map['quantity']] ?? 1) : 1,
+                    'currency'     => $map['currency'] !== null ? ($row[$map['currency']] ?? $orderCurrency) : $orderCurrency,
+                    'price'        => $price,
+                    'discount'     => $map['discount'] !== null ? ($row[$map['discount']] ?? null) : null,
+                    'status'       => $map['status'] !== null ? ($row[$map['status']] ?? 3) : 3,
+                    'linked_id'    => $map['linked_id'] !== null ? ($row[$map['linked_id']] ?? null) : null,
+                    'admin_id'     => $map['admin_id'] !== null ? ($row[$map['admin_id']] ?? session('user_id')) : session('user_id'),
+                    'created_at'   => $map['created_at'] !== null ? ($row[$map['created_at']] ?? now()) : now(),
+                    'updated_at'   => $map['updated_at'] !== null ? ($row[$map['updated_at']] ?? now()) : now(),
+                    'deleted_at'   => $map['deleted_at'] !== null ? ($row[$map['deleted_at']] ?? null) : null,
+                ];
+
+                try {
+                    DB::table('order_items')->insert($record);
+                    $reservedIds[$id] = true;
+                    $inserted++;
+                } catch (\Throwable $e) {
+                    $errors++;
+                }
+            }
+        });
+
+        session()->put('purchase_recovery_result', [
+            'inserted' => $inserted,
+            'updated'  => $updated,
+            'skipped'  => $skipped,
+            'errors'   => $errors,
+            'unmapped' => $unmapped,
+        ]);
+
+        session()->put('paste_result', true);
+
+        return redirect()->back();
+    }
+
+    public function purchase_recovery_manual_add($order_id)
+    {
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        request()->validate([
+            'stock_id' => 'required|integer',
+            'price' => 'required|numeric',
+            'id' => 'nullable|integer',
+        ]);
+
+        $stockId = (int) request('stock_id');
+        $price = request('price');
+        $id = request('id');
+
+        if (! $id) {
+            $itemsForStock = Order_item_model::withTrashed()
+                ->where('stock_id', $stockId)
+                ->get(['id', 'linked_id']);
+
+            $ids = $itemsForStock->pluck('id');
+            $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+            $missingLinked = $linkedIds->diff($ids);
+
+            if ($missingLinked->count() === 1) {
+                $id = $missingLinked->first();
+            }
+        }
+
+        if (! $id) {
+            session()->put('error', 'No candidate id found for this stock. Provide an id manually.');
+            return redirect()->back();
+        }
+
+        if (DB::table('order_items')->where('id', $id)->exists()) {
+            session()->put('error', 'Order item id already exists.');
+            return redirect()->back();
+        }
+
+        $firstOpId = DB::table('stock_operations')
+            ->where('stock_id', $stockId)
+            ->min('id');
+
+        $variationId = null;
+        if ($firstOpId) {
+            $variationId = DB::table('stock_operations')
+                ->where('id', $firstOpId)
+                ->value(DB::raw('COALESCE(new_variation_id, old_variation_id)'));
+        }
+
+        if (! $variationId) {
+            $variationId = DB::table('stock')->where('id', $stockId)->value('variation_id');
+        }
+
+        if (! $variationId) {
+            session()->put('error', 'Variation not found for this stock.');
+            return redirect()->back();
+        }
+
+        DB::table('order_items')->insert([
+            'id'           => $id,
+            'order_id'     => $order_id,
+            'reference_id' => null,
+            'care_id'      => null,
+            'reference'    => null,
+            'variation_id' => $variationId,
+            'stock_id'     => $stockId,
+            'quantity'     => 1,
+            'currency'     => $order->currency ?? 4,
+            'price'        => $price,
+            'discount'     => null,
+            'status'       => 3,
+            'linked_id'    => null,
+            'admin_id'     => session('user_id'),
+            'created_at'   => now(),
+            'updated_at'   => now(),
+            'deleted_at'   => null,
+        ]);
+
+        session()->put('success', 'Manual purchase item created.');
+        return redirect()->back();
+    }
+
+    public function purchase_recovery_paste($order_id)
+    {
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        request()->validate([
+            'paste_rows' => 'required|string',
+        ]);
+
+        $lines = preg_split('/\r\n|\r|\n/', trim(request('paste_rows')));
+        $rows = collect($lines)
+            ->map(function ($line, $index) {
+                $line = trim($line);
+                if ($line === '') {
+                    return null;
+                }
+
+                $parts = preg_split('/[\s,]+/', $line);
+                if (count($parts) < 2) {
+                    return [
+                        'error' => 'Invalid format (need STOCK_ID/IMEI COST)',
+                        'line' => $index + 1,
+                        'raw' => $line,
+                    ];
+                }
+
+                $stockIdRaw = $parts[0];
+                $costRaw = $parts[1];
+                $identifier = preg_replace('/[^0-9A-Za-z]/', '', (string) $stockIdRaw);
+                $stockId = null;
+                if ($identifier !== '') {
+                    if (is_numeric($identifier) && strlen($identifier) >= 12) {
+                        $stockId = Stock_model::withTrashed()
+                            ->whereRaw("REPLACE(REPLACE(imei, '-', ''), ' ', '') = ?", [$identifier])
+                            ->orWhereRaw("REPLACE(REPLACE(serial_number, '-', ''), ' ', '') = ?", [$identifier])
+                            ->value('id');
+                    } elseif (is_numeric($identifier)) {
+                        $stockId = (int) $identifier;
+                    }
+                }
+                $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
+
+                return [
+                    'stock_id' => $stockId,
+                    'cost' => $cost,
+                    'id'   => $parts[2] ?? null,
+                    'line' => $index + 1,
+                    'raw'  => $line,
+                ];
+            })
+            ->filter()
+            ->values();
+        $invalidRows = $rows->whereNotNull('error');
+        $rows = $rows->whereNull('error')->values();
+
+        if ($rows->isEmpty()) {
+            session()->put('error', 'No valid rows found. Use: STOCK_ID/IMEI COST [ID] per line.');
+            session()->put('paste_errors', $invalidRows->take(50)->values());
+            return redirect()->back();
+        }
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
+        $unmapped = 0;
+        $failures = collect();
+
+        foreach ($rows as $row) {
+            $stockId = $row['stock_id'] ?? null;
+            $price = is_numeric($row['cost']) ? $row['cost'] : null;
+            $id = $row['id'];
+
+            if (! $stockId || $price === null) {
+                $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row ?? null,
+                    'reason' => 'Missing stock_id or cost',
+                ]);
+                continue;
+            }
+
+            $stock = Stock_model::withTrashed()->find($stockId);
+            if (! $stock) {
+                $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Stock not found',
+                ]);
+                continue;
+            }
+
+            if (! $id) {
+                $itemsForStock = Order_item_model::withTrashed()
+                    ->where('stock_id', $stockId)
+                    ->get(['id', 'linked_id']);
+
+                $ids = $itemsForStock->pluck('id');
+                $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+                $missingLinked = $linkedIds->diff($ids);
+
+                if ($missingLinked->count() === 1) {
+                    $id = $missingLinked->first();
+                }
+            }
+
+            if (! $id) {
+                $unmapped++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'No candidate id found',
+                ]);
+                continue;
+            }
+
+            if (DB::table('order_items')->where('id', $id)->exists()) {
+                $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Order item id already exists',
+                ]);
+                continue;
+            }
+
+            $firstOpId = DB::table('stock_operations')
+                ->where('stock_id', $stockId)
+                ->min('id');
+
+            $variationId = null;
+            if ($firstOpId) {
+                $variationId = DB::table('stock_operations')
+                    ->where('id', $firstOpId)
+                    ->value(DB::raw('COALESCE(new_variation_id, old_variation_id)'));
+            }
+
+            if (! $variationId) {
+                $variationId = $stock->variation_id;
+            }
+
+            if (! $variationId) {
+                $variationId = DB::table('stock')->where('id', $stockId)->value('variation_id');
+            }
+
+            if (! $variationId) {
+                $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Variation not found for stock',
+                ]);
+                continue;
+            }
+
+            DB::table('order_items')->insert([
+                'id'           => $id,
+                'order_id'     => $order_id,
+                'reference_id' => null,
+                'care_id'      => null,
+                'reference'    => null,
+                'variation_id' => $variationId,
+                'stock_id'     => $stockId,
+                'quantity'     => 1,
+                'currency'     => $order->currency ?? 4,
+                'price'        => $price,
+                'discount'     => null,
+                'status'       => 3,
+                'linked_id'    => null,
+                'admin_id'     => session('user_id'),
+                'created_at'   => now(),
+                'updated_at'   => now(),
+                'deleted_at'   => null,
+            ]);
+            $inserted++;
+        }
+
+        session()->put('purchase_recovery_result', [
+            'inserted' => $inserted,
+            'updated'  => $updated,
+            'skipped'  => $skipped,
+            'errors'   => $errors,
+            'unmapped' => $unmapped,
+        ]);
+
+        session()->put('paste_result', true);
+        session()->put('paste_errors', $invalidRows->merge($failures)->take(100)->values());
+
+        return redirect()->back();
+    }
+
     public function export_purchase_sheet($order_id, $invoice = null)
     {
         ini_set('memory_limit', '512M');
@@ -1893,7 +2621,7 @@ class Order extends Component
         }
 
         $order->customer_id = $purchase->vendor;
-        $order->status = 2;
+        // $order->status = 2;
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
@@ -2050,49 +2778,50 @@ class Order extends Component
 
                     $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
 
-                    if($stock->id && $stock->status != null && $stock->order_id != null){
-                        if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                        $issue[$dr]['data']['row'] = $dr;
-                        $issue[$dr]['data']['name'] = $n;
-                        $issue[$dr]['data']['storage'] = $st;
-                        if($variation){
-                            $issue[$dr]['data']['variation'] = $variation->id;
-                        }
-                        if($color){
-                            $issue[$dr]['data']['color'] = $d[$color];
-                        }
-                        if($v_grade){
-                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                        }
-                        if($note){
-                            $issue[$dr]['data']['note'] = $d[$note];
-                        }
-                        $issue[$dr]['data']['imei'] = $i.$s;
-                        $issue[$dr]['data']['cost'] = $c;
-                        if($stock->order_id == $order->id && $stock->status == 1){
-                            $issue[$dr]['message'] = 'Item already added in this order';
-                        }else{
-                                $reference_id = $stock->order->reference_id ?? "Missing";
-                            if($stock->status != 2){
-                                $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
-                            }else{
-                                $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
-                            }
+                    // if($stock->id && $stock->status != null && $stock->order_id != null){
+                    //     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                    //     $issue[$dr]['data']['row'] = $dr;
+                    //     $issue[$dr]['data']['name'] = $n;
+                    //     $issue[$dr]['data']['storage'] = $st;
+                    //     if($variation){
+                    //         $issue[$dr]['data']['variation'] = $variation->id;
+                    //     }
+                    //     if($color){
+                    //         $issue[$dr]['data']['color'] = $d[$color];
+                    //     }
+                    //     if($v_grade){
+                    //         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                    //     }
+                    //     if($note){
+                    //         $issue[$dr]['data']['note'] = $d[$note];
+                    //     }
+                    //     $issue[$dr]['data']['imei'] = $i.$s;
+                    //     $issue[$dr]['data']['cost'] = $c;
+                    //     if($stock->order_id == $order->id && $stock->status == 1){
+                    //         $issue[$dr]['message'] = 'Item already added in this order';
+                    //     }else{
+                    //             $reference_id = $stock->order->reference_id ?? "Missing";
+                    //         if($stock->status != 2){
+                    //             $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
+                    //         }else{
+                    //             $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
+                    //         }
 
-                        }
+                    //     }
 
-                    }else{
+                    // }else{
                         $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
                         if($stock2 != null){
                             $stock2->restore();
                             $stock2->order_id = $order->id;
                             $stock2->status = 1;
                             $stock2->save();
-                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'stock_id' => $stock2->id]);
                             $order_item->reference_id = $grd;
                             if($note){
                                 $order_item->reference = $d[$note];
                             }
+                            $order_item->variation_id = $variation->id;
                             $order_item->quantity = 1;
                             $order_item->price = $c;
                             $order_item->status = 3;
@@ -2111,11 +2840,12 @@ class Order extends Component
                             $stock->status = 1;
                             $stock->save();
 
-                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'stock_id' => $stock->id]);
                             $order_item->reference_id = $grd;
                             if($note){
                                 $order_item->reference = $d[$note];
                             }
+                            $order_item->variation_id = $variation->id;
                             $order_item->quantity = 1;
                             $order_item->price = $c;
                             $order_item->status = 3;
@@ -2123,7 +2853,7 @@ class Order extends Component
 
                         }
 
-                    }
+                    // }
 
                 }else{
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}

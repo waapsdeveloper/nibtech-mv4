@@ -12,6 +12,8 @@ use Carbon\Carbon;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Str;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Database\QueryException;
 
 class Order_model extends Model
 {
@@ -249,51 +251,142 @@ class Order_model extends Model
         if(isset($orderObj->order_id)){
             $customer_model = new Customer_model();
             $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
-            $order = Order_model::firstOrNew([
-                'reference_id' => $orderObj->order_id,
-                'marketplace_id' => $marketplaceId,
-            ]);
-            if($order->customer_id == null){
-                $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+
+            $currencyId = null;
+            if (! empty($orderObj->currency) && isset($currency_codes[$orderObj->currency])) {
+                $currencyId = (int) $currency_codes[$orderObj->currency];
             }
-            $order->status = $this->mapStateToStatus($orderObj);
-            if($order->status == null || $order->status == 0){
-                Log::info("Order status is null", $orderObj);
+            if (! $currencyId && ! empty($orderObj->currency)) {
+                $currencyId = (int) (Currency_model::where('code', $orderObj->currency)->value('id')
+                    ?? Currency_model::where('sign', $orderObj->currency)->value('id'));
             }
-            $order->currency = $currency_codes[$orderObj->currency];
-            $order->order_type_id = 3;
-            $order->marketplace_id = $marketplaceId;
-            $order->price = $orderObj->price;
-            $order->delivery_note_url = $orderObj->delivery_note;
-            if($order->label_url == null){
-                $label = $bm->getOrderLabel($orderObj->order_id);
-                if($label != null && $label->results != null){
-                    $order->label_url = $label->results[0]->labelUrl;
+            $currencyId = $currencyId
+                ?? Currency_model::orderBy('id')->value('id');
+
+            $status = $this->mapStateToStatus($orderObj) ?? 2;
+
+            try {
+                // Use updateOrCreate to prevent race conditions - atomic operation
+                $order = Order_model::updateOrCreate(
+                    [
+                        'reference_id' => $orderObj->order_id,
+                        'marketplace_id' => $marketplaceId,
+                    ],
+                    [
+                        // Default values only used when creating new order
+                        'order_type_id' => 3,
+                        'marketplace_id' => $marketplaceId,
+                        'currency' => $currencyId,
+                        'status' => $status,
+                    ]
+                );
+
+                // Update fields that should always be updated (not just on create)
+                if($order->customer_id == null){
+                    $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+                }
+                $order->status = $status;
+                if($order->status == null || $order->status == 0){
+                    Log::info("Order status is null", $orderObj);
+                }
+                $order->currency = $currencyId ?? $order->currency;
+                $order->price = $orderObj->price;
+                $order->delivery_note_url = $orderObj->delivery_note;
+                if($order->label_url == null){
+                    $label = $bm->getOrderLabel($orderObj->order_id);
+                    if($label != null && $label->results != null){
+                        $order->label_url = $label->results[0]->labelUrl;
+                    }
+                }
+                if($orderObj->payment_method != null){
+                    $payment_method = Payment_method_model::firstOrNew(['name'=>$orderObj->payment_method]);
+                    $payment_method->save();
+                    $order->payment_method_id = $payment_method->id;
+                }
+                if($invoice == true){
+                    $order->processed_by = session('user_id');
+                    $order->processed_at = now()->format('Y-m-d H:i:s');
+                }
+                if($invoice == false && $order->processed_by == null && $orderObj->date_shipping != null){
+                    $order->processed_at = Carbon::parse($orderObj->date_shipping)->format('Y-m-d H:i:s');
+                }
+
+                if($order->tracking_number == null){
+                    $order->tracking_number = $orderObj->tracking_number;
+                }
+
+                $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
+                $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
+
+                $order->save();
+
+            } catch (QueryException $e) {
+                // Handle duplicate key exception (race condition)
+                if ($e->getCode() == 23000) {
+                    // Duplicate entry - fetch existing order and continue
+                    $order = Order_model::where([
+                        'reference_id' => $orderObj->order_id,
+                        'marketplace_id' => $marketplaceId,
+                    ])->first();
+
+                    if ($order) {
+                        Log::warning('Duplicate order creation prevented (race condition)', [
+                            'reference_id' => $orderObj->order_id,
+                            'marketplace_id' => $marketplaceId,
+                            'order_id' => $order->id,
+                        ]);
+
+                        // Continue with update flow
+                        if($order->customer_id == null){
+                            $order->customer_id = $customer_model->updateCustomerInDB($orderObj, false, $currency_codes, $country_codes);
+                        }
+                        $order->status = $this->mapStateToStatus($orderObj);
+                        if($order->status == null || $order->status == 0){
+                            Log::info("Order status is null", $orderObj);
+                        }
+                        $order->currency = $currency_codes[$orderObj->currency];
+                        $order->order_type_id = 3;
+                        $order->price = $orderObj->price;
+                        $order->delivery_note_url = $orderObj->delivery_note;
+                        if($order->label_url == null){
+                            $label = $bm->getOrderLabel($orderObj->order_id);
+                            if($label != null && $label->results != null){
+                                $order->label_url = $label->results[0]->labelUrl;
+                            }
+                        }
+                        if($orderObj->payment_method != null){
+                            $payment_method = Payment_method_model::firstOrNew(['name'=>$orderObj->payment_method]);
+                            $payment_method->save();
+                            $order->payment_method_id = $payment_method->id;
+                        }
+                        if($invoice == true){
+                            $order->processed_by = session('user_id');
+                            $order->processed_at = now()->format('Y-m-d H:i:s');
+                        }
+                        if($invoice == false && $order->processed_by == null && $orderObj->date_shipping != null){
+                            $order->processed_at = Carbon::parse($orderObj->date_shipping)->format('Y-m-d H:i:s');
+                        }
+
+                        if($order->tracking_number == null){
+                            $order->tracking_number = $orderObj->tracking_number;
+                        }
+
+                        $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
+                        $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
+                        $order->save();
+                    } else {
+                        // Order not found even after duplicate error - log and re-throw
+                        Log::error('Duplicate order error but order not found after retry', [
+                            'reference_id' => $orderObj->order_id,
+                            'marketplace_id' => $marketplaceId,
+                        ]);
+                        throw $e;
+                    }
+                } else {
+                    // Other database errors - re-throw
+                    throw $e;
                 }
             }
-            if($orderObj->payment_method != null){
-                $payment_method = Payment_method_model::firstOrNew(['name'=>$orderObj->payment_method]);
-                $payment_method->save();
-                $order->payment_method_id = $payment_method->id;
-            }
-            if($invoice == true){
-                $order->processed_by = session('user_id');
-                $order->processed_at = now()->format('Y-m-d H:i:s');
-            }
-            if($invoice == false && $order->processed_by == null && $orderObj->date_shipping != null){
-                $order->processed_at = Carbon::parse($orderObj->date_shipping)->format('Y-m-d H:i:s');
-            }
-
-            if($order->tracking_number == null){
-                $order->tracking_number = $orderObj->tracking_number;
-            }
-
-            $order->created_at = Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s');
-            $order->updated_at = Carbon::parse($orderObj->date_modification)->format('Y-m-d H:i:s');
-
-            // echo Carbon::parse($orderObj->date_creation)->format('Y-m-d H:i:s'). "       ";
-            // ... other fields
-            $order->save();
 
         }
         // print_r(Order_model::find($order->id));
@@ -355,46 +448,125 @@ class Order_model extends Model
         }
 
         $marketplaceId = 4;
-        $order = Order_model::firstOrNew([
-            'reference_id' => $orderNumber,
-            'marketplace_id' => $marketplaceId,
-        ]);
-        $order->marketplace_id = $marketplaceId;
-        if (! $order->reference) {
-            $order->reference = $orderData['id'] ?? null;
-        }
-        $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
-        $order->currency = $currencyId ?? $order->currency;
 
-        if (Schema::hasColumn($order->getTable(), 'order_type_id')) {
-            $order->order_type_id = $care ? 5 : 3;
-        }
+        try {
+            // Use updateOrCreate to prevent race conditions - atomic operation
+            $order = Order_model::updateOrCreate(
+                [
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplaceId,
+                ],
+                [
+                    // Default values only used when creating new order
+                    'marketplace_id' => $marketplaceId,
+                    'status' => $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW'),
+                    'currency' => $currencyId,
+                ]
+            );
 
-        if ($countryId) {
-            if (Schema::hasColumn($order->getTable(), 'country_id')) {
-                $order->country_id = $countryId;
-            } elseif (Schema::hasColumn($order->getTable(), 'country')) {
+            // Update fields that should always be updated (not just on create)
+            if (! $order->reference) {
+                $order->reference = $orderData['id'] ?? null;
+            }
+            $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
+            $order->currency = $currencyId ?? $order->currency;
+
+            if (Schema::hasColumn($order->getTable(), 'order_type_id')) {
+                $order->order_type_id = $care ? 5 : 3;
+            }
+
+            if ($countryId) {
+                if (Schema::hasColumn($order->getTable(), 'country_id')) {
+                    $order->country_id = $countryId;
+                } elseif (Schema::hasColumn($order->getTable(), 'country')) {
+                    $order->country = $countryCode;
+                }
+            } elseif ($countryCode && Schema::hasColumn($order->getTable(), 'country')) {
                 $order->country = $countryCode;
             }
-        } elseif ($countryCode && Schema::hasColumn($order->getTable(), 'country')) {
-            $order->country = $countryCode;
-        }
 
-        $order->price = $this->extractNumeric(
-            $orderData['settlement_total_paid']
-            ?? $orderData['total_amount']
-            ?? $orderData['total_paid']
-            ?? $orderData['price']
-            ?? $order->price
-        );
-        $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
+            $order->price = $this->extractNumeric(
+                $orderData['settlement_total_paid']
+                ?? $orderData['total_amount']
+                ?? $orderData['total_paid']
+                ?? $orderData['price']
+                ?? $order->price
+            );
+            $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
 
-        if (! empty($orderData['created_at'])) {
-            $order->created_at = Carbon::parse($orderData['created_at'])->format('Y-m-d H:i:s');
-        }
+            if (! empty($orderData['created_at'])) {
+                $order->created_at = Carbon::parse($orderData['created_at'])->format('Y-m-d H:i:s');
+            }
 
-        if (! empty($orderData['updated_at'])) {
-            $order->updated_at = Carbon::parse($orderData['updated_at'])->format('Y-m-d H:i:s');
+            if (! empty($orderData['updated_at'])) {
+                $order->updated_at = Carbon::parse($orderData['updated_at'])->format('Y-m-d H:i:s');
+            }
+
+        } catch (QueryException $e) {
+            // Handle duplicate key exception (race condition)
+            if ($e->getCode() == 23000) {
+                // Duplicate entry - fetch existing order and continue
+                $order = Order_model::where([
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplaceId,
+                ])->first();
+
+                if ($order) {
+                    Log::warning('Duplicate Refurbed order creation prevented (race condition)', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplaceId,
+                        'order_id' => $order->id,
+                    ]);
+
+                    // Continue with update flow
+                    if (! $order->reference) {
+                        $order->reference = $orderData['id'] ?? null;
+                    }
+                    $order->status = $this->mapRefurbedOrderState($orderData['state'] ?? 'NEW');
+                    $order->currency = $currencyId ?? $order->currency;
+
+                    if (Schema::hasColumn($order->getTable(), 'order_type_id')) {
+                        $order->order_type_id = $care ? 5 : 3;
+                    }
+
+                    if ($countryId) {
+                        if (Schema::hasColumn($order->getTable(), 'country_id')) {
+                            $order->country_id = $countryId;
+                        } elseif (Schema::hasColumn($order->getTable(), 'country')) {
+                            $order->country = $countryCode;
+                        }
+                    } elseif ($countryCode && Schema::hasColumn($order->getTable(), 'country')) {
+                        $order->country = $countryCode;
+                    }
+
+                    $order->price = $this->extractNumeric(
+                        $orderData['settlement_total_paid']
+                        ?? $orderData['total_amount']
+                        ?? $orderData['total_paid']
+                        ?? $orderData['price']
+                        ?? $order->price
+                    );
+                    $order->delivery_note_url = $orderData['delivery_note'] ?? $order->delivery_note_url;
+
+                    if (! empty($orderData['created_at'])) {
+                        $order->created_at = Carbon::parse($orderData['created_at'])->format('Y-m-d H:i:s');
+                    }
+
+                    if (! empty($orderData['updated_at'])) {
+                        $order->updated_at = Carbon::parse($orderData['updated_at'])->format('Y-m-d H:i:s');
+                    }
+                } else {
+                    // Order not found even after duplicate error - log and re-throw
+                    Log::error('Duplicate Refurbed order error but order not found after retry', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplaceId,
+                    ]);
+                    throw $e;
+                }
+            } else {
+                // Other database errors - re-throw
+                throw $e;
+            }
         }
 
         $order->save();
@@ -654,49 +826,129 @@ class Order_model extends Model
         $currencyId = $this->resolveCurrencyIdForOrder($currencyCode, $currency_codes, null);
         $marketplaceId = $this->resolveBmproMarketplaceId($currencyCode, $marketplaceId);
 
-        $order = Order_model::firstOrNew([
-            'reference_id' => $orderNumber,
-            'marketplace_id' => $marketplaceId,
-        ]);
-        $order->marketplace_id = $marketplaceId;
-        $order->currency = $currencyId ?? $order->currency;
-        $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
-        if (! $order->reference) {
-            $order->reference = $orderData['reference']
-                ?? $orderData['external_reference']
-                ?? $orderData['id']
+        try {
+            // Use updateOrCreate to prevent race conditions - atomic operation
+            $order = Order_model::updateOrCreate(
+                [
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplaceId,
+                ],
+                [
+                    // Default values only used when creating new order
+                    'marketplace_id' => $marketplaceId,
+                    'currency' => $currencyId,
+                    'status' => $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null),
+                ]
+            );
+
+            // Update fields that should always be updated (not just on create)
+            $order->currency = $currencyId ?? $order->currency;
+            $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
+            if (! $order->reference) {
+                $order->reference = $orderData['reference']
+                    ?? $orderData['external_reference']
+                    ?? $orderData['id']
+                    ?? null;
+            }
+
+            $order->price = $this->extractNumeric(
+                $orderData['total_price']
+                ?? data_get($orderData, 'financials.total_paid')
+                ?? data_get($orderData, 'financials.total_amount')
+                ?? data_get($orderData, 'order_value.amount')
+                ?? data_get($orderData, 'totals.grand_total')
+                ?? $order->price
+            );
+
+            if (! empty($orderData['tracking_number']) && empty($order->tracking_number)) {
+                $order->tracking_number = $orderData['tracking_number'];
+            }
+
+            $createdAt = $orderData['created_at']
+                ?? $orderData['order_date']
+                ?? $orderData['placed_at']
                 ?? null;
+            if ($createdAt) {
+                $order->created_at = Carbon::parse($createdAt)->format('Y-m-d H:i:s');
+            }
+
+            $updatedAt = $orderData['updated_at']
+                ?? $orderData['modified_at']
+                ?? $createdAt;
+            if ($updatedAt) {
+                $order->updated_at = Carbon::parse($updatedAt)->format('Y-m-d H:i:s');
+            }
+
+            $order->save();
+
+        } catch (QueryException $e) {
+            // Handle duplicate key exception (race condition)
+            if ($e->getCode() == 23000) {
+                // Duplicate entry - fetch existing order and continue
+                $order = Order_model::where([
+                    'reference_id' => $orderNumber,
+                    'marketplace_id' => $marketplaceId,
+                ])->first();
+
+                if ($order) {
+                    Log::warning('Duplicate BMPRO order creation prevented (race condition)', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplaceId,
+                        'order_id' => $order->id,
+                    ]);
+
+                    // Continue with update flow
+                    $order->currency = $currencyId ?? $order->currency;
+                    $order->status = $this->mapBmproOrderState($orderData['fulfillment_status'] ?? $orderData['state'] ?? null);
+                    if (! $order->reference) {
+                        $order->reference = $orderData['reference']
+                            ?? $orderData['external_reference']
+                            ?? $orderData['id']
+                            ?? null;
+                    }
+
+                    $order->price = $this->extractNumeric(
+                        $orderData['total_price']
+                        ?? data_get($orderData, 'financials.total_paid')
+                        ?? data_get($orderData, 'financials.total_amount')
+                        ?? data_get($orderData, 'order_value.amount')
+                        ?? data_get($orderData, 'totals.grand_total')
+                        ?? $order->price
+                    );
+
+                    if (! empty($orderData['tracking_number']) && empty($order->tracking_number)) {
+                        $order->tracking_number = $orderData['tracking_number'];
+                    }
+
+                    $createdAt = $orderData['created_at']
+                        ?? $orderData['order_date']
+                        ?? $orderData['placed_at']
+                        ?? null;
+                    if ($createdAt) {
+                        $order->created_at = Carbon::parse($createdAt)->format('Y-m-d H:i:s');
+                    }
+
+                    $updatedAt = $orderData['updated_at']
+                        ?? $orderData['modified_at']
+                        ?? $createdAt;
+                    if ($updatedAt) {
+                        $order->updated_at = Carbon::parse($updatedAt)->format('Y-m-d H:i:s');
+                    }
+
+                    $order->save();
+                } else {
+                    // Order not found even after duplicate error - log and re-throw
+                    Log::error('Duplicate BMPRO order error but order not found after retry', [
+                        'reference_id' => $orderNumber,
+                        'marketplace_id' => $marketplaceId,
+                    ]);
+                    throw $e;
+                }
+            } else {
+                // Other database errors - re-throw
+                throw $e;
+            }
         }
-
-        $order->price = $this->extractNumeric(
-            $orderData['total_price']
-            ?? data_get($orderData, 'financials.total_paid')
-            ?? data_get($orderData, 'financials.total_amount')
-            ?? data_get($orderData, 'order_value.amount')
-            ?? data_get($orderData, 'totals.grand_total')
-            ?? $order->price
-        );
-
-        if (! empty($orderData['tracking_number']) && empty($order->tracking_number)) {
-            $order->tracking_number = $orderData['tracking_number'];
-        }
-
-        $createdAt = $orderData['created_at']
-            ?? $orderData['order_date']
-            ?? $orderData['placed_at']
-            ?? null;
-        if ($createdAt) {
-            $order->created_at = Carbon::parse($createdAt)->format('Y-m-d H:i:s');
-        }
-
-        $updatedAt = $orderData['updated_at']
-            ?? $orderData['modified_at']
-            ?? $createdAt;
-        if ($updatedAt) {
-            $order->updated_at = Carbon::parse($updatedAt)->format('Y-m-d H:i:s');
-        }
-
-        $order->save();
 
         $legacyOrder = $this->buildLegacyBmproOrderObject(
             $orderData,

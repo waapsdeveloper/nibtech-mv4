@@ -167,18 +167,44 @@ class Order_item_model extends Model
 
     public function updateOrderItemsInDB($orderObj, $tester = null, $bm = null, $care = false)
     {
+        $orderlines = collect($orderObj->orderlines ?? []);
 
-        foreach ($orderObj->orderlines ?? [] as $itemObj) {
-            $order = Order_model::where(['reference_id' => $orderObj->order_id])->first();
-            if (! $order) {
+        if ($orderlines->isEmpty()) {
+            return;
+        }
+
+        $order = Order_model::where(['reference_id' => $orderObj->order_id])->first();
+        if (! $order) {
+            return;
+        }
+
+        $order_id = $order->id;
+        $orderlineIds = $orderlines->pluck('id')->filter()->all();
+
+        if (! empty($orderlineIds)) {
+            $existingItems = Order_item_model::where('order_id', $order_id)
+                ->whereIn('reference_id', $orderlineIds)
+                ->orderByDesc('updated_at')
+                ->get()
+                ->groupBy('reference_id');
+
+            foreach ($existingItems as $items) {
+                $items->slice(1)->each->delete();
+            }
+        }
+
+        $processedIds = [];
+
+        foreach ($orderlines as $itemObj) {
+            if (isset($itemObj->id) && in_array($itemObj->id, $processedIds, true)) {
                 continue;
             }
 
-            $order_id = $order->id;
             $orderItem = Order_item_model::firstOrNew([
                 'reference_id' => $itemObj->id,
                 'order_id' => $order_id,
             ]);
+            $processedIds[] = $itemObj->id;
 
             $variation = null;
             if (! empty($itemObj->listing_id)) {
