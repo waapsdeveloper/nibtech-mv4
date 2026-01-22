@@ -137,6 +137,25 @@
                 </div>
                 @php session()->forget('paste_errors'); @endphp
             @endif
+            @if (session('parsed_rows'))
+                <div class="alert alert-secondary alert-dismissible fade show" role="alert">
+                    <strong>Parsed Rows (showing up to 100):</strong>
+                    <ul class="mb-0">
+                        @foreach(session('parsed_rows') as $index => $row)
+                            @php
+                                $raw = $row['raw'] ?? '';
+                                if (is_array($raw)) {
+                                    $raw = json_encode($raw);
+                                }
+                            @endphp
+                            <li>Line {{ $index + 1 }}: Stock ID {{ $row['stock_id'] ?? 'N/A' }}, Cost {{ $row['cost'] ?? 'N/A' }}, ID {{ $row['id'] ?? 'N/A' }} @if(isset($row['error'])) — <strong>Error: {{ $row['error'] }}</strong> @endif — Raw: {{ $raw }}</li>
+                        @endforeach
+                    </ul>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+                </div>
+                @php session()->forget('parsed_rows'); @endphp
+
+            @endif
             <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/paste' }}">
                 @csrf
                 <div class="mb-2">
