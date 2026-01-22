@@ -2039,19 +2039,32 @@ class Order extends Component
             ->unique()
             ->values();
 
+        // Get stocks from this order to scope the search
+        $orderStockIds = DB::table('stock_operations')
+            ->where('order_id', $order_id)
+            ->where('type', 'in')
+            ->pluck('stock_id')
+            ->unique();
+
         $stockMapByIdentifier = $imeiIdentifiers->isEmpty()
             ? collect()
             : Stock_model::withTrashed()
-                ->whereIn('imei', $imeiIdentifiers)
-                ->orWhereIn('serial_number', $imeiIdentifiers)
+                ->whereIn('id', $orderStockIds)
+                ->where(function ($query) use ($imeiIdentifiers) {
+                    $query->whereIn('imei', $imeiIdentifiers)
+                        ->orWhereIn('serial_number', $imeiIdentifiers);
+                })
                 ->get(['id', 'imei', 'serial_number', 'variation_id'])
                 ->flatMap(function ($stock) {
                     $map = [];
+                    // Normalize IMEI/serial (remove spaces, hyphens)
                     if ($stock->imei) {
-                        $map[$stock->imei] = $stock;
+                        $normalized = preg_replace('/[^0-9A-Za-z]/', '', $stock->imei);
+                        $map[$normalized] = $stock;
                     }
                     if ($stock->serial_number) {
-                        $map[$stock->serial_number] = $stock;
+                        $normalized = preg_replace('/[^0-9A-Za-z]/', '', $stock->serial_number);
+                        $map[$normalized] = $stock;
                     }
                     return $map;
                 });
