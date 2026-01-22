@@ -124,7 +124,13 @@
                     <strong>Paste errors (showing up to 100):</strong>
                     <ul class="mb-0">
                         @foreach(session('paste_errors') as $err)
-                            <li>Line {{ $err['line'] ?? '-' }}: {{ $err['reason'] ?? 'Invalid row' }} — {{ $err['raw'] ?? '' }}</li>
+                            @php
+                                $raw = $err['raw'] ?? '';
+                                if (is_array($raw)) {
+                                    $raw = json_encode($raw);
+                                }
+                            @endphp
+                            <li>Line {{ $err['line'] ?? '-' }}: {{ $err['reason'] ?? 'Invalid row' }} — {{ $raw }}</li>
                         @endforeach
                     </ul>
                     <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
