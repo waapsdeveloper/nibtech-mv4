@@ -119,6 +119,18 @@
                 </div>
                 @php session()->forget('paste_result'); @endphp
             @endif
+            @if(session('paste_errors'))
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <strong>Paste errors (showing up to 100):</strong>
+                    <ul class="mb-0">
+                        @foreach(session('paste_errors') as $err)
+                            <li>Line {{ $err['line'] ?? '-' }}: {{ $err['reason'] ?? 'Invalid row' }} — {{ $err['raw'] ?? '' }}</li>
+                        @endforeach
+                    </ul>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+                </div>
+                @php session()->forget('paste_errors'); @endphp
+            @endif
             <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/paste' }}">
                 @csrf
                 <div class="mb-2">

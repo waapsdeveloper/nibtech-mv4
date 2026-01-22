@@ -1989,28 +1989,42 @@ class Order extends Component
 
         $lines = preg_split('/\r\n|\r|\n/', trim(request('paste_rows')));
         $rows = collect($lines)
-            ->map(function ($line) {
+            ->map(function ($line, $index) {
                 $line = trim($line);
                 if ($line === '') {
                     return null;
                 }
 
-                $parts = preg_split('/\s+/', $line);
+                $parts = preg_split('/[\s,]+/', $line);
                 if (count($parts) < 2) {
-                    return null;
+                    return [
+                        'error' => 'Invalid format (need IMEI COST)',
+                        'line' => $index + 1,
+                        'raw' => $line,
+                    ];
                 }
 
+                $imei = $parts[0];
+                $costRaw = $parts[1];
+                $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
+
                 return [
-                    'imei' => $parts[0],
-                    'cost' => $parts[1],
+                    'imei' => $imei,
+                    'cost' => $cost,
                     'id'   => $parts[2] ?? null,
+                    'line' => $index + 1,
+                    'raw'  => $line,
                 ];
             })
             ->filter()
             ->values();
 
+        $invalidRows = $rows->whereNotNull('error');
+        $rows = $rows->whereNull('error')->values();
+
         if ($rows->isEmpty()) {
             session()->put('error', 'No valid rows found. Use: IMEI COST [ID] per line.');
+            session()->put('paste_errors', $invalidRows->take(50)->values());
             return redirect()->back();
         }
 
@@ -2055,6 +2069,7 @@ class Order extends Component
         $skipped = 0;
         $errors = 0;
         $unmapped = 0;
+        $failures = collect();
 
         foreach ($rows as $row) {
             $imei = trim((string) $row['imei']);
@@ -2063,12 +2078,22 @@ class Order extends Component
 
             if (! $imei || $price === null) {
                 $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Missing IMEI or cost',
+                ]);
                 continue;
             }
 
             $stock = $stockMap[$imei] ?? null;
             if (! $stock) {
                 $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'IMEI/serial not found in stock',
+                ]);
                 continue;
             }
 
@@ -2089,6 +2114,11 @@ class Order extends Component
 
             if (! $id) {
                 $unmapped++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'No candidate id found',
+                ]);
                 continue;
             }
 
@@ -2119,6 +2149,11 @@ class Order extends Component
 
             if (! $variationId) {
                 $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Variation not found for stock',
+                ]);
                 continue;
             }
 
@@ -2153,6 +2188,7 @@ class Order extends Component
         ]);
 
         session()->put('paste_result', true);
+        session()->put('paste_errors', $invalidRows->merge($failures)->take(100)->values());
 
         return redirect()->back();
     }
