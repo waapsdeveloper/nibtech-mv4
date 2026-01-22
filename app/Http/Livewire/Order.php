@@ -1998,7 +1998,7 @@ class Order extends Component
                 $parts = preg_split('/[\s,]+/', $line);
                 if (count($parts) < 2) {
                     return [
-                        'error' => 'Invalid format (need STOCK_ID COST)',
+                        'error' => 'Invalid format (need STOCK_ID/IMEI COST)',
                         'line' => $index + 1,
                         'raw' => $line,
                     ];
@@ -2006,7 +2006,18 @@ class Order extends Component
 
                 $stockIdRaw = $parts[0];
                 $costRaw = $parts[1];
-                $stockId = is_numeric($stockIdRaw) ? (int) $stockIdRaw : null;
+                $identifier = preg_replace('/[^0-9A-Za-z]/', '', (string) $stockIdRaw);
+                $stockId = null;
+                if ($identifier !== '') {
+                    if (is_numeric($identifier) && strlen($identifier) >= 12) {
+                        $stockId = Stock_model::withTrashed()
+                            ->whereRaw("REPLACE(REPLACE(imei, '-', ''), ' ', '') = ?", [$identifier])
+                            ->orWhereRaw("REPLACE(REPLACE(serial_number, '-', ''), ' ', '') = ?", [$identifier])
+                            ->value('id');
+                    } elseif (is_numeric($identifier)) {
+                        $stockId = (int) $identifier;
+                    }
+                }
                 $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
 
                 return [
@@ -2023,28 +2034,10 @@ class Order extends Component
         $rows = $rows->whereNull('error')->values();
 
         if ($rows->isEmpty()) {
-            session()->put('error', 'No valid rows found. Use: STOCK_ID COST [ID] per line.');
+            session()->put('error', 'No valid rows found. Use: STOCK_ID/IMEI COST [ID] per line.');
             session()->put('paste_errors', $invalidRows->take(50)->values());
             return redirect()->back();
         }
-
-        $stockIdsForItems = $rows->pluck('stock_id')->filter()->unique()->values();
-
-        $itemsByStock = $stockIdsForItems->isEmpty()
-            ? collect()
-            : Order_item_model::withTrashed()
-                ->whereIn('stock_id', $stockIdsForItems)
-                ->get(['id', 'linked_id', 'stock_id'])
-                ->groupBy('stock_id');
-
-        $linkedByStock = $stockIdsForItems->isEmpty()
-            ? collect()
-            : DB::table('order_items')
-                ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
-                ->whereNotNull('linked_id')
-                ->whereIn('stock_id', $stockIdsForItems)
-                ->groupBy('stock_id')
-                ->pluck('linked_id', 'stock_id');
 
         $inserted = 0;
         $updated = 0;
@@ -2080,15 +2073,16 @@ class Order extends Component
             }
 
             if (! $id) {
-                $itemsForStock = $itemsByStock[$stockId] ?? collect();
+                $itemsForStock = Order_item_model::withTrashed()
+                    ->where('stock_id', $stockId)
+                    ->get(['id', 'linked_id']);
+
                 $ids = $itemsForStock->pluck('id');
                 $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
                 $missingLinked = $linkedIds->diff($ids);
 
                 if ($missingLinked->count() === 1) {
                     $id = $missingLinked->first();
-                } elseif (isset($linkedByStock[$stockId])) {
-                    $id = $linkedByStock[$stockId];
                 }
             }
 
@@ -2102,13 +2096,13 @@ class Order extends Component
                 continue;
             }
 
-            $existing = DB::table('order_items')->where('id', $id)->first();
-            if ($existing) {
-                DB::table('order_items')->where('id', $id)->update([
-                    'price' => $price,
-                    'updated_at' => now(),
+            if (DB::table('order_items')->where('id', $id)->exists()) {
+                $errors++;
+                $failures->push([
+                    'line' => $row['line'] ?? null,
+                    'raw' => $row['raw'] ?? null,
+                    'reason' => 'Order item id already exists',
                 ]);
-                $updated++;
                 continue;
             }
 
@@ -2125,6 +2119,10 @@ class Order extends Component
 
             if (! $variationId) {
                 $variationId = $stock->variation_id;
+            }
+
+            if (! $variationId) {
+                $variationId = DB::table('stock')->where('id', $stockId)->value('variation_id');
             }
 
             if (! $variationId) {
