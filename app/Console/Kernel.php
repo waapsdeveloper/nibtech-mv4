@@ -134,7 +134,7 @@ class Kernel extends ConsoleKernel
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
-        
+
         // Keep old command for other marketplaces (deprecated - will be replaced)
         // $schedule->command('v2:marketplace:sync-stock --marketplace=1')
         //     ->everySixHours()
@@ -186,6 +186,11 @@ class Kernel extends ConsoleKernel
             ->everyFourHours()
             ->withoutOverlapping()
             ->onOneServer()
+            ->runInBackground();
+
+        // Retry failed jobs - every 30 minutes
+        $schedule->command('queue:retry all')
+            ->everyThirtyMinutes()
             ->runInBackground();
     }
 
