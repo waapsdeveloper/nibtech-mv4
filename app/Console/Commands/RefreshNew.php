@@ -47,19 +47,19 @@ class RefreshNew extends Command
     public function handle()
     {
         $startTime = microtime(true);
-        
+
         // Log command start to named log file (not generic laravel.log)
-        SlackLogService::post(
-            'order_sync',
-            'info',
-            "🔄 Refresh:new command started",
-            [
-                'command' => 'Refresh:new',
-                'started_at' => now()->toDateTimeString(),
-                'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
-            ]
-        );
-        
+        // SlackLogService::post(
+        //     'order_sync',
+        //     'info',
+        //     "🔄 Refresh:new command started",
+        //     [
+        //         'command' => 'Refresh:new',
+        //         'started_at' => now()->toDateTimeString(),
+        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
+        //     ]
+        // );
+
         $bm = new BackMarketAPIController();
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
@@ -82,7 +82,7 @@ class RefreshNew extends Command
         $orders = [];
         if ($resArray1 !== null) {
             $stats['new_orders_found'] = count($resArray1);
-            
+
             foreach ($resArray1 as $orderObj) {
                 if (!empty($orderObj)) {
                     // Validate orderlines
@@ -95,7 +95,7 @@ class RefreshNew extends Command
                     $orders[] = $orderObj->order_id;
                 }
             }
-            
+
             // Sync new orders
             foreach($orders as $or){
                 $this->updateBMOrder($or, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
@@ -113,9 +113,9 @@ class RefreshNew extends Command
             ->where('order_type_id', 3)
             ->where('created_at', '>=', Carbon::now()->subDays(2))
             ->pluck('reference_id');
-        
+
         $stats['incomplete_orders_found'] = $incompleteOrders->count();
-        
+
         // Sync incomplete orders
         foreach($incompleteOrders as $order){
             $this->updateBMOrder($order, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
@@ -124,10 +124,10 @@ class RefreshNew extends Command
                 $stats['order_ids_synced'][] = $order;
             }
         }
-        
+
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
-        
+
         // Prepare summary message
         $summaryParts = [];
         if ($stats['new_orders_synced'] > 0) {
@@ -139,59 +139,59 @@ class RefreshNew extends Command
         if ($stats['incomplete_orders_synced'] > 0) {
             $summaryParts[] = "Incomplete: {$stats['incomplete_orders_synced']} order(s)";
         }
-        
-        $summaryText = !empty($summaryParts) 
+
+        $summaryText = !empty($summaryParts)
             ? " | " . implode(", ", $summaryParts)
             : " | No orders processed";
-        
+
         // Limit order IDs in log context (max 20 to avoid huge logs)
         $orderIdsForLog = array_slice($stats['order_ids_synced'], 0, 20);
         if (count($stats['order_ids_synced']) > 20) {
             $orderIdsForLog[] = "... and " . (count($stats['order_ids_synced']) - 20) . " more";
         }
-        
+
         // Log command completion with statistics
-        SlackLogService::post(
-            'order_sync',
-            'info',
-            "✅ Refresh:new command completed{$summaryText} | Duration: {$duration}s",
-            [
-                'command' => 'Refresh:new',
-                'completed_at' => now()->toDateTimeString(),
-                'duration_seconds' => $duration,
-                'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
-                'statistics' => [
-                    'new_orders_found' => $stats['new_orders_found'],
-                    'new_orders_synced' => $stats['new_orders_synced'],
-                    'new_orderlines_validated' => $stats['new_orderlines_validated'],
-                    'incomplete_orders_found' => $stats['incomplete_orders_found'],
-                    'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
-                    'total_orders_synced' => count($stats['order_ids_synced']),
-                    'order_ids_sample' => $orderIdsForLog
-                ]
-            ]
-        );
-        
+        // SlackLogService::post(
+        //     'order_sync',
+        //     'info',
+        //     "✅ Refresh:new command completed{$summaryText} | Duration: {$duration}s",
+        //     [
+        //         'command' => 'Refresh:new',
+        //         'completed_at' => now()->toDateTimeString(),
+        //         'duration_seconds' => $duration,
+        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+        //         'statistics' => [
+        //             'new_orders_found' => $stats['new_orders_found'],
+        //             'new_orders_synced' => $stats['new_orders_synced'],
+        //             'new_orderlines_validated' => $stats['new_orderlines_validated'],
+        //             'incomplete_orders_found' => $stats['incomplete_orders_found'],
+        //             'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
+        //             'total_orders_synced' => count($stats['order_ids_synced']),
+        //             'order_ids_sample' => $orderIdsForLog
+        //         ]
+        //     ]
+        // );
+
         return 0;
     }
     private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
 
         $orderObj = $bm->getOneOrder($order_id);
         if(isset($orderObj->order_id)){
-            
+
             // Get order before update to check if it's new or status changed
             $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
             $existingOrder = Order_model::where('reference_id', $orderObj->order_id)
                 ->where('marketplace_id', $marketplaceId)
                 ->first();
-            
+
             $isNewOrder = $existingOrder === null;
             $oldStatus = $existingOrder ? $existingOrder->status : null;
 
             $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
 
             $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
-            
+
             // Deduct listed_stock if conditions are met
             $this->deductListedStockForOrder($orderObj, $isNewOrder, $oldStatus);
         }
@@ -203,13 +203,13 @@ class RefreshNew extends Command
     {
         // Check if local sync mode is enabled - prevent live data updates to BackMarket
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-        
+
         if ($syncDataInLocal) {
             // Skip live API update when in local testing mode
             // Log through SlackLogService to named log file instead of default Laravel log
             SlackLogService::post(
-                'order_sync', 
-                'info', 
+                'order_sync',
+                'info',
                 "RefreshNew: Skipping validateOrderlines API call (SYNC_DATA_IN_LOCAL=true) - Order: {$order_id}, SKU: {$sku}",
                 [
                     'order_id' => $order_id,
@@ -222,7 +222,7 @@ class RefreshNew extends Command
             $this->info("⚠️  Local Mode: Skipping orderline validation for order {$order_id}, SKU {$sku} (would set state to 2)");
             return null;
         }
-        
+
         $end_point = 'orders/' . $order_id;
         $new_state = 2;
 
@@ -237,7 +237,7 @@ class RefreshNew extends Command
 
     /**
      * Deduct listed_stock when order arrives with status 1 or when status changes from 1 to 2
-     * 
+     *
      * Rules:
      * - New order with status 1: Deduct 1
      * - Existing order status changes from 1 → 2: Deduct 1
@@ -253,20 +253,20 @@ class RefreshNew extends Command
         $order = Order_model::where('reference_id', $orderObj->order_id)
             ->where('marketplace_id', $marketplaceId)
             ->first();
-        
+
         if (!$order) {
             return;
         }
-        
+
         // Only process marketplace orders (order_type_id = 3)
         if ($order->order_type_id != 3) {
             return;
         }
-        
+
         // Determine if we should deduct stock
         $shouldDeduct = false;
         $deductionReason = '';
-        
+
         if ($isNewOrder && $order->status == 1) {
             // New order with status 1 (Pending)
             $shouldDeduct = true;
@@ -276,60 +276,60 @@ class RefreshNew extends Command
             $shouldDeduct = true;
             $deductionReason = 'status_change_1_to_2';
         }
-        
+
         if (!$shouldDeduct) {
             return;
         }
-        
+
         // Get order items
         $orderItems = Order_item_model::where('order_id', $order->id)->get();
-        
+
         if ($orderItems->isEmpty()) {
             return;
         }
-        
+
         $deductions = [];
-        
+
         // FIX: Use batch mode for loop-based Slack logging to prevent rate limit issues
         SlackLogService::startBatch();
-        
+
         foreach ($orderItems as $item) {
             if (!$item->variation_id) {
                 continue;
             }
-            
+
             $variation = Variation_model::find($item->variation_id);
             if (!$variation) {
                 continue;
             }
-            
+
             // Deduct from variations.listed_stock (always deduct 1, not by quantity)
             $oldVariationStock = $variation->listed_stock ?? 0;
             $newVariationStock = $oldVariationStock - 1; // Allow negative
             $variation->listed_stock = $newVariationStock;
             $variation->save();
-            
+
             // Deduct from marketplace_stock.listed_stock
             $marketplaceStock = MarketplaceStockModel::firstOrNew([
                 'variation_id' => $variation->id,
                 'marketplace_id' => $marketplaceId,
             ]);
-            
+
             // FIX 1: Reload to get actual current value from database (handles firstOrNew edge case)
             if ($marketplaceStock->exists) {
                 $marketplaceStock->refresh();
             }
-            
+
             // Get the actual "before" value from database
             $oldMarketplaceStock = (int)($marketplaceStock->listed_stock ?? 0);
             $newMarketplaceStock = $oldMarketplaceStock - 1; // Allow negative
             $marketplaceStock->listed_stock = $newMarketplaceStock;
             $marketplaceStock->save();
-            
+
             // FIX 2: Only log if stock actually decreased (prevent logging increases)
             $variationStockDecreased = ($newVariationStock < $oldVariationStock);
             $marketplaceStockDecreased = ($newMarketplaceStock < $oldMarketplaceStock);
-            
+
             // Only create log entry if at least one stock value decreased
             if ($variationStockDecreased || $marketplaceStockDecreased) {
                 // Record deduction in database for tracking
@@ -350,7 +350,7 @@ class RefreshNew extends Command
                     'deduction_at' => now(),
                 ]);
             }
-            
+
             $deductions[] = [
                 'variation_id' => $variation->id,
                 'variation_sku' => $variation->sku,
@@ -360,10 +360,10 @@ class RefreshNew extends Command
                 'new_marketplace_stock' => $newMarketplaceStock,
             ];
         }
-        
+
         // Post batch summary instead of individual messages (prevents Slack rate limiting)
         SlackLogService::postBatch(1); // Threshold of 1 to always post summary
-        
+
         // Summary is now handled by postBatch() above, no need for separate summary log
     }
 
