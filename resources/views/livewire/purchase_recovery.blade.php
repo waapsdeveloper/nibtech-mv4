@@ -109,7 +109,7 @@
 
     <div class="card mt-3">
         <div class="card-header pb-0">
-            <h6 class="mb-0">Paste IMEI + Cost (space separated)</h6>
+            <h6 class="mb-0">Paste Stock ID + Cost (space separated)</h6>
         </div>
         <div class="card-body">
             @if(session('paste_result') && $import_result)
@@ -134,9 +134,9 @@
             <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/paste' }}">
                 @csrf
                 <div class="mb-2">
-                    <textarea class="form-control" name="paste_rows" rows="6" placeholder="IMEI COST [ID]\nIMEI COST [ID]\n..."></textarea>
+                    <textarea class="form-control" name="paste_rows" rows="6" placeholder="STOCK_ID COST [ID]\nSTOCK_ID COST [ID]\n..."></textarea>
                 </div>
-                <small class="text-muted d-block mb-2">Format: IMEI COST [ID] per line. ID is optional. If missing, we use the linked-chain rule.</small>
+                <small class="text-muted d-block mb-2">Format: STOCK_ID COST [ID] per line. ID is optional. If missing, we use the linked-chain rule.</small>
                 <button type="submit" class="btn btn-primary">Process Paste</button>
             </form>
         </div>
