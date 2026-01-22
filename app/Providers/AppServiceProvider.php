@@ -11,9 +11,6 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
-use Illuminate\Support\Facades\Queue;
-use Illuminate\Queue\Events\JobProcessed;
-use Illuminate\Queue\Events\JobFailed;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,16 +34,9 @@ class AppServiceProvider extends ServiceProvider
         Paginator::useBootstrapFive();
         date_default_timezone_set("Europe/London");
 
-        // Global queue event listeners to prevent connection leaks
-        Queue::after(function (JobProcessed $event) {
-            // Disconnect all database connections after each job completes
-            DB::disconnect();
-        });
-
-        Queue::failing(function (JobFailed $event) {
-            // Disconnect all database connections after job fails
-            DB::disconnect();
-        });
+        // DB::disconnect() removed from global Queue::after / Queue::failing (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
+        // It caused connect/disconnect churn: every job reconnects after disconnect. Long-running jobs
+        // (ExecuteArtisanCommandJob, SyncMarketplaceStockJob) still disconnect in their own finally blocks.
 
         if ($this->app->environment('testing')) {
             return;
