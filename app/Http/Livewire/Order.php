@@ -2042,7 +2042,6 @@ class Order extends Component
         // Get stocks from this order to scope the search
         $orderStockIds = DB::table('stock_operations')
             ->where('order_id', $order_id)
-            ->where('type', 'in')
             ->pluck('stock_id')
             ->unique();
 
