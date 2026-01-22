@@ -188,7 +188,55 @@ pm2 status
 
 ---
 
-## 6. Conclusion
+## 6. Optimal Solution (Implemented)
+
+Based on the analysis and **`ecosystem.config.js`**, the following changes have been applied.
+
+### 6.1 AppServiceProvider
+
+- **Removed** global `Queue::after` / `Queue::failing` → `DB::disconnect()`.
+- Long-running jobs (`ExecuteArtisanCommandJob`, `SyncMarketplaceStockJob`) still call `DB::disconnect()` in their own `finally` blocks.
+- **Effect:** Workers reuse a single DB connection across jobs; fewer connect/disconnect cycles.
+
+### 6.2 ecosystem.config.js
+
+- **Single queue worker** processes **both** `api-requests` and `default`:  
+  `--queue=api-requests,default` (api-requests first).
+- **No separate api-requests worker** → one fewer long-lived process and DB connection.
+- **Portable base path:** `PM2_APP_BASE` env (e.g. `/var/www/sdpos` on production) or `__dirname` (dev). Log paths use `path.join(basePath, 'storage', 'logs', ...)`.
+- **Scheduler:** `max_memory_restart: '256M'` added; same single instance.
+- **Production:** Set `PM2_APP_BASE=/var/www/sdpos` when starting PM2 if the app lives outside the config directory.
+
+### 6.3 Kernel (scheduler)
+
+- **Staggered schedule** via `->cron()` so heavy commands no longer all fire at :00 / :05 / :10:
+  - Every-5-min: `refresh:latest` (:02,:07,…), `refresh:orders` (:03,:08,…), `refurbed:new` (:04,:09,…), `api-request:process` (:00,:05,…).
+  - Every-10-min: `price:handler` (:01,:11,…), `refurbed:link-tickets` (:05,:15,…), `functions:ten` (:06,:16,…), `support:sync` (:07,:17,…), `bmpro:orders` (:08,:18,…).
+- **`refurbed:orders`** and **`functions:thirty`**: added `withoutOverlapping()` + `onOneServer()`; `functions:thirty` uses `runInBackground()` (long-running).
+- **`refurbed:link-tickets`**: added `onOneServer()`.
+- **`queue:retry all`** removed from the schedule. Run manually when needed:  
+  `php artisan queue:retry all` or `php artisan queue:retry <id>`.
+
+### 6.4 Deployment
+
+1. **App:** `composer install`, `php artisan config:clear`, `php artisan cache:clear`.
+2. **PM2 (production):**  
+   `PM2_APP_BASE=/var/www/sdpos pm2 start ecosystem.config.js`  
+   or set `PM2_APP_BASE` in your env before starting PM2.
+3. **Restart workers:**  
+   `pm2 restart sdpos-queue sdpos-scheduler`
+4. **Verify:**  
+   `pm2 status`; `pm2 logs sdpos-queue --lines 50`; check DB connection count (see §5).
+
+### 6.5 Still recommended (not yet done)
+
+- **§4.2 item 5:** Fix N+1 in RefreshNew, FunctionsThirty, createStockComparisons.
+- **§4.2 item 6:** Cache `dropdown_data` (e.g. Redis) instead of session-only.
+- **§4.3 item 7:** Optimise Order Livewire `render()` (cache counts, etc.).
+
+---
+
+## 7. Conclusion
 
 The **recent changes** (connection leak fix, FunctionsThirty → Refresh:new, stock deduction/comparison, Order eager-loading tweak, ecosystem/scheduler setup) **both**:
 

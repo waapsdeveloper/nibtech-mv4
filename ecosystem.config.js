@@ -1,29 +1,37 @@
+const path = require('path');
+
+// Base path: use PM2_APP_BASE or project root (where ecosystem.config.js lives).
+// Production (e.g. Linux): set PM2_APP_BASE=/var/www/sdpos when starting PM2.
+// Dev (Windows): omit; uses __dirname (project root).
+const basePath = process.env.PM2_APP_BASE || __dirname;
+const logDir = path.join(basePath, 'storage', 'logs');
+
 module.exports = {
   apps: [
     {
       // =========================
-      // Laravel Queue Worker
+      // Laravel Queue Worker (single process, both queues)
       // =========================
+      // Processes api-requests first, then default. One worker = one DB connection.
+      // Avoids separate api worker (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
       name: 'sdpos-queue',
 
       script: 'artisan',
-      args: 'queue:work database --queue=default --sleep=3 --tries=3 --timeout=90 --max-jobs=100 --max-time=3600',
+      args: 'queue:work database --queue=api-requests,default --sleep=3 --tries=3 --timeout=90 --max-jobs=100 --max-time=3600',
 
       interpreter: 'php',
-      cwd: '/var/www/sdpos', // 🔒 Explicit path = safer than process.cwd()
+      cwd: basePath,
 
       exec_mode: 'fork',
-      instances: 1, // ⚠️ Never cluster queue workers unless intentional
+      instances: 1,
 
       autorestart: true,
       watch: false,
+      max_memory_restart: '256M',
 
-      max_memory_restart: '256M', // 🧠 Restart on memory leaks
-
-      error_file: '/var/www/sdpos/storage/logs/pm2-queue-error.log',
-      out_file: '/var/www/sdpos/storage/logs/pm2-queue-out.log',
-      log_file: '/var/www/sdpos/storage/logs/pm2-queue.log',
-
+      error_file: path.join(logDir, 'pm2-queue-error.log'),
+      out_file: path.join(logDir, 'pm2-queue-out.log'),
+      log_file: path.join(logDir, 'pm2-queue.log'),
       time: true,
       merge_logs: true,
 
@@ -32,39 +40,6 @@ module.exports = {
         APP_DEBUG: 'false'
       }
     },
-
-    // {
-    //   // =========================
-    //   // API Requests Queue (burst)
-    //   // =========================
-    //   name: 'sdpos-queue-api',
-
-    //   script: 'artisan',
-    //   args: 'queue:work database --queue=api-requests --sleep=1 --timeout=120 --tries=1 --max-jobs=500 --max-time=1800',
-
-    //   interpreter: 'php',
-    //   cwd: '/var/www/sdpos',
-
-    //   exec_mode: 'fork',
-    //   instances: 1,
-
-    //   autorestart: true,
-    //   watch: false,
-
-    //   max_memory_restart: '256M',
-
-    //   error_file: '/var/www/sdpos/storage/logs/pm2-queue-api-error.log',
-    //   out_file: '/var/www/sdpos/storage/logs/pm2-queue-api-out.log',
-    //   log_file: '/var/www/sdpos/storage/logs/pm2-queue-api.log',
-
-    //   time: true,
-    //   merge_logs: true,
-
-    //   env: {
-    //     APP_ENV: 'production',
-    //     APP_DEBUG: 'false'
-    //   }
-    // },
 
     {
       // =========================
@@ -76,18 +51,18 @@ module.exports = {
       args: 'schedule:work',
 
       interpreter: 'php',
-      cwd: '/var/www/sdpos',
+      cwd: basePath,
 
       exec_mode: 'fork',
       instances: 1,
 
       autorestart: true,
       watch: false,
+      max_memory_restart: '256M',
 
-      error_file: '/var/www/sdpos/storage/logs/pm2-scheduler-error.log',
-      out_file: '/var/www/sdpos/storage/logs/pm2-scheduler-out.log',
-      log_file: '/var/www/sdpos/storage/logs/pm2-scheduler.log',
-
+      error_file: path.join(logDir, 'pm2-scheduler-error.log'),
+      out_file: path.join(logDir, 'pm2-scheduler-out.log'),
+      log_file: path.join(logDir, 'pm2-scheduler.log'),
       time: true,
       merge_logs: true,
 
