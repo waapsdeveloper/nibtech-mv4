@@ -1519,13 +1519,18 @@ class Order extends Component
 
         $resolved = [];
         $stockCandidates = [];
+
+        $itemsByStock = $stockIds->isEmpty()
+            ? collect()
+            : Order_item_model::withTrashed()
+                ->whereIn('stock_id', $stockIds)
+                ->get(['id', 'linked_id', 'stock_id'])
+                ->groupBy('stock_id');
+
         foreach ($stockIds as $sid) {
             $resolved[$sid] = $firstVariationByStock[$sid] ?? $stockVariations[$sid] ?? null;
 
-            $itemsForStock = Order_item_model::withTrashed()
-                ->where('stock_id', $sid)
-                ->get(['id', 'linked_id', 'order_id']);
-
+            $itemsForStock = $itemsByStock[$sid] ?? collect();
             $ids = $itemsForStock->pluck('id');
             $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
             $missingLinked = $linkedIds->diff($ids);
@@ -1590,6 +1595,9 @@ class Order extends Component
 
     public function purchase_recovery_import($order_id)
     {
+        ini_set('max_execution_time', '600');
+        ini_set('memory_limit', '2048M');
+
         $order = Order_model::withTrashed()->find($order_id);
 
         if (! $order) {
