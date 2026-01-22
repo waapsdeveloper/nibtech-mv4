@@ -2816,11 +2816,12 @@ class Order extends Component
                             $stock2->order_id = $order->id;
                             $stock2->status = 1;
                             $stock2->save();
-                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'stock_id' => $stock2->id]);
                             $order_item->reference_id = $grd;
                             if($note){
                                 $order_item->reference = $d[$note];
                             }
+                            $order_item->variation_id = $variation->id;
                             $order_item->quantity = 1;
                             $order_item->price = $c;
                             $order_item->status = 3;
