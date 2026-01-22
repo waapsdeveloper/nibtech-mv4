@@ -124,6 +124,7 @@ Route::get('purchase/detail/{id}', [Order::class,'purchase_detail'])->name('purc
 Route::get('purchase/recovery/{id}', [Order::class,'purchase_recovery'])->name('purchase_recovery');
 Route::post('purchase/recovery/{id}/import', [Order::class,'purchase_recovery_import'])->name('purchase_recovery_import');
 Route::post('purchase/recovery/{id}/manual-add', [Order::class,'purchase_recovery_manual_add'])->name('purchase_recovery_manual_add');
+Route::post('purchase/recovery/{id}/paste', [Order::class,'purchase_recovery_paste'])->name('purchase_recovery_paste');
 Route::get('purchase/purchase_model_graded_count/{order_id}/{pss_id}/{s_type?}', [Order::class,'purchase_model_graded_count'])->name('purchase_detail');
 Route::get('purchase/purchase_model_color_graded_sale/{order_id}/{pss_id}', [Order::class,'purchase_model_color_graded_sale'])->name('purchase_detail');
 Route::get('purchase/purchase_model_color_graded_available/{order_id}/{pss_id}', [Order::class,'purchase_model_color_graded_available'])->name('purchase_detail');

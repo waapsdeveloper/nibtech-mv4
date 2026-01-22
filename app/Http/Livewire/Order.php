@@ -1972,6 +1972,187 @@ class Order extends Component
         return redirect()->back();
     }
 
+    public function purchase_recovery_paste($order_id)
+    {
+        $order = Order_model::withTrashed()->find($order_id);
+
+        if (! $order) {
+            session()->put('error', 'Purchase order not found');
+            return redirect(url('purchase'));
+        }
+
+        request()->validate([
+            'paste_rows' => 'required|string',
+        ]);
+
+        $lines = preg_split('/\r\n|\r|\n/', trim(request('paste_rows')));
+        $rows = collect($lines)
+            ->map(function ($line) {
+                $line = trim($line);
+                if ($line === '') {
+                    return null;
+                }
+
+                $parts = preg_split('/\s+/', $line);
+                if (count($parts) < 2) {
+                    return null;
+                }
+
+                return [
+                    'imei' => $parts[0],
+                    'cost' => $parts[1],
+                    'id'   => $parts[2] ?? null,
+                ];
+            })
+            ->filter()
+            ->values();
+
+        if ($rows->isEmpty()) {
+            session()->put('error', 'No valid rows found. Use: IMEI COST [ID] per line.');
+            return redirect()->back();
+        }
+
+        $imeis = $rows->pluck('imei')->unique()->values();
+        $stockMap = Stock_model::withTrashed()
+            ->whereIn('imei', $imeis)
+            ->orWhereIn('serial_number', $imeis)
+            ->get(['id', 'imei', 'serial_number', 'variation_id'])
+            ->flatMap(function ($stock) {
+                $map = [];
+                if ($stock->imei) {
+                    $map[$stock->imei] = $stock;
+                }
+                if ($stock->serial_number) {
+                    $map[$stock->serial_number] = $stock;
+                }
+                return $map;
+            });
+
+        $stockIdsForItems = $stockMap->map(function ($stock) {
+            return $stock->id;
+        })->unique()->values();
+
+        $itemsByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : Order_item_model::withTrashed()
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->get(['id', 'linked_id', 'stock_id'])
+                ->groupBy('stock_id');
+
+        $linkedByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : DB::table('order_items')
+                ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
+                ->whereNotNull('linked_id')
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->groupBy('stock_id')
+                ->pluck('linked_id', 'stock_id');
+
+        $inserted = 0;
+        $updated = 0;
+        $skipped = 0;
+        $errors = 0;
+        $unmapped = 0;
+
+        foreach ($rows as $row) {
+            $imei = trim((string) $row['imei']);
+            $price = is_numeric($row['cost']) ? $row['cost'] : null;
+            $id = $row['id'];
+
+            if (! $imei || $price === null) {
+                $errors++;
+                continue;
+            }
+
+            $stock = $stockMap[$imei] ?? null;
+            if (! $stock) {
+                $errors++;
+                continue;
+            }
+
+            $stockId = $stock->id;
+
+            if (! $id) {
+                $itemsForStock = $itemsByStock[$stockId] ?? collect();
+                $ids = $itemsForStock->pluck('id');
+                $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+                $missingLinked = $linkedIds->diff($ids);
+
+                if ($missingLinked->count() === 1) {
+                    $id = $missingLinked->first();
+                } elseif (isset($linkedByStock[$stockId])) {
+                    $id = $linkedByStock[$stockId];
+                }
+            }
+
+            if (! $id) {
+                $unmapped++;
+                continue;
+            }
+
+            $existing = DB::table('order_items')->where('id', $id)->first();
+            if ($existing) {
+                DB::table('order_items')->where('id', $id)->update([
+                    'price' => $price,
+                    'updated_at' => now(),
+                ]);
+                $updated++;
+                continue;
+            }
+
+            $firstOpId = DB::table('stock_operations')
+                ->where('stock_id', $stockId)
+                ->min('id');
+
+            $variationId = null;
+            if ($firstOpId) {
+                $variationId = DB::table('stock_operations')
+                    ->where('id', $firstOpId)
+                    ->value(DB::raw('COALESCE(new_variation_id, old_variation_id)'));
+            }
+
+            if (! $variationId) {
+                $variationId = $stock->variation_id;
+            }
+
+            if (! $variationId) {
+                $errors++;
+                continue;
+            }
+
+            DB::table('order_items')->insert([
+                'id'           => $id,
+                'order_id'     => $order_id,
+                'reference_id' => null,
+                'care_id'      => null,
+                'reference'    => null,
+                'variation_id' => $variationId,
+                'stock_id'     => $stockId,
+                'quantity'     => 1,
+                'currency'     => $order->currency ?? 4,
+                'price'        => $price,
+                'discount'     => null,
+                'status'       => 3,
+                'linked_id'    => null,
+                'admin_id'     => session('user_id'),
+                'created_at'   => now(),
+                'updated_at'   => now(),
+                'deleted_at'   => null,
+            ]);
+            $inserted++;
+        }
+
+        session()->put('purchase_recovery_result', [
+            'inserted' => $inserted,
+            'updated'  => $updated,
+            'skipped'  => $skipped,
+            'errors'   => $errors,
+            'unmapped' => $unmapped,
+        ]);
+
+        return redirect()->back();
+    }
+
     public function export_purchase_sheet($order_id, $invoice = null)
     {
         ini_set('memory_limit', '512M');
