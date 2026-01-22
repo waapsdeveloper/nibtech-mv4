@@ -1655,6 +1655,7 @@ class Order extends Component
             'color'        => $index('color'),
             'grade'        => $index('grade'),
             'notes'        => $index('notes'),
+            'name'         => $index('name'),
         ];
 
         unset($sheet[0]);
@@ -1671,7 +1672,8 @@ class Order extends Component
                     }
                 }
                 $hasCost = isset($row[$map['price']]) && trim((string) $row[$map['price']]) !== '';
-                return $hasImei && $hasCost;
+                $hasName = $map['name'] !== null && isset($row[$map['name']]) && trim((string) $row[$map['name']]) !== '';
+                return $hasImei && $hasCost && $hasName;
             })
             ->values();
 
@@ -1706,6 +1708,7 @@ class Order extends Component
             foreach ($chunk as $row) {
                 $id = $map['id'] !== null ? ($row[$map['id']] ?? null) : null;
 
+                $nameValue = $map['name'] !== null ? trim((string) ($row[$map['name']] ?? '')) : '';
                 $imeiValue = null;
                 foreach ($imeiIndexes as $i) {
                     if (isset($row[$i]) && trim((string) $row[$i]) !== '') {
@@ -1714,15 +1717,18 @@ class Order extends Component
                     }
                 }
 
-                $stockId = $map['stock_id'] !== null ? ($row[$map['stock_id']] ?? null) : null;
-                if (! $stockId && $imeiValue) {
-                    $stock = Stock_model::withTrashed()
-                        ->where('imei', $imeiValue)
-                        ->orWhere('serial_number', $imeiValue)
-                        ->first();
-                    if ($stock) {
-                        $stockId = $stock->id;
-                    }
+                if ($nameValue === '' || ! $imeiValue) {
+                    $errors++;
+                    continue;
+                }
+
+                $stockId = null;
+                $stock = Stock_model::withTrashed()
+                    ->where('imei', $imeiValue)
+                    ->orWhere('serial_number', $imeiValue)
+                    ->first();
+                if ($stock) {
+                    $stockId = $stock->id;
                 }
 
                 $price = $row[$map['price']] ?? null;
@@ -1734,13 +1740,25 @@ class Order extends Component
                     continue;
                 }
 
-                // Derive target id: explicit id -> sheet linked_id -> linked sale item by stock
+                // Derive target id: explicit id -> sheet linked_id -> missing linked_id in chain -> linked sale item by stock
                 // Require a resolved id; never create a new auto-increment id
                 if ($id === null || $id === '') {
                     if ($map['linked_id'] !== null && isset($row[$map['linked_id']]) && $row[$map['linked_id']] !== '') {
                         $id = $row[$map['linked_id']];
-                    } elseif (isset($linkedByStock[$stockId])) {
-                        $id = $linkedByStock[$stockId];
+                    } else {
+                        $itemsForStock = Order_item_model::withTrashed()
+                            ->where('stock_id', $stockId)
+                            ->get(['id', 'linked_id']);
+
+                        $ids = $itemsForStock->pluck('id');
+                        $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
+                        $missingLinked = $linkedIds->diff($ids);
+
+                        if ($missingLinked->count() === 1) {
+                            $id = $missingLinked->first();
+                        } elseif (isset($linkedByStock[$stockId])) {
+                            $id = $linkedByStock[$stockId];
+                        }
                     }
                 }
 
