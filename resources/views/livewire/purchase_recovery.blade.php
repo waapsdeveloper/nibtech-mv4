@@ -142,7 +142,7 @@
                     <strong>Parsed rows (showing up to 100):</strong>
                     @php
 
-                        json_decode(session('parsed_rows'));
+                        echo json_encode(session('parsed_rows'));
                     @endphp
                 </div>
                 @php session()->forget('parsed_rows'); @endphp
