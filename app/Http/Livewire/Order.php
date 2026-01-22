@@ -2621,7 +2621,7 @@ class Order extends Component
         }
 
         $order->customer_id = $purchase->vendor;
-        $order->status = 2;
+        // $order->status = 2;
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
