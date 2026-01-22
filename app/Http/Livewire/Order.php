@@ -2152,6 +2152,8 @@ class Order extends Component
             'unmapped' => $unmapped,
         ]);
 
+        session()->put('paste_result', true);
+
         return redirect()->back();
     }
 
