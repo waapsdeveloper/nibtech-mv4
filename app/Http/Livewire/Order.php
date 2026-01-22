@@ -2038,7 +2038,6 @@ class Order extends Component
         };
 
         $stockMap = Stock_model::withTrashed()
-            ->where('order_id', $order_id)
             ->get(['id', 'imei', 'serial_number', 'variation_id'])
             ->flatMap(function ($stock) use ($normalizeIdentifier) {
                 $map = [];
