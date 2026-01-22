@@ -2022,7 +2022,8 @@ class Order extends Component
             })
             ->filter()
             ->values();
-
+        session()->put('parsed_rows', $rows);
+        return redirect()->back();
         $invalidRows = $rows->whereNotNull('error');
         $rows = $rows->whereNull('error')->values();
 
