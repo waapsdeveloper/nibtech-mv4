@@ -2063,7 +2063,7 @@ class Order extends Component
                 $errors++;
                 $failures->push([
                     'line' => $row['line'] ?? null,
-                    'raw' => $row['raw'] ?? null,
+                    'raw' => $row ?? null,
                     'reason' => 'Missing stock_id or cost',
                 ]);
                 continue;
