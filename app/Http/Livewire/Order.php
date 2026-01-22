@@ -1998,18 +1998,19 @@ class Order extends Component
                 $parts = preg_split('/[\s,]+/', $line);
                 if (count($parts) < 2) {
                     return [
-                        'error' => 'Invalid format (need IMEI COST)',
+                        'error' => 'Invalid format (need STOCK_ID COST)',
                         'line' => $index + 1,
                         'raw' => $line,
                     ];
                 }
 
-                $imei = $parts[0];
+                $stockIdRaw = $parts[0];
                 $costRaw = $parts[1];
+                $stockId = preg_replace('/\D/', '', $stockIdRaw);
                 $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
 
                 return [
-                    'imei' => $imei,
+                    'stock_id' => $stockId !== '' ? (int) $stockId : null,
                     'cost' => $cost,
                     'id'   => $parts[2] ?? null,
                     'line' => $index + 1,
@@ -2023,38 +2024,12 @@ class Order extends Component
         $rows = $rows->whereNull('error')->values();
 
         if ($rows->isEmpty()) {
-            session()->put('error', 'No valid rows found. Use: IMEI COST [ID] per line.');
+            session()->put('error', 'No valid rows found. Use: STOCK_ID COST [ID] per line.');
             session()->put('paste_errors', $invalidRows->take(50)->values());
             return redirect()->back();
         }
 
-        $normalizeIdentifier = static function ($value) {
-            $value = trim((string) $value);
-            if ($value === '') {
-                return '';
-            }
-
-            return preg_replace('/[^0-9A-Za-z]/', '', $value);
-        };
-
-        $stockMap = Stock_model::withTrashed()
-            ->get(['id', 'imei', 'serial_number', 'variation_id'])
-            ->flatMap(function ($stock) use ($normalizeIdentifier) {
-                $map = [];
-                if ($stock->imei) {
-                    $map[$stock->imei] = $stock;
-                    $map[$normalizeIdentifier($stock->imei)] = $stock;
-                }
-                if ($stock->serial_number) {
-                    $map[$stock->serial_number] = $stock;
-                    $map[$normalizeIdentifier($stock->serial_number)] = $stock;
-                }
-                return $map;
-            });
-
-        $stockIdsForItems = $stockMap->map(function ($stock) {
-            return $stock->id;
-        })->unique()->values();
+        $stockIdsForItems = $rows->pluck('stock_id')->filter()->unique()->values();
 
         $itemsByStock = $stockIdsForItems->isEmpty()
             ? collect()
@@ -2080,33 +2055,30 @@ class Order extends Component
         $failures = collect();
 
         foreach ($rows as $row) {
-            $imei = trim((string) $row['imei']);
-            $imeiKey = $normalizeIdentifier($imei);
+            $stockId = $row['stock_id'] ?? null;
             $price = is_numeric($row['cost']) ? $row['cost'] : null;
             $id = $row['id'];
 
-            if (! $imei || $price === null) {
+            if (! $stockId || $price === null) {
                 $errors++;
                 $failures->push([
                     'line' => $row['line'] ?? null,
                     'raw' => $row['raw'] ?? null,
-                    'reason' => 'Missing IMEI or cost',
+                    'reason' => 'Missing stock_id or cost',
                 ]);
                 continue;
             }
 
-            $stock = $stockMap[$imei] ?? $stockMap[$imeiKey] ?? null;
+            $stock = Stock_model::withTrashed()->find($stockId);
             if (! $stock) {
                 $errors++;
                 $failures->push([
                     'line' => $row['line'] ?? null,
                     'raw' => $row['raw'] ?? null,
-                    'reason' => 'IMEI/serial not found in stock',
+                    'reason' => 'Stock not found',
                 ]);
                 continue;
             }
-
-            $stockId = $stock->id;
 
             if (! $id) {
                 $itemsForStock = $itemsByStock[$stockId] ?? collect();
