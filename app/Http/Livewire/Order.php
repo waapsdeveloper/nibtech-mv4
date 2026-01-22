@@ -2091,12 +2091,20 @@ class Order extends Component
             $price = is_numeric($row['cost']) ? $row['cost'] : null;
             $id = $row['id'];
 
-            if (! $stockId || $price === null) {
-                if (! $stockId && ($row['identifier_type'] ?? null) === 'imei') {
-                    $stock = $stockMapByIdentifier[$row['identifier']] ?? null;
-                    if ($stock) {
-                        $stockId = $stock->id;
-                    }
+            // Resolve IMEI to stock_id first
+            if (! $stockId && ($row['identifier_type'] ?? null) === 'imei') {
+                $stock = $stockMapByIdentifier[$row['identifier']] ?? null;
+                if ($stock) {
+                    $stockId = $stock->id;
+                } else {
+                    // IMEI not found in stock table
+                    $errors++;
+                    $failures->push([
+                        'line' => $row['line'] ?? null,
+                        'raw' => $row ?? null,
+                        'reason' => 'IMEI/serial not found in stock table: ' . $row['identifier'],
+                    ]);
+                    continue;
                 }
             }
 
@@ -2105,7 +2113,7 @@ class Order extends Component
                 $failures->push([
                     'line' => $row['line'] ?? null,
                     'raw' => $row ?? null,
-                    'reason' => 'Missing stock_id/imei or cost',
+                    'reason' => 'Missing stock_id or cost',
                 ]);
                 continue;
             }
