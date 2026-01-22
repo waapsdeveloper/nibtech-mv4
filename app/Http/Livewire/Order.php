@@ -1998,19 +1998,23 @@ class Order extends Component
                 $parts = preg_split('/[\s,]+/', $line);
                 if (count($parts) < 2) {
                     return [
-                        'error' => 'Invalid format (need STOCK_ID COST)',
+                        'error' => 'Invalid format (need STOCK_ID/IMEI COST)',
                         'line' => $index + 1,
                         'raw' => $line,
                     ];
                 }
 
-                $stockIdRaw = $parts[0];
+                $identifierRaw = $parts[0];
                 $costRaw = $parts[1];
-                $stockId = preg_replace('/\D/', '', $stockIdRaw);
+                $identifier = preg_replace('/[^0-9A-Za-z]/', '', $identifierRaw);
                 $cost = preg_replace('/[^0-9.\-]/', '', $costRaw);
 
+                $isImei = is_numeric($identifier) && strlen($identifier) >= 12;
+
                 return [
-                    'stock_id' => $stockId !== '' ? (int) $stockId : null,
+                    'identifier' => $identifier,
+                    'identifier_type' => $isImei ? 'imei' : 'stock_id',
+                    'stock_id' => (! $isImei && $identifier !== '') ? (int) $identifier : null,
                     'cost' => $cost,
                     'id'   => $parts[2] ?? null,
                     'line' => $index + 1,
@@ -2024,12 +2028,40 @@ class Order extends Component
         $rows = $rows->whereNull('error')->values();
 
         if ($rows->isEmpty()) {
-            session()->put('error', 'No valid rows found. Use: STOCK_ID COST [ID] per line.');
+            session()->put('error', 'No valid rows found. Use: STOCK_ID/IMEI COST [ID] per line.');
             session()->put('paste_errors', $invalidRows->take(50)->values());
             return redirect()->back();
         }
 
+        $imeiIdentifiers = $rows->where('identifier_type', 'imei')
+            ->pluck('identifier')
+            ->filter()
+            ->unique()
+            ->values();
+
+        $stockMapByIdentifier = $imeiIdentifiers->isEmpty()
+            ? collect()
+            : Stock_model::withTrashed()
+                ->whereIn('imei', $imeiIdentifiers)
+                ->orWhereIn('serial_number', $imeiIdentifiers)
+                ->get(['id', 'imei', 'serial_number', 'variation_id'])
+                ->flatMap(function ($stock) {
+                    $map = [];
+                    if ($stock->imei) {
+                        $map[$stock->imei] = $stock;
+                    }
+                    if ($stock->serial_number) {
+                        $map[$stock->serial_number] = $stock;
+                    }
+                    return $map;
+                });
+
         $stockIdsForItems = $rows->pluck('stock_id')->filter()->unique()->values();
+        if ($stockIdsForItems->isEmpty() && $stockMapByIdentifier->isNotEmpty()) {
+            $stockIdsForItems = $stockMapByIdentifier->map(function ($stock) {
+                return $stock->id;
+            })->unique()->values();
+        }
 
         $itemsByStock = $stockIdsForItems->isEmpty()
             ? collect()
@@ -2060,11 +2092,20 @@ class Order extends Component
             $id = $row['id'];
 
             if (! $stockId || $price === null) {
+                if (! $stockId && ($row['identifier_type'] ?? null) === 'imei') {
+                    $stock = $stockMapByIdentifier[$row['identifier']] ?? null;
+                    if ($stock) {
+                        $stockId = $stock->id;
+                    }
+                }
+            }
+
+            if (! $stockId || $price === null) {
                 $errors++;
                 $failures->push([
                     'line' => $row['line'] ?? null,
                     'raw' => $row ?? null,
-                    'reason' => 'Missing stock_id or cost',
+                    'reason' => 'Missing stock_id/imei or cost',
                 ]);
                 continue;
             }
@@ -2075,7 +2116,7 @@ class Order extends Component
                 $failures->push([
                     'line' => $row['line'] ?? null,
                     'raw' => $row['raw'] ?? null,
-                    'reason' => 'Stock not found',
+                    'reason' => ($row['identifier_type'] ?? null) === 'imei' ? 'IMEI/serial not found in stock' : 'Stock not found',
                 ]);
                 continue;
             }
