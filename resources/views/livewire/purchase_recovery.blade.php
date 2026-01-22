@@ -112,6 +112,13 @@
             <h6 class="mb-0">Paste IMEI + Cost (space separated)</h6>
         </div>
         <div class="card-body">
+            @if(session('paste_result') && $import_result)
+                <div class="alert alert-info alert-dismissible fade show" role="alert">
+                    <span class="alert-inner--text"><strong>Paste result:</strong> Inserted {{ $import_result['inserted'] }}, updated {{ $import_result['updated'] ?? 0 }}, skipped {{ $import_result['skipped'] }}, errors {{ $import_result['errors'] }}, unmapped {{ $import_result['unmapped'] ?? 0 }}.</span>
+                    <button aria-label="Close" class="btn-close" data-bs-dismiss="alert" type="button"><span aria-hidden="true">&times;</span></button>
+                </div>
+                @php session()->forget('paste_result'); @endphp
+            @endif
             <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/paste' }}">
                 @csrf
                 <div class="mb-2">
