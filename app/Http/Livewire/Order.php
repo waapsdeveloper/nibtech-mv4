@@ -1691,12 +1691,54 @@ class Order extends Component
         $errors = 0;
         $unmapped = 0;
 
+        $allImeis = $rows->flatMap(function ($row) use ($imeiIndexes) {
+            $found = [];
+            foreach ($imeiIndexes as $i) {
+                $val = isset($row[$i]) ? trim((string) $row[$i]) : '';
+                if ($val !== '') {
+                    $found[] = $val;
+                }
+            }
+            return $found;
+        })->unique()->values();
+
+        $stockMap = $allImeis->isEmpty()
+            ? collect()
+            : Stock_model::withTrashed()
+                ->whereIn('imei', $allImeis)
+                ->orWhereIn('serial_number', $allImeis)
+                ->get(['id', 'imei', 'serial_number', 'variation_id'])
+                ->flatMap(function ($stock) {
+                    $map = [];
+                    if ($stock->imei) {
+                        $map[$stock->imei] = $stock;
+                    }
+                    if ($stock->serial_number) {
+                        $map[$stock->serial_number] = $stock;
+                    }
+                    return $map;
+                });
+
+        $stockIdsForItems = $stockMap->map(function ($stock) {
+            return $stock->id;
+        })->unique()->values();
+
+        $itemsByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : Order_item_model::withTrashed()
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->get(['id', 'linked_id', 'stock_id'])
+                ->groupBy('stock_id');
+
         // Build a quick lookup of linked_id by stock_id from sold items
-        $linkedByStock = DB::table('order_items')
-            ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
-            ->whereNotNull('linked_id')
-            ->groupBy('stock_id')
-            ->pluck('linked_id', 'stock_id');
+        $linkedByStock = $stockIdsForItems->isEmpty()
+            ? collect()
+            : DB::table('order_items')
+                ->select('stock_id', DB::raw('MAX(linked_id) as linked_id'))
+                ->whereNotNull('linked_id')
+                ->whereIn('stock_id', $stockIdsForItems)
+                ->groupBy('stock_id')
+                ->pluck('linked_id', 'stock_id');
 
         $reservedIds = [];
 
@@ -1712,7 +1754,7 @@ class Order extends Component
                 ->whereIn('id', $firstOpIds->values())
                 ->pluck(DB::raw('COALESCE(new_variation_id, old_variation_id)'), 'stock_id');
 
-        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$updated, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes, $priceOnly, $firstVariationByStock) {
+        $rows->chunk(300)->each(function ($chunk) use (&$inserted, &$updated, &$skipped, &$errors, &$unmapped, $map, $order_id, $orderCurrency, $linkedByStock, &$reservedIds, $imeiIndexes, $priceOnly, $firstVariationByStock, $stockMap, $itemsByStock) {
             foreach ($chunk as $row) {
                 $id = $map['id'] !== null ? ($row[$map['id']] ?? null) : null;
 
@@ -1731,10 +1773,7 @@ class Order extends Component
                 }
 
                 $stockId = null;
-                $stock = Stock_model::withTrashed()
-                    ->where('imei', $imeiValue)
-                    ->orWhere('serial_number', $imeiValue)
-                    ->first();
+                $stock = $stockMap[$imeiValue] ?? null;
                 if ($stock) {
                     $stockId = $stock->id;
                 }
@@ -1754,10 +1793,7 @@ class Order extends Component
                     if ($map['linked_id'] !== null && isset($row[$map['linked_id']]) && $row[$map['linked_id']] !== '') {
                         $id = $row[$map['linked_id']];
                     } else {
-                        $itemsForStock = Order_item_model::withTrashed()
-                            ->where('stock_id', $stockId)
-                            ->get(['id', 'linked_id']);
-
+                        $itemsForStock = $itemsByStock[$stockId] ?? collect();
                         $ids = $itemsForStock->pluck('id');
                         $linkedIds = $itemsForStock->pluck('linked_id')->filter()->unique();
                         $missingLinked = $linkedIds->diff($ids);
