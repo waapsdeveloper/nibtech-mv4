@@ -2028,18 +2028,27 @@ class Order extends Component
             return redirect()->back();
         }
 
-        $imeis = $rows->pluck('imei')->unique()->values();
+        $normalizeIdentifier = static function ($value) {
+            $value = trim((string) $value);
+            if ($value === '') {
+                return '';
+            }
+
+            return preg_replace('/[^0-9A-Za-z]/', '', $value);
+        };
+
         $stockMap = Stock_model::withTrashed()
-            ->whereIn('imei', $imeis)
-            ->orWhereIn('serial_number', $imeis)
+            ->where('order_id', $order_id)
             ->get(['id', 'imei', 'serial_number', 'variation_id'])
-            ->flatMap(function ($stock) {
+            ->flatMap(function ($stock) use ($normalizeIdentifier) {
                 $map = [];
                 if ($stock->imei) {
                     $map[$stock->imei] = $stock;
+                    $map[$normalizeIdentifier($stock->imei)] = $stock;
                 }
                 if ($stock->serial_number) {
                     $map[$stock->serial_number] = $stock;
+                    $map[$normalizeIdentifier($stock->serial_number)] = $stock;
                 }
                 return $map;
             });
@@ -2073,6 +2082,7 @@ class Order extends Component
 
         foreach ($rows as $row) {
             $imei = trim((string) $row['imei']);
+            $imeiKey = $normalizeIdentifier($imei);
             $price = is_numeric($row['cost']) ? $row['cost'] : null;
             $id = $row['id'];
 
@@ -2086,7 +2096,7 @@ class Order extends Component
                 continue;
             }
 
-            $stock = $stockMap[$imei] ?? null;
+            $stock = $stockMap[$imei] ?? $stockMap[$imeiKey] ?? null;
             if (! $stock) {
                 $errors++;
                 $failures->push([
