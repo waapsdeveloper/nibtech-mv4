@@ -160,63 +160,127 @@
     </div>
 
     @if($manual_groups && $manual_groups->count())
-    <div class="card mt-3">
-        <div class="card-header pb-0 d-flex justify-content-between align-items-center">
-            <h6 class="mb-0">Manual recovery (grouped by first variation from stock operations)</h6>
-            <small class="text-muted">Use this grouping to manually add prices/ids without a sheet.</small>
-        </div>
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-sm table-hover text-nowrap mb-0">
-                    <thead>
-                        <tr>
-                            <th>Variation</th>
-                            <th>Count</th>
-                            <th>Stock IDs</th>
-                            <th>Candidate Item IDs</th>
-                            <th>Manual Add</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach($manual_groups as $group)
+        @php
+            $groupsMissing = $manual_groups->filter(function ($group) {
+                return collect($group['candidates'])->contains(function ($c) {
+                    return !($c['has_purchase'] ?? false);
+                });
+            });
+            $groupsAdded = $manual_groups->filter(function ($group) {
+                return collect($group['candidates'])->every(function ($c) {
+                    return (bool) ($c['has_purchase'] ?? false);
+                });
+            });
+        @endphp
+
+        <div class="card mt-3">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Manual recovery (not added yet)</h6>
+                <small class="text-muted">Grouped by first variation from stock operations.</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-nowrap mb-0">
+                        <thead>
                             <tr>
-                                <td>{{ $group['label'] }} ({{ $group['variation_id'] }})</td>
-                                <td>{{ $group['count'] }}</td>
-                                <td style="max-width:520px; white-space:normal;">
-                                    {{ implode(', ', $group['stock_ids']) }}
-                                </td>
-                                <td style="max-width:320px; white-space:normal;">
-                                    @php
-                                        $pairs = collect($group['candidates'])->map(function($c){
-                                            $imei = $c['imei'] ?: ($c['serial'] ?? '');
-                                            $status = $c['has_purchase'] ? 'has purchase' : 'missing';
-                                            return $c['stock_id'].' ('.$imei.') → '.($c['id'] ?? 'none').' · '.$status;
-                                        })->implode(', ');
-                                    @endphp
-                                    {{ $pairs }}
-                                </td>
-                                <td style="min-width:220px;">
-                                    @foreach($group['candidates'] as $candidate)
-                                        @if(!($candidate['has_purchase'] ?? false))
-                                            <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/manual-add' }}" class="d-flex gap-1 mb-1">
-                                                @csrf
-                                                <input type="hidden" name="stock_id" value="{{ $candidate['stock_id'] }}">
-                                                <input type="number" step="0.01" class="form-control form-control-sm" name="price" placeholder="Price" required>
-                                                <input type="number" class="form-control form-control-sm" name="id" value="{{ $candidate['id'] }}" placeholder="ID">
-                                                <button type="submit" class="btn btn-sm btn-primary">Add</button>
-                                            </form>
-                                        @else
-                                            <span class="badge bg-success">Already added</span>
-                                        @endif
-                                    @endforeach
-                                </td>
+                                <th>Variation</th>
+                                <th>Count</th>
+                                <th>Stock IDs</th>
+                                <th>Candidate Item IDs</th>
+                                <th>Manual Add</th>
                             </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            @forelse($groupsMissing as $group)
+                                <tr>
+                                    <td>{{ $group['label'] }} ({{ $group['variation_id'] }})</td>
+                                    <td>{{ $group['count'] }}</td>
+                                    <td style="max-width:520px; white-space:normal;">
+                                        {{ implode(', ', $group['stock_ids']) }}
+                                    </td>
+                                    <td style="max-width:320px; white-space:normal;">
+                                        @php
+                                            $pairs = collect($group['candidates'])->map(function($c){
+                                                $imei = $c['imei'] ?: ($c['serial'] ?? '');
+                                                $status = $c['has_purchase'] ? 'has purchase' : 'missing';
+                                                return $c['stock_id'].' ('.$imei.') → '.($c['id'] ?? 'none').' · '.$status;
+                                            })->implode(', ');
+                                        @endphp
+                                        {{ $pairs }}
+                                    </td>
+                                    <td style="min-width:220px;">
+                                        @foreach($group['candidates'] as $candidate)
+                                            @if(!($candidate['has_purchase'] ?? false))
+                                                <form method="POST" action="{{ url('purchase/recovery').'/'.$order_id.'/manual-add' }}" class="d-flex gap-1 mb-1">
+                                                    @csrf
+                                                    <input type="hidden" name="stock_id" value="{{ $candidate['stock_id'] }}">
+                                                    <input type="number" step="0.01" class="form-control form-control-sm" name="price" placeholder="Price" required>
+                                                    <input type="number" class="form-control form-control-sm" name="id" value="{{ $candidate['id'] }}" placeholder="ID">
+                                                    <button type="submit" class="btn btn-sm btn-primary">Add</button>
+                                                </form>
+                                            @endif
+                                        @endforeach
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-muted">No missing items.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
-    </div>
+
+        <div class="card mt-3">
+            <div class="card-header pb-0 d-flex justify-content-between align-items-center">
+                <h6 class="mb-0">Manual recovery (already added)</h6>
+                <small class="text-muted">Grouped by first variation from stock operations.</small>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover text-nowrap mb-0">
+                        <thead>
+                            <tr>
+                                <th>Variation</th>
+                                <th>Count</th>
+                                <th>Stock IDs</th>
+                                <th>Candidate Item IDs</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($groupsAdded as $group)
+                                <tr>
+                                    <td>{{ $group['label'] }} ({{ $group['variation_id'] }})</td>
+                                    <td>{{ $group['count'] }}</td>
+                                    <td style="max-width:520px; white-space:normal;">
+                                        {{ implode(', ', $group['stock_ids']) }}
+                                    </td>
+                                    <td style="max-width:320px; white-space:normal;">
+                                        @php
+                                            $pairs = collect($group['candidates'])->map(function($c){
+                                                $imei = $c['imei'] ?: ($c['serial'] ?? '');
+                                                return $c['stock_id'].' ('.$imei.') → '.($c['id'] ?? 'none').' · has purchase';
+                                            })->implode(', ');
+                                        @endphp
+                                        {{ $pairs }}
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-success">Already added</span>
+                                    </td>
+                                </tr>
+                            @empty
+                                <tr>
+                                    <td colspan="5" class="text-muted">No completed items.</td>
+                                </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     @endif
 
     @if($import_result)
