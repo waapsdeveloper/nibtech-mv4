@@ -1599,7 +1599,7 @@ class SupportTickets extends Component
         }
 
         return $collection->map(function ($item) use ($orderTotal) {
-            $qty = (int) ($item->quantity ?? 1);
+            $qty = (int) (1);
             $qty = $qty > 0 ? $qty : 1;
             $price = (float) ($item->price ?? 0);
 
@@ -1622,7 +1622,7 @@ class SupportTickets extends Component
         }
 
         $totalUnits = $collection->reduce(function ($carry, $itm) {
-            $qty = (int) ($itm->quantity ?? 1);
+            $qty = (int) (1);
             return $carry + ($qty > 0 ? $qty : 1);
         }, 0);
 
@@ -1636,7 +1636,7 @@ class SupportTickets extends Component
 
         $currentSum = $collection->reduce(function ($carry, $itm) {
             $price = $itm->price ?? $itm->selling_price ?? 0;
-            $qty = (int) ($itm->quantity ?? 1);
+            $qty = (int) (1);
             $qty = $qty > 0 ? $qty : 1;
 
             return $carry + ((float) $price * $qty);
