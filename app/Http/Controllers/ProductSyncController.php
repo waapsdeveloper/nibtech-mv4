@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Brand_model;
+use App\Models\Category_model;
 use App\Models\Marketplace_model;
 use App\Models\Products_model;
 use App\Models\Variation_model;
@@ -20,6 +22,8 @@ class ProductSyncController extends Controller
             $perPage = $request->get('per_page', 100);
             
             $products = Products_model::with([
+                'brand_id',
+                'category_id',
                 'variations' => function ($query) {
                     $query->where('state', '!=', 4); // Exclude archived
                 },
@@ -30,11 +34,48 @@ class ProductSyncController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
             $data = $products->map(function ($product) {
+                // Get brand data
+                $brandData = null;
+                if ($product->brand) {
+                    // Access relationship (method is brand_id() but accessed as property)
+                    $brand = $product->brand_id;
+                    if ($brand && $brand instanceof Brand_model) {
+                        $brandData = [
+                            'id' => $brand->id,
+                            'name' => $brand->getAttribute('name') ?? null,
+                            'slug' => $brand->getAttribute('slug') ?? null,
+                            'description' => $brand->getAttribute('description') ?? null,
+                        ];
+                    } else {
+                        // Fallback: return just the ID
+                        $brandData = ['id' => $product->brand];
+                    }
+                }
+
+                // Get category data
+                $categoryData = null;
+                if ($product->category) {
+                    // Access relationship (method is category_id() but accessed as property)
+                    $category = $product->category_id;
+                    if ($category && $category instanceof Category_model) {
+                        $categoryData = [
+                            'id' => $category->id,
+                            'name' => $category->getAttribute('name') ?? null,
+                            'slug' => $category->getAttribute('slug') ?? null,
+                            'description' => $category->getAttribute('description') ?? null,
+                            'parent_id' => $category->getAttribute('parent_id') ?? null,
+                        ];
+                    } else {
+                        // Fallback: return just the ID
+                        $categoryData = ['id' => $product->category];
+                    }
+                }
+
                 return [
                     'id' => $product->id,
                     'model' => $product->model,
-                    'brand' => $product->brand,
-                    'category' => $product->category,
+                    'brand' => $brandData,
+                    'category' => $categoryData,
                     'variations' => $product->variations->map(function ($variation) {
                         $availableStock = $variation->available_stocks()->count();
                         
@@ -102,6 +143,8 @@ class ProductSyncController extends Controller
             ->orWhere('updated_at', '>=', $since)
             ->orWhere('created_at', '>=', $since)
             ->with([
+                'brand_id',
+                'category_id',
                 'variations' => function ($query) use ($since) {
                     $query->where(function ($q) use ($since) {
                         $q->where('updated_at', '>=', $since)
@@ -116,11 +159,48 @@ class ProductSyncController extends Controller
             ->paginate($perPage, ['*'], 'page', $page);
 
             $data = $products->map(function ($product) {
+                // Get brand data
+                $brandData = null;
+                if ($product->brand) {
+                    // Access relationship (method is brand_id() but accessed as property)
+                    $brand = $product->brand_id;
+                    if ($brand && $brand instanceof Brand_model) {
+                        $brandData = [
+                            'id' => $brand->id,
+                            'name' => $brand->getAttribute('name') ?? null,
+                            'slug' => $brand->getAttribute('slug') ?? null,
+                            'description' => $brand->getAttribute('description') ?? null,
+                        ];
+                    } else {
+                        // Fallback: return just the ID
+                        $brandData = ['id' => $product->brand];
+                    }
+                }
+
+                // Get category data
+                $categoryData = null;
+                if ($product->category) {
+                    // Access relationship (method is category_id() but accessed as property)
+                    $category = $product->category_id;
+                    if ($category && $category instanceof Category_model) {
+                        $categoryData = [
+                            'id' => $category->id,
+                            'name' => $category->getAttribute('name') ?? null,
+                            'slug' => $category->getAttribute('slug') ?? null,
+                            'description' => $category->getAttribute('description') ?? null,
+                            'parent_id' => $category->getAttribute('parent_id') ?? null,
+                        ];
+                    } else {
+                        // Fallback: return just the ID
+                        $categoryData = ['id' => $product->category];
+                    }
+                }
+
                 return [
                     'id' => $product->id,
                     'model' => $product->model,
-                    'brand' => $product->brand,
-                    'category' => $product->category,
+                    'brand' => $brandData,
+                    'category' => $categoryData,
                     'variations' => $product->variations->map(function ($variation) {
                         $availableStock = $variation->available_stocks()->count();
                         

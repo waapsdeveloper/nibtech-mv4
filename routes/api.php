@@ -94,10 +94,4 @@ Route::group(['middleware' => ['internal.only']], function () {
 
 });
 
-// Product Sync API routes for Syntora MV4
-Route::prefix('sync')->middleware(['validate.sync.api'])->group(function () {
-    Route::get('/products', [\App\Http\Controllers\ProductSyncController::class, 'syncProducts'])
-        ->name('sync.products');
-    Route::get('/products/updated', [\App\Http\Controllers\ProductSyncController::class, 'syncUpdatedProducts'])
-        ->name('sync.products.updated');
-});
+// Product Sync API routes for Syntora MV4 have been moved to routes/mv4.php

@@ -44,6 +44,11 @@ class RouteServiceProvider extends ServiceProvider
                 ->namespace($this->namespace)
                 ->group(base_path('routes/api.php'));
 
+            // MV4 routes are registered directly without 'api' prefix
+            // Final URL will be: domain/mv4/sync/products
+            Route::namespace($this->namespace)
+                ->group(base_path('routes/mv4.php'));
+
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
