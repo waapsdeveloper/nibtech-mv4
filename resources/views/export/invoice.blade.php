@@ -180,9 +180,9 @@
                             }
 
                             $itemPrice = $item->price ?? $item->selling_price ?? 0;
-                            $itemTotal = $itemPrice * max(1, (int) ($item->quantity ?? 1));
+                            $itemTotal = $itemPrice * 1; // Quantity is always 1
                             $totalAmount += $itemTotal;
-                            $totalQty += max(1, (int) ($item->quantity ?? 1));
+                            $totalQty += 1;
 
                             $storage = $item->variation->storage_id ? $item->variation->storage_id->name . " - " : '';
                             $color = $item->variation->color_id ? $item->variation->color_id->name . " - " : '';
@@ -192,7 +192,7 @@
                         <tr>
                             <td width="320">{{ $productName . " - " . $storage . $color }} <br> {{ $imei }}</td>
                             <td width="80" align="right">{{ $order->currency_id->sign }}{{ number_format($itemPrice,2) }}</td>
-                            <td width="40">{{ max(1, (int) ($item->quantity ?? 1)) }}</td>
+                            <td width="40">1</td>
                             <td width="90" align="right">{{ $order->currency_id->sign }}{{ number_format($itemTotal,2) }}</td>
                         </tr>
                     @endforeach
