@@ -94,9 +94,9 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('backup:email')
-            ->hourly()
-            ->between('6:00', '02:00');
+        // $schedule->command('backup:email')
+        //     ->hourly()
+        //     ->between('6:00', '02:00');
 
         $schedule->command('functions:daily')
             ->everyFourHours();
