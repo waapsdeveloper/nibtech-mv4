@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Log;
 /**
  * V2 Unified Marketplace Order Sync Command
  * Replaces RefreshLatest, RefreshNew, and RefreshOrders commands
- * 
+ *
  * Usage:
  *   php artisan v2:sync-orders --type=new
  *   php artisan v2:sync-orders --type=modified
@@ -26,7 +26,7 @@ class SyncMarketplaceOrders extends Command
      *
      * @var string
      */
-    protected $signature = 'v2:sync-orders 
+    protected $signature = 'v2:sync-orders
                             {--type=all : Sync type: new, modified, care, incomplete, or all}
                             {--marketplace= : Specific marketplace ID to sync}
                             {--page-size=50 : Page size for API requests}
@@ -63,7 +63,7 @@ class SyncMarketplaceOrders extends Command
             'memory_usage' => memory_get_usage(true),
             'options_received' => $this->options()
         ]);
-        
+
         $type = $this->option('type');
         $marketplaceId = $this->option('marketplace') ? (int) $this->option('marketplace') : null;
         $pageSize = (int) $this->option('page-size');
@@ -94,30 +94,30 @@ class SyncMarketplaceOrders extends Command
         // Log sync start to Slack (suppress if logged in last hour to prevent spam)
         $syncStartKey = 'slack_sync_start:' . $type . ':' . ($marketplaceId ?? 'all') . ':' . date('Y-m-d-H');
         $marketplaceInfo = $marketplaceId ? "Marketplace ID: {$marketplaceId}" : "All marketplaces";
-        
+
         if (!\Illuminate\Support\Facades\Cache::has($syncStartKey)) {
             // First time in this hour - post to Slack AND file
-            SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
-                'command' => 'v2:sync-orders',
-                'type' => $type,
-                'marketplace_id' => $marketplaceId,
-                'marketplace_info' => $marketplaceInfo,
-                'page_size' => $pageSize,
-                'days_back' => $daysBack
-            ], true, false); // allowInLoop=true, skipSlack=false (post to Slack)
+            // SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+            //     'command' => 'v2:sync-orders',
+            //     'type' => $type,
+            //     'marketplace_id' => $marketplaceId,
+            //     'marketplace_info' => $marketplaceInfo,
+            //     'page_size' => $pageSize,
+            //     'days_back' => $daysBack
+            // ], true, false); // allowInLoop=true, skipSlack=false (post to Slack)
             // Cache for 1 hour to prevent repeated "started" messages
             \Illuminate\Support\Facades\Cache::put($syncStartKey, true, now()->addHour());
         } else {
             // Suppressed - log to file only (skip Slack)
-            SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
-                'command' => 'v2:sync-orders',
-                'type' => $type,
-                'marketplace_id' => $marketplaceId,
-                'marketplace_info' => $marketplaceInfo,
-                'page_size' => $pageSize,
-                'days_back' => $daysBack,
-                'note' => 'Suppressed from Slack (logged once per hour).'
-            ], true, true); // allowInLoop=true, skipSlack=true (file only)
+            // SlackLogService::post('order_sync', 'info', "🔄 V2 Marketplace Order Sync Started", [
+            //     'command' => 'v2:sync-orders',
+            //     'type' => $type,
+            //     'marketplace_id' => $marketplaceId,
+            //     'marketplace_info' => $marketplaceInfo,
+            //     'page_size' => $pageSize,
+            //     'days_back' => $daysBack,
+            //     'note' => 'Suppressed from Slack (logged once per hour).'
+            // ], true, true); // allowInLoop=true, skipSlack=true (file only)
         }
 
         $startTime = microtime(true);
@@ -183,7 +183,7 @@ class SyncMarketplaceOrders extends Command
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             // Send error to Slack
             SlackLogService::post('order_sync', 'error', "V2 Sync Command Failed: {$e->getMessage()}", [
                 'command' => 'v2:sync-orders',
@@ -193,7 +193,7 @@ class SyncMarketplaceOrders extends Command
                 'file' => $e->getFile(),
                 'line' => $e->getLine()
             ], true);
-            
+
             return 1;
         }
     }
@@ -205,9 +205,9 @@ class SyncMarketplaceOrders extends Command
     {
         $this->info("📦 Fetching new orders...");
         Log::info("📦 Fetching new orders...", ['command' => 'v2:sync-orders', 'type' => 'new', 'marketplace_id' => $marketplaceId]);
-        
+
         $result = $this->syncService->syncNewOrders($marketplaceId, $params);
-        
+
         $this->info("✅ Synced: {$result['synced']} orders");
         Log::info("✅ Synced new orders", [
             'command' => 'v2:sync-orders',
@@ -216,10 +216,10 @@ class SyncMarketplaceOrders extends Command
             'errors' => $result['errors'],
             'marketplace_id' => $marketplaceId
         ]);
-        
+
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
-            
+
             // Send error summary to Slack
             SlackLogService::post('order_sync', 'warning', "V2 Sync New Orders: {$result['errors']} error(s) occurred", [
                 'command' => 'v2:sync-orders',
@@ -239,9 +239,9 @@ class SyncMarketplaceOrders extends Command
     {
         $this->info("🔄 Fetching modified orders...");
         Log::info("🔄 Fetching modified orders...", ['command' => 'v2:sync-orders', 'type' => 'modified', 'marketplace_id' => $marketplaceId]);
-        
+
         $result = $this->syncService->syncModifiedOrders($marketplaceId, $params);
-        
+
         $this->info("✅ Synced: {$result['synced']} orders");
         Log::info("✅ Synced modified orders", [
             'command' => 'v2:sync-orders',
@@ -250,10 +250,10 @@ class SyncMarketplaceOrders extends Command
             'errors' => $result['errors'],
             'marketplace_id' => $marketplaceId
         ]);
-        
+
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
-            
+
             // Send error summary to Slack
             SlackLogService::post('order_sync', 'warning', "V2 Sync Modified Orders: {$result['errors']} error(s) occurred", [
                 'command' => 'v2:sync-orders',
@@ -273,9 +273,9 @@ class SyncMarketplaceOrders extends Command
     {
         $this->info("🔧 Fetching care records...");
         Log::info("🔧 Fetching care records...", ['command' => 'v2:sync-orders', 'type' => 'care', 'marketplace_id' => $marketplaceId]);
-        
+
         $result = $this->syncService->syncCareRecords($marketplaceId, $params);
-        
+
         $this->info("✅ Synced: {$result['synced']} care records");
         Log::info("✅ Synced care records", [
             'command' => 'v2:sync-orders',
@@ -284,10 +284,10 @@ class SyncMarketplaceOrders extends Command
             'errors' => $result['errors'],
             'marketplace_id' => $marketplaceId
         ]);
-        
+
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
-            
+
             // Send error summary to Slack
             SlackLogService::post('order_sync', 'warning', "V2 Sync Care Records: {$result['errors']} error(s) occurred", [
                 'command' => 'v2:sync-orders',
@@ -312,9 +312,9 @@ class SyncMarketplaceOrders extends Command
             'marketplace_id' => $marketplaceId,
             'days_back' => $daysBack
         ]);
-        
+
         $result = $this->syncService->syncIncompleteOrders($marketplaceId, $daysBack);
-        
+
         $this->info("✅ Synced: {$result['synced']} orders");
         Log::info("✅ Synced incomplete orders", [
             'command' => 'v2:sync-orders',
@@ -323,10 +323,10 @@ class SyncMarketplaceOrders extends Command
             'errors' => $result['errors'],
             'marketplace_id' => $marketplaceId
         ]);
-        
+
         if ($result['errors'] > 0) {
             $this->warn("⚠️  Errors: {$result['errors']}");
-            
+
             // Send error summary to Slack
             SlackLogService::post('order_sync', 'warning', "V2 Sync Incomplete Orders: {$result['errors']} error(s) occurred", [
                 'command' => 'v2:sync-orders',
@@ -358,7 +358,7 @@ class SyncMarketplaceOrders extends Command
                 $totalErrors += $result['errors'] ?? 0;
 
                 $status = $result['errors'] > 0 ? '⚠️' : '✅';
-                $this->info("{$status} {$type}: {$result['synced']} synced" . 
+                $this->info("{$status} {$type}: {$result['synced']} synced" .
                            ($result['errors'] > 0 ? ", {$result['errors']} errors" : ""));
             }
         }
@@ -367,7 +367,7 @@ class SyncMarketplaceOrders extends Command
         $this->info("Total: {$totalSynced} synced, {$totalErrors} errors");
         $this->info("Duration: {$duration}s");
         $this->info("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-        
+
         // Log summary to file
         Log::info("📊 V2 Marketplace Order Sync Summary", [
             'command' => 'v2:sync-orders',
