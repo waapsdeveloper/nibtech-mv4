@@ -13,7 +13,7 @@ return new class extends Migration {
 
         Schema::create('repair_parts', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('product_id')->constrained('products')->cascadeOnUpdate()->cascadeOnDelete();
+            $table->bigInteger('product_id');
             $table->string('name');
             $table->string('sku')->nullable();
             $table->string('compatible_device')->nullable();
@@ -24,6 +24,11 @@ return new class extends Migration {
             $table->timestamps();
             $table->softDeletes();
             $table->index(['product_id', 'active']);
+            $table->foreign('product_id')
+                ->references('id')
+                ->on('products')
+                ->cascadeOnUpdate()
+                ->cascadeOnDelete();
         });
     }
 
