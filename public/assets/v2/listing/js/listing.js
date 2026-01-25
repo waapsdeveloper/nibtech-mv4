@@ -2918,4 +2918,3 @@ window.updateBackmarketStockBadge = function(variationId, marketplaceId, quantit
         }
     }
 };
-
