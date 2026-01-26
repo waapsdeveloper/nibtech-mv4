@@ -83,6 +83,7 @@ class SupportTickets extends Component
     public $aiDraft = null;
     public $aiError = null;
     public $includeReplacementItems = false;
+    public array $returnedItemIds = [];
     protected ?int $replyFormThreadId = null;
 
     protected $queryString = [
@@ -161,6 +162,7 @@ class SupportTickets extends Component
         $this->careFolderDetails = null;
         $this->careFolderMessages = [];
         $this->careFolderError = null;
+        $this->returnedItemIds = [];
         $this->resetPage();
     }
 
@@ -833,6 +835,7 @@ class SupportTickets extends Component
         $this->orderActionPayload = null;
         $this->invoiceActionStatus = null;
         $this->invoiceActionError = null;
+        $this->returnedItemIds = [];
 
         if (! $thread) {
             return;
@@ -841,6 +844,63 @@ class SupportTickets extends Component
         $service = app(MarketplaceOrderActionService::class);
         $this->marketplaceOrderUrl = $service->buildMarketplaceOrderUrl($thread);
         $this->canCancelOrder = $service->supportsCancellation($thread);
+        $this->returnedItemIds = $this->computeReturnedItemIds($thread);
+    }
+
+    protected function computeReturnedItemIds(?SupportThread $thread): array
+    {
+        if (! $thread || ! $thread->order) {
+            return [];
+        }
+
+        $orderId = $thread->order->id;
+
+        $allItems = Order_item_model::with(['stock', 'replacement.stock', 'replacement.replacement.stock'])
+            ->where('order_id', $orderId)
+            ->get()
+            ->map(fn ($itm) => $this->applyReplacementOverlay($itm));
+
+        if ($allItems->isEmpty()) {
+            return [];
+        }
+
+        $allItemIds = $allItems->pluck('id')->all();
+        $allStockIds = $allItems->pluck('stock_id')->filter()->unique()->values()->all();
+
+        $linkedReturnIds = Order_item_model::query()
+            ->whereIn('linked_id', $allItemIds)
+            ->pluck('linked_id')
+            ->filter()
+            ->unique()
+            ->values()
+            ->all();
+
+        $returnedStockIds = empty($allStockIds)
+            ? []
+            : Order_item_model::query()
+                ->whereIn('stock_id', $allStockIds)
+                ->whereHas('order', function ($orderQuery) {
+                    $orderQuery->whereIn('order_type_id', [4, 6]);
+                })
+                ->pluck('stock_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
+        return $allItems
+            ->filter(function ($itm) use ($linkedReturnIds, $returnedStockIds) {
+                $itemStatus = (int) ($itm->status ?? 0);
+                $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
+                $stockId = $itm->stock_id;
+
+                return $itemStatus === 6
+                    || $stockStatus === 1
+                    || in_array($itm->id, $linkedReturnIds, true)
+                    || ($stockId && in_array($stockId, $returnedStockIds, true));
+            })
+            ->pluck('id')
+            ->all();
     }
 
     protected function hydrateCareFolder(?SupportThread $thread = null): void
