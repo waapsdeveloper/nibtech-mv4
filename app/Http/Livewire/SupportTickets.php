@@ -1599,9 +1599,7 @@ class SupportTickets extends Component
             'replacement.replacement.stock',
         ])->where('order_id', $order->id);
 
-        if ($isRefund && !empty($this->selectedOrderItems)) {
-            $query->whereIn('id', $this->selectedOrderItems);
-        } elseif ($isPartial && !empty($this->selectedOrderItems)) {
+        if (!empty($this->selectedOrderItems)) {
             $query->whereIn('id', $this->selectedOrderItems);
         } elseif ($isRefund) {
             $returnedIds = $this->computeReturnedItemIds($thread);
