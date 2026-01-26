@@ -1632,18 +1632,24 @@ class SupportTickets extends Component
         } elseif ($isPartial && !empty($this->selectedOrderItems)) {
             $query->whereIn('id', $this->selectedOrderItems);
         } elseif ($isRefund) {
-            $query->where(function ($itemQuery) {
-                $itemQuery->where('status', 6)
-                    ->orWhereHas('childs')
-                    ->orWhereHas('stock', function ($stockQuery) {
-                        $stockQuery->where('status', 1)
-                            ->orWhereHas('order_items', function ($stockItemQuery) {
-                                $stockItemQuery->whereHas('order', function ($orderQuery) {
-                                    $orderQuery->whereIn('order_type_id', [4, 6]);
+            $returnedIds = $this->computeReturnedItemIds($thread);
+
+            if (! empty($returnedIds)) {
+                $query->whereIn('id', $returnedIds);
+            } else {
+                $query->where(function ($itemQuery) {
+                    $itemQuery->where('status', 6)
+                        ->orWhereHas('childs')
+                        ->orWhereHas('stock', function ($stockQuery) {
+                            $stockQuery->where('status', 1)
+                                ->orWhereHas('order_items', function ($stockItemQuery) {
+                                    $stockItemQuery->whereHas('order', function ($orderQuery) {
+                                        $orderQuery->whereIn('order_type_id', [4, 6]);
+                                    });
                                 });
-                            });
-                    });
-            });
+                        });
+                });
+            }
         } elseif (! $includeReplacements) {
             $count = (clone $query)->count();
 
