@@ -107,6 +107,9 @@
                             </form>
                         </div>
                         <div>
+                            <button type="button" class="btn btn-success me-2" onclick="processAllJobs()">
+                                <i class="fe fe-play me-1"></i>Process All Queued
+                            </button>
                             <button type="button" class="btn btn-danger" onclick="clearAllJobs()">
                                 <i class="fe fe-trash-2 me-1"></i>Clear All
                             </button>
@@ -276,6 +279,52 @@ function deleteJob(jobId) {
     .catch(error => {
         console.error('Error:', error);
         showAlert('danger', 'An error occurred while deleting the job');
+    });
+}
+
+function processAllJobs() {
+    const queuedCount = {{ $stats['queued'] ?? 0 }};
+    
+    if (queuedCount === 0) {
+        showAlert('info', 'No queued jobs to process');
+        return;
+    }
+    
+    if (!confirm(`Are you sure you want to process all ${queuedCount} queued job(s)? This will execute them immediately.`)) {
+        return;
+    }
+    
+    const btn = event.target.closest('button');
+    const originalHtml = btn.innerHTML;
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fe fe-loader fa-spin me-1"></i>Processing...';
+    
+    fetch('{{ route("v2.logs.jobs.process-all") }}', {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            showAlert('success', data.message || 'Jobs processed successfully');
+            setTimeout(() => {
+                window.location.reload();
+            }, 1500);
+        } else {
+            showAlert('danger', data.error || 'Failed to process jobs');
+            btn.disabled = false;
+            btn.innerHTML = originalHtml;
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        showAlert('danger', 'An error occurred while processing jobs');
+        btn.disabled = false;
+        btn.innerHTML = originalHtml;
     });
 }
 

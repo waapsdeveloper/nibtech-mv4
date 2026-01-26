@@ -57,6 +57,26 @@
                 </div>
             </div>
 
+            <!-- Action Buttons -->
+            <div class="card mb-4">
+                <div class="card-body">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div>
+                            <h5 class="mb-0">Stock Comparisons</h5>
+                            <small class="text-muted">Manage stock comparison records</small>
+                        </div>
+                        <div>
+                            <form action="{{ route('v2.listing-stock-comparisons.truncate') }}" method="POST" class="d-inline" onsubmit="return confirm('⚠️ WARNING: This will permanently delete ALL stock comparison records. This action cannot be undone. Are you sure?');">
+                                @csrf
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fe fe-trash-2"></i> Truncate All Records
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- Filters -->
             <div class="card mb-4">
                 <div class="card-body">

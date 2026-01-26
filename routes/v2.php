@@ -107,6 +107,7 @@ Route::prefix('v2')->group(function () {
     Route::get('logs/jobs', [\App\Http\Controllers\V2\JobsController::class, 'index'])->name('v2.logs.jobs');
     Route::get('logs/jobs/{id}', [\App\Http\Controllers\V2\JobsController::class, 'show'])->name('v2.logs.jobs.show');
     Route::post('logs/jobs/{id}/process', [\App\Http\Controllers\V2\JobsController::class, 'process'])->name('v2.logs.jobs.process');
+    Route::post('logs/jobs/process-all', [\App\Http\Controllers\V2\JobsController::class, 'processAll'])->name('v2.logs.jobs.process-all');
     Route::delete('logs/jobs/{id}', [\App\Http\Controllers\V2\JobsController::class, 'destroy'])->name('v2.logs.jobs.destroy');
     Route::delete('logs/jobs', [\App\Http\Controllers\V2\JobsController::class, 'clear'])->name('v2.logs.jobs.clear');
     
@@ -145,6 +146,7 @@ Route::prefix('v2')->group(function () {
         Route::get('/', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'index'])->name('v2.stock-deduction-logs.index');
         Route::get('create', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'create'])->name('v2.stock-deduction-logs.create');
         Route::post('store', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'store'])->name('v2.stock-deduction-logs.store');
+        Route::post('truncate', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'truncate'])->name('v2.stock-deduction-logs.truncate');
         Route::get('{id}', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'show'])->name('v2.stock-deduction-logs.show');
         Route::get('{id}/edit', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'edit'])->name('v2.stock-deduction-logs.edit');
         Route::match(['put', 'patch'], '{id}', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'update'])->name('v2.stock-deduction-logs.update');
@@ -154,6 +156,7 @@ Route::prefix('v2')->group(function () {
     // Listing Stock Comparisons (Extras)
     Route::prefix('listing-stock-comparisons')->group(function () {
         Route::get('/', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'index'])->name('v2.listing-stock-comparisons.index');
+        Route::post('truncate', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'truncate'])->name('v2.listing-stock-comparisons.truncate');
         Route::get('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'show'])->name('v2.listing-stock-comparisons.show');
         Route::delete('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'destroy'])->name('v2.listing-stock-comparisons.destroy');
     });

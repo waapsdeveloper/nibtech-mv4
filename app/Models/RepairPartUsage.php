@@ -10,6 +10,8 @@ class RepairPartUsage extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'repair_part_usages';
+
     protected $fillable = [
         'process_id',
         'process_stock_id',
@@ -29,17 +31,17 @@ class RepairPartUsage extends Model
 
     public function process()
     {
-        return $this->belongsTo(Process::class, 'process_id');
+        return $this->belongsTo(Process_model::class, 'process_id');
     }
 
     public function processStock()
     {
-        return $this->belongsTo(Process_stock::class, 'process_stock_id');
+        return $this->belongsTo(Process_stock_model::class, 'process_stock_id');
     }
 
     public function stock()
     {
-        return $this->belongsTo(Stock::class, 'stock_id');
+        return $this->belongsTo(Stock_model::class, 'stock_id');
     }
 
     public function technician()
