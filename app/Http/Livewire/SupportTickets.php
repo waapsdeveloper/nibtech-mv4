@@ -869,6 +869,9 @@ class SupportTickets extends Component
 
         $linkedReturnIds = Order_item_model::query()
             ->whereIn('linked_id', $allItemIds)
+            ->whereHas('order', function ($orderQuery) {
+                $orderQuery->whereIn('order_type_id', [4, 6]);
+            })
             ->pluck('linked_id')
             ->filter()
             ->unique()
