@@ -1286,6 +1286,8 @@ class SupportTickets extends Component
             ->map(fn ($itm) => $this->applyReplacementOverlay($itm));
 
         $allItemIds = $allItems->pluck('id')->all();
+        $allStockIds = $allItems->pluck('stock_id')->filter()->unique()->values()->all();
+
         $linkedReturnIds = Order_item_model::query()
             ->whereIn('linked_id', $allItemIds)
             ->pluck('linked_id')
@@ -1294,20 +1296,35 @@ class SupportTickets extends Component
             ->values()
             ->all();
 
+        $returnedStockIds = empty($allStockIds)
+            ? []
+            : Order_item_model::query()
+                ->whereIn('stock_id', $allStockIds)
+                ->whereHas('order', function ($orderQuery) {
+                    $orderQuery->whereIn('order_type_id', [4, 6]);
+                })
+                ->pluck('stock_id')
+                ->filter()
+                ->unique()
+                ->values()
+                ->all();
+
         $returnedItemIds = $allItems
-            ->filter(function ($itm) use ($linkedReturnIds) {
+            ->filter(function ($itm) use ($linkedReturnIds, $returnedStockIds) {
                 $itemStatus = (int) ($itm->status ?? 0);
                 $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
+                $stockId = $itm->stock_id;
 
                 return $itemStatus === 6
                     || $stockStatus === 1
-                    || in_array($itm->id, $linkedReturnIds, true);
+                    || in_array($itm->id, $linkedReturnIds, true)
+                    || ($stockId && in_array($stockId, $returnedStockIds, true));
             })
             ->pluck('id')
             ->all();
 
         if (empty($returnedItemIds)) {
-            $this->invoiceActionError = 'No returned items detected for this order (order item status: returned/refunded, linked return item, or stock status: available).';
+            $this->invoiceActionError = 'No returned items detected for this order (order item status: returned/refunded, linked return item, return order item, or stock status: available).';
 
             return;
         }
@@ -1559,7 +1576,12 @@ class SupportTickets extends Component
                 $itemQuery->where('status', 6)
                     ->orWhereHas('childs')
                     ->orWhereHas('stock', function ($stockQuery) {
-                        $stockQuery->where('status', 1);
+                        $stockQuery->where('status', 1)
+                            ->orWhereHas('order_items', function ($stockItemQuery) {
+                                $stockItemQuery->whereHas('order', function ($orderQuery) {
+                                    $orderQuery->whereIn('order_type_id', [4, 6]);
+                                });
+                            });
                     });
             });
         } elseif (! $includeReplacements) {
