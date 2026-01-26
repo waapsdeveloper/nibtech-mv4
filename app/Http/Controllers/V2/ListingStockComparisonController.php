@@ -113,4 +113,15 @@ class ListingStockComparisonController extends Controller
         return redirect()->route('v2.listing-stock-comparisons.index')
             ->with('success', 'Stock comparison deleted successfully.');
     }
+    
+    /**
+     * Truncate all stock comparisons
+     */
+    public function truncate()
+    {
+        DB::table('listing_stock_comparisons')->truncate();
+        
+        return redirect()->route('v2.listing-stock-comparisons.index')
+            ->with('success', 'All stock comparisons have been truncated successfully.');
+    }
 }

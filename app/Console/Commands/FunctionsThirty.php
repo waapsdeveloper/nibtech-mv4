@@ -15,6 +15,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
+use Carbon\Carbon;
 
 class FunctionsThirty extends Command
 {
@@ -218,6 +219,9 @@ class FunctionsThirty extends Command
      */
     private function createStockComparisons()
     {
+        // Auto-truncate listing_stock_comparisons if oldest record is more than 3 hours old
+        $this->autoTruncateStockComparisons();
+        
         $bm = new BackMarketAPIController();
         $listings = $bm->getAllListings();
         
@@ -1207,5 +1211,27 @@ class FunctionsThirty extends Command
         }
 
         return Currency_model::where('code', $currencyCode)->value('id');
+    }
+
+    /**
+     * Auto-truncate listing_stock_comparisons table if oldest record is more than 3 hours old
+     */
+    private function autoTruncateStockComparisons()
+    {
+        $oldestRecord = DB::table('listing_stock_comparisons')
+            ->orderBy('compared_at', 'asc')
+            ->first();
+
+        if ($oldestRecord) {
+            $oldestDate = Carbon::parse($oldestRecord->compared_at);
+            $hoursAgo = now()->diffInHours($oldestDate);
+
+            if ($hoursAgo >= 3) {
+                $recordCount = DB::table('listing_stock_comparisons')->count();
+                DB::table('listing_stock_comparisons')->truncate();
+                
+                $this->info("🗑️  Auto-truncated listing_stock_comparisons table ({$recordCount} records removed - oldest record was {$hoursAgo} hours old)");
+            }
+        }
     }
 }

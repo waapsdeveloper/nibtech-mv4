@@ -48,6 +48,9 @@ class RefreshNew extends Command
     {
         $startTime = microtime(true);
 
+        // Auto-truncate stock_deduction_logs if oldest record is more than 3 hours old
+        $this->autoTruncateStockDeductionLogs();
+
         // Log command start to named log file (not generic laravel.log)
         // SlackLogService::post(
         //     'order_sync',
@@ -365,6 +368,28 @@ class RefreshNew extends Command
         SlackLogService::postBatch(1); // Threshold of 1 to always post summary
 
         // Summary is now handled by postBatch() above, no need for separate summary log
+    }
+
+    /**
+     * Auto-truncate stock_deduction_logs table if oldest record is more than 3 hours old
+     */
+    private function autoTruncateStockDeductionLogs()
+    {
+        $oldestRecord = DB::table('stock_deduction_logs')
+            ->orderBy('deduction_at', 'asc')
+            ->first();
+
+        if ($oldestRecord) {
+            $oldestDate = Carbon::parse($oldestRecord->deduction_at);
+            $hoursAgo = now()->diffInHours($oldestDate);
+
+            if ($hoursAgo >= 3) {
+                $recordCount = DB::table('stock_deduction_logs')->count();
+                DB::table('stock_deduction_logs')->truncate();
+                
+                $this->info("🗑️  Auto-truncated stock_deduction_logs table ({$recordCount} records removed - oldest record was {$hoursAgo} hours old)");
+            }
+        }
     }
 
 }

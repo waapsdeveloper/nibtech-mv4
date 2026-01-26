@@ -199,4 +199,15 @@ class StockDeductionLogController extends Controller
         return redirect()->route('v2.stock-deduction-logs.index')
             ->with('success', 'Stock deduction log deleted successfully.');
     }
+    
+    /**
+     * Truncate all stock deduction logs
+     */
+    public function truncate()
+    {
+        DB::table('stock_deduction_logs')->truncate();
+        
+        return redirect()->route('v2.stock-deduction-logs.index')
+            ->with('success', 'All stock deduction logs have been truncated successfully.');
+    }
 }
