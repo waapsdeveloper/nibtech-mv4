@@ -1,23 +1,22 @@
 const path = require('path');
 
 // Base path: use PM2_APP_BASE or project root (where ecosystem.config.js lives).
-// Production (e.g. Linux): set PM2_APP_BASE=/var/www/sdpos when starting PM2.
-// Dev (Windows): omit; uses __dirname (project root).
+// Production: export PM2_APP_BASE=/var/www/sdpos
+// Dev: omit (uses __dirname)
 const basePath = process.env.PM2_APP_BASE || __dirname;
 const logDir = path.join(basePath, 'storage', 'logs');
 
 module.exports = {
   apps: [
+
+    // =====================================================
+    // API QUEUE WORKER (HIGH PRIORITY / FAST JOBS)
+    // =====================================================
     {
-      // =========================
-      // Laravel Queue Worker (single process, both queues)
-      // =========================
-      // Processes api-requests first, then default. One worker = one DB connection.
-      // Avoids separate api worker (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
-      name: 'sdpos-queue',
+      name: 'sdpos-api-queue',
 
       script: 'artisan',
-      args: 'queue:work database --queue=api-requests,default --sleep=3 --tries=3 --timeout=90 --max-jobs=100 --max-time=3600',
+      args: 'queue:work database --queue=api-requests --sleep=1 --tries=3 --timeout=30 --max-jobs=500 --max-time=3600',
 
       interpreter: 'php',
       cwd: basePath,
@@ -29,9 +28,10 @@ module.exports = {
       watch: false,
       max_memory_restart: '256M',
 
-      error_file: path.join(logDir, 'pm2-queue-error.log'),
-      out_file: path.join(logDir, 'pm2-queue-out.log'),
-      log_file: path.join(logDir, 'pm2-queue.log'),
+      error_file: path.join(logDir, 'pm2-api-error.log'),
+      out_file: path.join(logDir, 'pm2-api-out.log'),
+      log_file: path.join(logDir, 'pm2-api.log'),
+
       time: true,
       merge_logs: true,
 
@@ -41,10 +41,42 @@ module.exports = {
       }
     },
 
+    // =====================================================
+    // DEFAULT QUEUE WORKER (HEAVY / LONG JOBS)
+    // =====================================================
     {
-      // =========================
-      // Laravel Scheduler
-      // =========================
+      name: 'sdpos-default-queue',
+
+      script: 'artisan',
+      args: 'queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-jobs=100 --max-time=3600',
+
+      interpreter: 'php',
+      cwd: basePath,
+
+      exec_mode: 'fork',
+      instances: 1,
+
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '256M',
+
+      error_file: path.join(logDir, 'pm2-default-error.log'),
+      out_file: path.join(logDir, 'pm2-default-out.log'),
+      log_file: path.join(logDir, 'pm2-default.log'),
+
+      time: true,
+      merge_logs: true,
+
+      env: {
+        APP_ENV: 'production',
+        APP_DEBUG: 'false'
+      }
+    },
+
+    // =====================================================
+    // LARAVEL SCHEDULER
+    // =====================================================
+    {
       name: 'sdpos-scheduler',
 
       script: 'artisan',
@@ -58,11 +90,12 @@ module.exports = {
 
       autorestart: true,
       watch: false,
-      max_memory_restart: '256M',
+      max_memory_restart: '128M',
 
       error_file: path.join(logDir, 'pm2-scheduler-error.log'),
       out_file: path.join(logDir, 'pm2-scheduler-out.log'),
       log_file: path.join(logDir, 'pm2-scheduler.log'),
+
       time: true,
       merge_logs: true,
 
@@ -71,5 +104,6 @@ module.exports = {
         APP_DEBUG: 'false'
       }
     }
+
   ]
 };

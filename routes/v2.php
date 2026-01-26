@@ -107,6 +107,7 @@ Route::prefix('v2')->group(function () {
     Route::get('logs/jobs', [\App\Http\Controllers\V2\JobsController::class, 'index'])->name('v2.logs.jobs');
     Route::get('logs/jobs/{id}', [\App\Http\Controllers\V2\JobsController::class, 'show'])->name('v2.logs.jobs.show');
     Route::post('logs/jobs/{id}/process', [\App\Http\Controllers\V2\JobsController::class, 'process'])->name('v2.logs.jobs.process');
+    Route::post('logs/jobs/process-all', [\App\Http\Controllers\V2\JobsController::class, 'processAll'])->name('v2.logs.jobs.process-all');
     Route::delete('logs/jobs/{id}', [\App\Http\Controllers\V2\JobsController::class, 'destroy'])->name('v2.logs.jobs.destroy');
     Route::delete('logs/jobs', [\App\Http\Controllers\V2\JobsController::class, 'clear'])->name('v2.logs.jobs.clear');
     
