@@ -1286,12 +1286,17 @@ class SupportTickets extends Component
             ->map(fn ($itm) => $this->applyReplacementOverlay($itm));
 
         $returnedItemIds = $allItems
-            ->filter(fn ($itm) => ($itm->effective_status ?? optional($itm->stock)->status) === 1)
+            ->filter(function ($itm) {
+                $itemStatus = (int) ($itm->status ?? 0);
+                $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
+
+                return $itemStatus === 6 || $stockStatus === 1;
+            })
             ->pluck('id')
             ->all();
 
         if (empty($returnedItemIds)) {
-            $this->invoiceActionError = 'No returned items detected for this order (stock status: available).';
+            $this->invoiceActionError = 'No returned items detected for this order (order item status: returned/refunded or stock status: available).';
 
             return;
         }
@@ -1539,13 +1544,19 @@ class SupportTickets extends Component
         } elseif ($isPartial && !empty($this->selectedOrderItems)) {
             $query->whereIn('id', $this->selectedOrderItems);
         } elseif ($isRefund) {
-            $query->whereHas('stock', function ($stockQuery) {
-                $stockQuery->where('status', 1);
+            $query->where(function ($itemQuery) {
+                $itemQuery->where('status', 6)
+                    ->orWhereHas('stock', function ($stockQuery) {
+                        $stockQuery->where('status', 1);
+                    });
             });
         } elseif (! $includeReplacements) {
             $count = (clone $query)->count();
 
             if ($count > 1) {
+                $query->where(function ($itemQuery) {
+                    $itemQuery->whereNull('status')->orWhere('status', '!=', 6);
+                });
                 $query->whereHas('stock', function ($stockQuery) {
                     $stockQuery->where(function ($inner) {
                         $inner->where('status', 2)->orWhereNull('status');
