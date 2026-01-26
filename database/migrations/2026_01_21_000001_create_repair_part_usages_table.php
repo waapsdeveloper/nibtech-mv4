@@ -13,11 +13,11 @@ return new class extends Migration {
 
         Schema::create('repair_part_usages', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('process_id')->nullable();
-            $table->unsignedInteger('process_stock_id')->nullable();
-            $table->unsignedInteger('stock_id')->nullable();
+            $table->integer('process_id')->nullable();
+            $table->integer('process_stock_id')->nullable();
+            $table->integer('stock_id')->nullable();
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->unsignedInteger('technician_id')->nullable();
+            $table->integer('technician_id')->nullable();
             $table->integer('qty')->default(1);
             $table->decimal('unit_cost', 12, 2)->default(0);
             $table->decimal('total_cost', 12, 2)->default(0);

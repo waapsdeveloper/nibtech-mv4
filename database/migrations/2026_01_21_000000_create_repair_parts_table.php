@@ -13,7 +13,8 @@ return new class extends Migration {
 
         Schema::create('repair_parts', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('product_id');
+            $table->unsignedInteger('product_id');
+            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
             $table->string('name');
             $table->string('sku')->nullable();
             $table->string('compatible_device')->nullable();
