@@ -352,4 +352,85 @@ class JobsController extends Controller
                 ->with('error', 'Failed to clear jobs: ' . $e->getMessage());
         }
     }
+    
+    /**
+     * Process all remaining queued jobs
+     */
+    public function processAll()
+    {
+        try {
+            // Get count of queued jobs (not reserved)
+            $queuedCount = DB::table('jobs')->whereNull('reserved_at')->count();
+            
+            if ($queuedCount === 0) {
+                if (request()->expectsJson()) {
+                    return response()->json([
+                        'success' => false,
+                        'error' => 'No queued jobs to process'
+                    ], 400);
+                }
+                return redirect()->route('v2.logs.jobs')
+                    ->with('error', 'No queued jobs to process');
+            }
+            
+            // Process jobs by running queue:work multiple times
+            // We'll process up to the number of queued jobs, but limit to prevent infinite loops
+            $processed = 0;
+            $maxIterations = min($queuedCount, 100); // Safety limit
+            
+            for ($i = 0; $i < $maxIterations; $i++) {
+                // Check if there are still queued jobs
+                $remaining = DB::table('jobs')->whereNull('reserved_at')->count();
+                if ($remaining === 0) {
+                    break;
+                }
+                
+                try {
+                    // Run queue:work once to process one job
+                    Artisan::call('queue:work', [
+                        '--once' => true,
+                        '--timeout' => 120,
+                        '--tries' => 1
+                    ]);
+                    $processed++;
+                } catch (\Exception $e) {
+                    // Log but continue processing other jobs
+                    Log::warning('JobsController::processAll - Error processing job', [
+                        'iteration' => $i,
+                        'error' => $e->getMessage()
+                    ]);
+                    // Continue to next iteration
+                }
+            }
+            
+            $remainingAfter = DB::table('jobs')->whereNull('reserved_at')->count();
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => "Processed {$processed} job(s). {$remainingAfter} job(s) remaining in queue.",
+                    'processed' => $processed,
+                    'remaining' => $remainingAfter
+                ]);
+            }
+            
+            return redirect()->route('v2.logs.jobs')
+                ->with('success', "Processed {$processed} job(s). {$remainingAfter} job(s) remaining in queue.");
+        } catch (\Exception $e) {
+            Log::error('JobsController::processAll error', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => false,
+                    'error' => 'Failed to process jobs: ' . $e->getMessage()
+                ], 500);
+            }
+            
+            return redirect()->route('v2.logs.jobs')
+                ->with('error', 'Failed to process jobs: ' . $e->getMessage());
+        }
+    }
 }
