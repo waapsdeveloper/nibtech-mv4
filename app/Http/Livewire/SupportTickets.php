@@ -1656,10 +1656,20 @@ class SupportTickets extends Component
                 ->values();
         }
 
-        return $this->normalizeBackmarketItemPrices($order, $items, $thread, $includeReplacements, $isRefund, $isPartial);
+        $useOrderUnitPrice = ! empty($this->selectedOrderItems);
+
+        return $this->normalizeBackmarketItemPrices(
+            $order,
+            $items,
+            $thread,
+            $includeReplacements,
+            $isRefund,
+            $isPartial,
+            $useOrderUnitPrice
+        );
     }
 
-    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null, bool $includeReplacements = false, bool $isRefund = false, bool $isPartial = false): \Illuminate\Support\Collection
+    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null, bool $includeReplacements = false, bool $isRefund = false, bool $isPartial = false, bool $useOrderUnitPrice = false): \Illuminate\Support\Collection
     {
         $collection = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
 
@@ -1670,7 +1680,7 @@ class SupportTickets extends Component
         $orderTotal = (float) ($order->price ?? 0);
         $totalUnitsOverride = null;
 
-        if (($isRefund || $isPartial) && $orderTotal > 0) {
+        if (($isRefund || $isPartial || $useOrderUnitPrice) && $orderTotal > 0) {
             $totalUnitsOverride = $order->relationLoaded('order_items')
                 ? $order->order_items->count()
                 : Order_item_model::where('order_id', $order->id)->count();
