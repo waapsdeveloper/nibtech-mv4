@@ -888,16 +888,21 @@ class SupportTickets extends Component
                 ->values()
                 ->all();
 
+        $hasExplicitReturns = ! empty($linkedReturnIds) || ! empty($returnedStockIds);
+
         return $allItems
-            ->filter(function ($itm) use ($linkedReturnIds, $returnedStockIds) {
+            ->filter(function ($itm) use ($linkedReturnIds, $returnedStockIds, $hasExplicitReturns) {
                 $itemStatus = (int) ($itm->status ?? 0);
                 $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
                 $stockId = $itm->stock_id;
 
-                return $itemStatus === 6
-                    || $stockStatus === 1
-                    || in_array($itm->id, $linkedReturnIds, true)
-                    || ($stockId && in_array($stockId, $returnedStockIds, true));
+                if ($hasExplicitReturns) {
+                    return $itemStatus === 6
+                        || in_array($itm->id, $linkedReturnIds, true)
+                        || ($stockId && in_array($stockId, $returnedStockIds, true));
+                }
+
+                return $itemStatus === 6 || $stockStatus === 1;
             })
             ->pluck('id')
             ->all();
@@ -1345,43 +1350,7 @@ class SupportTickets extends Component
             ->get()
             ->map(fn ($itm) => $this->applyReplacementOverlay($itm));
 
-        $allItemIds = $allItems->pluck('id')->all();
-        $allStockIds = $allItems->pluck('stock_id')->filter()->unique()->values()->all();
-
-        $linkedReturnIds = Order_item_model::query()
-            ->whereIn('linked_id', $allItemIds)
-            ->pluck('linked_id')
-            ->filter()
-            ->unique()
-            ->values()
-            ->all();
-
-        $returnedStockIds = empty($allStockIds)
-            ? []
-            : Order_item_model::query()
-                ->whereIn('stock_id', $allStockIds)
-                ->whereHas('order', function ($orderQuery) {
-                    $orderQuery->whereIn('order_type_id', [4, 6]);
-                })
-                ->pluck('stock_id')
-                ->filter()
-                ->unique()
-                ->values()
-                ->all();
-
-        $returnedItemIds = $allItems
-            ->filter(function ($itm) use ($linkedReturnIds, $returnedStockIds) {
-                $itemStatus = (int) ($itm->status ?? 0);
-                $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
-                $stockId = $itm->stock_id;
-
-                return $itemStatus === 6
-                    || $stockStatus === 1
-                    || in_array($itm->id, $linkedReturnIds, true)
-                    || ($stockId && in_array($stockId, $returnedStockIds, true));
-            })
-            ->pluck('id')
-            ->all();
+        $returnedItemIds = $this->computeReturnedItemIds($thread);
 
         if (empty($returnedItemIds)) {
             $this->invoiceActionError = 'No returned items detected for this order (order item status: returned/refunded, linked return item, return order item, or stock status: available).';
