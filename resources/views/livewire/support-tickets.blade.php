@@ -330,8 +330,8 @@
                             $customerName = $customer ? trim(($customer->first_name ?? '') . ' ' . ($customer->last_name ?? '')) : null;
                             $marketplaceReference = $selectedThread->order_reference
                                 ?? ($order->reference_id ?? $order->reference ?? null);
-                            $returnedItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) === 1);
-                            $remainingItems = $orderItems->filter(fn($itm) => ($itm->effective_status ?? optional($itm->stock)->status) !== 1);
+                            $returnedItems = $orderItems->filter(fn ($itm) => in_array($itm->id, $returnedItemIds ?? [], true));
+                            $remainingItems = $orderItems->reject(fn ($itm) => in_array($itm->id, $returnedItemIds ?? [], true));
                             $hasReplacements = $orderItems->contains(fn($itm) => $itm->replacement || optional($itm->replacement)->replacement);
                         @endphp
 
