@@ -2621,7 +2621,7 @@ class Order extends Component
         }
 
         $order->customer_id = $purchase->vendor;
-        // $order->status = 2;
+        $order->status = 2;
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
@@ -2778,50 +2778,49 @@ class Order extends Component
 
                     $stock = Stock_model::firstOrNew(['imei' => $i, 'serial_number' => $s]);
 
-                    // if($stock->id && $stock->status != null && $stock->order_id != null){
-                    //     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
-                    //     $issue[$dr]['data']['row'] = $dr;
-                    //     $issue[$dr]['data']['name'] = $n;
-                    //     $issue[$dr]['data']['storage'] = $st;
-                    //     if($variation){
-                    //         $issue[$dr]['data']['variation'] = $variation->id;
-                    //     }
-                    //     if($color){
-                    //         $issue[$dr]['data']['color'] = $d[$color];
-                    //     }
-                    //     if($v_grade){
-                    //         $issue[$dr]['data']['v_grade'] = $d[$v_grade];
-                    //     }
-                    //     if($note){
-                    //         $issue[$dr]['data']['note'] = $d[$note];
-                    //     }
-                    //     $issue[$dr]['data']['imei'] = $i.$s;
-                    //     $issue[$dr]['data']['cost'] = $c;
-                    //     if($stock->order_id == $order->id && $stock->status == 1){
-                    //         $issue[$dr]['message'] = 'Item already added in this order';
-                    //     }else{
-                    //             $reference_id = $stock->order->reference_id ?? "Missing";
-                    //         if($stock->status != 2){
-                    //             $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
-                    //         }else{
-                    //             $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
-                    //         }
+                    if($stock->id && $stock->status != null && $stock->order_id != null){
+                        if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}
+                        $issue[$dr]['data']['row'] = $dr;
+                        $issue[$dr]['data']['name'] = $n;
+                        $issue[$dr]['data']['storage'] = $st;
+                        if($variation){
+                            $issue[$dr]['data']['variation'] = $variation->id;
+                        }
+                        if($color){
+                            $issue[$dr]['data']['color'] = $d[$color];
+                        }
+                        if($v_grade){
+                            $issue[$dr]['data']['v_grade'] = $d[$v_grade];
+                        }
+                        if($note){
+                            $issue[$dr]['data']['note'] = $d[$note];
+                        }
+                        $issue[$dr]['data']['imei'] = $i.$s;
+                        $issue[$dr]['data']['cost'] = $c;
+                        if($stock->order_id == $order->id && $stock->status == 1){
+                            $issue[$dr]['message'] = 'Item already added in this order';
+                        }else{
+                                $reference_id = $stock->order->reference_id ?? "Missing";
+                            if($stock->status != 2){
+                                $issue[$dr]['message'] = 'Item already available in inventory under order reference '.$reference_id;
+                            }else{
+                                $issue[$dr]['message'] = 'Item previously purchased in order reference '.$reference_id;
+                            }
 
-                    //     }
+                        }
 
-                    // }else{
+                    }else{
                         $stock2 = Stock_model::withTrashed()->where(['imei' => $i, 'serial_number' => $s])->first();
                         if($stock2 != null){
                             $stock2->restore();
                             $stock2->order_id = $order->id;
                             $stock2->status = 1;
                             $stock2->save();
-                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'stock_id' => $stock2->id]);
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
                             $order_item->reference_id = $grd;
                             if($note){
                                 $order_item->reference = $d[$note];
                             }
-                            $order_item->variation_id = $variation->id;
                             $order_item->quantity = 1;
                             $order_item->price = $c;
                             $order_item->status = 3;
@@ -2840,12 +2839,11 @@ class Order extends Component
                             $stock->status = 1;
                             $stock->save();
 
-                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'stock_id' => $stock->id]);
+                            $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock->id]);
                             $order_item->reference_id = $grd;
                             if($note){
                                 $order_item->reference = $d[$note];
                             }
-                            $order_item->variation_id = $variation->id;
                             $order_item->quantity = 1;
                             $order_item->price = $c;
                             $order_item->status = 3;
@@ -2853,7 +2851,7 @@ class Order extends Component
 
                         }
 
-                    // }
+                    }
 
                 }else{
                     if(isset($storages[$gb])){$st = $storages[$gb];}else{$st = null;}

@@ -13,37 +13,37 @@ use Illuminate\Support\Facades\Log;
  */
 class SyncMarketplaceStock extends Command
 {
-    protected $signature = 'v2:marketplace:sync-stock 
+    protected $signature = 'v2:marketplace:sync-stock
                             {--marketplace= : Specific marketplace ID to sync}
                             {--force : Force sync even if last sync was less than 6 hours ago}';
-    
+
     protected $description = 'V2: Sync stock from marketplace APIs (6-hour interval per marketplace)';
-    
+
     protected MarketplaceAPIService $apiService;
-    
+
     // Store sync summary for return
     private $syncSummary = [];
-    
+
     public function __construct(MarketplaceAPIService $apiService)
     {
         parent::__construct();
         $this->apiService = $apiService;
     }
-    
+
     public function handle()
     {
         $marketplaceId = $this->option('marketplace');
         $force = $this->option('force');
-        
+
         Log::info("V2 SyncMarketplaceStock: Command started", [
             'marketplace_id' => $marketplaceId,
             'force' => $force
         ]);
-        
+
         if ($marketplaceId) {
             // Sync specific marketplace
             $this->syncMarketplace((int)$marketplaceId, $force);
-            
+
             // Return exit code based on results
             if (!empty($this->syncSummary) && $this->syncSummary['errors'] > 0) {
                 return 1; // Exit with error if there were errors
@@ -52,39 +52,39 @@ class SyncMarketplaceStock extends Command
             // Sync all marketplaces that need syncing
             $this->syncAllMarketplaces($force);
         }
-        
+
         return 0; // Success
     }
-    
+
     private function syncAllMarketplaces($force = false)
     {
         $marketplaces = Marketplace_model::where('status', 1)->get();
-        
+
         foreach ($marketplaces as $marketplace) {
             $this->info("Checking marketplace: {$marketplace->name} (ID: {$marketplace->id})");
             $this->syncMarketplace($marketplace->id, $force);
         }
     }
-    
+
     private function syncMarketplace($marketplaceId, $force = false)
     {
         $marketplace = Marketplace_model::find($marketplaceId);
-        
+
         if (!$marketplace) {
             $this->error("Marketplace ID {$marketplaceId} not found");
             return;
         }
-        
+
         $this->info("Syncing marketplace: {$marketplace->name} (ID: {$marketplaceId})");
         Log::info("V2 SyncMarketplaceStock: Starting sync", [
             'marketplace_id' => $marketplaceId,
             'marketplace_name' => $marketplace->name,
             'force' => $force
         ]);
-        
+
         // Get sync interval for this marketplace (use config if available, otherwise default to 6 hours)
         $syncInterval = $marketplace->sync_interval_hours ?? 6;
-        
+
         // Get all marketplace stocks that need syncing
         $marketplaceStocks = MarketplaceStockModel::where('marketplace_id', $marketplaceId)
             ->whereHas('variation', function($q) {
@@ -95,35 +95,35 @@ class SyncMarketplaceStock extends Command
             })
             ->with('variation')
             ->get();
-        
+
         $totalRecords = $marketplaceStocks->count();
         $syncedCount = 0;
         $skippedCount = 0;
         $errorCount = 0;
         $errors = [];
-        
+
         $this->info("Found {$totalRecords} marketplace stock records to check");
         Log::info("V2 SyncMarketplaceStock: Found records", [
             'marketplace_id' => $marketplaceId,
             'total_records' => $totalRecords
         ]);
-        
+
         foreach ($marketplaceStocks as $marketplaceStock) {
             // Check if sync is needed
-            $needsSync = $force || 
-                        !$marketplaceStock->last_synced_at || 
+            $needsSync = $force ||
+                        !$marketplaceStock->last_synced_at ||
                         $marketplaceStock->last_synced_at->diffInHours(now()) >= $syncInterval;
-            
+
             if (!$needsSync) {
                 $skippedCount++;
                 continue;
             }
-            
+
             // Sync using generic API service
             try {
                 $this->syncStockRecord($marketplaceStock, $marketplaceId);
                 $syncedCount++;
-                
+
                 if ($syncedCount % 10 == 0) {
                     $this->info("Progress: {$syncedCount}/{$totalRecords} synced...");
                 }
@@ -133,7 +133,7 @@ class SyncMarketplaceStock extends Command
                     'variation_id' => $marketplaceStock->variation_id,
                     'error' => $e->getMessage()
                 ];
-                
+
                 Log::error("V2 SyncMarketplaceStock: Error syncing stock", [
                     'marketplace_id' => $marketplaceId,
                     'marketplace_stock_id' => $marketplaceStock->id,
@@ -144,14 +144,14 @@ class SyncMarketplaceStock extends Command
                 $this->error("Error syncing variation {$marketplaceStock->variation_id}: {$e->getMessage()}");
             }
         }
-        
+
         $summary = "Sync complete for {$marketplace->name}: {$syncedCount} synced, {$skippedCount} skipped";
         if ($errorCount > 0) {
             $summary .= ", {$errorCount} errors";
         }
-        
+
         $this->info($summary);
-        
+
         Log::info("V2 SyncMarketplaceStock: Sync completed", [
             'marketplace_id' => $marketplaceId,
             'marketplace_name' => $marketplace->name,
@@ -161,7 +161,7 @@ class SyncMarketplaceStock extends Command
             'errors' => $errorCount,
             'error_details' => $errors
         ]);
-        
+
         // Store summary for return
         $this->syncSummary = [
             'marketplace_id' => $marketplaceId,
@@ -173,7 +173,7 @@ class SyncMarketplaceStock extends Command
             'error_details' => $errors
         ];
     }
-    
+
     /**
      * Sync a single marketplace stock record
      * Uses the generic API service to fetch current stock from marketplace
@@ -181,18 +181,18 @@ class SyncMarketplaceStock extends Command
     private function syncStockRecord($marketplaceStock, $marketplaceId)
     {
         $variation = $marketplaceStock->variation;
-        
+
         if (!$variation) {
             throw new \Exception("Variation not found for marketplace stock ID: {$marketplaceStock->id}");
         }
-        
+
         // Get current stock from marketplace API
         $apiQuantity = $this->getStockFromMarketplace($variation, $marketplaceId);
-        
+
         if ($apiQuantity === null) {
             throw new \Exception("Could not fetch stock from marketplace API");
         }
-        
+
         // IMPORTANT: Only update listed_stock from API (never touch manual_adjustment)
         // listed_stock = API-synced stock
         // manual_adjustment = manual pushes (separate, never synced)
@@ -204,7 +204,7 @@ class SyncMarketplaceStock extends Command
         $marketplaceStock->last_api_quantity = $apiQuantity;
         // NOTE: manual_adjustment is NOT touched - it's a separate offset that persists through syncs
         $marketplaceStock->save();
-        
+
         Log::info("V2 SyncMarketplaceStock: Stock updated", [
             'variation_id' => $variation->id,
             'marketplace_id' => $marketplaceId,
@@ -212,7 +212,7 @@ class SyncMarketplaceStock extends Command
             'new_stock' => $apiQuantity,
             'difference' => $apiQuantity - $oldListedStock
         ]);
-        
+
         // Log to history if there's a discrepancy
         if ($oldListedStock != $apiQuantity) {
                 \App\Models\V2\MarketplaceStockHistory::create([
@@ -230,17 +230,17 @@ class SyncMarketplaceStock extends Command
                 'notes' => "Reconciliation sync: Local={$oldListedStock}, API={$apiQuantity}"
             ]);
         }
-        
+
         // Update variation.listed_stock for backward compatibility (only if this is the primary marketplace)
         if ($marketplaceId == 1) {
             $variation->listed_stock = $apiQuantity;
             $variation->save();
         }
     }
-    
+
     /**
      * Get current stock quantity from marketplace API
-     * 
+     *
      * @param \App\Models\Variation_model $variation
      * @param int $marketplaceId
      * @return int|null
@@ -250,10 +250,10 @@ class SyncMarketplaceStock extends Command
         switch ($marketplaceId) {
             case 1: // Back Market
                 return $this->getBackMarketStock($variation);
-            
+
             case 4: // Refurbed
                 return $this->getRefurbedStock($variation);
-            
+
             default:
                 Log::warning("V2 SyncMarketplaceStock: Unsupported marketplace for stock fetch", [
                     'marketplace_id' => $marketplaceId,
@@ -262,7 +262,7 @@ class SyncMarketplaceStock extends Command
                 return null;
         }
     }
-    
+
     /**
      * Get stock from Back Market API
      */
@@ -271,17 +271,17 @@ class SyncMarketplaceStock extends Command
         if (!$variation->reference_id) {
             return null;
         }
-        
+
         $bm = new \App\Http\Controllers\BackMarketAPIController();
         $apiListing = $bm->getOneListing($variation->reference_id);
-        
+
         if (!$apiListing || !isset($apiListing->quantity)) {
             return null;
         }
-        
+
         return (int)$apiListing->quantity;
     }
-    
+
     /**
      * Get stock from Refurbed API
      */
@@ -290,16 +290,16 @@ class SyncMarketplaceStock extends Command
         if (!$variation->sku) {
             return null;
         }
-        
+
         $refurbed = new \App\Http\Controllers\RefurbedAPIController();
-        
+
         try {
             $offers = $refurbed->getAllOffers(['sku' => $variation->sku], [], 1);
-            
+
             if (empty($offers['offers'])) {
                 return null;
             }
-            
+
             $offer = $offers['offers'][0];
             return (int)($offer['stock'] ?? $offer['quantity'] ?? 0);
         } catch (\Exception $e) {

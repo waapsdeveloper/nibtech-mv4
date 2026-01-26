@@ -10,6 +10,8 @@ class RepairPart extends Model
 {
     use HasFactory, SoftDeletes;
 
+    protected $table = 'repair_parts';
+
     protected $fillable = [
         'product_id',
         'name',
@@ -27,7 +29,7 @@ class RepairPart extends Model
 
     public function product()
     {
-        return $this->belongsTo(Product::class, 'product_id');
+        return $this->belongsTo(Products_model::class, 'product_id');
     }
 
     public function usages()

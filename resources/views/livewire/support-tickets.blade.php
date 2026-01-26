@@ -284,7 +284,7 @@
                                 $itm->effective_imei = $effectiveStock->imei ?? $effectiveStock->serial_number;
                                 $itm->effective_status = $effectiveStock->status ?? null;
 
-                                $qty = (int) ($itm->quantity ?? 1);
+                                $qty = (int) (1);
                                 $qty = $qty > 0 ? $qty : 1;
                                 $price = (float) ($itm->price ?? 0);
                                 $orderTotal = (float) ($order->price ?? 0);
@@ -301,13 +301,13 @@
                             });
                             $currentSum = $orderItems->reduce(function ($carry, $itm) {
                                 $price = $itm->price ?? $itm->selling_price ?? 0;
-                                $qty = (int) ($itm->quantity ?? 1);
+                                $qty = (int) (1);
                                 $qty = $qty > 0 ? $qty : 1;
                                 return $carry + ($price * $qty);
                             }, 0);
                             if (($order->price ?? 0) > 0 && abs($currentSum - (float) $order->price) >= 0.01) {
                                 $totalUnits = $orderItems->reduce(function ($carry, $itm) {
-                                    $qty = (int) ($itm->quantity ?? 1);
+                                    $qty = (int) (1);
                                     return $carry + ($qty > 0 ? $qty : 1);
                                 }, 0);
                                 $totalUnits = $totalUnits > 0 ? $totalUnits : $orderItems->count();
@@ -432,7 +432,7 @@
                                         <div class="d-flex justify-content-between align-items-center py-1 border-bottom" style="font-size: 0.75rem;">
                                             <div class="text-truncate" style="max-width: 60%;">
                                                 <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
-                                                <span class="text-muted ms-1">({{ $item->quantity ?? 1 }})</span>
+                                                <span class="text-muted ms-1">(1)</span>
                                                 @php
                                                     $idValue = $item->effective_imei ?? $item->stock->imei ?? $item->stock->serial_number;
                                                     $replacementImei = null;
@@ -916,7 +916,7 @@
                                                         $refundPrice = $item->price ?? $item->selling_price ?? 0;
                                                     @endphp
                                                     <strong class="text-primary">{{ number_format($refundPrice, 2) }} {{ $selectedThread->order->currency_id->code ?? '' }}</strong>
-                                                    <div class="text-muted small">Qty: {{ $item->quantity ?? 1 }}</div>
+                                                    <div class="text-muted small">Qty: 1</div>
                                                 </div>
                                             </div>
                                         </label>
