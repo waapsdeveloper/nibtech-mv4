@@ -1686,10 +1686,10 @@ class SupportTickets extends Component
                 ->values();
         }
 
-        return $this->normalizeBackmarketItemPrices($order, $items, $thread, $includeReplacements);
+        return $this->normalizeBackmarketItemPrices($order, $items, $thread, $includeReplacements, $isRefund, $isPartial);
     }
 
-    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null, bool $includeReplacements = false): \Illuminate\Support\Collection
+    protected function normalizeBackmarketItemPrices(Order_model $order, $items, ?SupportThread $thread = null, bool $includeReplacements = false, bool $isRefund = false, bool $isPartial = false): \Illuminate\Support\Collection
     {
         $collection = $items instanceof \Illuminate\Support\Collection ? $items : collect($items);
 
@@ -1698,8 +1698,19 @@ class SupportTickets extends Component
         });
 
         $orderTotal = (float) ($order->price ?? 0);
+        $totalUnitsOverride = null;
 
-        $collection = $this->rebalanceCollectionPrices($collection, $orderTotal);
+        if (($isRefund || $isPartial) && $orderTotal > 0) {
+            $totalUnitsOverride = $order->relationLoaded('order_items')
+                ? $order->order_items->count()
+                : Order_item_model::where('order_id', $order->id)->count();
+
+            if ($totalUnitsOverride <= 0) {
+                $totalUnitsOverride = null;
+            }
+        }
+
+        $collection = $this->rebalanceCollectionPrices($collection, $orderTotal, $totalUnitsOverride);
 
         if (! $this->isBackmarketOrder($order, $thread)) {
             return $collection;
@@ -1726,24 +1737,32 @@ class SupportTickets extends Component
         });
     }
 
-    protected function rebalanceCollectionPrices($collection, float $orderTotal)
+    protected function rebalanceCollectionPrices($collection, float $orderTotal, ?int $totalUnitsOverride = null)
     {
         if ($orderTotal <= 0) {
             return $collection;
         }
 
-        $totalUnits = $collection->reduce(function ($carry, $itm) {
+        $collectionUnits = $collection->reduce(function ($carry, $itm) {
             $qty = (int) (1);
             return $carry + ($qty > 0 ? $qty : 1);
         }, 0);
 
-        if ($totalUnits <= 0) {
-            $totalUnits = $collection->count();
+        if ($collectionUnits <= 0) {
+            $collectionUnits = $collection->count();
         }
 
-        if ($totalUnits <= 0) {
+        if ($collectionUnits <= 0) {
             return $collection;
         }
+
+        $totalUnitsBase = ($totalUnitsOverride && $totalUnitsOverride > 0)
+            ? $totalUnitsOverride
+            : $collectionUnits;
+
+        $targetTotal = ($totalUnitsOverride && $totalUnitsOverride > 0)
+            ? round($orderTotal * ($collectionUnits / $totalUnitsBase), 2)
+            : $orderTotal;
 
         $currentSum = $collection->reduce(function ($carry, $itm) {
             $price = $itm->price ?? $itm->selling_price ?? 0;
@@ -1753,11 +1772,11 @@ class SupportTickets extends Component
             return $carry + ((float) $price * $qty);
         }, 0.0);
 
-        if (abs($currentSum - $orderTotal) < 0.01) {
+        if (abs($currentSum - $targetTotal) < 0.01) {
             return $collection;
         }
 
-        $unit = round($orderTotal / $totalUnits, 2);
+        $unit = round($orderTotal / $totalUnitsBase, 2);
 
         return $collection->map(function ($itm) use ($unit) {
             $itm->price = $unit;
