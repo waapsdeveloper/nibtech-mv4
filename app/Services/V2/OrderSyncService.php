@@ -89,6 +89,7 @@ class OrderSyncService
                 [
                     // Default values only used when creating new order
                     'marketplace_id' => $marketplaceId,
+                    'order_type_id' => 3, // Marketplace order - ensure it's always set
                 ]
             );
 
@@ -196,7 +197,7 @@ class OrderSyncService
 
         // Set order properties
         $order->currency = $this->currencyCodes[$orderObj->currency] ?? null;
-        $order->order_type_id = 3; // Marketplace order
+        $order->order_type_id = 3; // Marketplace order - ensure it's always set
         $order->marketplace_id = $marketplaceId;
         $order->price = $orderObj->price ?? 0;
         $order->delivery_note_url = $orderObj->delivery_note ?? null;
