@@ -89,6 +89,11 @@
                                                         Stock Comparisons
                                                     </a>
                                                 </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/marketplace-sync-failures')}}">
+                                                        Sync Failures
+                                                    </a>
+                                                </li>
                                             </ul>
                                         </li>
                                         @endif
