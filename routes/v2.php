@@ -102,6 +102,7 @@ Route::prefix('v2')->group(function () {
     // Log File Viewer
     Route::get('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'index'])->name('v2.logs.log-file');
     Route::delete('logs/log-file', [\App\Http\Controllers\V2\LogFileController::class, 'clear'])->name('v2.logs.log-file.clear');
+    Route::get('logs/log-file/download-all', [\App\Http\Controllers\V2\LogFileController::class, 'downloadAllLogs'])->name('v2.logs.log-file.download-all');
     
     // Jobs (Queue Jobs)
     Route::get('logs/jobs', [\App\Http\Controllers\V2\JobsController::class, 'index'])->name('v2.logs.jobs');
