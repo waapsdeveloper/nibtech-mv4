@@ -2231,10 +2231,10 @@ class ListingController extends Controller
                 $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
                 
                 $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
-                $lockedStock = $marketplaceStock ? (int) ($marketplaceStock->locked_stock ?? 0) : 0;
+                // Stock lock system removed - available stock = listed stock
                 $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
                     ? (int) $marketplaceStock->available_stock 
-                    : max(0, $listedStock - $lockedStock);
+                    : max(0, $listedStock);
 
                 // Get listing count for this marketplace
                 $listingCount = Listing_model::where('variation_id', $variationId)
@@ -2246,14 +2246,14 @@ class ListingController extends Controller
                     'marketplace_name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
                     'listed_stock' => $listedStock,
                     'available_stock' => $availableStock,
-                    'locked_stock' => $lockedStock,
+                    'locked_stock' => 0, // Stock lock system removed
                     'listing_count' => $listingCount,
                     'is_backmarket' => $marketplaceIdInt === 1
                 ];
 
                 $totalListedStock += $listedStock;
                 $totalAvailableStock += $availableStock;
-                $totalLockedStock += $lockedStock;
+                // Stock lock system removed - locked stock always 0
             }
 
             // Get total stock from variation (this is the total stock we have in the system)
@@ -2293,7 +2293,7 @@ class ListingController extends Controller
                 'totals' => [
                     'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
                     'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
-                    'locked_stock' => $totalLockedStock // Sum of all marketplace locked stocks
+                    'locked_stock' => 0 // Stock lock system removed
                 ]
             ]);
         } catch (\Exception $e) {

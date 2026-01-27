@@ -68,11 +68,12 @@
                                                 <i class="angle fe fe-chevron-down"></i>
                                             </a>
                                             <ul class="collapse ps-3" id="v2ExtrasMenu">
-                                                <li class="slide">
+                                                {{-- Stock Locks removed - Stock lock system removed --}}
+                                                {{-- <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">
                                                         Stock Locks
                                                     </a>
-                                                </li>
+                                                </li> --}}
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">
                                                         Artisan Commands

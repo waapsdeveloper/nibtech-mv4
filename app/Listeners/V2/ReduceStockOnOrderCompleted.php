@@ -3,7 +3,6 @@ namespace App\Listeners\V2;
 
 use App\Events\V2\OrderStatusChanged;
 use App\Models\V2\MarketplaceStockModel;
-use App\Models\V2\MarketplaceStockLock;
 use App\Models\V2\MarketplaceStockHistory;
 use App\Models\Stock_model;
 use App\Services\V2\MarketplaceAPIService;
@@ -67,12 +66,12 @@ class ReduceStockOnOrderCompleted
             ->get()
             ->keyBy('variation_id');
         
-        // Eager load all locks in one query
-        $allLocks = MarketplaceStockLock::where('order_id', $order->id)
-            ->whereIn('order_item_id', $orderItemIds)
-            ->where('lock_status', 'locked')
-            ->get()
-            ->groupBy('order_item_id');
+        // Check for existing stock reductions (idempotency check - replaces lock checking)
+        $existingReductions = MarketplaceStockHistory::where('order_id', $order->id)
+            ->whereIn('variation_id', $variationIds)
+            ->where('change_type', 'order_completed')
+            ->pluck('variation_id', 'order_item_id')
+            ->toArray();
         
         // Eager load all stock records in one query
         $stockIds = collect($event->orderItems)->pluck('stock_id')->filter()->unique()->values()->all();
@@ -81,7 +80,7 @@ class ReduceStockOnOrderCompleted
             : collect();
         
         // Process all order items in a single transaction for better performance
-        \DB::transaction(function () use ($order, $marketplaceId, $orderItemsByVariation, $marketplaceStocks, $allLocks, $stocks) {
+        \DB::transaction(function () use ($order, $marketplaceId, $orderItemsByVariation, $marketplaceStocks, $existingReductions, $stocks) {
             foreach ($orderItemsByVariation as $variationId => $orderItems) {
                 $marketplaceStock = $marketplaceStocks->get($variationId);
                 
@@ -101,13 +100,9 @@ class ReduceStockOnOrderCompleted
                         continue;
                     }
                     
-                    // Get locks for this order item (already loaded)
-                    $locks = $allLocks->get($orderItem->id, collect());
-
-                    // If there is no active lock, do NOT reduce stock. This keeps the flow idempotent and
-                    // avoids accidental double-reduction.
-                    if ($locks->isEmpty()) {
-                        Log::info("V2: No active lock found on order completion; skipping stock consume", [
+                    // Idempotency check: Skip if this order item already reduced stock
+                    if (isset($existingReductions[$orderItem->id])) {
+                        Log::info("V2: Stock already reduced for this order item; skipping (idempotency)", [
                             'order_id' => $order->id,
                             'order_reference' => $order->reference_id,
                             'order_item_id' => $orderItem->id,
@@ -117,25 +112,15 @@ class ReduceStockOnOrderCompleted
                         continue;
                     }
                     
-                    $totalLocked = $locks->sum('quantity_locked');
-                    
                     // Record before values
                     $listedStockBefore = $marketplaceStock->listed_stock;
-                    $lockedStockBefore = $marketplaceStock->locked_stock;
                     $availableStockBefore = $marketplaceStock->available_stock;
                     
-                    // Reduce listed stock and unlock
+                    // Reduce listed stock directly (no lock management)
                     $marketplaceStock->listed_stock = max(0, $marketplaceStock->listed_stock - $quantity);
-                    $marketplaceStock->locked_stock = max(0, $marketplaceStock->locked_stock - $totalLocked);
-                    $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
+                    // Available stock = listed stock (no locked stock concept)
+                    $marketplaceStock->available_stock = $marketplaceStock->listed_stock;
                     $marketplaceStock->save();
-                    
-                    // Mark locks as consumed (batch update)
-                    MarketplaceStockLock::whereIn('id', $locks->pluck('id'))
-                        ->update([
-                            'lock_status' => 'consumed',
-                            'consumed_at' => now()
-                        ]);
 
                     // Mark physical stock unit as SOLD (if this order item has an inventory stock_id).
                     // This is separate from marketplace_stock which tracks marketplace listed/locked/available.
@@ -155,15 +140,15 @@ class ReduceStockOnOrderCompleted
                         }
                     }
                     
-                    // Log to history
+                    // Log to history (for idempotency tracking)
                     MarketplaceStockHistory::create([
                         'marketplace_stock_id' => $marketplaceStock->id,
                         'variation_id' => $variationId,
                         'marketplace_id' => $marketplaceId,
                         'listed_stock_before' => $listedStockBefore,
                         'listed_stock_after' => $marketplaceStock->listed_stock,
-                        'locked_stock_before' => $lockedStockBefore,
-                        'locked_stock_after' => $marketplaceStock->locked_stock,
+                        'locked_stock_before' => 0, // No longer tracking locked stock
+                        'locked_stock_after' => 0,
                         'available_stock_before' => $availableStockBefore,
                         'available_stock_after' => $marketplaceStock->available_stock,
                         'quantity_change' => -$quantity,

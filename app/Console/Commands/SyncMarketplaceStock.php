@@ -211,7 +211,8 @@ class SyncMarketplaceStock extends Command
         // Update marketplace stock (reconciliation)
         $oldListedStock = $marketplaceStock->listed_stock;
         $marketplaceStock->listed_stock = $apiQuantity;
-        $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
+        // Stock lock system removed - available stock = listed stock
+        $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock);
         $marketplaceStock->last_synced_at = now();
         $marketplaceStock->last_api_quantity = $apiQuantity;
         $marketplaceStock->save();
@@ -232,9 +233,9 @@ class SyncMarketplaceStock extends Command
                 'marketplace_id' => $marketplaceStock->marketplace_id,
                 'listed_stock_before' => $oldListedStock,
                 'listed_stock_after' => $apiQuantity,
-                'locked_stock_before' => $marketplaceStock->locked_stock,
-                'locked_stock_after' => $marketplaceStock->locked_stock,
-                'available_stock_before' => max(0, $oldListedStock - $marketplaceStock->locked_stock),
+                'locked_stock_before' => 0, // Stock lock system removed
+                'locked_stock_after' => 0,
+                'available_stock_before' => max(0, $oldListedStock),
                 'available_stock_after' => $marketplaceStock->available_stock,
                 'quantity_change' => $apiQuantity - $oldListedStock,
                 'change_type' => 'reconciliation',
@@ -277,7 +278,8 @@ class SyncMarketplaceStock extends Command
             // Update marketplace stock (reconciliation)
             $oldListedStock = $marketplaceStock->listed_stock;
             $marketplaceStock->listed_stock = $apiQuantity;
-            $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
+            // Stock lock system removed - available stock = listed stock
+            $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock);
             $marketplaceStock->last_synced_at = now();
             $marketplaceStock->last_api_quantity = $apiQuantity;
             $marketplaceStock->save();
