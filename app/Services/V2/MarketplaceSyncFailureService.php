@@ -5,6 +5,7 @@ namespace App\Services\V2;
 use App\Models\MarketplaceSyncFailure;
 use App\Models\Listing_model;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
 /**
  * Service for tracking marketplace sync failures
@@ -45,6 +46,9 @@ class MarketplaceSyncFailureService
         }
 
         try {
+            // Auto-truncate if records exceed 1000
+            $this->autoTruncateIfNeeded();
+
             // Check if SKU is posted on marketplace (has listing)
             $isPosted = Listing_model::where('variation_id', $variationId)
                 ->where('marketplace_id', $marketplaceId)
@@ -138,6 +142,35 @@ class MarketplaceSyncFailureService
                 'error' => $e->getMessage()
             ]);
             return false;
+        }
+    }
+
+    /**
+     * Auto-truncate table if records exceed 1000
+     * This prevents the table from growing too large
+     *
+     * @return void
+     */
+    private function autoTruncateIfNeeded(): void
+    {
+        try {
+            $recordCount = MarketplaceSyncFailure::count();
+            
+            if ($recordCount >= 1000) {
+                Log::warning("MarketplaceSyncFailureService: Auto-truncating table - records exceeded 1000", [
+                    'record_count' => $recordCount,
+                    'threshold' => 1000
+                ]);
+                
+                DB::table('marketplace_sync_failures')->truncate();
+                
+                Log::info("MarketplaceSyncFailureService: Table truncated successfully. New records will be saved.");
+            }
+        } catch (\Exception $e) {
+            // Log error but don't break the sync process
+            Log::error("MarketplaceSyncFailureService: Error during auto-truncate", [
+                'error' => $e->getMessage()
+            ]);
         }
     }
 }

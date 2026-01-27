@@ -155,5 +155,12 @@ Route::prefix('v2')->group(function () {
         Route::get('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'show'])->name('v2.listing-stock-comparisons.show');
         Route::delete('{id}', [\App\Http\Controllers\V2\ListingStockComparisonController::class, 'destroy'])->name('v2.listing-stock-comparisons.destroy');
     });
+    
+    // Marketplace Sync Failures (Extras)
+    Route::prefix('marketplace-sync-failures')->group(function () {
+        Route::get('/', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'index'])->name('v2.marketplace-sync-failures.index');
+        Route::post('truncate', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'truncate'])->name('v2.marketplace-sync-failures.truncate');
+        Route::delete('{id}', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'destroy'])->name('v2.marketplace-sync-failures.destroy');
+    });
 });
 
