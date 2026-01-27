@@ -114,6 +114,9 @@
                                 </div>
                                 
                                 <div class="d-flex gap-2">
+                                    <a href="{{ url('v2/logs/log-file/download-all') }}" class="btn btn-primary btn-sm" title="Download all log files as ZIP">
+                                        <i class="fe fe-download"></i> Download All Logs
+                                    </a>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="clearLogFile()">
                                         <i class="fe fe-trash-2"></i> Clear Log File
                                     </button>
