@@ -1130,9 +1130,19 @@ class ListingController extends Controller
         }
         $variation = Variation_model::with('available_stocks')->find($id);
         
-        // FIX: Store current listed_stock BEFORE update_qty() overwrites it with API value
-        // This ensures we use the actual current value (e.g., 277) instead of API value (e.g., 475)
-        $current_listed_stock = (int)($variation->listed_stock ?? 0);
+        // FIX: Calculate current total stock from marketplace stocks (includes manual_adjustment)
+        // Total = sum of all marketplace listed_stock + sum of all marketplace manual_adjustment
+        // This ensures we use the actual current total that the user sees, not just variation.listed_stock
+        $currentTotalListedStock = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('listed_stock');
+        $currentTotalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('manual_adjustment');
+        $current_listed_stock = (int)$currentTotalListedStock + (int)$currentTotalManualAdjustment;
+        
+        // Fallback to variation.listed_stock if no marketplace stocks exist
+        if($current_listed_stock == 0 && $currentTotalListedStock == 0 && $currentTotalManualAdjustment == 0) {
+            $current_listed_stock = (int)($variation->listed_stock ?? 0);
+        }
         
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
@@ -1154,21 +1164,16 @@ class ListingController extends Controller
         if($setExactStock && $exactStockValue !== null){
             $new_quantity = (int)$exactStockValue;
         } else {
-            // Normal flow: calculate based on addition
+            // Normal flow: calculate based on addition/subtraction
             $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
             if($check_active_verification != null){
+                // For active verification: stock value represents the new total (after subtracting pending orders)
                 $new_quantity = $stock - $pending_orders;
-                }else{
-                if($process_id != null && $current_listed_stock < 0 && $pending_orders == 0){
-                    // Special case: if current_listed_stock was negative and no pending orders, use stock directly
-                    $new_quantity = $stock;
-                }else{
-                    // FIX: Use current_listed_stock (before API overwrite) instead of previous_qty (from API)
-                    // This ensures we calculate from the actual current value, not the API value
-                    // Normal case: add/subtract stock to/from current listed stock
-                    // If stock is -1, this will subtract 1 from current_listed_stock
-                    $new_quantity = $current_listed_stock + $stock;
-                }
+            } else {
+                // Normal case: stock value is an adjustment (add/subtract from current)
+                // The $stock value should be added/subtracted from current_listed_stock
+                // This handles both positive (add) and negative (subtract) values correctly
+                $new_quantity = $current_listed_stock + $stock;
             }
         }
 
