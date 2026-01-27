@@ -122,7 +122,15 @@ class SyncMarketplaceStock extends Command
 
             // Sync using generic API service
             try {
-                $this->syncStockRecord($marketplaceStock, $marketplaceId);
+                $result = $this->syncStockRecord($marketplaceStock, $marketplaceId);
+                
+                if ($result === false) {
+                    // Marketplace is unsupported - skip gracefully
+                    $skippedCount++;
+                    continue;
+                }
+                
+                // Successfully synced
                 $syncedCount++;
 
                 if ($syncedCount % 10 == 0) {
@@ -178,6 +186,9 @@ class SyncMarketplaceStock extends Command
     /**
      * Sync a single marketplace stock record
      * Uses the generic API service to fetch current stock from marketplace
+     * 
+     * @return bool Returns true if synced successfully, false if skipped (unsupported marketplace)
+     * @throws \Exception If there's an actual error (not just unsupported marketplace)
      */
     private function syncStockRecord($marketplaceStock, $marketplaceId)
     {
@@ -190,7 +201,22 @@ class SyncMarketplaceStock extends Command
         // Get current stock from marketplace API
         $apiQuantity = $this->getStockFromMarketplace($variation, $marketplaceId);
 
+        // If null, check if it's because marketplace is unsupported (skip) or actual API error (throw)
         if ($apiQuantity === null) {
+            // Check if this marketplace is unsupported
+            $isUnsupported = !in_array($marketplaceId, [1, 4]); // Only 1 (Back Market) and 4 (Refurbed) are supported
+            
+            if ($isUnsupported) {
+                // Skip unsupported marketplaces gracefully
+                Log::info("V2 SyncMarketplaceStock: Skipping unsupported marketplace", [
+                    'marketplace_id' => $marketplaceId,
+                    'marketplace_stock_id' => $marketplaceStock->id,
+                    'variation_id' => $variation->id,
+                ]);
+                return false; // Indicates skipped, not an error
+            }
+            
+            // If marketplace is supported but API returned null, it's an actual error
             throw new \Exception("Could not fetch stock from marketplace API");
         }
 
@@ -238,6 +264,8 @@ class SyncMarketplaceStock extends Command
             $variation->listed_stock = $apiQuantity;
             $variation->save();
         }
+        
+        return true; // Successfully synced
     }
 
     /**
