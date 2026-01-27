@@ -250,7 +250,6 @@ class SyncAllMarketplaceStockFromAPI extends Command
                         'new_listed_stock' => $apiQuantity,
                         'old_available_stock' => $oldAvailableStock,
                         'new_available_stock' => $newAvailableStock,
-                        'locked_stock' => $lockedStock
                     ]);
                 }
                 
@@ -376,7 +375,6 @@ class SyncAllMarketplaceStockFromAPI extends Command
                         'new_listed_stock' => $apiQuantity,
                         'old_available_stock' => $oldAvailableStock,
                         'new_available_stock' => $newAvailableStock,
-                        'locked_stock' => $lockedStock
                     ]);
                 }
                 

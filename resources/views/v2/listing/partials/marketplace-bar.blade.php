@@ -54,13 +54,11 @@
     // Calculate stock details for display
     $listedStock = 0;
     $availableStock = 0;
-    $pendingStock = 0; // Locked stock (pending/reserved) - kept for reference but not used in display
+    // Stock lock system removed - pending stock always 0
+    $pendingStock = 0;
     
     if ($marketplaceStock) {
         $listedStock = (int) ($marketplaceStock->listed_stock ?? 0);
-        
-        // Pending stock is the locked stock (reserved/pending) - kept for reference
-        $pendingStock = (int) ($marketplaceStock->locked_stock ?? 0);
     }
     
     // Available stock comes from inventory (variation-level physical stock count)
@@ -73,18 +71,13 @@
         $availableStock = $availableStocks->count(); // Physical stock count from inventory
     }
     
-    // Get locked stock for this variation and marketplace (for lock badge)
-    $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
-        ->where('marketplace_id', $marketplaceIdInt)
-        ->where('lock_status', 'locked')
-        ->get();
-    $totalLocked = $activeLocks->sum('quantity_locked');
-    $lockedStockCount = $activeLocks->count();
-    
-    // Use totalLocked if it's more accurate than marketplaceStock->locked_stock
-    if ($totalLocked > $pendingStock) {
-        $pendingStock = $totalLocked;
-    }
+    // Stock lock system removed - no longer tracking locked stock
+    // $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
+    //     ->where('marketplace_id', $marketplaceIdInt)
+    //     ->where('lock_status', 'locked')
+    //     ->get();
+    $totalLocked = 0;
+    $lockedStockCount = 0;
     
     // Calculate pending orders for this specific marketplace
     // For Backmarket (marketplace_id = 1), include orders with marketplace_id = 1 or null

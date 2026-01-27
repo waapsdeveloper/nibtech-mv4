@@ -62,9 +62,8 @@
     @include('v2.listing.partials.bulk-update-modal')
     {{-- /Bulk Update Modal --}}
 
-    {{-- Stock Locks Modal --}}
-    @include('v2.listing.partials.stock-locks-modal')
-    {{-- /Stock Locks Modal --}}
+    {{-- Stock Locks Modal - REMOVED (Stock lock system removed) --}}
+    {{-- @include('v2.listing.partials.stock-locks-modal') --}}
 
     {{-- Stock Comparison Modal --}}
     @include('v2.listing.partials.stock-comparison-modal')
@@ -111,7 +110,7 @@
             getTargetVariations: "{{ url('listing/get_target_variations') }}",
             updateTarget: "{{ url('listing/update_target') }}",
             imei: "{{ url('imei') }}",
-            getStockLocks: "{{ url('v2/stock-locks/api') }}",
+            // getStockLocks: "{{ url('v2/stock-locks/api') }}", // Stock lock system removed
             getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}",
             fixStockMismatch: "{{ url('v2/listings/fix_stock_mismatch') }}",
             restoreListingHistory: "{{ url('v2/listings/restore_history') }}",
@@ -129,33 +128,33 @@
         @endforeach
     };
 
-    // Function to show stock locks modal
-    function showStockLocksModal(variationId, marketplaceId) {
-        const modal = new bootstrap.Modal(document.getElementById('stockLocksModal'));
-        const modalBody = document.getElementById('stockLocksModalBody');
-        
-        // Show loading state
-        modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock locks...</p></div>';
-        modal.show();
-        
-        // Load stock locks via API (returns rendered Blade template)
-        $.ajax({
-            url: '{{ url("v2/stock-locks/api") }}',
-            type: 'GET',
-            data: {
-                variation_id: variationId,
-                marketplace_id: marketplaceId,
-                show_all: false
-            },
-            success: function(html) {
-                modalBody.innerHTML = html;
-            },
-            error: function(xhr, status, error) {
-                console.error('Error loading stock locks:', error);
-                modalBody.innerHTML = '<div class="alert alert-danger">Error loading stock locks: ' + error + '</div>';
-            }
-        });
-    }
+    // Function to show stock locks modal - REMOVED (Stock lock system removed)
+    // function showStockLocksModal(variationId, marketplaceId) {
+    //     const modal = new bootstrap.Modal(document.getElementById('stockLocksModal'));
+    //     const modalBody = document.getElementById('stockLocksModalBody');
+    //     
+    //     // Show loading state
+    //     modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock locks...</p></div>';
+    //     modal.show();
+    //     
+    //     // Load stock locks via API (returns rendered Blade template)
+    //     $.ajax({
+    //         url: '{{ url("v2/stock-locks/api") }}',
+    //         type: 'GET',
+    //         data: {
+    //             variation_id: variationId,
+    //             marketplace_id: marketplaceId,
+    //             show_all: false
+    //         },
+    //         success: function(html) {
+    //             modalBody.innerHTML = html;
+    //         },
+    //         error: function(xhr, status, error) {
+    //             console.error('Error loading stock locks:', error);
+    //             modalBody.innerHTML = '<div class="alert alert-danger">Error loading stock locks: ' + error + '</div>';
+    //         }
+    //     });
+    // }
 
     // Function to show stock formula modal
     function showStockFormulaModal(variationId, sku, productModel, storageName, colorName, gradeName, colorCode) {
