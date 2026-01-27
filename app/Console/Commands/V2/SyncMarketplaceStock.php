@@ -5,6 +5,7 @@ use Illuminate\Console\Command;
 use App\Models\Marketplace_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Services\V2\MarketplaceAPIService;
+use App\Services\V2\MarketplaceSyncFailureService;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -292,6 +293,33 @@ class SyncMarketplaceStock extends Command
             return null;
         }
 
+        $marketplaceId = 4; // Refurbed marketplace ID
+        $failureService = app(MarketplaceSyncFailureService::class);
+
+        // Quick fix: Skip SKUs with invalid characters that Refurbed API doesn't accept
+        // Refurbed's OfferSKUFilter rejects SKUs containing: . ( ) and other special chars
+        if (preg_match('/[().]/', $variation->sku)) {
+            $errorReason = 'SKU contains invalid characters (dots, parentheses) that Refurbed API filter does not accept';
+            $errorMessage = 'SKU contains characters that Refurbed API filter does not accept';
+            
+            Log::warning("V2 SyncMarketplaceStock: Skipping Refurbed sync - SKU contains invalid characters", [
+                'variation_id' => $variation->id,
+                'sku' => $variation->sku,
+                'reason' => $errorReason
+            ]);
+            
+            // Log failure via service (only if feature is enabled)
+            $failureService->logFailure(
+                $variation->id,
+                $variation->sku,
+                $marketplaceId,
+                $errorReason,
+                $errorMessage
+            );
+            
+            return null;
+        }
+
         $refurbed = new \App\Http\Controllers\RefurbedAPIController();
 
         try {
@@ -302,13 +330,33 @@ class SyncMarketplaceStock extends Command
             }
 
             $offer = $offers['offers'][0];
-            return (int)($offer['stock'] ?? $offer['quantity'] ?? 0);
+            $stock = (int)($offer['stock'] ?? $offer['quantity'] ?? 0);
+            
+            // If sync succeeds, clear any previous failures
+            if ($stock !== null) {
+                $failureService->clearFailure($variation->sku, $marketplaceId);
+            }
+            
+            return $stock;
         } catch (\Exception $e) {
+            $errorReason = 'API request failed';
+            $errorMessage = $e->getMessage();
+            
             Log::error("V2 SyncMarketplaceStock: Error fetching Refurbed stock", [
                 'variation_id' => $variation->id,
                 'sku' => $variation->sku,
-                'error' => $e->getMessage()
+                'error' => $errorMessage
             ]);
+            
+            // Log failure via service (only if feature is enabled)
+            $failureService->logFailure(
+                $variation->id,
+                $variation->sku,
+                $marketplaceId,
+                $errorReason,
+                $errorMessage
+            );
+            
             return null;
         }
     }
