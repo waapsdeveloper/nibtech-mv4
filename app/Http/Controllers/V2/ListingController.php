@@ -1186,6 +1186,14 @@ class ListingController extends Controller
         // Manual pushes go to marketplace 1 (BackMarket) only
         $stockChange = (int)$stock; // The pushed value (e.g., +1 or -1)
         
+        // EDGE CASE: Prevent total stock from going below zero
+        // If user tries to subtract more than available, limit the change so total becomes 0 (not negative)
+        // Example: current_total = 3, user enters -10 → adjust to -3 so total becomes 0
+        if($stockChange < 0) {
+            $maxAllowedSubtraction = -$current_listed_stock; // Maximum negative change (e.g., -3 if current is 3)
+            $stockChange = max($stockChange, $maxAllowedSubtraction); // Limit to -3, not -10
+        }
+        
         if($stockChange != 0){
                 // Get or create marketplace stock for BackMarket (marketplace_id = 1)
                 $marketplace1Stock = MarketplaceStockModel::firstOrCreate(
@@ -1260,6 +1268,10 @@ class ListingController extends Controller
         $totalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
             ->sum('manual_adjustment');
         $calculatedTotalStock = (int)$totalListedStock + (int)$totalManualAdjustment;
+        
+        // EDGE CASE: Ensure total stock never goes below zero (safety check)
+        // This is a final safeguard in case of any edge cases
+        $calculatedTotalStock = max(0, $calculatedTotalStock);
         
         // Update variation.listed_stock to match calculated total (for backward compatibility)
         $variation->listed_stock = $calculatedTotalStock;
