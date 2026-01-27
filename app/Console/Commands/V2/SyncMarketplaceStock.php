@@ -6,6 +6,7 @@ use App\Models\Marketplace_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Services\V2\MarketplaceAPIService;
 use App\Services\V2\MarketplaceSyncFailureService;
+use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -216,8 +217,32 @@ class SyncMarketplaceStock extends Command
                 return false; // Indicates skipped, not an error
             }
             
-            // If marketplace is supported but API returned null, it's an actual error
-            throw new \Exception("Could not fetch stock from marketplace API");
+            // For supported marketplaces (1=BackMarket, 4=Refurbed), null can mean:
+            // - Refurbed: No offers found, invalid SKU (400 error), or API error
+            // - BackMarket: No listing found or API error
+            // We treat null as skip case to prevent sync failures for known issues
+            // (Invalid SKUs and missing listings are already logged to failure service)
+            if ($marketplaceId == 4) {
+                // Refurbed: null could be invalid SKU (400), no offers, or API error
+                // All cases are logged, so we skip gracefully
+                Log::info("V2 SyncMarketplaceStock: Skipping Refurbed sync - no stock data available", [
+                    'marketplace_id' => $marketplaceId,
+                    'marketplace_stock_id' => $marketplaceStock->id,
+                    'variation_id' => $variation->id,
+                    'sku' => $variation->sku,
+                ]);
+                return false; // Skip, not an error
+            }
+            
+            // For BackMarket, null means no listing found or API error
+            // We'll still skip to prevent sync failures, but log it
+            Log::info("V2 SyncMarketplaceStock: Skipping BackMarket sync - no stock data available", [
+                'marketplace_id' => $marketplaceId,
+                'marketplace_stock_id' => $marketplaceStock->id,
+                'variation_id' => $variation->id,
+                'reference_id' => $variation->reference_id,
+            ]);
+            return false; // Skip, not an error
         }
 
         // IMPORTANT: Only update listed_stock from API (never touch manual_adjustment)
@@ -366,7 +391,63 @@ class SyncMarketplaceStock extends Command
             }
             
             return $stock;
+        } catch (\Illuminate\Http\Client\RequestException $e) {
+            // Check if this is a 400 error (invalid SKU filter)
+            $statusCode = $e->response ? $e->response->status() : null;
+            $isInvalidSku = $statusCode === 400 && (
+                str_contains($e->getMessage(), 'filter.sku') ||
+                str_contains($e->getMessage(), 'invalid value') ||
+                str_contains($e->getMessage(), 'OfferSKUFilter')
+            );
+            
+            if ($isInvalidSku) {
+                // 400 error = Invalid SKU (skip case, not an error)
+                $errorReason = 'SKU rejected by Refurbed API filter (invalid format or characters)';
+                $errorMessage = $e->getMessage();
+                
+                Log::warning("V2 SyncMarketplaceStock: Skipping Refurbed sync - SKU rejected by API filter", [
+                    'variation_id' => $variation->id,
+                    'sku' => $variation->sku,
+                    'status_code' => $statusCode,
+                    'reason' => $errorReason
+                ]);
+                
+                // Log failure via service (only if feature is enabled)
+                $failureService->logFailure(
+                    $variation->id,
+                    $variation->sku,
+                    $marketplaceId,
+                    $errorReason,
+                    $errorMessage
+                );
+                
+                return null; // Skip gracefully
+            }
+            
+            // Other HTTP errors (500, 503, etc.) - these are actual API errors
+            $errorReason = 'API request failed';
+            $errorMessage = $e->getMessage();
+            
+            Log::error("V2 SyncMarketplaceStock: Error fetching Refurbed stock", [
+                'variation_id' => $variation->id,
+                'sku' => $variation->sku,
+                'status_code' => $statusCode,
+                'error' => $errorMessage
+            ]);
+            
+            // Log failure via service (only if feature is enabled)
+            $failureService->logFailure(
+                $variation->id,
+                $variation->sku,
+                $marketplaceId,
+                $errorReason,
+                $errorMessage
+            );
+            
+            // Return null but this will be treated as an error in syncStockRecord
+            return null;
         } catch (\Exception $e) {
+            // Non-HTTP exceptions
             $errorReason = 'API request failed';
             $errorMessage = $e->getMessage();
             
