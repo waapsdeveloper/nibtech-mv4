@@ -4,6 +4,8 @@ namespace App\Console\Commands\V2;
 use Illuminate\Console\Command;
 use App\Models\Marketplace_model;
 use App\Models\V2\MarketplaceStockModel;
+use App\Models\MarketplaceSyncFailure;
+use App\Models\Listing_model;
 use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Support\Facades\Log;
 
@@ -292,14 +294,56 @@ class SyncMarketplaceStock extends Command
             return null;
         }
 
+        $marketplaceId = 4; // Refurbed marketplace ID
+        $errorReason = null;
+        $errorMessage = null;
+
         // Quick fix: Skip SKUs with invalid characters that Refurbed API doesn't accept
         // Refurbed's OfferSKUFilter rejects SKUs containing: . ( ) and other special chars
         if (preg_match('/[().]/', $variation->sku)) {
+            $errorReason = 'SKU contains invalid characters (dots, parentheses) that Refurbed API filter does not accept';
+            $errorMessage = 'SKU contains characters that Refurbed API filter does not accept';
+            
             Log::warning("V2 SyncMarketplaceStock: Skipping Refurbed sync - SKU contains invalid characters", [
                 'variation_id' => $variation->id,
                 'sku' => $variation->sku,
-                'reason' => 'SKU contains characters (dots, parentheses) that Refurbed API filter does not accept'
+                'reason' => $errorReason
             ]);
+            
+            // Check if SKU is posted on marketplace (has listing)
+            $isPosted = Listing_model::where('variation_id', $variation->id)
+                ->where('marketplace_id', $marketplaceId)
+                ->exists();
+            
+            // Log to marketplace_sync_failures table (update if exists, create if new)
+            $failure = MarketplaceSyncFailure::firstOrNew(
+                [
+                    'sku' => $variation->sku,
+                    'marketplace_id' => $marketplaceId,
+                ]
+            );
+            
+            if (!$failure->exists) {
+                // New record - set initial values
+                $failure->variation_id = $variation->id;
+                $failure->error_reason = $errorReason;
+                $failure->error_message = $errorMessage;
+                $failure->is_posted_on_marketplace = $isPosted;
+                $failure->failure_count = 1;
+                $failure->first_failed_at = now();
+                $failure->last_attempted_at = now();
+            } else {
+                // Existing record - update values and increment count
+                $failure->variation_id = $variation->id;
+                $failure->error_reason = $errorReason;
+                $failure->error_message = $errorMessage;
+                $failure->is_posted_on_marketplace = $isPosted;
+                $failure->failure_count++;
+                $failure->last_attempted_at = now();
+            }
+            
+            $failure->save();
+            
             return null;
         }
 
@@ -315,11 +359,49 @@ class SyncMarketplaceStock extends Command
             $offer = $offers['offers'][0];
             return (int)($offer['stock'] ?? $offer['quantity'] ?? 0);
         } catch (\Exception $e) {
+            $errorReason = 'API request failed';
+            $errorMessage = $e->getMessage();
+            
             Log::error("V2 SyncMarketplaceStock: Error fetching Refurbed stock", [
                 'variation_id' => $variation->id,
                 'sku' => $variation->sku,
-                'error' => $e->getMessage()
+                'error' => $errorMessage
             ]);
+            
+            // Check if SKU is posted on marketplace (has listing)
+            $isPosted = Listing_model::where('variation_id', $variation->id)
+                ->where('marketplace_id', $marketplaceId)
+                ->exists();
+            
+            // Log to marketplace_sync_failures table (update if exists, create if new)
+            $failure = MarketplaceSyncFailure::firstOrNew(
+                [
+                    'sku' => $variation->sku,
+                    'marketplace_id' => $marketplaceId,
+                ]
+            );
+            
+            if (!$failure->exists) {
+                // New record - set initial values
+                $failure->variation_id = $variation->id;
+                $failure->error_reason = $errorReason;
+                $failure->error_message = $errorMessage;
+                $failure->is_posted_on_marketplace = $isPosted;
+                $failure->failure_count = 1;
+                $failure->first_failed_at = now();
+                $failure->last_attempted_at = now();
+            } else {
+                // Existing record - update values and increment count
+                $failure->variation_id = $variation->id;
+                $failure->error_reason = $errorReason;
+                $failure->error_message = $errorMessage;
+                $failure->is_posted_on_marketplace = $isPosted;
+                $failure->failure_count++;
+                $failure->last_attempted_at = now();
+            }
+            
+            $failure->save();
+            
             return null;
         }
     }
