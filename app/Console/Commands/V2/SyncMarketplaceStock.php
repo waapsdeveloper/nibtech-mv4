@@ -292,6 +292,17 @@ class SyncMarketplaceStock extends Command
             return null;
         }
 
+        // Quick fix: Skip SKUs with invalid characters that Refurbed API doesn't accept
+        // Refurbed's OfferSKUFilter rejects SKUs containing: . ( ) and other special chars
+        if (preg_match('/[().]/', $variation->sku)) {
+            Log::warning("V2 SyncMarketplaceStock: Skipping Refurbed sync - SKU contains invalid characters", [
+                'variation_id' => $variation->id,
+                'sku' => $variation->sku,
+                'reason' => 'SKU contains characters (dots, parentheses) that Refurbed API filter does not accept'
+            ]);
+            return null;
+        }
+
         $refurbed = new \App\Http\Controllers\RefurbedAPIController();
 
         try {
