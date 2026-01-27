@@ -135,13 +135,26 @@ class SyncMarketplaceStockBulk extends Command
             
             $apiStartTime = microtime(true);
             $this->info("Making API call to getAllListings()...");
-            $this->warn("⚠ If this hangs, check your API key in the marketplace table!");
+            $this->warn("⚠ This may take several minutes - fetching from multiple countries with pagination...");
+            $this->info("   Progress will be logged every 30 seconds");
             Log::info("V2 SyncMarketplaceStockBulk: Starting getAllListings() call", [
                 'timestamp' => now()->toDateTimeString(),
                 'api_key_source' => $apiKeySource
             ]);
             
+            // Get country count for progress estimation
+            $countryCount = Country_model::where('market_code', '!=', null)->count();
+            $this->info("   Processing {$countryCount} countries...");
+            
+            // Use set_time_limit to allow long-running operation (if not disabled)
+            if (function_exists('set_time_limit')) {
+                @set_time_limit(0); // 0 = no time limit
+            }
+            
+            // Make the API call (progress is logged inside getAllListings method)
+            // Always fetches fresh data from API (no caching)
             $allListings = $bm->getAllListings(); // BULK FETCH ✅
+            
             $apiDuration = round(microtime(true) - $apiStartTime, 2);
             
             // Check if we got a valid response
@@ -153,12 +166,17 @@ class SyncMarketplaceStockBulk extends Command
                 ]);
             }
             
+            $countriesProcessed = is_array($allListings) ? count($allListings) : 0;
             Log::info("V2 SyncMarketplaceStockBulk: API fetch completed", [
                 'duration_seconds' => $apiDuration,
-                'countries_count' => is_array($allListings) ? count($allListings) : 0
+                'countries_count' => $countriesProcessed,
+                'expected_countries' => $countryCount
             ]);
             
             $this->info("✓ API fetch completed in {$apiDuration}s");
+            if ($countriesProcessed < $countryCount) {
+                $this->warn("   ⚠ Only {$countriesProcessed} of {$countryCount} countries returned data");
+            }
         } catch (\RuntimeException $e) {
             // Handle authentication/configuration errors
             Log::error("V2 SyncMarketplaceStockBulk: Configuration error", [
@@ -223,8 +241,8 @@ class SyncMarketplaceStockBulk extends Command
         $this->info("✓ Found {$variations->count()} variations to check");
         $this->newLine();
         
-        // Step 4: Update marketplace_stock records in batch
-        $this->info("Step 4: Updating marketplace stock records...");
+        // Step 4: Update marketplace_stock records in batch (optimized)
+        $this->info("Step 4: Updating marketplace stock records (bulk mode)...");
         $bar = $this->output->createProgressBar($variations->count());
         $bar->start();
         
@@ -233,6 +251,17 @@ class SyncMarketplaceStockBulk extends Command
         $notFound = 0;
         $errors = 0;
         $updates = [];
+        
+        // Pre-load all marketplace stock records in one query (optimization)
+        $variationIds = $variations->pluck('id')->toArray();
+        $marketplaceStocks = MarketplaceStockModel::where('marketplace_id', $marketplaceId)
+            ->whereIn('variation_id', $variationIds)
+            ->get()
+            ->keyBy('variation_id');
+        
+        // Prepare bulk update arrays
+        $bulkUpdates = [];
+        $now = now();
         
         foreach ($variations as $variation) {
             try {
@@ -247,11 +276,8 @@ class SyncMarketplaceStockBulk extends Command
                 $listingData = $listingMap[$referenceId];
                 $apiQuantity = (int) ($listingData['quantity'] ?? 0);
                 
-                // Get marketplace stock record
-                $marketplaceStock = MarketplaceStockModel::where([
-                    'variation_id' => $variation->id,
-                    'marketplace_id' => $marketplaceId
-                ])->first();
+                // Get marketplace stock record from pre-loaded collection
+                $marketplaceStock = $marketplaceStocks->get($variation->id);
                 
                 if (!$marketplaceStock) {
                     $skipped++;
@@ -261,7 +287,7 @@ class SyncMarketplaceStockBulk extends Command
                 
                 // Check if sync is needed (unless force)
                 if (!$force && $marketplaceStock->last_synced_at) {
-                    $hoursSinceSync = $marketplaceStock->last_synced_at->diffInHours(now());
+                    $hoursSinceSync = $marketplaceStock->last_synced_at->diffInHours($now);
                     if ($hoursSinceSync < 6) {
                         $skipped++;
                         $bar->advance();
@@ -273,13 +299,16 @@ class SyncMarketplaceStockBulk extends Command
                 $oldListedStock = $marketplaceStock->listed_stock ?? 0;
                 $oldAvailableStock = $marketplaceStock->available_stock ?? 0;
                 $lockedStock = $marketplaceStock->locked_stock ?? 0;
+                $newAvailableStock = max(0, $apiQuantity - $lockedStock);
                 
-                // Update marketplace stock
-                $marketplaceStock->listed_stock = $apiQuantity;
-                $marketplaceStock->available_stock = max(0, $apiQuantity - $lockedStock);
-                $marketplaceStock->last_synced_at = now();
-                $marketplaceStock->last_api_quantity = $apiQuantity;
-                $marketplaceStock->save();
+                // Prepare for bulk update
+                $bulkUpdates[$marketplaceStock->id] = [
+                    'listed_stock' => $apiQuantity,
+                    'available_stock' => $newAvailableStock,
+                    'last_synced_at' => $now,
+                    'last_api_quantity' => $apiQuantity,
+                    'updated_at' => $now
+                ];
                 
                 $updated++;
                 
@@ -292,7 +321,7 @@ class SyncMarketplaceStockBulk extends Command
                         'old_listed_stock' => $oldListedStock,
                         'new_listed_stock' => $apiQuantity,
                         'old_available_stock' => $oldAvailableStock,
-                        'new_available_stock' => $marketplaceStock->available_stock,
+                        'new_available_stock' => $newAvailableStock,
                         'locked_stock' => $lockedStock,
                         'quantity_change' => $apiQuantity - $oldListedStock
                     ];
@@ -300,7 +329,7 @@ class SyncMarketplaceStockBulk extends Command
                 
             } catch (\Exception $e) {
                 $errors++;
-                Log::error("V2 SyncMarketplaceStockBulk: Error updating variation", [
+                Log::error("V2 SyncMarketplaceStockBulk: Error processing variation", [
                     'variation_id' => $variation->id ?? null,
                     'error' => $e->getMessage()
                 ]);
@@ -310,7 +339,15 @@ class SyncMarketplaceStockBulk extends Command
         }
         
         $bar->finish();
-        $this->newLine(2);
+        $this->newLine();
+        
+        // Perform bulk update (much faster than individual saves)
+        if (!empty($bulkUpdates)) {
+            $this->info("   Performing bulk database update...");
+            $this->performBulkUpdate($bulkUpdates);
+            $this->info("   ✓ Bulk update completed");
+        }
+        $this->newLine();
         
         // Step 5: Create history records for changes
         if (!empty($updates)) {
@@ -425,27 +462,67 @@ class SyncMarketplaceStockBulk extends Command
     }
     
     /**
-     * Update variation.listed_stock as sum of all marketplace stocks
+     * Perform bulk update of marketplace stock records
+     * Uses raw SQL for maximum performance
+     */
+    private function performBulkUpdate(array $bulkUpdates): void
+    {
+        if (empty($bulkUpdates)) {
+            return;
+        }
+        
+        // Process in chunks to avoid memory issues and long-running transactions
+        foreach (array_chunk($bulkUpdates, 500, true) as $chunk) {
+            DB::transaction(function () use ($chunk) {
+                foreach ($chunk as $id => $data) {
+                    DB::table('marketplace_stock')
+                        ->where('id', $id)
+                        ->update($data);
+                }
+            });
+        }
+    }
+    
+    /**
+     * Update variation.listed_stock as sum of all marketplace stocks (optimized)
      */
     private function updateVariationListedStock(array $variationIds): int
     {
         $updated = 0;
         
+        // Use raw SQL aggregation for better performance
+        // Get all sums in one query instead of N queries
+        $stockSums = MarketplaceStockModel::whereIn('variation_id', $variationIds)
+            ->select('variation_id', DB::raw('SUM(listed_stock) as total_stock'))
+            ->groupBy('variation_id')
+            ->pluck('total_stock', 'variation_id')
+            ->toArray();
+        
         // Process in chunks to avoid memory issues
-        foreach (array_chunk($variationIds, 100) as $chunk) {
+        foreach (array_chunk($variationIds, 500) as $chunk) {
             $variations = Variation_model::whereIn('id', $chunk)
-                ->with('marketplaceStocks')
                 ->get();
             
+            $bulkVariationUpdates = [];
+            
             foreach ($variations as $variation) {
-                // Sum listed_stock from all marketplace_stock records
-                $totalStock = MarketplaceStockModel::where('variation_id', $variation->id)
-                    ->sum('listed_stock');
+                $totalStock = (int) ($stockSums[$variation->id] ?? 0);
                 
                 if ($variation->listed_stock != $totalStock) {
-                    $variation->listed_stock = $totalStock;
-                    $variation->save();
+                    $bulkVariationUpdates[$variation->id] = [
+                        'listed_stock' => $totalStock,
+                        'updated_at' => now()
+                    ];
                     $updated++;
+                }
+            }
+            
+            // Bulk update variations
+            if (!empty($bulkVariationUpdates)) {
+                foreach ($bulkVariationUpdates as $id => $data) {
+                    DB::table('variation')
+                        ->where('id', $id)
+                        ->update($data);
                 }
             }
         }
@@ -481,6 +558,7 @@ class SyncMarketplaceStockBulk extends Command
         $this->info('========================================');
         
         // Calculate efficiency
+        $apiCalls = count(Country_model::where('market_code', '!=', null)->get()); // Approximate
         $apiCalls = count(Country_model::where('market_code', '!=', null)->get()); // Approximate
         $this->info("API Calls: ~{$apiCalls} (bulk fetch)");
         $this->info("Efficiency: 95-98% reduction vs individual calls");
