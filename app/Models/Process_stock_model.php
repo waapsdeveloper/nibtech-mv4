@@ -33,4 +33,8 @@ class Process_stock_model extends Model
     {
         return $this->hasOne(Admin_model::class, 'id', 'admin_id');
     }
+    public function verifier()
+    {
+        return $this->hasOne(Admin_model::class, 'id', 'verified_by');
+    }
 }
