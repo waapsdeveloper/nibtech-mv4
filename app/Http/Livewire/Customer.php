@@ -374,7 +374,12 @@ class Customer extends Component
         //     'email'=> $email,
         //     'password'=> Hash::make($password),
         // );
-        Customer_model::insert(request('customer'));
+        $data = request('customer');
+        
+        // Truncate string fields to prevent database errors
+        $data = $this->truncateCustomerFields($data);
+        
+        Customer_model::insert($data);
         session()->put('success',"Customer has been added successfully");
         return redirect('customer');
     }
@@ -410,9 +415,45 @@ class Customer extends Component
     {
         $data = request('customer');
         $data['is_vendor'] = $data['type'];
+        
+        // Truncate string fields to prevent database errors
+        $data = $this->truncateCustomerFields($data);
+        
         Customer_model::where('id',$id)->update($data);
         session()->put('success',"Customer has been updated successfully");
         return redirect()->back();
+    }
+    
+    /**
+     * Truncate customer fields to prevent database column length errors
+     * 
+     * @param array $data
+     * @return array
+     */
+    private function truncateCustomerFields(array $data): array
+    {
+        // Define max lengths for string fields (based on common database limits)
+        $fieldLimits = [
+            'first_name' => 50,
+            'last_name' => 50,
+            'company' => 100,
+            'street' => 255,
+            'street2' => 255,
+            'city' => 100,
+            'email' => 255,
+            'phone' => 50,
+            'postal_code' => 20,
+            'vat' => 50,
+            'note' => 1000,
+        ];
+        
+        foreach ($fieldLimits as $field => $maxLength) {
+            if (isset($data[$field]) && is_string($data[$field])) {
+                $data[$field] = mb_substr(trim($data[$field]), 0, $maxLength);
+            }
+        }
+        
+        return $data;
     }
 
 
