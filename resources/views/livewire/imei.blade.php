@@ -375,17 +375,27 @@
                                                 {{ $process->currency_id->sign.amount_formatter($p_stock->price,2) }}
                                             </td>
                                             <td style="width:240px" class="text-success text-uppercase" title="{{ $p_stock->stock_id }}" id="copy_imei_{{ $process->id }}">
+
                                                 @isset($p_stock->stock->imei) {{ $p_stock->stock->imei }}&nbsp; @endisset
+
                                                 @isset($p_stock->stock->serial_number) {{ $p_stock->stock->serial_number }}&nbsp; @endisset
+
                                                 @isset($p_stock->admin_id) | {{ $p_stock->admin->first_name }} |
                                                 @else
                                                 @isset($process->processed_by) | {{ $process->admin->first_name }} | @endisset
                                                 @endisset
+
+                                                @isset($p_stock->verified_by) {{ $p_stock->verifier->first_name }} @endisset
+
                                             </td>
                                             <td>@if ($p_stock->status == 1)
                                                 Sent
-                                                @else
+                                                @elseif ($p_stock->status == 2)
                                                 Received
+                                                @elseif ($p_stock->status == 3)
+                                                Not Repaired
+                                                @else
+                                                Error in status
                                             @endif</td>
                                             <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
                                         </tr>
