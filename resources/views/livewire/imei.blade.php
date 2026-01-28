@@ -397,7 +397,7 @@
                                                 @else
                                                 Error in status
                                             @endif</td>
-                                            <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $process->tracking_number }}</td>
+                                            <td style="width:220px">{{ $p_stock->created_at}} <br> {{ $p_stock->updated_at}} <br> {{ $process->tracking_number }}</td>
                                         </tr>
                                     @php
                                         $i ++;
