@@ -647,6 +647,7 @@ class Repair extends Component
                 return 1;
             }
         }
+        $process_stock->verified_by = session('user_id');
         $process_stock->status = 2;
         $process_stock->save();
 
@@ -804,6 +805,7 @@ class Repair extends Component
                 return 1;
             }
         }
+        $process_stock->verified_by = session('user_id');
         $process_stock->status = 3;
         $process_stock->save();
 
@@ -828,8 +830,8 @@ class Repair extends Component
         // $stock_operation = Stock_operations_model::create([
         //     'stock_id' => $stock->id,
         //     'old_variation_id' => $stock->variation_id,
-        //     'new_variation_id' => $new_variation->id,
-        //     'description' => "Repaired Externally",
+        //     'new_variation_id' => $stock->variation->id,
+        //     'description' => "Received Not Repaired",
         //     'admin_id' => session('user_id'),
         // ]);
         // $stock->variation_id = $new_variation->id;
