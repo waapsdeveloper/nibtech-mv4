@@ -602,21 +602,43 @@ class BackMarketAPIController extends Controller
 
         $result = $this->apiGet($end_point);
 
-        $result_array = $result->results;
+        // Check if API call was successful and has results property
+        if (!$result || !is_object($result) || !isset($result->results)) {
+            Log::warning("BackMarketAPIController::get10Orders: API response missing results property", [
+                'endpoint' => $end_point,
+                'result_type' => gettype($result),
+                'result' => $result
+            ]);
+            return [];
+        }
+
+        $result_array = $result->results ?? [];
 
         $result_next = $result;
 
         $page = 1;
 
-        while (($result_next->next) != null) {
+        while (isset($result_next->next) && ($result_next->next) != null) {
             $page++;
             $end_point_next_tail = '&page=' . "$page";
             $end_point_next = $end_point . $end_point_next_tail;
             $result_next = $this->apiGet($end_point_next);
-            $result_next_array = $result_next->results;
+            
+            // Check if pagination API call was successful
+            if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
+                Log::warning("BackMarketAPIController::get10Orders: Pagination API response missing results", [
+                    'endpoint' => $end_point_next,
+                    'page' => $page
+                ]);
+                break; // Stop pagination if API call fails
+            }
+            
+            $result_next_array = $result_next->results ?? [];
 
-            foreach ($result_next_array as $key => $value) {
-                array_push($result_array, $result_next_array[$key]);
+            if (is_array($result_next_array) && !empty($result_next_array)) {
+                foreach ($result_next_array as $key => $value) {
+                    array_push($result_array, $result_next_array[$key]);
+                }
             }
         }
 
@@ -639,8 +661,17 @@ class BackMarketAPIController extends Controller
         $end_point = 'shipping/v1/deliveries?order_id=45727918';
         $result = $this->apiGet($end_point);
 
+        // Check if API call was successful and has results property
+        if (!$result || !is_object($result) || !isset($result->results)) {
+            Log::warning("BackMarketAPIController::getlabelData: API response missing results property", [
+                'endpoint' => $end_point,
+                'result_type' => gettype($result)
+            ]);
+            return [];
+        }
+
         // $res0_array = $result0->results;
-        $res1_array = $result->results;
+        $res1_array = $result->results ?? [];
 
         // $result0_next = $result0;
         $result1_next = $result;
@@ -648,22 +679,31 @@ class BackMarketAPIController extends Controller
 
         $page1 = 1;
 
-        while (($result1_next->next) != null) {
-            if($result1_next->results){
+        while (isset($result1_next->next) && ($result1_next->next) != null) {
+            if(isset($result1_next->results) && $result1_next->results){
                 $page1++;
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                if($result1_next == null){
-                    print_r($result1_next);
-                }else{
+                
+                // Check if pagination API call was successful
+                if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
+                    Log::warning("BackMarketAPIController::getlabelData: Pagination API response missing results", [
+                        'endpoint' => $end_point_next1,
+                        'page' => $page1
+                    ]);
+                    break; // Stop pagination if API call fails
+                }
 
-                    $result_next1_array = $result1_next->results;
+                $result_next1_array = $result1_next->results ?? [];
 
+                if (is_array($result_next1_array) && !empty($result_next1_array)) {
                     foreach ($result_next1_array as $key => $value) {
                         array_push($res1_array, $result_next1_array[$key]);
                     }
                 }
+            } else {
+                break; // Stop if no results in current page
             }
         }
 
@@ -680,8 +720,17 @@ class BackMarketAPIController extends Controller
         $end_point = 'shipping/v1/returns?order_id=45727918';
         $result = $this->apiGet($end_point);
 
+        // Check if API call was successful and has results property
+        if (!$result || !is_object($result) || !isset($result->results)) {
+            Log::warning("BackMarketAPIController::getReturnLabelData: API response missing results property", [
+                'endpoint' => $end_point,
+                'result_type' => gettype($result)
+            ]);
+            return [];
+        }
+
         // $res0_array = $result0->results;
-        $res1_array = $result->results;
+        $res1_array = $result->results ?? [];
 
         // $result0_next = $result0;
         $result1_next = $result;
@@ -689,22 +738,31 @@ class BackMarketAPIController extends Controller
 
         $page1 = 1;
 
-        while (($result1_next->next) != null) {
-            if($result1_next->results){
+        while (isset($result1_next->next) && ($result1_next->next) != null) {
+            if(isset($result1_next->results) && $result1_next->results){
                 $page1++;
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                if($result1_next == null){
-                    print_r($result1_next);
-                }else{
+                
+                // Check if pagination API call was successful
+                if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
+                    Log::warning("BackMarketAPIController::getReturnLabelData: Pagination API response missing results", [
+                        'endpoint' => $end_point_next1,
+                        'page' => $page1
+                    ]);
+                    break; // Stop pagination if API call fails
+                }
 
-                    $result_next1_array = $result1_next->results;
+                $result_next1_array = $result1_next->results ?? [];
 
+                if (is_array($result_next1_array) && !empty($result_next1_array)) {
                     foreach ($result_next1_array as $key => $value) {
                         array_push($res1_array, $result_next1_array[$key]);
                     }
                 }
+            } else {
+                break; // Stop if no results in current page
             }
         }
 
@@ -797,19 +855,40 @@ class BackMarketAPIController extends Controller
 
         $result = $this->apiGet($end_point);
 
-        $result_array = $result->results;
+        // Check if API call was successful and has results property
+        if (!$result || !is_object($result) || !isset($result->results)) {
+            Log::warning("BackMarketAPIController::getProducts: API response missing results property", [
+                'endpoint' => $end_point,
+                'result_type' => gettype($result)
+            ]);
+            return [];
+        }
+
+        $result_array = $result->results ?? [];
         $result_next = $result;
         $page = 1;
 
-        while (($result_next->next) != null) {
+        while (isset($result_next->next) && ($result_next->next) != null) {
             $page++;
             $end_point_next_tail = '&page=' . "$page";
             $end_point_next = $end_point . $end_point_next_tail;
             $result_next = $this->apiGet($end_point_next);
-            $result_next_array = $result_next->results;
+            
+            // Check if pagination API call was successful
+            if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
+                Log::warning("BackMarketAPIController::getProducts: Pagination API response missing results", [
+                    'endpoint' => $end_point_next,
+                    'page' => $page
+                ]);
+                break; // Stop pagination if API call fails
+            }
+            
+            $result_next_array = $result_next->results ?? [];
 
-            foreach ($result_next_array as $key => $value) {
-                array_push($result_array, $result_next_array[$key]);
+            if (is_array($result_next_array) && !empty($result_next_array)) {
+                foreach ($result_next_array as $key => $value) {
+                    array_push($result_array, $result_next_array[$key]);
+                }
             }
         }
 
@@ -1177,7 +1256,7 @@ class BackMarketAPIController extends Controller
 
             $page = 1;
             // judge whetehr there exists the next page
-            while (($result_next->next) != null) {
+            while (isset($result_next->next) && ($result_next->next) != null) {
                 sleep(2);
             // for($i = 0; $i <= 3; $i++){
             $page++;
@@ -1187,12 +1266,25 @@ class BackMarketAPIController extends Controller
             // print_r($end_point_next);
             // the new page object
                 $result_next = $this->apiGet($end_point_next, $code);
+                
+                // Check if pagination API call was successful
+                if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
+                    Log::warning("BackMarketAPIController::getAllListingsBI: Pagination API response missing results", [
+                        'endpoint' => $end_point_next,
+                        'page' => $page,
+                        'country_code' => $code
+                    ]);
+                    break; // Stop pagination if API call fails
+                }
+                
                 // print_r($result_next);
             // the new page array
-            $result_next_array = $result_next->results;
+            $result_next_array = $result_next->results ?? [];
             // add all listings in current page to the $result_array
-            foreach ($result_next_array as $key => $value) {
-                array_push($result_array[$id], $result_next_array[$key]);
+            if (is_array($result_next_array) && !empty($result_next_array)) {
+                foreach ($result_next_array as $key => $value) {
+                    array_push($result_array[$id], $result_next_array[$key]);
+                }
             }
             }
         }
