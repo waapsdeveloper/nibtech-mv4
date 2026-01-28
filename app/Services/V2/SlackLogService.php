@@ -64,6 +64,29 @@ class SlackLogService
             'allow_in_loop' => $allowInLoop
         ]);
         
+        // Check if Slack logging is disabled via environment variable
+        if (env('DISABLE_SLACK_LOGS', false)) {
+            Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - logging to file only", [
+                'log_type' => $logType,
+                'level' => $level,
+            ]);
+            // Still log to file (use logType as default, will be determined later if setting exists)
+            $logFileName = $logType;
+            try {
+                $setting = LogSetting::getActiveForType($logType, $level);
+                if (!$setting) {
+                    $setting = LogSetting::getActiveForKeywords($message, $level);
+                }
+                if ($setting && $setting->channel_name) {
+                    $logFileName = $setting->channel_name;
+                }
+            } catch (\Exception $e) {
+                // Ignore errors when trying to get channel name
+            }
+            self::logToFile($level, $message, $context, $logFileName);
+            return true; // Return true since file logging succeeded
+        }
+        
         // If in batch mode and not explicitly allowed, collect instead of posting
         if (self::$batchMode && !$allowInLoop) {
             Log::debug("SlackLogService: Collecting to batch (batch mode active)");
@@ -325,6 +348,17 @@ class SlackLogService
     public static function postBatch(int $alertThreshold = self::DEFAULT_ALERT_THRESHOLD): array
     {
         $results = [];
+        
+        // Check if Slack logging is disabled via environment variable
+        if (env('DISABLE_SLACK_LOGS', false)) {
+            Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - skipping batch post, clearing buffer", [
+                'batch_count' => count(self::$buffer)
+            ]);
+            // Clear buffer and return (logs were already written to files during collectBatch)
+            self::$buffer = [];
+            self::$batchMode = false;
+            return $results;
+        }
         
         foreach (self::$buffer as $key => $batch) {
             $logType = $batch['log_type'];

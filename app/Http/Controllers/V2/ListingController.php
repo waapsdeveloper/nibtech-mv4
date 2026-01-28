@@ -1130,9 +1130,19 @@ class ListingController extends Controller
         }
         $variation = Variation_model::with('available_stocks')->find($id);
         
-        // FIX: Store current listed_stock BEFORE update_qty() overwrites it with API value
-        // This ensures we use the actual current value (e.g., 277) instead of API value (e.g., 475)
-        $current_listed_stock = (int)($variation->listed_stock ?? 0);
+        // FIX: Calculate current total stock from marketplace stocks (includes manual_adjustment)
+        // Total = sum of all marketplace listed_stock + sum of all marketplace manual_adjustment
+        // This ensures we use the actual current total that the user sees, not just variation.listed_stock
+        $currentTotalListedStock = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('listed_stock');
+        $currentTotalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
+            ->sum('manual_adjustment');
+        $current_listed_stock = (int)$currentTotalListedStock + (int)$currentTotalManualAdjustment;
+        
+        // Fallback to variation.listed_stock if no marketplace stocks exist
+        if($current_listed_stock == 0 && $currentTotalListedStock == 0 && $currentTotalManualAdjustment == 0) {
+            $current_listed_stock = (int)($variation->listed_stock ?? 0);
+        }
         
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
@@ -1154,21 +1164,16 @@ class ListingController extends Controller
         if($setExactStock && $exactStockValue !== null){
             $new_quantity = (int)$exactStockValue;
         } else {
-            // Normal flow: calculate based on addition
+            // Normal flow: calculate based on addition/subtraction
             $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
             if($check_active_verification != null){
+                // For active verification: stock value represents the new total (after subtracting pending orders)
                 $new_quantity = $stock - $pending_orders;
-                }else{
-                if($process_id != null && $current_listed_stock < 0 && $pending_orders == 0){
-                    // Special case: if current_listed_stock was negative and no pending orders, use stock directly
-                    $new_quantity = $stock;
-                }else{
-                    // FIX: Use current_listed_stock (before API overwrite) instead of previous_qty (from API)
-                    // This ensures we calculate from the actual current value, not the API value
-                    // Normal case: add/subtract stock to/from current listed stock
-                    // If stock is -1, this will subtract 1 from current_listed_stock
-                    $new_quantity = $current_listed_stock + $stock;
-                }
+            } else {
+                // Normal case: stock value is an adjustment (add/subtract from current)
+                // The $stock value should be added/subtracted from current_listed_stock
+                // This handles both positive (add) and negative (subtract) values correctly
+                $new_quantity = $current_listed_stock + $stock;
             }
         }
 
@@ -1180,6 +1185,14 @@ class ListingController extends Controller
         // This keeps manual adjustments separate from API-synced stock
         // Manual pushes go to marketplace 1 (BackMarket) only
         $stockChange = (int)$stock; // The pushed value (e.g., +1 or -1)
+        
+        // EDGE CASE: Prevent total stock from going below zero
+        // If user tries to subtract more than available, limit the change so total becomes 0 (not negative)
+        // Example: current_total = 3, user enters -10 → adjust to -3 so total becomes 0
+        if($stockChange < 0) {
+            $maxAllowedSubtraction = -$current_listed_stock; // Maximum negative change (e.g., -3 if current is 3)
+            $stockChange = max($stockChange, $maxAllowedSubtraction); // Limit to -3, not -10
+        }
         
         if($stockChange != 0){
                 // Get or create marketplace stock for BackMarket (marketplace_id = 1)
@@ -1255,6 +1268,10 @@ class ListingController extends Controller
         $totalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
             ->sum('manual_adjustment');
         $calculatedTotalStock = (int)$totalListedStock + (int)$totalManualAdjustment;
+        
+        // EDGE CASE: Ensure total stock never goes below zero (safety check)
+        // This is a final safeguard in case of any edge cases
+        $calculatedTotalStock = max(0, $calculatedTotalStock);
         
         // Update variation.listed_stock to match calculated total (for backward compatibility)
         $variation->listed_stock = $calculatedTotalStock;
@@ -2214,10 +2231,10 @@ class ListingController extends Controller
                 $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
                 
                 $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
-                $lockedStock = $marketplaceStock ? (int) ($marketplaceStock->locked_stock ?? 0) : 0;
+                // Stock lock system removed - available stock = listed stock
                 $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
                     ? (int) $marketplaceStock->available_stock 
-                    : max(0, $listedStock - $lockedStock);
+                    : max(0, $listedStock);
 
                 // Get listing count for this marketplace
                 $listingCount = Listing_model::where('variation_id', $variationId)
@@ -2229,14 +2246,14 @@ class ListingController extends Controller
                     'marketplace_name' => $marketplace->name ?? 'Marketplace ' . $marketplaceIdInt,
                     'listed_stock' => $listedStock,
                     'available_stock' => $availableStock,
-                    'locked_stock' => $lockedStock,
+                    'locked_stock' => 0, // Stock lock system removed
                     'listing_count' => $listingCount,
                     'is_backmarket' => $marketplaceIdInt === 1
                 ];
 
                 $totalListedStock += $listedStock;
                 $totalAvailableStock += $availableStock;
-                $totalLockedStock += $lockedStock;
+                // Stock lock system removed - locked stock always 0
             }
 
             // Get total stock from variation (this is the total stock we have in the system)
@@ -2276,7 +2293,7 @@ class ListingController extends Controller
                 'totals' => [
                     'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
                     'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
-                    'locked_stock' => $totalLockedStock // Sum of all marketplace locked stocks
+                    'locked_stock' => 0 // Stock lock system removed
                 ]
             ]);
         } catch (\Exception $e) {

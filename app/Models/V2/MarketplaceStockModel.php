@@ -101,20 +101,22 @@ class MarketplaceStockModel extends Model
     
     /**
      * Calculate available stock with buffer
+     * Stock lock system removed - available stock = listed stock
      */
     public function getAvailableStockWithBuffer()
     {
-        $available = $this->available_stock ?? ($this->listed_stock - $this->locked_stock);
+        $available = $this->available_stock ?? $this->listed_stock;
         $buffer = $this->buffer_percentage ?? 10.00;
         return max(0, floor($available * (1 - $buffer / 100)));
     }
     
     /**
      * Update available stock (recalculate)
+     * Stock lock system removed - available stock = listed stock
      */
     public function updateAvailableStock()
     {
-        $this->available_stock = max(0, $this->listed_stock - $this->locked_stock);
+        $this->available_stock = max(0, $this->listed_stock ?? 0);
         $this->save();
     }
     
@@ -123,13 +125,13 @@ class MarketplaceStockModel extends Model
      */
     protected static function booted()
     {
-        // Automatically recalculate available_stock whenever listed_stock or locked_stock changes
+        // Automatically recalculate available_stock whenever listed_stock changes
+        // Stock lock system removed - available stock = listed stock (no locked_stock)
         static::saving(function ($marketplaceStock) {
-            // Only recalculate if listed_stock or locked_stock is being changed
-            if ($marketplaceStock->isDirty(['listed_stock', 'locked_stock'])) {
+            // Only recalculate if listed_stock is being changed
+            if ($marketplaceStock->isDirty(['listed_stock'])) {
                 $listedStock = $marketplaceStock->listed_stock ?? 0;
-                $lockedStock = $marketplaceStock->locked_stock ?? 0;
-                $marketplaceStock->available_stock = max(0, $listedStock - $lockedStock);
+                $marketplaceStock->available_stock = max(0, $listedStock);
             }
         });
     }

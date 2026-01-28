@@ -279,6 +279,7 @@ class RefurbedWebhookController extends Controller
                     // Default values only used when creating new order
                     'marketplace_id' => $marketplace_id,
                     'status' => $this->mapOrderState($orderState),
+                    'order_type_id' => 3, // Marketplace order - ensure it's always set
                 ]
             );
             
@@ -287,6 +288,7 @@ class RefurbedWebhookController extends Controller
             $order->currency_id = $currency->id;
             $order->country_id = $country->id ?? 1;
             $order->status = $this->mapOrderState($orderState);
+            $order->order_type_id = 3; // Marketplace order - ensure it's always set
 
             if (! $order->reference) {
                 $order->reference = $orderId;

@@ -322,5 +322,65 @@ class LogFileController extends Controller
             'data' => $duplicatedSetting
         ]);
     }
+    
+    /**
+     * Download all log files as a ZIP archive
+     */
+    public function downloadAllLogs()
+    {
+        $logsDirectory = storage_path('logs');
+        
+        if (!File::isDirectory($logsDirectory)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Logs directory not found'
+            ], 404);
+        }
+        
+        // Get all .log files
+        $logFiles = File::glob($logsDirectory . '/*.log');
+        
+        if (empty($logFiles)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'No log files found'
+            ], 404);
+        }
+        
+        // Create a temporary zip file
+        $zipFileName = 'logs_' . date('Y-m-d_His') . '.zip';
+        $zipPath = sys_get_temp_dir() . '/' . $zipFileName;
+        
+        // Create ZIP archive
+        $zip = new \ZipArchive();
+        if ($zip->open($zipPath, \ZipArchive::CREATE | \ZipArchive::OVERWRITE) !== true) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to create ZIP archive'
+            ], 500);
+        }
+        
+        // Add each log file to the ZIP
+        foreach ($logFiles as $filePath) {
+            $fileName = basename($filePath);
+            // Only add .log files for security
+            if (preg_match('/\.log$/', $fileName) && File::exists($filePath)) {
+                $zip->addFile($filePath, $fileName);
+            }
+        }
+        
+        $zip->close();
+        
+        // Check if ZIP was created successfully
+        if (!File::exists($zipPath)) {
+            return response()->json([
+                'success' => false,
+                'error' => 'Failed to create ZIP archive'
+            ], 500);
+        }
+        
+        // Return the ZIP file as download
+        return response()->download($zipPath, $zipFileName)->deleteFileAfterSend(true);
+    }
 }
 
