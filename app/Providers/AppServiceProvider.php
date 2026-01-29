@@ -7,10 +7,13 @@ use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Database\Migrations\Migrator;
 use Illuminate\Filesystem\Filesystem;
 use Illuminate\Database\Migrations\MigrationRepositoryInterface;
+use Illuminate\Queue\Events\Looping;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,6 +40,16 @@ class AppServiceProvider extends ServiceProvider
         // DB::disconnect() removed from global Queue::after / Queue::failing (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
         // It caused connect/disconnect churn: every job reconnects after disconnect. Long-running jobs
         // (ExecuteArtisanCommandJob, SyncMarketplaceStockJob) still disconnect in their own finally blocks.
+
+        // Reconnect DB at start of each queue loop (before popping next job) to prevent QueryException /
+        // "MySQL server has gone away" crashes in PM2 workers (sdpos-api-queue, sdpos-default-queue).
+        Event::listen(Looping::class, function () {
+            try {
+                DB::reconnect();
+            } catch (\Throwable $e) {
+                Log::warning('Queue: DB reconnect failed', ['message' => $e->getMessage()]);
+            }
+        });
 
         if ($this->app->environment('testing')) {
             return;
