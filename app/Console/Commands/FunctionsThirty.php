@@ -215,7 +215,8 @@ class FunctionsThirty extends Command
     
     /**
      * Create stock comparison records for all listings
-     * Compares BackMarket API stock vs our stock and pending orders
+     * Compares BackMarket API stock vs our stock and pending orders.
+     * Batches variation lookups and pending-order queries to reduce DB load.
      */
     private function createStockComparisons()
     {
@@ -233,81 +234,103 @@ class FunctionsThirty extends Command
             'excesses' => 0,
         ];
         
-        $comparisons = [];
-        
-        foreach($listings as $countryCode => $lists) {
-            foreach($lists as $list) {
-                // Skip archived listings
+        // First pass: collect non-archived items and unique (reference_id, sku) pairs
+        $items = [];
+        $pairsByKey = [];
+        foreach ($listings as $countryCode => $lists) {
+            foreach ($lists as $list) {
                 if ($list->publication_state == 4) {
                     continue;
                 }
-                
-                $variation = Variation_model::where([
-                    'reference_id' => trim($list->listing_id),
-                    'sku' => trim($list->sku)
-                ])->first();
-                
-                if (!$variation) {
-                    continue;
+                $refId = trim($list->listing_id);
+                $sku = trim($list->sku);
+                $key = $refId . '|' . $sku;
+                $items[] = ['countryCode' => $countryCode, 'list' => $list, 'key' => $key];
+                $pairsByKey[$key] = ['reference_id' => $refId, 'sku' => $sku];
+            }
+        }
+        
+        if (empty($pairsByKey)) {
+            return $stats;
+        }
+        
+        // Batch load all variations for these pairs (one query)
+        $pairs = array_values($pairsByKey);
+        $variations = Variation_model::where(function ($q) use ($pairs) {
+            foreach ($pairs as $p) {
+                $q->orWhere(['reference_id' => $p['reference_id'], 'sku' => $p['sku']]);
+            }
+        })->get()->keyBy(function ($v) {
+            return $v->reference_id . '|' . $v->sku;
+        });
+        
+        $variationIds = $variations->pluck('id')->unique()->values()->all();
+        
+        // Batch load pending order items for all variation ids (one query), grouped by variation_id
+        $pendingByVariationId = collect();
+        if (!empty($variationIds)) {
+            $pendingItems = Order_item_model::whereIn('variation_id', $variationIds)
+                ->whereHas('order', function ($q) {
+                    $q->where('order_type_id', 3)->whereIn('status', [1, 2]);
+                })
+                ->get();
+            $pendingByVariationId = $pendingItems->groupBy('variation_id');
+        }
+        
+        // Second pass: compute and create comparison records
+        foreach ($items as $item) {
+            $variation = $variations->get($item['key']);
+            if (!$variation) {
+                continue;
+            }
+            $list = $item['list'];
+            $countryCode = $item['countryCode'];
+            
+            $apiStock = (int)($list->quantity ?? 0);
+            $ourStock = (int)($variation->listed_stock ?? 0);
+            
+            $pendingForVariation = $pendingByVariationId->get($variation->id, collect());
+            $pendingOrdersCount = $pendingForVariation->count();
+            $pendingOrdersQuantity = $pendingForVariation->sum('quantity');
+            
+            $stockDifference = $ourStock - $apiStock;
+            $availableAfterPending = $ourStock - $pendingOrdersQuantity;
+            $apiVsPendingDifference = $apiStock - $pendingOrdersQuantity;
+            
+            $isPerfect = ($ourStock == $apiStock);
+            $hasDiscrepancy = ($ourStock != $apiStock);
+            $hasShortage = ($ourStock < $apiStock);
+            $hasExcess = ($ourStock > $apiStock);
+            
+            Listing_stock_comparison_model::create([
+                'variation_id' => $variation->id,
+                'variation_sku' => $variation->sku,
+                'marketplace_id' => 1,
+                'country_code' => $countryCode,
+                'api_stock' => $apiStock,
+                'our_stock' => $ourStock,
+                'pending_orders_count' => $pendingOrdersCount,
+                'pending_orders_quantity' => $pendingOrdersQuantity,
+                'stock_difference' => $stockDifference,
+                'available_after_pending' => $availableAfterPending,
+                'api_vs_pending_difference' => $apiVsPendingDifference,
+                'is_perfect' => $isPerfect,
+                'has_discrepancy' => $hasDiscrepancy,
+                'has_shortage' => $hasShortage,
+                'has_excess' => $hasExcess,
+                'compared_at' => now(),
+            ]);
+            
+            $stats['total_compared']++;
+            if ($isPerfect) {
+                $stats['perfect_matches']++;
+            } else {
+                $stats['discrepancies']++;
+                if ($hasShortage) {
+                    $stats['shortages']++;
                 }
-                
-                // Get stock values
-                $apiStock = (int)($list->quantity ?? 0);
-                $ourStock = (int)($variation->listed_stock ?? 0);
-                
-                // Get pending orders
-                $pendingOrders = Order_item_model::where('variation_id', $variation->id)
-                    ->whereHas('order', function($q) {
-                        $q->where('order_type_id', 3) // Marketplace orders
-                          ->whereIn('status', [1, 2]); // Pending statuses
-                    })
-                    ->get();
-                
-                $pendingOrdersCount = $pendingOrders->count();
-                $pendingOrdersQuantity = $pendingOrders->sum('quantity');
-                
-                // Calculate differences
-                $stockDifference = $ourStock - $apiStock;
-                $availableAfterPending = $ourStock - $pendingOrdersQuantity;
-                $apiVsPendingDifference = $apiStock - $pendingOrdersQuantity;
-                
-                // Determine status flags
-                $isPerfect = ($ourStock == $apiStock);
-                $hasDiscrepancy = ($ourStock != $apiStock);
-                $hasShortage = ($ourStock < $apiStock);
-                $hasExcess = ($ourStock > $apiStock);
-                
-                // Create comparison record
-                $comparison = Listing_stock_comparison_model::create([
-                    'variation_id' => $variation->id,
-                    'variation_sku' => $variation->sku,
-                    'marketplace_id' => 1, // BackMarket
-                    'country_code' => $countryCode,
-                    'api_stock' => $apiStock,
-                    'our_stock' => $ourStock,
-                    'pending_orders_count' => $pendingOrdersCount,
-                    'pending_orders_quantity' => $pendingOrdersQuantity,
-                    'stock_difference' => $stockDifference,
-                    'available_after_pending' => $availableAfterPending,
-                    'api_vs_pending_difference' => $apiVsPendingDifference,
-                    'is_perfect' => $isPerfect,
-                    'has_discrepancy' => $hasDiscrepancy,
-                    'has_shortage' => $hasShortage,
-                    'has_excess' => $hasExcess,
-                    'compared_at' => now(),
-                ]);
-                
-                $stats['total_compared']++;
-                if ($isPerfect) {
-                    $stats['perfect_matches']++;
-                } else {
-                    $stats['discrepancies']++;
-                    if ($hasShortage) {
-                        $stats['shortages']++;
-                    }
-                    if ($hasExcess) {
-                        $stats['excesses']++;
-                    }
+                if ($hasExcess) {
+                    $stats['excesses']++;
                 }
             }
         }
@@ -345,13 +368,21 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListings();
 
+        // Cache currency id by code and variation by (reference_id|sku) to avoid repeated DB queries
+        $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
+        $variationCache = [];
+
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
             
             foreach($lists as $list){
                 $stats['listings_fetched']++;
 
-                $variation = Variation_model::where(['reference_id'=>trim($list->listing_id), 'sku' => trim($list->sku)])->first();
+                $key = trim($list->listing_id) . '|' . trim($list->sku);
+                if (!isset($variationCache[$key])) {
+                    $variationCache[$key] = Variation_model::where(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)])->first();
+                }
+                $variation = $variationCache[$key];
                 if( $list->publication_state == 4) {
                     // If the listing is archived, we skip it
                     $stats['archived_skipped']++;
@@ -370,6 +401,7 @@ class FunctionsThirty extends Command
                     $variation->status = 1;
                     // ... other fields
                     $isNewVariation = !$variation->exists;
+                    $variationCache[$key] = $variation;
                     echo $list->listing_id." ";
                 }
                 
@@ -397,8 +429,14 @@ class FunctionsThirty extends Command
                 }
 
                 $curr = $list->price->currency ?? $list->currency;
-                $currency = Currency_model::where('code',$curr)->first();
-                // echo $list->currency;
+                $currencyId = $currencyIdsByCode[$curr] ?? null;
+                if ($currencyId === null) {
+                    $currency = Currency_model::where('code', $curr)->first();
+                    if ($currency) {
+                        $currencyIdsByCode[$curr] = $currency->id;
+                        $currencyId = $currency->id;
+                    }
+                }
                 if($variation != null){
                     $isNewListing = false;
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
@@ -408,7 +446,7 @@ class FunctionsThirty extends Command
                     $listing->min_price = $list->min_price;
                     $variation->listed_stock = $list->quantity;
                     $listing->price = $list->price;
-                    $listing->currency_id = $currency->id;
+                    $listing->currency_id = $currencyId;
                     if($listing->name == null){
                         $listing->name = $list->title;
                     }
@@ -449,6 +487,10 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
 
+        // Cache currency id by code and variation by sku to avoid repeated DB queries
+        $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
+        $variationCacheBySku = [];
+
         // Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
         foreach($listings as $country => $lists){
@@ -457,8 +499,18 @@ class FunctionsThirty extends Command
             foreach($lists as $list){
                 $stats['listings_fetched']++;
                 
-                $variation = Variation_model::where('sku',$list->sku)->first();
-                $currency = Currency_model::where('code',$list->currency)->first();
+                if (!isset($variationCacheBySku[$list->sku])) {
+                    $variationCacheBySku[$list->sku] = Variation_model::where('sku', $list->sku)->first();
+                }
+                $variation = $variationCacheBySku[$list->sku];
+                $currencyId = $currencyIdsByCode[$list->currency] ?? null;
+                if ($currencyId === null) {
+                    $currency = Currency_model::where('code', $list->currency)->first();
+                    if ($currency) {
+                        $currencyIdsByCode[$list->currency] = $currency->id;
+                        $currencyId = $currency->id;
+                    }
+                }
                 if($variation == null){
                     $stats['variations_not_found']++;
                     echo $list->sku." ";
@@ -473,7 +525,7 @@ class FunctionsThirty extends Command
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
-                    $listing->currency_id = $currency->id;
+                    $listing->currency_id = $currencyId;
                     // ... other fields
                     $listing->save();
                     

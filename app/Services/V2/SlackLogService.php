@@ -22,6 +22,11 @@ class SlackLogService
     private static $batchMode = false;
     
     /**
+     * In-request cache for LogSetting by logType|level to avoid repeated DB queries
+     */
+    private static $logSettingCache = [];
+    
+    /**
      * Rate limiting cache key prefix
      */
     private const RATE_LIMIT_PREFIX = 'slack_log_rate_limit:';
@@ -73,7 +78,7 @@ class SlackLogService
             // Still log to file (use logType as default, will be determined later if setting exists)
             $logFileName = $logType;
             try {
-                $setting = LogSetting::getActiveForType($logType, $level);
+                $setting = self::getCachedSettingForType($logType, $level);
                 if (!$setting) {
                     $setting = LogSetting::getActiveForKeywords($message, $level);
                 }
@@ -95,8 +100,8 @@ class SlackLogService
         }
         
         try {
-            // Find active log setting for this type and level
-            $setting = LogSetting::getActiveForType($logType, $level);
+            // Find active log setting for this type and level (cached to avoid repeated DB queries)
+            $setting = self::getCachedSettingForType($logType, $level);
             
             // DEBUG: Log setting lookup result
             if (!$setting) {
@@ -110,7 +115,7 @@ class SlackLogService
                 ]);
             }
             
-            // If no setting found, also check keyword-based settings
+            // If no setting found, also check keyword-based settings (message-dependent, not cached)
             if (!$setting) {
                 $setting = LogSetting::getActiveForKeywords($message, $level);
                 if ($setting) {
@@ -261,7 +266,7 @@ class SlackLogService
             // Try to get channel_name from setting if available, otherwise use logType
             $logFileName = $logType; // Default to logType
             try {
-                $setting = LogSetting::getActiveForType($logType, $level);
+                $setting = self::getCachedSettingForType($logType, $level);
                 if (!$setting) {
                     $setting = LogSetting::getActiveForKeywords($message, $level);
                 }
@@ -316,10 +321,10 @@ class SlackLogService
         self::$buffer[$key]['last_occurrence'] = now();
         
         // Always log to file immediately (backup)
-        // Try to get channel_name from setting, otherwise use logType
+        // Try to get channel_name from setting, otherwise use logType (cached)
         $logFileName = $logType; // Default to logType
         try {
-            $setting = LogSetting::getActiveForType($logType, $level);
+            $setting = self::getCachedSettingForType($logType, $level);
             if ($setting && $setting->channel_name) {
                 $logFileName = $setting->channel_name;
             }
@@ -327,6 +332,18 @@ class SlackLogService
             // Ignore errors, use logType as fallback
         }
         self::logToFile($level, $message, $context, $logFileName);
+    }
+    
+    /**
+     * Get LogSetting for type/level with in-request cache to avoid repeated DB queries
+     */
+    private static function getCachedSettingForType(string $logType, string $level): ?LogSetting
+    {
+        $key = $logType . '|' . $level;
+        if (!array_key_exists($key, self::$logSettingCache)) {
+            self::$logSettingCache[$key] = LogSetting::getActiveForType($logType, $level);
+        }
+        return self::$logSettingCache[$key];
     }
     
     /**
@@ -380,8 +397,8 @@ class SlackLogService
                 continue;
             }
             
-            // Find setting for batch post
-            $setting = LogSetting::getActiveForType($logType, $level);
+            // Find setting for batch post (use cache to avoid repeated DB)
+            $setting = self::getCachedSettingForType($logType, $level);
             if (!$setting || !$setting->is_enabled || empty($setting->webhook_url)) {
                 continue;
             }

@@ -43,6 +43,7 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
+        // Critical: new orders sync – no compromise (every 2 min)
         $schedule->command('refresh:new')
             ->everyTwoMinutes()
             ->withoutOverlapping()
@@ -88,8 +89,9 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
+        // Critical: BackMarket listings sync (runs refresh:new first then get_listings) – no compromise; revert to every 30 min
         $schedule->command('functions:thirty')
-            ->hourly()
+            ->everyThirtyMinutes()
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();

@@ -546,7 +546,7 @@ class ArtisanCommandsController extends Controller
             [
                 'signature' => 'functions:thirty',
                 'name' => 'Functions (30 min)',
-                'description' => 'Run functions scheduled every 30 minutes. Runs hourly via scheduler.',
+                'description' => 'Run functions scheduled every 30 minutes (BackMarket listings sync; runs refresh:new first). Critical – no compromise.',
                 'category' => 'Scheduler - General',
                 'options' => [],
                 'examples' => [
