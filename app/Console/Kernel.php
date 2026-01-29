@@ -37,20 +37,23 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refresh:latest')
+        $schedule->command('Refresh:latest')
             ->cron('2,7,12,17,22,27,32,37,42,47,52,57 * * * *') // every 5 min at :02, :07, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        // Critical: new orders sync – no compromise (every 2 min)
-        $schedule->command('refresh:new')
+        // Critical: new orders sync – no compromise (every 2 min). Must match signature: Refresh:new (capital R).
+        $schedule->command('Refresh:new')
             ->everyTwoMinutes()
+            ->before(function () {
+                echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 FIRING: Refresh:new\n";
+            })
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refresh:orders')
+        $schedule->command('Refresh:orders')
             ->cron('3,8,13,18,23,28,33,38,43,48,53,58 * * * *') // every 5 min at :03, :08, …
             ->withoutOverlapping()
             ->onOneServer()
