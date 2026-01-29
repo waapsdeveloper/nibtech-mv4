@@ -2814,6 +2814,10 @@ class Order extends Component
                         if($stock2 != null){
                             $stock2->restore();
                             $stock2->order_id = $order->id;
+                            if(request('override_variation') == 1){
+                                $stock2->product_id = $product;
+                                $stock2->variation_id = $variation->id;
+                            }
                             $stock2->status = 1;
                             $stock2->save();
                             $order_item = Order_item_model::firstOrNew(['order_id' => $order->id, 'variation_id' => $variation->id, 'stock_id' => $stock2->id]);
