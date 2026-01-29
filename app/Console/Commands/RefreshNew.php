@@ -12,7 +12,6 @@ use App\Models\Country_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
-use App\Models\Stock_deduction_log_model;
 use Carbon\Carbon;
 
 
@@ -20,6 +19,7 @@ use Illuminate\Console\Command;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
 
 class RefreshNew extends Command
@@ -48,8 +48,7 @@ class RefreshNew extends Command
     {
         $startTime = microtime(true);
 
-        // Auto-truncate stock_deduction_logs if oldest record is more than 3 hours old
-        $this->autoTruncateStockDeductionLogs();
+        // Stock deduction entries are now written to storage/logs/stock_deduction.log (no DB writes here)
 
         // Log command start to named log file (not generic laravel.log)
         // SlackLogService::post(
@@ -333,10 +332,9 @@ class RefreshNew extends Command
             $variationStockDecreased = ($newVariationStock < $oldVariationStock);
             $marketplaceStockDecreased = ($newMarketplaceStock < $oldMarketplaceStock);
 
-            // Only create log entry if at least one stock value decreased
+            // Only create log entry if at least one stock value decreased (log to file instead of DB to avoid connection churn)
             if ($variationStockDecreased || $marketplaceStockDecreased) {
-                // Record deduction in database for tracking
-                Stock_deduction_log_model::create([
+                $payload = [
                     'variation_id' => $variation->id,
                     'marketplace_id' => $marketplaceId,
                     'order_id' => $order->id,
@@ -350,8 +348,9 @@ class RefreshNew extends Command
                     'order_status' => $order->status,
                     'is_new_order' => $isNewOrder,
                     'old_order_status' => $oldStatus,
-                    'deduction_at' => now(),
-                ]);
+                    'deduction_at' => now()->toIso8601String(),
+                ];
+                Log::channel('stock_deduction')->info('stock_deduction', $payload);
             }
 
             $deductions[] = [
