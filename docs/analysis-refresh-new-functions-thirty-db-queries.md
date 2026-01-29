@@ -91,7 +91,7 @@ This document lists database-heavy or redundant patterns in `Refresh:new` and `f
 | FunctionsThirty | createStockComparisons | Cache variation by (reference_id, sku) for the run. |
 | FunctionsThirty | get_listings / get_listingsBi | Cache `Currency_model` by code (e.g. one pluck or array at start). Cache variation by (reference_id, sku) or sku for the run. |
 
----
+---g
 
 ## 4. Quick wins (in order of impact)
 
