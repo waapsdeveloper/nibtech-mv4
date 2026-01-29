@@ -194,8 +194,13 @@ class RefreshNew extends Command
 
             $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
 
-            // Deduct listed_stock if conditions are met
-            $this->deductListedStockForOrder($orderObj, $isNewOrder, $oldStatus);
+            // Get order after update (refresh existing or fetch new) so deductListedStockForOrder doesn't re-query
+            $order = $existingOrder !== null
+                ? $existingOrder->refresh()
+                : Order_model::where('reference_id', $orderObj->order_id)->where('marketplace_id', $marketplaceId)->first();
+
+            // Deduct listed_stock if conditions are met (pass $order to avoid duplicate fetch)
+            $this->deductListedStockForOrder($orderObj, $order, $isNewOrder, $oldStatus);
         }
 
 
@@ -247,18 +252,17 @@ class RefreshNew extends Command
      * - Always deduct 1 (not by quantity)
      * - Update both variations.listed_stock and marketplace_stock.listed_stock
      * - Allow negative stock values
+     *
+     * @param object $orderObj Raw order from API
+     * @param \App\Models\Order_model|null $order Saved order (after update) - passed to avoid duplicate fetch
      */
-    private function deductListedStockForOrder($orderObj, $isNewOrder, $oldStatus)
+    private function deductListedStockForOrder($orderObj, $order, $isNewOrder, $oldStatus)
     {
-        // Get the saved order
-        $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
-        $order = Order_model::where('reference_id', $orderObj->order_id)
-            ->where('marketplace_id', $marketplaceId)
-            ->first();
-
-        if (!$order) {
+        if ($order === null) {
             return;
         }
+
+        $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
 
         // Only process marketplace orders (order_type_id = 3)
         if ($order->order_type_id != 3) {
@@ -290,6 +294,10 @@ class RefreshNew extends Command
             return;
         }
 
+        // Batch load variations (one query instead of N)
+        $variationIds = $orderItems->pluck('variation_id')->filter()->unique()->values()->all();
+        $variations = Variation_model::whereIn('id', $variationIds)->get()->keyBy('id');
+
         $deductions = [];
 
         // FIX: Use batch mode for loop-based Slack logging to prevent rate limit issues
@@ -300,7 +308,7 @@ class RefreshNew extends Command
                 continue;
             }
 
-            $variation = Variation_model::find($item->variation_id);
+            $variation = $variations->get($item->variation_id);
             if (!$variation) {
                 continue;
             }
