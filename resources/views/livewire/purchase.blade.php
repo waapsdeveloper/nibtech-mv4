@@ -286,7 +286,10 @@
                                 step="0.01" required> --}}
                             <input type="file" class="form-control" name="purchase[sheet]">
                         </div>
-                        <input type="checkbox" name="override_variation" value="1"> Override Product and Variation IDs of stock with this Sheet<br>
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" name="override_variation" value="1" id="overrideVariation">
+                            <label class="form-check-label" for="overrideVariation">Override Product and Variation IDs of stock with this Sheet</label>
+                        </div>
                         <p class="text-danger">*Please make sure the sheet is in the correct format HEADINGS(Name, IMEI, Cost, Color, Grade, Notes)</p>
 
                         <button class="btn btn-primary btn-block">{{ __('locale.Submit') }}</button>
