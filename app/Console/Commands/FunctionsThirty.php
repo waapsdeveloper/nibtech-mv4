@@ -77,11 +77,11 @@ class FunctionsThirty extends Command
 
         // FIX 3: Run refresh:new first to ensure orders are processed and stock deducted before syncing stock from API
         // This prevents race conditions where FunctionsThirty overwrites stock before RefreshNew deducts it
-        $this->info("📦 Running Refresh:new first to sync orders and deduct stock...");
+        $this->info("📦 Running refresh:new first to sync orders and deduct stock...");
         SlackLogService::post(
             'listing_sync',
             'info',
-            "📦 Functions:thirty: Running Refresh:new first to ensure orders are processed before stock sync",
+            "📦 Functions:thirty: Running refresh:new first to ensure orders are processed before stock sync",
             [
                 'command' => 'functions:thirty',
                 'step' => 'pre_sync_refresh_new'
@@ -90,25 +90,25 @@ class FunctionsThirty extends Command
         
         try {
             $refreshNewStartTime = microtime(true);
-            $this->call('Refresh:new');
+            $this->call('refresh:new');
             $refreshNewDuration = round(microtime(true) - $refreshNewStartTime, 2);
             
-            $this->info("✅ Refresh:new completed in {$refreshNewDuration}s");
+            $this->info("✅ refresh:new completed in {$refreshNewDuration}s");
             SlackLogService::post(
                 'listing_sync',
                 'info',
-                "✅ Functions:thirty: Refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
+                "✅ Functions:thirty: refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
                 [
                     'command' => 'functions:thirty',
                     'refresh_new_duration' => $refreshNewDuration
                 ]
             );
         } catch (\Exception $e) {
-            $this->error("❌ Refresh:new failed: " . $e->getMessage());
+            $this->error("❌ refresh:new failed: " . $e->getMessage());
             SlackLogService::post(
                 'listing_sync',
                 'error',
-                "❌ Functions:thirty: Refresh:new failed - Continuing with stock sync anyway",
+                "❌ Functions:thirty: refresh:new failed - Continuing with stock sync anyway",
                 [
                     'command' => 'functions:thirty',
                     'error' => $e->getMessage()

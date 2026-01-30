@@ -1,6 +1,6 @@
 # Analysis: Intensive / Redundant DB Queries in RefreshNew and FunctionsThirty
 
-This document lists database-heavy or redundant patterns in `Refresh:new` and `functions:thirty`, especially around log-like entries and per-item queries.
+This document lists database-heavy or redundant patterns in `refresh:new` and `functions:thirty`, especially around log-like entries and per-item queries.
 
 ---
 

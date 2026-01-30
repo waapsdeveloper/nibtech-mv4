@@ -13,7 +13,7 @@ class RefreshLatest extends Command
      *
      * @var string
      */
-    protected $signature = 'Refresh:latest';
+    protected $signature = 'refresh:latest';
 
     /**
      * The console command description.

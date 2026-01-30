@@ -1,4 +1,4 @@
-# Refresh:new Local Sync Protection
+# refresh:new Local Sync Protection
 
 ## Overview
 The `refresh:new` command has been updated to prevent live data updates to BackMarket when `SYNC_DATA_IN_LOCAL=true` is set in the `.env` file.
@@ -113,7 +113,7 @@ When running in local mode, you'll see:
 ## Testing Checklist
 
 - [ ] Set `SYNC_DATA_IN_LOCAL=true` in `.env`
-- [ ] Run `php artisan Refresh:new`
+- [ ] Run `php artisan refresh:new`
 - [ ] Verify console shows skip warnings
 - [ ] Check logs for skip entries
 - [ ] Verify no order state updates occurred in BackMarket

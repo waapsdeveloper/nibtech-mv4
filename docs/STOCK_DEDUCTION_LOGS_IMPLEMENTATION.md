@@ -133,7 +133,7 @@ php artisan migrate
 
 ### Test Automatic Logging
 1. Set `SYNC_DATA_IN_LOCAL=true` in `.env`
-2. Run `php artisan Refresh:new`
+2. Run `php artisan refresh:new`
 3. Check the Stock Deduction Logs page
 4. Verify logs are created for each deduction
 

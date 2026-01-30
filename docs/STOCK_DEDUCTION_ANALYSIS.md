@@ -95,7 +95,7 @@
 **Testing Steps**:
 1. Set `SYNC_DATA_IN_LOCAL=true` in `.env`
 2. Note current `listed_stock` values
-3. Run `php artisan Refresh:new`
+3. Run `php artisan refresh:new`
 4. Check database for:
    - New orders created
    - `listed_stock` values reduced

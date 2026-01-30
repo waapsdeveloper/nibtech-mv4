@@ -29,7 +29,7 @@ class RefreshNew extends Command
      *
      * @var string
      */
-    protected $signature = 'Refresh:new';
+    protected $signature = 'refresh:new';
 
     /**
      * The console command description.
@@ -54,9 +54,9 @@ class RefreshNew extends Command
         SlackLogService::post(
             'order_sync',
             'info',
-            "🔄 Refresh:new command started",
+            "🔄 refresh:new command started",
             [
-                'command' => 'Refresh:new',
+                'command' => 'refresh:new',
                 'started_at' => now()->toDateTimeString(),
                 'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
             ],
@@ -158,9 +158,9 @@ class RefreshNew extends Command
         SlackLogService::post(
             'order_sync',
             'info',
-            "✅ Refresh:new command completed{$summaryText} | Duration: {$duration}s",
+            "✅ refresh:new command completed{$summaryText} | Duration: {$duration}s",
             [
-                'command' => 'Refresh:new',
+                'command' => 'refresh:new',
                 'completed_at' => now()->toDateTimeString(),
                 'duration_seconds' => $duration,
                 'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
@@ -226,7 +226,7 @@ class RefreshNew extends Command
                     'order_id' => $order_id,
                     'sku' => $sku,
                     'would_set_state' => 2,
-                    'command' => 'Refresh:new',
+                    'command' => 'refresh:new',
                     'local_mode' => true
                 ]
             );

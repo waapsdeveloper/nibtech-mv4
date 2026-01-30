@@ -10,7 +10,7 @@
 | Change | Files | Relevance to DB Connections |
 |--------|--------|-----------------------------|
 | **Database connection leak fix** | `AppServiceProvider`, Jobs, `DATABASE_CONNECTION_LEAK_FIX.md` | Queue jobs + global `Queue::after` / `Queue::failing` call `DB::disconnect()` after every job. Reduces **leaks** but increases **connect/disconnect churn**. |
-| **FunctionsThirty calls Refresh:new** | `FunctionsThirty.php` | Hourly run now **invokes Refresh:new** first. Same process, but both are DB-heavy; amplifies load during that window. |
+| **FunctionsThirty calls refresh:new** | `FunctionsThirty.php` | Hourly run now **invokes Refresh:new** first. Same process, but both are DB-heavy; amplifies load during that window. |
 | **Stock deduction + comparison** | `RefreshNew.php`, `FunctionsThirty.php`, `Stock_deduction_log_model`, `Listing_stock_comparison_model` | New loops: per order → `Variation_model::find`, `MarketplaceStockModel::firstOrNew`/`refresh`/`save`, `Stock_deduction_log_model::create`. Per listing in `createStockComparisons` → `Variation_model::where`, `Order_item_model::whereHas('order')`, `Listing_stock_comparison_model::create`. **Classic N+1 patterns.** |
 | **Order page eager-loading fix** | `Order.php` (Livewire) | Replaced unbounded `customer.orders` with `customer.orders` limited to 50. Reduces **query volume** per render but still loads orders for **every** customer on the page. |
 | **Ecosystem / scheduler** | `ecosystem.config.js`, `Kernel.php` | Separate **api-requests** queue worker; **~20 scheduled commands** with `runInBackground()`. Each run = **new PHP process = new DB connection**. |
@@ -238,7 +238,7 @@ Based on the analysis and **`ecosystem.config.js`**, the following changes have 
 
 ## 7. Conclusion
 
-The **recent changes** (connection leak fix, FunctionsThirty → Refresh:new, stock deduction/comparison, Order eager-loading tweak, ecosystem/scheduler setup) **both**:
+The **recent changes** (connection leak fix, FunctionsThirty → refresh:new, stock deduction/comparison, Order eager-loading tweak, ecosystem/scheduler setup) **both**:
 
 - **Reduce** long-lived connection **leaks** (good), and  
 - **Increase** connection **churn** (global `DB::disconnect` per job) and **concurrency** (many `runInBackground` commands, N+1 in heavy loops).

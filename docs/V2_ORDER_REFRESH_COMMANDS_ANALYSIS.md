@@ -2,7 +2,7 @@
 
 ## Current V1 Commands Overview
 
-### 1. `RefreshLatest.php` (`Refresh:latest`)
+### 1. `RefreshLatest.php` (`refresh:latest`)
 **Purpose:** Sync latest care/replacement records from marketplace API
 
 **What it does:**
@@ -44,7 +44,7 @@
 
 ---
 
-### 3. `RefreshOrders.php` (`Refresh:orders`)
+### 3. `RefreshOrders.php` (`refresh:orders`)
 **Purpose:** Sync all modified orders
 
 **What it does:**
