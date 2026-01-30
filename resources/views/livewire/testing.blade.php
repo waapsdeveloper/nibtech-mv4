@@ -244,7 +244,7 @@
                                 <th>Tester</th>
                                 <th>Batch ID</th>
                                 <th>Date/Time</th>
-                                <th></th>Actions</th>
+                                <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -252,7 +252,7 @@
                                 @php
                                     $result = json_decode($request->request);
                                     $datas = $result;
-                                    if(is_string($result)){
+                                    if ($result === null || is_string($result)) {
                                         continue;
                                     }
 
@@ -270,7 +270,7 @@
                                     if((empty($datas->Imei) || empty($datas->Imei2)) && !empty($datas->Serial)){
                                         foreach($requests as $otherRequest){
                                             $otherResult = json_decode($otherRequest->request);
-                                            if(is_string($otherResult)) continue;
+                                            if ($otherResult === null || is_string($otherResult)) continue;
 
                                             if(($otherResult->Serial ?? '') === $datas->Serial){
                                                 if(empty($datas->Imei) && !empty($otherResult->Imei)){
@@ -381,10 +381,18 @@
                                     <td>
                                         @if(!empty($datas->Time))
                                             @php
-                                                $timestamp = \Carbon\Carbon::parse($datas->Time);
+                                                try {
+                                                    $timestamp = \Carbon\Carbon::parse($datas->Time);
+                                                } catch (\Exception $e) {
+                                                    $timestamp = null;
+                                                }
                                             @endphp
-                                            <small><strong>{{$timestamp->format('M d, Y')}}</strong></small><br>
-                                            <small class="text-muted">{{$timestamp->format('h:i A')}}</small>
+                                            @if($timestamp)
+                                                <small><strong>{{$timestamp->format('M d, Y')}}</strong></small><br>
+                                                <small class="text-muted">{{$timestamp->format('h:i A')}}</small>
+                                            @else
+                                                <span class="text-muted">{{ $datas->Time }}</span>
+                                            @endif
                                         @else
                                             <span class="text-muted">N/A</span>
                                         @endif

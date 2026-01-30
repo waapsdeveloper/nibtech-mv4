@@ -35,9 +35,10 @@ class Testing extends Component
         $data['title_page'] = "Testing";
         session()->put('page_title', $data['title_page']);
 
-        // Call push_testing to process and send data individually when page loads
-        $model = new Api_request_model();
-        $model->push_testing(100);
+        // Do NOT run push_testing on every page load - it can cause 500 (timeouts, external API failures, memory).
+        // Use the "Push All" button or a scheduled job instead.
+        // $model = new Api_request_model();
+        // $model->push_testing(100);
 
         $requests = Api_request_model::whereNull('status')->limit(400)->get();
 
