@@ -2,6 +2,12 @@
 
 Follow these steps on the server after pulling the latest code (logging + lowercase command names).
 
+**If `refresh:new` never appears in pm2 logs:**  
+Your pm2 output is still on the old code if you see `Refresh:latest` (capital R). Do **Step 1** and **Step 5** (pull + restart scheduler); then check again at an even minute (:00, :02, :04, …).
+
+**If you see "Connection refused" and the error mentions `cache`:**  
+The app is using the database for cache and MySQL is unreachable. Set `CACHE_DRIVER=file` in `.env`, then run `php artisan config:clear`. See [docs/CACHE_USE_FILE.md](CACHE_USE_FILE.md).
+
 ---
 
 ## 1. Pull the updates
@@ -14,7 +20,18 @@ git pull origin main
 
 ---
 
-## 2. Confirm commands are registered (lowercase)
+## 2. Clear caches (if you use config/schedule cache)
+
+```bash
+php artisan config:clear
+php artisan cache:clear
+```
+
+(Optional but recommended after pull, so the scheduler uses the new schedule.)
+
+---
+
+## 3. Confirm commands are registered (lowercase)
 
 ```bash
 php artisan list | grep -i refresh
@@ -30,7 +47,7 @@ You should see:
 
 ---
 
-## 3. Confirm schedule includes refresh:new
+## 4. Confirm schedule includes refresh:new
 
 ```bash
 php artisan schedule:list
@@ -40,7 +57,7 @@ Check that `refresh:new` appears and runs every 2 minutes.
 
 ---
 
-## 4. Restart the scheduler (PM2)
+## 5. Restart the scheduler (PM2)
 
 So the scheduler process loads the new code and schedule:
 
@@ -52,7 +69,7 @@ pm2 restart sdpos-scheduler
 
 ---
 
-## 5. Verify refresh:new runs
+## 6. Verify refresh:new runs
 
 - Wait for the next even minute (e.g. 12:10, 12:12) or run the scheduler once:
 
@@ -87,7 +104,7 @@ After a run you should see lines like:
 
 ---
 
-## 7. Optional: run refresh:new once by hand
+## 8. Optional: run refresh:new once by hand
 
 ```bash
 php artisan refresh:new
