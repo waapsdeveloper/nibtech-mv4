@@ -3,7 +3,10 @@
 Follow these steps on the server after pulling the latest code (logging + lowercase command names).
 
 **If `refresh:new` never appears in pm2 logs:**  
-Your pm2 output is still on the old code if you see `Refresh:latest` (capital R). Do **Step 1** and **Step 4** (pull + restart scheduler); then check again at an even minute (:00, :02, :04, …).
+Your pm2 output is still on the old code if you see `Refresh:latest` (capital R). Do **Step 1** and **Step 5** (pull + restart scheduler); then check again at an even minute (:00, :02, :04, …).
+
+**If you see "Connection refused" and the error mentions `cache`:**  
+The app is using the database for cache and MySQL is unreachable. Set `CACHE_DRIVER=file` in `.env`, then run `php artisan config:clear`. See [docs/CACHE_USE_FILE.md](CACHE_USE_FILE.md).
 
 ---
 
