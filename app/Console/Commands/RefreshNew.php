@@ -50,17 +50,19 @@ class RefreshNew extends Command
 
         // Stock deduction entries are now written to storage/logs/stock_deduction.log (no DB writes here)
 
-        // Log command start to named log file (not generic laravel.log)
-        // SlackLogService::post(
-        //     'order_sync',
-        //     'info',
-        //     "🔄 Refresh:new command started",
-        //     [
-        //         'command' => 'Refresh:new',
-        //         'started_at' => now()->toDateTimeString(),
-        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
-        //     ]
-        // );
+        // Log command start to named log file only (no Slack)
+        SlackLogService::post(
+            'order_sync',
+            'info',
+            "🔄 Refresh:new command started",
+            [
+                'command' => 'Refresh:new',
+                'started_at' => now()->toDateTimeString(),
+                'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
+            ],
+            false,
+            true
+        );
 
         $bm = new BackMarketAPIController();
         $order_model = new Order_model();
@@ -152,27 +154,29 @@ class RefreshNew extends Command
             $orderIdsForLog[] = "... and " . (count($stats['order_ids_synced']) - 20) . " more";
         }
 
-        // Log command completion with statistics
-        // SlackLogService::post(
-        //     'order_sync',
-        //     'info',
-        //     "✅ Refresh:new command completed{$summaryText} | Duration: {$duration}s",
-        //     [
-        //         'command' => 'Refresh:new',
-        //         'completed_at' => now()->toDateTimeString(),
-        //         'duration_seconds' => $duration,
-        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
-        //         'statistics' => [
-        //             'new_orders_found' => $stats['new_orders_found'],
-        //             'new_orders_synced' => $stats['new_orders_synced'],
-        //             'new_orderlines_validated' => $stats['new_orderlines_validated'],
-        //             'incomplete_orders_found' => $stats['incomplete_orders_found'],
-        //             'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
-        //             'total_orders_synced' => count($stats['order_ids_synced']),
-        //             'order_ids_sample' => $orderIdsForLog
-        //         ]
-        //     ]
-        // );
+        // Log command completion with statistics to file only (no Slack)
+        SlackLogService::post(
+            'order_sync',
+            'info',
+            "✅ Refresh:new command completed{$summaryText} | Duration: {$duration}s",
+            [
+                'command' => 'Refresh:new',
+                'completed_at' => now()->toDateTimeString(),
+                'duration_seconds' => $duration,
+                'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+                'statistics' => [
+                    'new_orders_found' => $stats['new_orders_found'],
+                    'new_orders_synced' => $stats['new_orders_synced'],
+                    'new_orderlines_validated' => $stats['new_orderlines_validated'],
+                    'incomplete_orders_found' => $stats['incomplete_orders_found'],
+                    'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
+                    'total_orders_synced' => count($stats['order_ids_synced']),
+                    'order_ids_sample' => $orderIdsForLog
+                ]
+            ],
+            false,
+            true
+        );
 
         return 0;
     }
