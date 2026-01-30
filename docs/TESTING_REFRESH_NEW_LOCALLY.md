@@ -49,10 +49,10 @@ Ensure your `.env` file has BackMarket API credentials configured:
 
 ```bash
 # Run the command directly
-php artisan Refresh:new
+php artisan refresh:new
 ```
 
-**Note:** The command signature is case-sensitive: `Refresh:new` (capital R)
+**Note:** Use lowercase: `refresh:new`
 
 ### Step 5: Monitor Output
 
@@ -105,9 +105,9 @@ WHERE status IN (0, 1, 2)
 
 ```bash
 # Run with verbose flag (if command supports it)
-php artisan Refresh:new -v
+php artisan refresh:new -v
 # OR
-php artisan Refresh:new --verbose
+php artisan refresh:new --verbose
 ```
 
 ### Step 9: Test Scheduler Manually

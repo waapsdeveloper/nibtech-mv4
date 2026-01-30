@@ -3,9 +3,9 @@
 ## Overview
 
 The `v2:sync-orders` command is a unified V2 command that replaces the three separate V1 commands:
-- `Refresh:latest` → Care/replacement records sync
-- `Refresh:new` → New orders sync
-- `Refresh:orders` → Modified orders sync
+- `refresh:latest` → Care/replacement records sync
+- `refresh:new` → New orders sync
+- `refresh:orders` → Modified orders sync
 
 ## Key Features
 
@@ -160,9 +160,9 @@ Update `app/Console/Kernel.php`:
 
 ```php
 // Old V1 commands
-// $schedule->command('Refresh:new')->everyFiveMinutes();
-// $schedule->command('Refresh:orders')->hourly();
-// $schedule->command('Refresh:latest')->hourly();
+// $schedule->command('refresh:new')->everyFiveMinutes();
+// $schedule->command('refresh:orders')->hourly();
+// $schedule->command('refresh:latest')->hourly();
 
 // New V2 unified command
 $schedule->command('v2:sync-orders --type=new')->everyFiveMinutes();

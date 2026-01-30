@@ -60,7 +60,7 @@ The feature to deduct `listed_stock` when orders arrive via `refresh:new` has be
 ### Safe Testing with SYNC_DATA_IN_LOCAL
 
 1. Set `SYNC_DATA_IN_LOCAL=true` in `.env`
-2. Run `php artisan Refresh:new`
+2. Run `php artisan refresh:new`
 3. Check database for stock deductions
 4. Review logs via SlackLogService
 

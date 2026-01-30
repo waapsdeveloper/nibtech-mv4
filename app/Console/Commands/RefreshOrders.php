@@ -23,7 +23,7 @@ class RefreshOrders extends Command
      *
      * @var string
      */
-    protected $signature = 'Refresh:orders';
+    protected $signature = 'refresh:orders';
 
     /**
      * The console command description.

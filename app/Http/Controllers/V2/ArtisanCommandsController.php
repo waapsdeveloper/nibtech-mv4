@@ -444,7 +444,7 @@ class ArtisanCommandsController extends Controller
             ],
             // ========== SCHEDULER COMMANDS (V1) ==========
             [
-                'signature' => 'Refresh:new',
+                'signature' => 'refresh:new',
                 'name' => 'Refresh New Orders',
                 'description' => 'Sync new orders from BackMarket API and update incomplete orders. Runs every 2 minutes via scheduler.',
                 'category' => 'Scheduler - Orders',
@@ -454,12 +454,12 @@ class ArtisanCommandsController extends Controller
                 ],
                 'options' => [],
                 'examples' => [
-                    'php artisan Refresh:new'
+                    'php artisan refresh:new'
                 ],
                 'scheduled' => 'Every 2 minutes'
             ],
             [
-                'signature' => 'Refresh:orders',
+                'signature' => 'refresh:orders',
                 'name' => 'Refresh Modified Orders',
                 'description' => 'Sync all modified orders from BackMarket API (last 3 months). Runs every 5 minutes via scheduler.',
                 'category' => 'Scheduler - Orders',
@@ -469,12 +469,12 @@ class ArtisanCommandsController extends Controller
                 ],
                 'options' => [],
                 'examples' => [
-                    'php artisan Refresh:orders'
+                    'php artisan refresh:orders'
                 ],
                 'scheduled' => 'Every 5 minutes'
             ],
             [
-                'signature' => 'Refresh:latest',
+                'signature' => 'refresh:latest',
                 'name' => 'Refresh Latest Care Records',
                 'description' => 'Sync latest care/replacement records from BackMarket API. Runs every 5 minutes via scheduler.',
                 'category' => 'Scheduler - Orders',
@@ -484,7 +484,7 @@ class ArtisanCommandsController extends Controller
                 ],
                 'options' => [],
                 'examples' => [
-                    'php artisan Refresh:latest'
+                    'php artisan refresh:latest'
                 ],
                 'scheduled' => 'Every 5 minutes'
             ],

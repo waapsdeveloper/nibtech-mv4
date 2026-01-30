@@ -25,7 +25,7 @@ The client’s description is **mostly correct**, but the key logic is **not in 
 
 ## Command-by-command behavior
 
-### 1) `Refresh:latest` (`app/Console/Commands/RefreshLatest.php`)
+### 1) `refresh:latest` (`app/Console/Commands/RefreshLatest.php`)
 
 Purpose:
 
@@ -39,7 +39,7 @@ Stock allocation / reduction:
 
 - None directly related to sales stock assignment in this command.
 
-### 2) `Refresh:new` (`app/Console/Commands/RefreshNew.php`)
+### 2) `refresh:new` (`app/Console/Commands/RefreshNew.php`)
 
 Purpose:
 
@@ -134,7 +134,7 @@ This matches the client’s “reuse if exists, else create and use it” statem
 
 To validate on a real incoming order:
 
-1. Run `php artisan Refresh:new` (or `Refresh:orders`).
+1. Run `php artisan refresh:new` (or `refresh:orders`).
 2. Confirm `Order_model` was created/updated via `updateOrderInDB`.
 3. Confirm each `Order_item_model` was created/updated via `updateOrderItemsInDB`.
 4. For an orderline with IMEI/serial:

@@ -13,13 +13,13 @@
 |---------------|-------------------|
 | 11:39:17–11:40:47 | **V2 SyncMarketplaceStock** runs and logs `Stock updated` for **hundreds** of variations (marketplace_id=1). One log line per variation → one long-running Artisan process. |
 | 11:39:27, 11:39:47, 11:40:07, 11:40:27, 11:40:47 | **SendApiRequestPayload** jobs hit timeouts to `ykpos.nibritaintech.com` → **queue worker(s)** are active and using DB. |
-| 11:40:01–11:40:11 | **Refresh:new** runs (start + complete) **while sync is still running** → another Artisan process with its own DB connection. |
+| 11:40:01–11:40:11 | **refresh:new** runs (start + complete) **while sync is still running** → another Artisan process with its own DB connection. |
 | 11:40:48       | A **web request** hits the app; **AuthorizeMiddleware** does `Admin::find(22)` → **SQLSTATE[1040] Too many connections**. |
 
 So at 11:40:48 you have:
 
 - At least **1** connection held by **V2 SyncMarketplaceStock** (long-running).
-- At least **1** connection used by **Refresh:new** (or other scheduler tasks in that window).
+- At least **1** connection used by **refresh:new** (or other scheduler tasks in that window).
 - **Scheduler** process (`schedule:work`) and any other **runInBackground** commands that started in that minute.
 - **Queue worker(s)** (each typically 1 connection).
 - **Web/PHP-FPM** requests (each request often 1 connection until release).
@@ -37,7 +37,7 @@ So the “too many connections” is not a bug in the sync logic itself; it’s 
 ## 2. Why This Fits “In Between an Update Sync”
 
 - The sync runs for **many minutes** (hundreds of variations, ~1 update per second in the log).
-- Scheduler is **staggered** but still runs other commands every few minutes; **Refresh:new** is every 2 minutes.
+- Scheduler is **staggered** but still runs other commands every few minutes; **refresh:new** is every 2 minutes.
 - So it’s **normal** that in the middle of a long sync you get:
   - Other cron jobs starting (each new process = new connection).
   - Queue jobs running (workers keep connections).
@@ -87,7 +87,7 @@ So application-side mitigation is partly in place. The log still shows that **un
 
 1. **Limit concurrency of heavy commands**  
    - Ensure **V2 SyncMarketplaceStock** (and similar) never run in parallel with themselves (e.g. `withoutOverlapping(120)` or similar so a 6-hour sync doesn’t stack).  
-   - Optionally **exclude** the sync from running at the same time as the busiest scheduler window (e.g. when Refresh:new runs every 2 min), if you can schedule it at a quieter time.
+   - Optionally **exclude** the sync from running at the same time as the busiest scheduler window (e.g. when refresh:new runs every 2 min), if you can schedule it at a quieter time.
 
 2. **Reduce connection hold time in sync**  
    - The sync command already uses one connection for the whole run. You can’t “release” it mid-run without major refactors, but you can **shorten** the run by batching (e.g. bulk API calls, bulk DB updates) so the process (and its connection) lives for a shorter time.
@@ -111,7 +111,7 @@ So application-side mitigation is partly in place. The log still shows that **un
 
 | Question | Answer |
 |----------|--------|
-| **What’s the pattern?** | Long V2 SyncMarketplaceStock run + overlapping scheduler (e.g. Refresh:new) + queue workers + web traffic → total MySQL connections exceed `max_connections`. |
+| **What’s the pattern?** | Long V2 SyncMarketplaceStock run + overlapping scheduler (e.g. refresh:new) + queue workers + web traffic → total MySQL connections exceed `max_connections`. |
 | **Why “in between” sync?** | Sync holds one connection for a long time; other processes and requests add more; the failure happens when the next connection (e.g. web request) is needed and the limit is already hit. |
 | **Will ProxySQL help?** | Yes. ProxySQL pools connections so that many app connections use fewer MySQL connections, reducing the chance of 1040 during peaks. |
 | **What to do first?** | Keep and tighten app/scheduler discipline (no stacking sync, stagger, reduce hold time where possible); then add ProxySQL for a robust cap on MySQL connections. |

@@ -78,7 +78,7 @@ LIMIT 10;
 ### Step 3: Run `refresh:new` in Test Mode
 
 ```bash
-php artisan Refresh:new
+php artisan refresh:new
 ```
 
 ### Step 4: Monitor What Happens
@@ -249,7 +249,7 @@ The stock deduction logic has been implemented in `RefreshNew.php`:
 
 - [ ] Set `SYNC_DATA_IN_LOCAL=true` in `.env`
 - [ ] Note current `listed_stock` values for test variations
-- [ ] Run `php artisan Refresh:new`
+- [ ] Run `php artisan refresh:new`
 - [ ] Verify new orders are created in database
 - [ ] Verify `listed_stock` is reduced for status 1 orders
 - [ ] Verify `listed_stock` is reduced for status 2 orders
