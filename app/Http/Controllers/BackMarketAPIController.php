@@ -7,6 +7,7 @@ use App\Models\Marketplace_model;
 use App\Services\V2\SlackLogService;
 use Exception;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Log;
@@ -26,7 +27,10 @@ class BackMarketAPIController extends Controller
         $token = null;
 
         try {
-            $token = Marketplace_model::where('name', 'BackMarket')->first()?->api_key;
+            // Read from primary so queue workers get token when read replica is empty/lagging (read/write split)
+            $token = DB::connection(config('database.default'))->transaction(function () {
+                return Marketplace_model::where('name', 'BackMarket')->first()?->api_key;
+            });
         } catch (Throwable $exception) {
             Log::warning('BackMarket API token lookup failed.', [
                 'message' => $exception->getMessage(),
