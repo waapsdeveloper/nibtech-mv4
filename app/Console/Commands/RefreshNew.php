@@ -218,19 +218,19 @@ class RefreshNew extends Command
         if ($syncDataInLocal) {
             // Skip live API update when in local testing mode
             // Log through SlackLogService to named log file instead of default Laravel log
-            SlackLogService::post(
-                'order_sync',
-                'info',
-                "RefreshNew: Skipping validateOrderlines API call (SYNC_DATA_IN_LOCAL=true) - Order: {$order_id}, SKU: {$sku}",
-                [
-                    'order_id' => $order_id,
-                    'sku' => $sku,
-                    'would_set_state' => 2,
-                    'command' => 'refresh:new',
-                    'local_mode' => true
-                ]
-            );
-            $this->info("⚠️  Local Mode: Skipping orderline validation for order {$order_id}, SKU {$sku} (would set state to 2)");
+            // SlackLogService::post(
+            //     'order_sync',
+            //     'info',
+            //     "RefreshNew: Skipping validateOrderlines API call (SYNC_DATA_IN_LOCAL=true) - Order: {$order_id}, SKU: {$sku}",
+            //     [
+            //         'order_id' => $order_id,
+            //         'sku' => $sku,
+            //         'would_set_state' => 2,
+            //         'command' => 'refresh:new',
+            //         'local_mode' => true
+            //     ]
+            // );
+            // $this->info("⚠️  Local Mode: Skipping orderline validation for order {$order_id}, SKU {$sku} (would set state to 2)");
             return null;
         }
 
@@ -362,7 +362,8 @@ class RefreshNew extends Command
                     'old_order_status' => $oldStatus,
                     'deduction_at' => now()->toIso8601String(),
                 ];
-                Log::channel('stock_deduction')->info('stock_deduction', $payload);
+                // disable stock deduction logging temporarily
+                // Log::channel('stock_deduction')->info('stock_deduction', $payload);
             }
 
             $deductions[] = [
