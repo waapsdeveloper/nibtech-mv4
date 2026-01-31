@@ -63,46 +63,46 @@ class FunctionsThirty extends Command
         );
         
         if ($syncDataInLocal) {
-            $this->info("⚠️  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
-            SlackLogService::post(
-                'listing_sync',
-                'info',
-                "⚠️  Functions:thirty running in LOCAL MODE - Only fetching data, no API modifications",
-                [
-                    'command' => 'functions:thirty',
-                    'local_mode' => true
-                ]
-            );
+            // $this->info("⚠️  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
+            // SlackLogService::post(
+            //     'listing_sync',
+            //     'info',
+            //     "⚠️  Functions:thirty running in LOCAL MODE - Only fetching data, no API modifications",
+            //     [
+            //         'command' => 'functions:thirty',
+            //         'local_mode' => true
+            //     ]
+            // );
         }
 
         // FIX 3: Run refresh:new first to ensure orders are processed and stock deducted before syncing stock from API
         // This prevents race conditions where FunctionsThirty overwrites stock before RefreshNew deducts it
-        $this->info("📦 Running refresh:new first to sync orders and deduct stock...");
-        SlackLogService::post(
-            'listing_sync',
-            'info',
-            "📦 Functions:thirty: Running refresh:new first to ensure orders are processed before stock sync",
-            [
-                'command' => 'functions:thirty',
-                'step' => 'pre_sync_refresh_new'
-            ]
-        );
+        // $this->info("📦 Running refresh:new first to sync orders and deduct stock...");
+        // SlackLogService::post(
+        //     'listing_sync',
+        //     'info',
+        //     "📦 Functions:thirty: Running refresh:new first to ensure orders are processed before stock sync",
+        //     [
+        //         'command' => 'functions:thirty',
+        //         'step' => 'pre_sync_refresh_new'
+        //     ]
+        // );
         
         try {
             $refreshNewStartTime = microtime(true);
             $this->call('refresh:new');
             $refreshNewDuration = round(microtime(true) - $refreshNewStartTime, 2);
             
-            $this->info("✅ refresh:new completed in {$refreshNewDuration}s");
-            SlackLogService::post(
-                'listing_sync',
-                'info',
-                "✅ Functions:thirty: refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
-                [
-                    'command' => 'functions:thirty',
-                    'refresh_new_duration' => $refreshNewDuration
-                ]
-            );
+            // $this->info("✅ refresh:new completed in {$refreshNewDuration}s");
+            // SlackLogService::post(
+            //     'listing_sync',
+            //     'info',
+            //     "✅ Functions:thirty: refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
+            //     [
+            //         'command' => 'functions:thirty',
+            //         'refresh_new_duration' => $refreshNewDuration
+            //     ]
+            // );
         } catch (\Exception $e) {
             $this->error("❌ refresh:new failed: " . $e->getMessage());
             SlackLogService::post(
@@ -561,11 +561,11 @@ class FunctionsThirty extends Command
             // Log::info("Refurbed: Fetched offers", ['offer count' => count($offers), 'offers' => json_encode($offers)]);
             $totalOffers = $response['total'] ?? count($offers);
 
-            Log::info("Refurbed: Fetched all offers", ['total' => $totalOffers]);
+            // Log::info("Refurbed: Fetched all offers", ['total' => $totalOffers]);
             echo "Total offers fetched: {".count($offers)."}\n";
 
             if (empty($offers)) {
-                Log::info("Refurbed: No offers found");
+                // Log::info("Refurbed: No offers found");
                 echo "No offers found\n";
                 return;
             }
@@ -573,7 +573,7 @@ class FunctionsThirty extends Command
 
             $countryMap = Country_model::pluck('id', 'code')->toArray();
             if (empty($countryMap)) {
-                Log::warning("Refurbed: No countries configured for listings");
+                // Log::warning("Refurbed: No countries configured for listings");
                 echo "No countries configured for Refurbed listings\n";
                 return;
             }
@@ -606,7 +606,7 @@ class FunctionsThirty extends Command
                         $countryCode = $offer['country'] ?? $offer['region'] ?? 'DE'; // Germany as default for Refurbed
 
                         if (empty($sku)) {
-                            Log::warning("Refurbed: Offer missing SKU", ['offer_id' => $offerId]);
+                            // Log::warning("Refurbed: Offer missing SKU", ['offer_id' => $offerId]);
                             continue;
                         }
                         if(ctype_digit($sku) && strlen($sku) < 4){
@@ -616,7 +616,7 @@ class FunctionsThirty extends Command
                         $variation = Variation_model::where(['sku' => trim($sku)])->first();
 
                         if ($variation == null) {
-                            Log::warning("Refurbed: Variation not found for SKU", ['sku' => $sku, 'offer_id' => $offerId]);
+                            // Log::warning("Refurbed: Variation not found for SKU", ['sku' => $sku, 'offer_id' => $offerId]);
                             continue;
                         }
 
@@ -660,7 +660,7 @@ class FunctionsThirty extends Command
                         // Get currency
                         $currency = Currency_model::where('code', $priceCurrency)->first();
                         if (!$currency) {
-                            Log::warning("Refurbed: Currency not found", ['currency' => $priceCurrency, 'sku' => $sku]);
+                            // Log::warning("Refurbed: Currency not found", ['currency' => $priceCurrency, 'sku' => $sku]);
                             continue;
                         }
 
@@ -1226,19 +1226,19 @@ class FunctionsThirty extends Command
         if ($syncDataInLocal) {
             // Skip live API update when in local testing mode
             // Log through SlackLogService to named log file
-            SlackLogService::post(
-                'listing_sync', 
-                'info', 
-                "FunctionsThirty: Skipping Refurbed price update API call (SYNC_DATA_IN_LOCAL=true) - SKU: {$sku}",
-                [
-                    'sku' => $sku,
-                    'market_prices' => array_keys($setMarketPrices),
-                    'would_update' => true,
-                    'command' => 'functions:thirty',
-                    'local_mode' => true
-                ]
-            );
-            $this->info("⚠️  Local Mode: Skipping Refurbed price update for SKU {$sku}");
+            // SlackLogService::post(
+            //     'listing_sync', 
+            //     'info', 
+            //     "FunctionsThirty: Skipping Refurbed price update API call (SYNC_DATA_IN_LOCAL=true) - SKU: {$sku}",
+            //     [
+            //         'sku' => $sku,
+            //         'market_prices' => array_keys($setMarketPrices),
+            //         'would_update' => true,
+            //         'command' => 'functions:thirty',
+            //         'local_mode' => true
+            //     ]
+            // );
+            // $this->info("⚠️  Local Mode: Skipping Refurbed price update for SKU {$sku}");
             return;
         }
 
