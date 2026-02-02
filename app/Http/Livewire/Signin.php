@@ -51,6 +51,11 @@ class Signin extends Component
             $request->session()->put('lname', $login_detail->last_name);
             $request->session()->put('our_id', 001);
 
+            // Check if 2FA is not enabled and set reminder flag
+            if (!$login_detail->google2fa_secret || !$login_detail->is_2fa_enabled) {
+                $request->session()->put('show_2fa_reminder', true);
+            }
+
             // Clock In
             $clock = new ClockButton();
             $clock->clockIn();

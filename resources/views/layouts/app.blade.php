@@ -98,6 +98,55 @@
             @yield('modal')
 
             @include('layouts.components.footer')
+
+            <!-- 2FA Reminder Modal -->
+            @if(session('show_2fa_reminder'))
+                <div class="modal fade" id="twoFactorReminderModal" tabindex="-1" aria-labelledby="twoFactorReminderModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+                    <div class="modal-dialog modal-dialog-centered">
+                        <div class="modal-content">
+                            <div class="modal-header bg-warning">
+                                <h5 class="modal-title text-white" id="twoFactorReminderModalLabel">
+                                    <i class="fe fe-alert-triangle"></i> Security Notice
+                                </h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div class="text-center mb-3">
+                                    <i class="fe fe-shield text-warning" style="font-size: 3rem;"></i>
+                                </div>
+                                <h6 class="text-center mb-3">Two-Factor Authentication Not Enabled</h6>
+                                <p class="text-muted">
+                                    Your account is not protected with Two-Factor Authentication (2FA).
+                                    We strongly recommend enabling 2FA to add an extra layer of security to your account.
+                                </p>
+                                <div class="alert alert-warning" role="alert">
+                                    <strong>Why enable 2FA?</strong>
+                                    <ul class="mb-0 mt-2">
+                                        <li>Protects your account from unauthorized access</li>
+                                        <li>Adds an extra security layer beyond passwords</li>
+                                        <li>Required for enhanced security compliance</li>
+                                    </ul>
+                                </div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Remind Me Later</button>
+                                <a href="{{ url('profile') }}" class="btn btn-primary">
+                                    <i class="fe fe-user"></i> Go to Profile & Enable 2FA
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        var twoFactorModal = new bootstrap.Modal(document.getElementById('twoFactorReminderModal'));
+                        twoFactorModal.show();
+                    });
+                </script>
+                @php
+                    session()->forget('show_2fa_reminder');
+                @endphp
+            @endif
 		</div>
 		<!-- End Page -->
 

@@ -415,6 +415,7 @@ Route::get('team', Team::class)->name('view_team');
 Route::get('add-member', [Team::class,'add_member'])->name('add_member');
 Route::post('insert-member', [Team::class,'insert_member'])->name('add_member');
 Route::get('update-status/{id}', [Team::class,'update_status'])->name('edit_member');
+Route::get('reset-2fa/{id}', [Team::class,'reset_2fa'])->name('reset_2fa');
 Route::get('edit-member/{id}', [Team::class,'edit_member'])->name('edit_member');
 Route::post('update-member/{id}', [Team::class,'update_member'])->name('edit_member');
 

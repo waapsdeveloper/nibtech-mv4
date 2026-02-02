@@ -90,6 +90,32 @@ class Team extends Component
             return redirect('team');
         }
     }
+
+    public function reset_2fa($id)
+    {
+        if (session('user')->hasPermission('change_member_status') || session('user_id') == 1){
+
+            $member = Admin_model::where('id',$id)->first();
+
+            if (!$member) {
+                session()->put('error',"Member not found");
+                return redirect('team');
+            }
+
+            // Reset 2FA by clearing the relevant fields
+            Admin_model::where('id',$id)->update([
+                'google2fa_secret' => null,
+                'is_2fa_enabled' => 0,
+                'two_factor_confirmed_at' => null
+            ]);
+
+            session()->put('success',"2FA has been reset successfully for {$member->first_name} {$member->last_name}");
+            return redirect('team');
+        }else{
+            session()->put('error',"Permission Denied");
+            return redirect('team');
+        }
+    }
     public function edit_member($id)
     {
 
