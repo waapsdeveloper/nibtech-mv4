@@ -15,22 +15,22 @@ class SlackLogService
      * Structure: ['log_type_level' => ['messages' => [], 'context' => [], 'count' => 0]]
      */
     private static $buffer = [];
-    
+
     /**
      * Flag to indicate if we're in a batch mode (collecting logs)
      */
     private static $batchMode = false;
-    
+
     /**
      * In-request cache for LogSetting by logType|level to avoid repeated DB queries
      */
     private static $logSettingCache = [];
-    
+
     /**
      * Rate limiting cache key prefix
      */
     private const RATE_LIMIT_PREFIX = 'slack_log_rate_limit:';
-    
+
     /**
      * Default rate limit: max 1 message per minute per log type
      * For info/warning: 1 per 5 seconds (stricter to prevent Slack rate limits)
@@ -38,18 +38,18 @@ class SlackLogService
      */
     private const DEFAULT_RATE_LIMIT_MINUTES = 1;
     private const INFO_RATE_LIMIT_SECONDS = 5; // Stricter for info/warning to prevent 429
-    
+
     /**
      * Default threshold: only alert after X occurrences
      */
     private const DEFAULT_ALERT_THRESHOLD = 3;
-    
+
     /**
      * Post log to Slack based on log type and settings
      * Only posts if a matching log setting exists and is enabled
-     * 
+     *
      * IMPORTANT: If called inside a loop, use collectBatch() and postBatch() instead
-     * 
+     *
      * @param string $logType Log type/category (e.g., 'care_api', 'order_sync', 'listing_api')
      * @param string $level Log level ('error', 'warning', 'info', 'debug')
      * @param string $message Log message
@@ -61,14 +61,14 @@ class SlackLogService
     public static function post(string $logType, string $level, string $message, array $context = [], bool $allowInLoop = false, bool $skipSlack = false): bool
     {
         // DEBUG: Log entry attempt
-        Log::debug("SlackLogService::post called", [
-            'log_type' => $logType,
-            'level' => $level,
-            'message_preview' => mb_substr($message, 0, 100),
-            'batch_mode' => self::$batchMode,
-            'allow_in_loop' => $allowInLoop
-        ]);
-        
+        // Log::debug("SlackLogService::post called", [
+        //     'log_type' => $logType,
+        //     'level' => $level,
+        //     'message_preview' => mb_substr($message, 0, 100),
+        //     'batch_mode' => self::$batchMode,
+        //     'allow_in_loop' => $allowInLoop
+        // ]);
+
         // Check if Slack logging is disabled via environment variable
         if (env('DISABLE_SLACK_LOGS', false)) {
             Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - logging to file only", [
@@ -91,18 +91,18 @@ class SlackLogService
             self::logToFile($level, $message, $context, $logFileName);
             return true; // Return true since file logging succeeded
         }
-        
+
         // If in batch mode and not explicitly allowed, collect instead of posting
         if (self::$batchMode && !$allowInLoop) {
             Log::debug("SlackLogService: Collecting to batch (batch mode active)");
             self::collectBatch($logType, $level, $message, $context);
             return true;
         }
-        
+
         try {
             // Find active log setting for this type and level (cached to avoid repeated DB queries)
             $setting = self::getCachedSettingForType($logType, $level);
-            
+
             // DEBUG: Log setting lookup result
             if (!$setting) {
                 Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
@@ -114,7 +114,7 @@ class SlackLogService
                     'has_webhook' => !empty($setting->webhook_url)
                 ]);
             }
-            
+
             // If no setting found, also check keyword-based settings (message-dependent, not cached)
             if (!$setting) {
                 $setting = LogSetting::getActiveForKeywords($message, $level);
@@ -124,23 +124,23 @@ class SlackLogService
                     ]);
                 }
             }
-            
+
             // Determine log file name: prioritize channel_name from setting, fallback to logType
-            $logFileName = $setting && $setting->channel_name 
-                ? $setting->channel_name 
+            $logFileName = $setting && $setting->channel_name
+                ? $setting->channel_name
                 : $logType;
-            
+
             // If skipSlack is true, only log to file and return (used for suppressed messages)
             if ($skipSlack) {
-                Log::debug("SlackLogService: Skipping Slack (skipSlack=true) - logging to file only", [
-                    'log_type' => $logType,
-                    'level' => $level,
-                    'channel_name' => $logFileName
-                ]);
+                // Log::debug("SlackLogService: Skipping Slack (skipSlack=true) - logging to file only", [
+                //     'log_type' => $logType,
+                //     'level' => $level,
+                //     'channel_name' => $logFileName
+                // ]);
                 self::logToFile($level, $message, $context, $logFileName);
                 return true; // Return true since file logging succeeded
             }
-            
+
             // If no matching setting found, don't post to Slack (only log to file)
             if (!$setting || !$setting->is_enabled) {
                 // DEBUG: Log why not posting
@@ -160,7 +160,7 @@ class SlackLogService
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
-            
+
             // Check rate limiting (per channel to prevent cross-channel interference)
             $channelName = $setting->channel_name ?? $logType;
             if (!self::checkRateLimit($logType, $level, $channelName)) {
@@ -173,7 +173,7 @@ class SlackLogService
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
-            
+
             // Check if channel is blocked due to 429 error
             $rateLimitBlockedKey = 'slack_rate_limit_blocked:' . $channelName;
             $blockedUntil = Cache::get($rateLimitBlockedKey);
@@ -190,7 +190,7 @@ class SlackLogService
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
-            
+
             // Verify webhook URL exists
             if (empty($setting->webhook_url)) {
                 Log::warning("SlackLogService: Webhook URL missing for log setting: {$setting->name}", [
@@ -201,29 +201,29 @@ class SlackLogService
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
-            
+
             // Format message for Slack using Block Kit for better formatting
             $slackPayload = self::formatSlackBlocks($level, $message, $context, $setting->channel_name, $logType);
-            
+
             // DEBUG: Log before posting
             Log::debug("SlackLogService: Posting to Slack", [
                 'webhook_url_preview' => mb_substr($setting->webhook_url, 0, 50) . '...',
                 'channel_name' => $setting->channel_name,
                 'payload_size' => strlen(json_encode($slackPayload))
             ]);
-            
+
             // Post to Slack
             $response = Http::timeout(5)
                 ->asJson()
                 ->post($setting->webhook_url, $slackPayload);
-            
+
             // DEBUG: Log response
             Log::debug("SlackLogService: Slack API response", [
                 'status' => $response->status(),
                 'successful' => $response->successful(),
                 'body_preview' => mb_substr($response->body(), 0, 200)
             ]);
-            
+
             if ($response->successful()) {
                 // Update rate limit cache
                 self::updateRateLimit($logType, $level, $setting->channel_name);
@@ -235,7 +235,7 @@ class SlackLogService
                 // Handle rate limit (429) - implement exponential backoff
                 $rateLimitKey = 'slack_rate_limit_blocked:' . $setting->channel_name;
                 $blockedUntil = Cache::get($rateLimitKey);
-                
+
                 if (!$blockedUntil || now()->gt($blockedUntil)) {
                     // Block this channel for 60 seconds to prevent further 429s
                     Cache::put($rateLimitKey, now()->addSeconds(60), now()->addSeconds(60));
@@ -246,7 +246,7 @@ class SlackLogService
                         'channel_name' => $setting->channel_name
                     ]);
                 }
-                
+
                 // Still log to file
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
@@ -260,7 +260,7 @@ class SlackLogService
                 self::logToFile($level, $message, $context, $logFileName);
                 return false;
             }
-            
+
         } catch (\Exception $e) {
             // If any error occurs, log to file and log the error
             // Try to get channel_name from setting if available, otherwise use logType
@@ -276,7 +276,7 @@ class SlackLogService
             } catch (\Exception $ex) {
                 // Ignore errors when trying to get channel name, use logType as fallback
             }
-            
+
             Log::error("SlackLogService: Error posting to Slack: " . $e->getMessage(), [
                 'log_type' => $logType,
                 'level' => $level,
@@ -288,10 +288,10 @@ class SlackLogService
             return false;
         }
     }
-    
+
     /**
      * Collect log for batch posting (use inside loops to avoid spamming Slack)
-     * 
+     *
      * @param string $logType Log type/category
      * @param string $level Log level
      * @param string $message Log message
@@ -300,7 +300,7 @@ class SlackLogService
     public static function collectBatch(string $logType, string $level, string $message, array $context = []): void
     {
         $key = "{$logType}_{$level}";
-        
+
         if (!isset(self::$buffer[$key])) {
             self::$buffer[$key] = [
                 'log_type' => $logType,
@@ -312,14 +312,14 @@ class SlackLogService
                 'last_occurrence' => now(),
             ];
         }
-        
+
         self::$buffer[$key]['messages'][] = $message;
         if (!empty($context)) {
             self::$buffer[$key]['contexts'][] = $context;
         }
         self::$buffer[$key]['count']++;
         self::$buffer[$key]['last_occurrence'] = now();
-        
+
         // Always log to file immediately (backup)
         // Try to get channel_name from setting, otherwise use logType (cached)
         $logFileName = $logType; // Default to logType
@@ -333,7 +333,7 @@ class SlackLogService
         }
         self::logToFile($level, $message, $context, $logFileName);
     }
-    
+
     /**
      * Get LogSetting for type/level with in-request cache to avoid repeated DB queries
      */
@@ -345,7 +345,7 @@ class SlackLogService
         }
         return self::$logSettingCache[$key];
     }
-    
+
     /**
      * Start batch mode - logs will be collected instead of posted immediately
      */
@@ -354,18 +354,18 @@ class SlackLogService
         self::$batchMode = true;
         self::$buffer = [];
     }
-    
+
     /**
      * Post all collected batch logs as meaningful summaries
      * Only posts if threshold is met (default: 3 occurrences)
-     * 
+     *
      * @param int $alertThreshold Minimum occurrences to trigger alert (default: 3)
      * @return array Results of batch postings
      */
     public static function postBatch(int $alertThreshold = self::DEFAULT_ALERT_THRESHOLD): array
     {
         $results = [];
-        
+
         // Check if Slack logging is disabled via environment variable
         if (env('DISABLE_SLACK_LOGS', false)) {
             Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - skipping batch post, clearing buffer", [
@@ -376,16 +376,16 @@ class SlackLogService
             self::$batchMode = false;
             return $results;
         }
-        
+
         foreach (self::$buffer as $key => $batch) {
             $logType = $batch['log_type'];
             $level = $batch['level'];
             $count = $batch['count'];
-            
+
             if ($count === 0) {
                 continue;
             }
-            
+
             // Only post if threshold is met (prevent noise from single occurrences)
             if ($count < $alertThreshold && $level !== 'error') {
                 // Still log to file even if below threshold
@@ -396,13 +396,13 @@ class SlackLogService
                 ]);
                 continue;
             }
-            
+
             // Find setting for batch post (use cache to avoid repeated DB)
             $setting = self::getCachedSettingForType($logType, $level);
             if (!$setting || !$setting->is_enabled || empty($setting->webhook_url)) {
                 continue;
             }
-            
+
             // Check rate limiting for batch summary (per channel)
             $channelName = $setting->channel_name ?? $logType;
             if (!self::checkRateLimit($logType, $level, $channelName)) {
@@ -413,7 +413,7 @@ class SlackLogService
                 ]);
                 continue;
             }
-            
+
             // Check if channel is blocked due to 429 error
             $rateLimitBlockedKey = 'slack_rate_limit_blocked:' . $channelName;
             $blockedUntil = Cache::get($rateLimitBlockedKey);
@@ -426,19 +426,19 @@ class SlackLogService
                 ]);
                 continue;
             }
-            
+
             // Create meaningful summary with insights
             $slackPayload = self::formatBatchSummaryBlocks($batch, $setting->channel_name);
-            
+
             // Post batch summary (bypass batch mode to actually post)
             $oldBatchMode = self::$batchMode;
             self::$batchMode = false;
-            
+
             try {
                 $response = Http::timeout(5)
                     ->asJson()
                     ->post($setting->webhook_url, $slackPayload);
-                
+
                 if ($response->successful()) {
                     self::updateRateLimit($logType, $level, $channelName);
                     $results[$key] = true;
@@ -459,17 +459,17 @@ class SlackLogService
                 Log::error("SlackLogService: Error posting batch summary: " . $e->getMessage());
                 $results[$key] = false;
             }
-            
+
             self::$batchMode = $oldBatchMode;
         }
-        
+
         // Clear buffer after posting
         self::$buffer = [];
         self::$batchMode = false;
-        
+
         return $results;
     }
-    
+
     /**
      * Clear batch buffer without posting
      */
@@ -478,7 +478,7 @@ class SlackLogService
         self::$buffer = [];
         self::$batchMode = false;
     }
-    
+
     /**
      * Format message using Slack Block Kit for better structure
      */
@@ -487,10 +487,10 @@ class SlackLogService
         $color = self::getColorForLevel($level);
         $emoji = self::getEmojiForLevel($level);
         $priority = self::getPriorityForLevel($level);
-        
+
         // Extract actionable information from context
         $actionableInfo = self::extractActionableInfo($context, $logType);
-        
+
         $blocks = [
             [
                 'type' => 'header',
@@ -507,7 +507,7 @@ class SlackLogService
                 ]
             ]
         ];
-        
+
         // Add actionable information if available
         if (!empty($actionableInfo['key_metrics'])) {
             $metricsText = "*Key Metrics:*\n";
@@ -522,7 +522,7 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add suggested actions if available
         if (!empty($actionableInfo['suggested_actions'])) {
             $actionsText = "*Suggested Actions:*\n";
@@ -537,7 +537,7 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add relevant context (filtered and formatted)
         if (!empty($actionableInfo['relevant_context'])) {
             $contextText = "*Details:*\n";
@@ -553,10 +553,10 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add divider and footer
         $blocks[] = ['type' => 'divider'];
-        
+
         $blocks[] = [
             'type' => 'context',
             'elements' => [
@@ -566,14 +566,14 @@ class SlackLogService
                 ]
             ]
         ];
-        
+
         return [
             'blocks' => $blocks,
             'username' => 'System Monitor',
             'icon_emoji' => $emoji,
         ];
     }
-    
+
     /**
      * Format batch summary using Slack Block Kit
      */
@@ -584,21 +584,21 @@ class SlackLogService
         $count = $batch['count'];
         $color = self::getColorForLevel($level);
         $emoji = self::getEmojiForLevel($level);
-        
+
         // Calculate time span
-        $firstOccurrence = is_string($batch['first_occurrence']) 
-            ? \Carbon\Carbon::parse($batch['first_occurrence']) 
+        $firstOccurrence = is_string($batch['first_occurrence'])
+            ? \Carbon\Carbon::parse($batch['first_occurrence'])
             : $batch['first_occurrence'];
-        $lastOccurrence = is_string($batch['last_occurrence']) 
-            ? \Carbon\Carbon::parse($batch['last_occurrence']) 
+        $lastOccurrence = is_string($batch['last_occurrence'])
+            ? \Carbon\Carbon::parse($batch['last_occurrence'])
             : $batch['last_occurrence'];
-        
+
         $timeSpan = $firstOccurrence->diffInSeconds($lastOccurrence);
         $timeSpanText = $timeSpan < 60 ? "{$timeSpan} seconds" : round($timeSpan / 60, 1) . " minutes";
-        
+
         // Extract insights from batch
         $insights = self::extractBatchInsights($batch);
-        
+
         $blocks = [
             [
                 'type' => 'header',
@@ -629,7 +629,7 @@ class SlackLogService
                 ]
             ]
         ];
-        
+
         // Add key insights
         if (!empty($insights['patterns'])) {
             $patternsText = "*Patterns Detected:*\n";
@@ -644,7 +644,7 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add sample messages (limited to most important)
         $sampleMessages = array_slice(array_unique($batch['messages']), 0, 3);
         if (!empty($sampleMessages)) {
@@ -664,7 +664,7 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add aggregated metrics if available
         if (!empty($insights['metrics'])) {
             $metricsText = "*Aggregated Metrics:*\n";
@@ -679,7 +679,7 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add suggested actions
         if (!empty($insights['suggested_actions'])) {
             $actionsText = "*Recommended Actions:*\n";
@@ -694,10 +694,10 @@ class SlackLogService
                 ]
             ];
         }
-        
+
         // Add divider and footer
         $blocks[] = ['type' => 'divider'];
-        
+
         $blocks[] = [
             'type' => 'context',
             'elements' => [
@@ -707,14 +707,14 @@ class SlackLogService
                 ]
             ]
         ];
-        
+
         return [
             'blocks' => $blocks,
             'username' => 'System Monitor',
             'icon_emoji' => $emoji,
         ];
     }
-    
+
     /**
      * Extract actionable information from context
      */
@@ -725,7 +725,7 @@ class SlackLogService
             'relevant_context' => [],
             'suggested_actions' => [],
         ];
-        
+
         // Extract key metrics based on log type
         $keyFields = self::getKeyFieldsForLogType($logType);
         foreach ($keyFields as $field) {
@@ -733,7 +733,7 @@ class SlackLogService
                 $info['key_metrics'][str_replace('_', ' ', ucwords($field, '_'))] = $context[$field];
             }
         }
-        
+
         // Filter relevant context (exclude verbose/unnecessary data)
         $relevantFields = ['endpoint', 'status_code', 'error', 'message', 'count', 'id', 'marketplace_id', 'variation_id'];
         foreach ($relevantFields as $field) {
@@ -741,13 +741,13 @@ class SlackLogService
                 $info['relevant_context'][str_replace('_', ' ', ucwords($field, '_'))] = $context[$field];
             }
         }
-        
+
         // Generate suggested actions based on log type and context
         $info['suggested_actions'] = self::generateSuggestedActions($logType, $context);
-        
+
         return $info;
     }
-    
+
     /**
      * Extract insights from batch data
      */
@@ -758,10 +758,10 @@ class SlackLogService
             'metrics' => [],
             'suggested_actions' => [],
         ];
-        
+
         $count = $batch['count'];
         $level = $batch['level'];
-        
+
         // Detect patterns
         if ($count >= 10) {
             $insights['patterns'][] = "High frequency: {$count} occurrences detected";
@@ -769,7 +769,7 @@ class SlackLogService
         if ($count >= 50) {
             $insights['patterns'][] = "⚠️ Critical: Very high occurrence rate - possible system issue";
         }
-        
+
         // Aggregate metrics from contexts
         if (!empty($batch['contexts'])) {
             $allKeys = [];
@@ -777,7 +777,7 @@ class SlackLogService
                 $allKeys = array_merge($allKeys, array_keys($ctx));
             }
             $allKeys = array_unique($allKeys);
-            
+
             foreach ($allKeys as $key) {
                 $values = array_column($batch['contexts'], $key);
                 $uniqueCount = count(array_unique($values));
@@ -786,20 +786,20 @@ class SlackLogService
                 }
             }
         }
-        
+
         // Generate suggested actions
         $insights['suggested_actions'] = self::generateBatchActions($batch);
-        
+
         return $insights;
     }
-    
+
     /**
      * Generate suggested actions based on log type and context
      */
     private static function generateSuggestedActions(string $logType, array $context): array
     {
         $actions = [];
-        
+
         // API-related actions
         if (strpos($logType, 'api') !== false) {
             if (isset($context['status_code'])) {
@@ -814,7 +814,7 @@ class SlackLogService
                 $actions[] = "Verify endpoint: " . $context['endpoint'];
             }
         }
-        
+
         // Order sync actions
         if (strpos($logType, 'order') !== false) {
             if (isset($context['order_id'])) {
@@ -822,7 +822,7 @@ class SlackLogService
             }
             $actions[] = "Review order sync process";
         }
-        
+
         // Stock sync actions
         if (strpos($logType, 'stock') !== false) {
             if (isset($context['variation_id'])) {
@@ -830,7 +830,7 @@ class SlackLogService
             }
             $actions[] = "Verify stock sync configuration";
         }
-        
+
         // Listing actions
         if (strpos($logType, 'listing') !== false) {
             $actions[] = "Review listing sync process";
@@ -838,10 +838,10 @@ class SlackLogService
                 $actions[] = "Check marketplace: " . $context['marketplace_id'];
             }
         }
-        
+
         return $actions;
     }
-    
+
     /**
      * Generate batch-level suggested actions
      */
@@ -850,7 +850,7 @@ class SlackLogService
         $actions = [];
         $count = $batch['count'];
         $level = $batch['level'];
-        
+
         if ($count >= 10) {
             $actions[] = "Investigate root cause - high occurrence rate detected";
         }
@@ -860,7 +860,7 @@ class SlackLogService
         if ($count >= 50) {
             $actions[] = "Consider implementing rate limiting or circuit breaker";
         }
-        
+
         // Check for patterns in contexts
         if (!empty($batch['contexts'])) {
             $endpoints = array_column($batch['contexts'], 'endpoint');
@@ -868,10 +868,10 @@ class SlackLogService
                 $actions[] = "Single endpoint affected: " . $endpoints[0];
             }
         }
-        
+
         return $actions;
     }
-    
+
     /**
      * Get key fields to extract based on log type
      */
@@ -885,10 +885,10 @@ class SlackLogService
             'stock_sync' => ['variation_id', 'marketplace_id', 'old_stock', 'new_stock'],
             'listing_sync' => ['variation_id', 'marketplace_id', 'sku'],
         ];
-        
+
         return $fieldMap[$logType] ?? ['endpoint', 'status_code', 'error'];
     }
-    
+
     /**
      * Check rate limiting for log type and channel
      * Uses stricter limits for info/warning to prevent Slack 429 errors
@@ -899,22 +899,22 @@ class SlackLogService
         $identifier = $channelName ?? ($logType . '_' . $level);
         $key = self::RATE_LIMIT_PREFIX . $identifier;
         $lastSent = Cache::get($key);
-        
+
         if ($lastSent) {
             // Stricter rate limiting for info/warning (5 seconds) to prevent Slack 429 errors
             // Errors can still be sent once per minute (less strict for critical issues)
-            $rateLimitSeconds = in_array($level, ['info', 'warning', 'debug']) 
-                ? self::INFO_RATE_LIMIT_SECONDS 
+            $rateLimitSeconds = in_array($level, ['info', 'warning', 'debug'])
+                ? self::INFO_RATE_LIMIT_SECONDS
                 : 60;
-            
+
             if (now()->diffInSeconds($lastSent) < $rateLimitSeconds) {
                 return false;
             }
         }
-        
+
         return true;
     }
-    
+
     /**
      * Update rate limit cache
      */
@@ -923,15 +923,15 @@ class SlackLogService
         // Use channel name if provided, otherwise use log_type+level
         $identifier = $channelName ?? ($logType . '_' . $level);
         $key = self::RATE_LIMIT_PREFIX . $identifier;
-        
+
         // Use appropriate cache duration based on level
-        $cacheDuration = in_array($level, ['info', 'warning', 'debug']) 
+        $cacheDuration = in_array($level, ['info', 'warning', 'debug'])
             ? now()->addSeconds(self::INFO_RATE_LIMIT_SECONDS)
             : now()->addMinutes(self::DEFAULT_RATE_LIMIT_MINUTES);
-        
+
         Cache::put($key, now(), $cacheDuration);
     }
-    
+
     /**
      * Format message title
      */
@@ -943,7 +943,7 @@ class SlackLogService
         $title = mb_substr($title, 0, 50);
         return $title ?: ucfirst($logType) . ' Alert';
     }
-    
+
     /**
      * Format message text
      */
@@ -955,7 +955,7 @@ class SlackLogService
         }
         return $message;
     }
-    
+
     /**
      * Get color for log level (for Slack attachments - legacy support)
      */
@@ -969,7 +969,7 @@ class SlackLogService
             default => '#808080',
         };
     }
-    
+
     /**
      * Get emoji for log level
      */
@@ -983,7 +983,7 @@ class SlackLogService
             default => '📝',
         };
     }
-    
+
     /**
      * Get priority label for log level
      */
@@ -997,7 +997,7 @@ class SlackLogService
             default => 'INFO',
         };
     }
-    
+
     /**
      * Get severity badge based on count and level
      */
@@ -1012,11 +1012,11 @@ class SlackLogService
         if ($count >= 10) return '🟡 MEDIUM';
         return '🟢 LOW';
     }
-    
+
     /**
      * Log to file (default Laravel log channel and named log file)
      * Always uses a named log file - prioritizes channel_name, falls back to logType
-     * 
+     *
      * @param string $level Log level
      * @param string $message Log message
      * @param array $context Additional context
@@ -1032,16 +1032,16 @@ class SlackLogService
             'debug' => Log::debug($message, $context),
             default => Log::info($message, $context),
         };
-        
+
         // Always log to named file if logFileName is provided (prioritized approach)
         if ($logFileName) {
             self::logToNamedFile($level, $message, $context, $logFileName);
         }
     }
-    
+
     /**
      * Log to a named log file based on channel name or logType
-     * 
+     *
      * @param string $level Log level
      * @param string $message Log message
      * @param array $context Additional context
@@ -1054,19 +1054,19 @@ class SlackLogService
             $sanitizedFileName = preg_replace('/[^a-zA-Z0-9_-]/', '_', $logFileName);
             $finalLogFileName = 'slack-' . strtolower($sanitizedFileName) . '.log';
             $logFilePath = storage_path('logs/' . $finalLogFileName);
-            
+
             // Format log entry similar to Laravel's log format
             $timestamp = now()->format('Y-m-d H:i:s');
             $levelUpper = strtoupper($level);
-            
+
             // Format message with context
             $contextString = '';
             if (!empty($context)) {
                 $contextString = ' ' . json_encode($context, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
             }
-            
+
             $logEntry = "[{$timestamp}] local.{$levelUpper}: {$message}{$contextString}" . PHP_EOL;
-            
+
             // Append to file (create if doesn't exist)
             File::append($logFilePath, $logEntry);
         } catch (\Exception $e) {
