@@ -258,21 +258,28 @@ class ListedStockVerification extends Component
 
             // Get available stock counts in one query
             $available_counts = \DB::table('stock')
+                ->selectRaw('variation_id, COUNT(*) as count')
                 ->whereIn('variation_id', $variation_ids)
                 ->whereIn('status', [1, 3])
                 ->groupBy('variation_id')
-                ->pluck(\DB::raw('COUNT(*)'), 'variation_id');
+                ->get()
+                ->pluck('count', 'variation_id')
+                ->toArray();
 
             // Get pending order counts in one query
             $pending_counts = \DB::table('order_items')
+                ->selectRaw('order_items.variation_id, SUM(order_items.quantity) as total')
                 ->join('orders', 'orders.id', '=', 'order_items.order_id')
                 ->whereIn('order_items.variation_id', $variation_ids)
                 ->whereIn('orders.status', [1, 2, 3])
                 ->groupBy('order_items.variation_id')
-                ->pluck(\DB::raw('SUM(order_items.quantity)'), 'order_items.variation_id');
+                ->get()
+                ->pluck('total', 'variation_id')
+                ->toArray();
 
             foreach($variations as $variation) {
                 $available_count = $available_counts[$variation->id] ?? 0;
+                $pending_count = $pending_counts[$variation->id] ?? 0;
                 $pending_count = $pending_counts[$variation->id] ?? 0;
                 $variation_stats[$variation->id] = [
                     'available_stock_count' => $available_count - $pending_count,
