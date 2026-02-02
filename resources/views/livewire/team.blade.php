@@ -78,7 +78,8 @@
                                         <th><small><b>{{ __('locale.Last Name') }}</b></small></th>
                                         <th><small><b>{{ __('locale.Email') }}</b></small></th>
                                         <th><small><b>Username</b></small></th>
-                                        <th colspan="2"><center><small><b>{{ __('locale.Action') }}</b></small></center></th>
+                                        <th><small><b>2FA Status</b></small></th>
+                                        <th colspan="3"><center><small><b>{{ __('locale.Action') }}</b></small></center></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -95,7 +96,25 @@
                                             <td>{{$item->last_name}}</td>
                                             <td>{{$item->email}}</td>
                                             <td>{{$item->username}}</td>
+                                            <td>
+                                                <center>
+                                                    @if ($item->google2fa_secret && $item->is_2fa_enabled)
+                                                        <span class="badge bg-success" title="2FA is enabled">Enabled</span>
+                                                    @else
+                                                        <span class="badge bg-warning" title="2FA is not enabled">Not Enabled</span>
+                                                    @endif
+                                                </center>
+                                            </td>
                                             <td><center><a href="edit-member/{{$item->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
+                                            <td>
+                                                <center>
+                                                    @if ($item->google2fa_secret && $item->is_2fa_enabled)
+                                                        <a href="reset-2fa/{{$item->id}}" class="text text-danger w-100 vh-100" title="Click to Reset 2FA" onclick="return confirm('Are you sure you want to reset 2FA for this user?')">Reset 2FA</a>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </center>
+                                            </td>
                                             <td>
                                                 <center>
                                                     @if ($item->status == 1)
