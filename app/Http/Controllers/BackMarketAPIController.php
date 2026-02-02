@@ -627,7 +627,7 @@ class BackMarketAPIController extends Controller
             $end_point_next_tail = '&page=' . "$page";
             $end_point_next = $end_point . $end_point_next_tail;
             $result_next = $this->apiGet($end_point_next);
-            
+
             // Check if pagination API call was successful
             if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
                 Log::warning("BackMarketAPIController::get10Orders: Pagination API response missing results", [
@@ -636,7 +636,7 @@ class BackMarketAPIController extends Controller
                 ]);
                 break; // Stop pagination if API call fails
             }
-            
+
             $result_next_array = $result_next->results ?? [];
 
             if (is_array($result_next_array) && !empty($result_next_array)) {
@@ -689,7 +689,7 @@ class BackMarketAPIController extends Controller
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                
+
                 // Check if pagination API call was successful
                 if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
                     Log::warning("BackMarketAPIController::getlabelData: Pagination API response missing results", [
@@ -748,7 +748,7 @@ class BackMarketAPIController extends Controller
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                
+
                 // Check if pagination API call was successful
                 if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
                     Log::warning("BackMarketAPIController::getReturnLabelData: Pagination API response missing results", [
@@ -817,12 +817,12 @@ class BackMarketAPIController extends Controller
                 $end_point_next1_tail = '&page=' . "$page1";
                 $end_point_next1 = $end_point_1 . $end_point_next1_tail;
                 $result1_next = $this->apiGet($end_point_next1);
-                
+
                 // Check if pagination API call was successful
                 if (!$result1_next || !is_object($result1_next) || !isset($result1_next->results)) {
                     break; // Stop pagination if API call fails
                 }
-                
+
                 $result_next1_array = $result1_next->results;
 
                 if (is_array($result_next1_array)) {
@@ -877,7 +877,7 @@ class BackMarketAPIController extends Controller
             $end_point_next_tail = '&page=' . "$page";
             $end_point_next = $end_point . $end_point_next_tail;
             $result_next = $this->apiGet($end_point_next);
-            
+
             // Check if pagination API call was successful
             if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
                 Log::warning("BackMarketAPIController::getProducts: Pagination API response missing results", [
@@ -886,7 +886,7 @@ class BackMarketAPIController extends Controller
                 ]);
                 break; // Stop pagination if API call fails
             }
-            
+
             $result_next_array = $result_next->results ?? [];
 
             if (is_array($result_next_array) && !empty($result_next_array)) {
@@ -910,28 +910,28 @@ class BackMarketAPIController extends Controller
     public function updateOneListing($listing_id, $request_JSON, $code = null, $skipBuffer = false) {
         // Parse request to get quantity
         $requestData = json_decode($request_JSON, true);
-        
+
         // If quantity is provided, apply buffer if needed (skip buffer for V1 listing)
         if (isset($requestData['quantity']) && !$skipBuffer) {
             $variation = \App\Models\Variation_model::where('reference_id', $listing_id)->first();
-            
+
             if ($variation) {
                 // Get marketplace stock (default to marketplace_id = 1 for Back Market)
                 $marketplaceStock = \App\Models\MarketplaceStockModel::where([
                     'variation_id' => $variation->id,
                     'marketplace_id' => 1
                 ])->first();
-                
+
                 // If marketplace stock exists and has buffer_percentage, apply buffer
                 if ($marketplaceStock && $marketplaceStock->buffer_percentage > 0) {
                     $originalQuantity = $requestData['quantity'];
                     $bufferPercentage = $marketplaceStock->buffer_percentage;
                     $bufferedQuantity = max(0, floor($originalQuantity * (1 - $bufferPercentage / 100)));
-                    
+
                     // Update request with buffered quantity
                     $requestData['quantity'] = $bufferedQuantity;
                     $request_JSON = json_encode($requestData);
-                    
+
                     // \Illuminate\Support\Facades\Log::info("Applied buffer to stock update", [
                     //     'variation_id' => $variation->id,
                     //     'listing_id' => $listing_id,
@@ -942,7 +942,7 @@ class BackMarketAPIController extends Controller
                 }
             }
         }
-        
+
         $end_point = 'listings/' . $listing_id;
         if($code != null){
             $response = $this->apiPost($end_point, $request_JSON, $code);
@@ -996,21 +996,21 @@ class BackMarketAPIController extends Controller
         $processedCountries = 0;
         $startTime = microtime(true);
         $lastLogTime = $startTime;
-        
+
         // Log start
         Log::info("BackMarketAPIController::getAllListings: Starting bulk fetch", [
             'total_countries' => $totalCountries,
             'publication_state' => $publication_state
         ]);
-        
+
         // Increase page size for better performance (API allows up to 100)
         $pageSize = 100; // Increased from 50 to reduce API calls by 50%
-        
+
         foreach($country_codes as $id => $code){
             $countryStartTime = microtime(true);
-            
+
             $processedCountries++;
-            
+
             // Log progress every 30 seconds or every 2 countries (whichever comes first)
             $currentTime = microtime(true);
             if ($currentTime - $lastLogTime >= 30 || $processedCountries % 2 == 0) {
@@ -1018,7 +1018,7 @@ class BackMarketAPIController extends Controller
                 $avgTimePerCountry = $elapsed / $processedCountries;
                 $remainingCountries = $totalCountries - $processedCountries;
                 $estimatedRemaining = round($avgTimePerCountry * $remainingCountries, 1);
-                
+
                 Log::info("BackMarketAPIController::getAllListings: Progress update", [
                     'processed' => $processedCountries,
                     'total' => $totalCountries,
@@ -1040,7 +1040,7 @@ class BackMarketAPIController extends Controller
 
             // result of the first page with retry logic
             $result = $this->apiGetWithRetry($end_point, $code, 3);
-            
+
             if (!$result || !isset($result->results)) {
                 Log::warning("BackMarketAPIController::getAllListings: Failed to fetch first page for country", [
                     'country_code' => $code,
@@ -1066,17 +1066,17 @@ class BackMarketAPIController extends Controller
             $maxPages = 1000; // Safety limit to prevent infinite loops
             // Start batch mode to avoid spamming Slack if multiple pages fail
             SlackLogService::startBatch();
-            
+
             // judge whether there exists the next page
             while (($result_next->next) != null && $page < $maxPages) {
                 $page++;
                 // get the new end point
                 $end_point_next_tail = '&page='."$page";
                 $end_point_next = $end_point.$end_point_next_tail;
-                
+
                 // the new page object with retry logic
                 $result_next = $this->apiGetWithRetry($end_point_next, $code, 2);
-                
+
                 // the new page array
                 if(!$result_next || !isset($result_next->results)){
                     // Collect log instead of posting immediately (inside loop)
@@ -1089,13 +1089,13 @@ class BackMarketAPIController extends Controller
                     break;
                 }
                 $result_next_array = $result_next->results;
-                
+
                 // add all listings in current page to the $result_array (optimized array merge)
                 if (is_array($result_next_array) && !empty($result_next_array)) {
                     // Use array_merge for better performance than foreach loop
                     $result_array[$id] = array_merge($result_array[$id], $result_next_array);
                 }
-                
+
                 // Memory management: log memory usage every 50 pages
                 if ($page % 50 == 0) {
                     $memoryUsage = round(memory_get_usage(true) / 1024 / 1024, 2);
@@ -1106,12 +1106,12 @@ class BackMarketAPIController extends Controller
                     ]);
                 }
             }
-            
+
             // Post batch summary after loop completes (only if there were errors)
             SlackLogService::postBatch();
-            
+
             $countryDuration = round(microtime(true) - $countryStartTime, 2);
-            
+
             if ($countryDuration > 60) {
                 Log::info("BackMarketAPIController::getAllListings: Country completed", [
                     'country_code' => $code,
@@ -1122,27 +1122,27 @@ class BackMarketAPIController extends Controller
                 ]);
             }
         }
-        
+
         $totalDuration = round(microtime(true) - $startTime, 2);
         $totalListings = 0;
-        
+
         foreach ($result_array ?? [] as $countryListings) {
             $totalListings += is_array($countryListings) ? count($countryListings) : 0;
         }
-        
-        Log::info("BackMarketAPIController::getAllListings: Bulk fetch completed", [
-            'total_duration_seconds' => $totalDuration,
-            'countries_processed' => $processedCountries,
-            'total_listings' => $totalListings,
-            'avg_time_per_country_seconds' => $processedCountries > 0 ? round($totalDuration / $processedCountries, 2) : 0
-        ]);
-        
+
+        // Log::info("BackMarketAPIController::getAllListings: Bulk fetch completed", [
+        //     'total_duration_seconds' => $totalDuration,
+        //     'countries_processed' => $processedCountries,
+        //     'total_listings' => $totalListings,
+        //     'avg_time_per_country_seconds' => $processedCountries > 0 ? round($totalDuration / $processedCountries, 2) : 0
+        // ]);
+
         return $result_array ?? [];
     }
-    
+
     /**
      * API GET with retry logic and better error handling
-     * 
+     *
      * @param string $end_point API endpoint
      * @param string|null $code Country code
      * @param int $maxRetries Maximum number of retries (default: 3)
@@ -1152,16 +1152,16 @@ class BackMarketAPIController extends Controller
     private function apiGetWithRetry($end_point, $code = null, $maxRetries = 3, $retryDelay = 2) {
         $attempt = 0;
         $lastException = null;
-        
+
         while ($attempt < $maxRetries) {
             try {
                 $result = $this->apiGet($end_point, $code);
-                
+
                 // Check if result is valid
                 if ($result && (is_object($result) || is_array($result))) {
                     return $result;
                 }
-                
+
                 // If result is null or invalid, treat as failure
                 if ($attempt < $maxRetries - 1) {
                     $attempt++;
@@ -1174,13 +1174,13 @@ class BackMarketAPIController extends Controller
                     sleep($delay);
                     continue;
                 }
-                
+
                 return null;
-                
+
             } catch (\Exception $e) {
                 $lastException = $e;
                 $attempt++;
-                
+
                 // Check if it's a timeout or network error
                 $isRetryable = (
                     strpos($e->getMessage(), 'timeout') !== false ||
@@ -1189,7 +1189,7 @@ class BackMarketAPIController extends Controller
                     strpos($e->getMessage(), 'network') !== false ||
                     $e->getCode() == 0 // cURL errors often have code 0
                 );
-                
+
                 if ($isRetryable && $attempt < $maxRetries) {
                     $delay = $retryDelay * $attempt; // Exponential backoff
                     Log::warning("BackMarketAPIController::apiGetWithRetry: Retrying after error", [
@@ -1201,7 +1201,7 @@ class BackMarketAPIController extends Controller
                     sleep($delay);
                     continue;
                 }
-                
+
                 // Non-retryable error or max retries reached
                 Log::error("BackMarketAPIController::apiGetWithRetry: Failed after retries", [
                     'endpoint' => $end_point,
@@ -1209,21 +1209,21 @@ class BackMarketAPIController extends Controller
                     'error' => $e->getMessage(),
                     'is_retryable' => $isRetryable
                 ]);
-                
+
                 if ($attempt >= $maxRetries) {
                     return null;
                 }
             }
         }
-        
+
         return null;
     }
     public function getAllListingsBi ($param = array()) {
         $country_codes = Country_model::where('market_code','!=',null)->pluck('market_code','id')->toArray();
-        
+
         // Start batch mode to avoid spamming Slack if multiple countries fail
         SlackLogService::startBatch();
-        
+
         foreach($country_codes as $id => $code){
             $end_point = 'listings_bi';
 
@@ -1270,7 +1270,7 @@ class BackMarketAPIController extends Controller
             // print_r($end_point_next);
             // the new page object
                 $result_next = $this->apiGet($end_point_next, $code);
-                
+
                 // Check if pagination API call was successful
                 if (!$result_next || !is_object($result_next) || !isset($result_next->results)) {
                     Log::warning("BackMarketAPIController::getAllListingsBI: Pagination API response missing results", [
@@ -1280,7 +1280,7 @@ class BackMarketAPIController extends Controller
                     ]);
                     break; // Stop pagination if API call fails
                 }
-                
+
                 // print_r($result_next);
             // the new page array
             $result_next_array = $result_next->results ?? [];
@@ -1292,10 +1292,10 @@ class BackMarketAPIController extends Controller
             }
             }
         }
-        
+
         // Post batch summary after loop completes (only if there were errors)
         SlackLogService::postBatch();
-        
+
         // print_r($result_array);
         return $result_array;
     }
