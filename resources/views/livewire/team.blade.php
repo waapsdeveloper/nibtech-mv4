@@ -69,6 +69,30 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Status Filter Tabs -->
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'all' ? 'active' : '' }}"
+                                   href="{{ url('team?status=all') }}">
+                                    <i class="fe fe-users"></i> All Members
+                                    <span class="badge bg-primary ms-1">{{ $total_count }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'active' ? 'active' : '' }}"
+                                   href="{{ url('team?status=active') }}">
+                                    <i class="fe fe-check-circle"></i> Active
+                                    <span class="badge bg-success ms-1">{{ $active_count }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'inactive' ? 'active' : '' }}"
+                                   href="{{ url('team?status=inactive') }}">
+                                    <i class="fe fe-x-circle"></i> Inactive
+                                    <span class="badge bg-danger ms-1">{{ $inactive_count }}</span>
+                                </a>
+                            </li>
+                        </ul>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>

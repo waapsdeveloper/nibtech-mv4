@@ -22,7 +22,28 @@ class Team extends Component
         session()->put('page_title', $data['title_page']);
         $data['roles'] = Role_model::where('id','>=',session('user')->role_id)->get();
         $data['permissions'] = Permission_model::all();
-        $data['admin_team'] = Admin_model::where('parent_id','>=',session('user_id'))->Paginate(50);
+
+        // Get status filter from request, default to 'active'
+        $status = request('status', 'active');
+        $data['current_status'] = $status;
+
+        // Build query based on status filter
+        $query = Admin_model::where('parent_id','>=',session('user_id'));
+
+        if ($status === 'active') {
+            $query->where('status', 1);
+        } elseif ($status === 'inactive') {
+            $query->where('status', 0);
+        }
+        // 'all' shows both active and inactive
+
+        $data['admin_team'] = $query->paginate(50)->appends(['status' => $status]);
+
+        // Get counts for tabs
+        $data['total_count'] = Admin_model::where('parent_id','>=',session('user_id'))->count();
+        $data['active_count'] = Admin_model::where('parent_id','>=',session('user_id'))->where('status', 1)->count();
+        $data['inactive_count'] = Admin_model::where('parent_id','>=',session('user_id'))->where('status', 0)->count();
+
         return view('livewire.team')->with($data);
     }
     public function add_member()
