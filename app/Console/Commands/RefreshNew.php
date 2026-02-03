@@ -155,28 +155,28 @@ class RefreshNew extends Command
         }
 
         // Log command completion with statistics to file only (no Slack)
-        SlackLogService::post(
-            'order_sync',
-            'info',
-            "✅ refresh:new command completed{$summaryText} | Duration: {$duration}s",
-            [
-                'command' => 'refresh:new',
-                'completed_at' => now()->toDateTimeString(),
-                'duration_seconds' => $duration,
-                'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
-                'statistics' => [
-                    'new_orders_found' => $stats['new_orders_found'],
-                    'new_orders_synced' => $stats['new_orders_synced'],
-                    'new_orderlines_validated' => $stats['new_orderlines_validated'],
-                    'incomplete_orders_found' => $stats['incomplete_orders_found'],
-                    'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
-                    'total_orders_synced' => count($stats['order_ids_synced']),
-                    'order_ids_sample' => $orderIdsForLog
-                ]
-            ],
-            false,
-            true
-        );
+        // SlackLogService::post(
+        //     'order_sync',
+        //     'info',
+        //     "✅ refresh:new command completed{$summaryText} | Duration: {$duration}s",
+        //     [
+        //         'command' => 'refresh:new',
+        //         'completed_at' => now()->toDateTimeString(),
+        //         'duration_seconds' => $duration,
+        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+        //         'statistics' => [
+        //             'new_orders_found' => $stats['new_orders_found'],
+        //             'new_orders_synced' => $stats['new_orders_synced'],
+        //             'new_orderlines_validated' => $stats['new_orderlines_validated'],
+        //             'incomplete_orders_found' => $stats['incomplete_orders_found'],
+        //             'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
+        //             'total_orders_synced' => count($stats['order_ids_synced']),
+        //             'order_ids_sample' => $orderIdsForLog
+        //         ]
+        //     ],
+        //     false,
+        //     true
+        // );
 
         return 0;
     }
@@ -398,7 +398,7 @@ class RefreshNew extends Command
             if ($hoursAgo >= 3) {
                 $recordCount = DB::table('stock_deduction_logs')->count();
                 DB::table('stock_deduction_logs')->truncate();
-                
+
                 $this->info("🗑️  Auto-truncated stock_deduction_logs table ({$recordCount} records removed - oldest record was {$hoursAgo} hours old)");
             }
         }
