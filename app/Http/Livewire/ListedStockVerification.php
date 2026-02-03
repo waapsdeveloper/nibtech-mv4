@@ -184,7 +184,7 @@ class ListedStockVerification extends Component
 
         $process = Process_model::with(['process_stocks'])->find($process_id);
         $last_ten = Listed_stock_verification_model::where('process_id',$process_id)
-            ->with(['stock.variation', 'stock.order.customer', 'stock.latest_operation'])
+            ->with(['variation', 'admin'])
             ->orderBy('id','desc')
             ->limit($per_page)
             ->get();
