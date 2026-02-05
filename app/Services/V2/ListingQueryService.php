@@ -126,6 +126,11 @@ class ListingQueryService
                 return $q->whereHas('process_stocks', function ($processStockQuery) use ($request) {
                     $processStockQuery->where('process_id', $request->input('process_id'));
                 });
+            })
+            ->when($request->filled('stock_mismatch'), function ($q) {
+                // Show only variations where listed stock ≠ available stock (Backmarket or total)
+                return $q->withCount('available_stocks')
+                    ->havingRaw('variation.listed_stock != available_stocks_count OR (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1) != available_stocks_count');
             });
         
         // Apply state filter - matches original order (before sale_40, handler_status, whereNotNull)

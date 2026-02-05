@@ -371,6 +371,8 @@ class FunctionsThirty extends Command
         // Cache currency id by code and variation by (reference_id|sku) to avoid repeated DB queries
         $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
         $variationCache = [];
+        // Accumulate publication_state per variation across all countries (so we can resolve "Online if any")
+        $variationPublicationStates = [];
 
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
@@ -388,6 +390,12 @@ class FunctionsThirty extends Command
                     $stats['archived_skipped']++;
                     continue;
                 }
+
+                // Collect publication_state from every country so we resolve "Online if any listing is Online"
+                if (!isset($variationPublicationStates[$key])) {
+                    $variationPublicationStates[$key] = [];
+                }
+                $variationPublicationStates[$key][] = (int) $list->publication_state;
                 
                 $isNewVariation = false;
                 if($variation == null){
@@ -412,10 +420,7 @@ class FunctionsThirty extends Command
                     $variation->reference_uuid = $list->id;
                     echo $list->id." ";
                 }
-                if($variation->state != $list->publication_state){
-                    $variation->state = $list->publication_state;
-                    echo $list->publication_state." ";
-                }
+                // Do NOT set state here — resolved from all countries after the loop (so "Online" wins if any country is Online)
                 
                 // Check if variation needs to be saved
                 $variationIsDirty = $variation->isDirty();
@@ -467,8 +472,50 @@ class FunctionsThirty extends Command
                 }
             }
         }
+
+        // Resolve variation state across all countries: "Online" if any listing is Online (2)
+        foreach ($variationPublicationStates as $key => $states) {
+            $variation = $variationCache[$key] ?? null;
+            if ($variation === null || empty($states)) {
+                continue;
+            }
+            $resolvedState = $this->resolvePublicationState($states);
+            if ($variation->state != $resolvedState) {
+                $variation->state = $resolvedState;
+                $variation->save();
+                $stats['variations_updated']++;
+                echo $resolvedState . " ";
+            }
+        }
+
         // $list = $bm->getOneListing($itemObj->listing_id);
     }
+
+    /**
+     * Resolve a single publication_state from multiple Backmarket listings (e.g. one per country).
+     * Prefer "Online" (2) if any listing is Online, so the app shows correct status when ad runs in any market.
+     *
+     * @param int[] $states List of publication_state values (0=missing, 1=pending, 2=online, 3=offline)
+     * @return int
+     */
+    private function resolvePublicationState(array $states): int
+    {
+        $states = array_map('intval', $states);
+        if (in_array(2, $states, true)) {
+            return 2; // Online — ad is running in at least one country
+        }
+        if (in_array(3, $states, true)) {
+            return 3; // Offline
+        }
+        if (in_array(1, $states, true)) {
+            return 1; // Pending validation
+        }
+        if (in_array(0, $states, true)) {
+            return 0; // Missing price or comment
+        }
+        return (int) ($states[0] ?? 0);
+    }
+
     public function get_listingsBi(&$stats = null){
         $bm = new BackMarketAPIController();
 
