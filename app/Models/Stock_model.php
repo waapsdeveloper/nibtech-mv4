@@ -117,7 +117,7 @@ class Stock_model extends Model
             $q->whereIn('process_type_id', [21,22]);
         })->orderByDesc('id');
     }
-    public function latest_listing_or_topup()
+    public function latest_closed_listing_or_topup()
     {
         return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
             // $q->whereIn('process_type_id', [21,22])->whereIn('status',[2,3]);
