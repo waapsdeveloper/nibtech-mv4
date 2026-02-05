@@ -281,6 +281,11 @@ class ListingController extends Controller
             if ((int) $request->input('available_stock') === 2) {
                 return $q->whereDoesntHave('available_stocks');
             }
+        })
+        ->when($request->filled('stock_mismatch'), function ($q) {
+            // Show only variations where listed stock ≠ available stock (Backmarket or total)
+            return $q->withCount('available_stocks')
+                ->havingRaw('variation.listed_stock != available_stocks_count OR (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1) != available_stocks_count');
         });
 
         $state = $request->input('state');
