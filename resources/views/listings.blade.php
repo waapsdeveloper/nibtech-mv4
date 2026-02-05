@@ -233,6 +233,14 @@
         function buildListingFilters(overrides) {
             overrides = overrides || {};
 
+            const listedStockValue = $('#listed_stock_select').val();
+            const listedStockCustom = $('#listed_stock_custom').val();
+            const availableStockValue = $('#available_stock_select').val();
+            const availableStockCustom = $('#available_stock_custom').val();
+
+            const listedStock = listedStockValue === 'custom' ? listedStockCustom : listedStockValue;
+            const availableStock = availableStockValue === 'custom' ? availableStockCustom : availableStockValue;
+
             let params = {
                 product_name: $('#product_name').val(),
                 reference_id: $('#reference_id').val(),
@@ -244,8 +252,8 @@
                 category: $('select[name="category"]').val(),
                 brand: $('select[name="brand"]').val(),
                 marketplace: $('select[name="marketplace"]').val(),
-                listed_stock: $('select[name="listed_stock"]').val(),
-                available_stock: $('select[name="available_stock"]').val(),
+                listed_stock: listedStock,
+                available_stock: availableStock,
                 handler_status: $('select[name="handler_status"]').val(),
                 state: $('select[name="state"]').val(),
                 sort: $('select[name="sort"]').val(),
