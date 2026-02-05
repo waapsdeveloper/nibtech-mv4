@@ -117,6 +117,18 @@ class Stock_model extends Model
             $q->whereIn('process_type_id', [21,22]);
         })->orderByDesc('id');
     }
+    public function latest_listing_or_topup()
+    {
+        return $this->hasOne(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
+            // $q->whereIn('process_type_id', [21,22])->whereIn('status',[2,3]);
+            $q->where(function($query) {
+                $query->where('process_type_id', 21)->where('status', 2)
+                      ->orWhere(function($q2) {
+                          $q2->where('process_type_id', 22)->where('status', 3);
+                      });
+            });
+        })->orderByDesc('id');
+    }
     public function all_listings_or_topups()
     {
         return $this->hasMany(Process_stock_model::class, 'stock_id', 'id')->whereHas('process', function ($q) {
