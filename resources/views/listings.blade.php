@@ -238,8 +238,12 @@
             const availableStockValue = $('#available_stock_select').val();
             const availableStockCustom = $('#available_stock_custom').val();
 
-            const listedStock = listedStockValue === 'custom' ? listedStockCustom : listedStockValue;
-            const availableStock = availableStockValue === 'custom' ? availableStockCustom : availableStockValue;
+            const listedStock = listedStockValue === 'custom'
+                ? listedStockCustom
+                : (listedStockCustom || listedStockValue);
+            const availableStock = availableStockValue === 'custom'
+                ? availableStockCustom
+                : (availableStockCustom || availableStockValue);
 
             let params = {
                 product_name: $('#product_name').val(),
