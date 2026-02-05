@@ -190,9 +190,19 @@ class ListingController extends Controller
                 return $q->where('listed_stock', '<=', 0);
             }
 
-            // Handle custom values like >20, <30, >=10, <=50, or just 20
+            // Handle custom values like >20, <30, >=10, <=50, ranges like 2-4, or just 20
             if (!in_array($listedStock, ['1', '2', ''])) {
                 $value = trim($listedStock);
+
+                // Range: 2-4 or between 2 and 4
+                if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $value, $range) || preg_match('/^between\s+(\d+)\s+and\s+(\d+)$/i', $value, $range)) {
+                    $min = (int) $range[1];
+                    $max = (int) $range[2];
+                    if ($min > $max) {
+                        [$min, $max] = [$max, $min];
+                    }
+                    return $q->whereBetween('listed_stock', [$min, $max]);
+                }
 
                 // Check for operators
                 if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {
@@ -221,9 +231,20 @@ class ListingController extends Controller
                 return $q->whereDoesntHave('available_stocks');
             }
 
-            // Handle custom values like >20, <30, >=10, <=50, or just 20
+            // Handle custom values like >20, <30, >=10, <=50, ranges like 2-4, or just 20
             if (!in_array($availableStock, ['1', '2', ''])) {
                 $value = trim($availableStock);
+
+                // Range: 2-4 or between 2 and 4
+                if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $value, $range) || preg_match('/^between\s+(\d+)\s+and\s+(\d+)$/i', $value, $range)) {
+                    $min = (int) $range[1];
+                    $max = (int) $range[2];
+                    if ($min > $max) {
+                        [$min, $max] = [$max, $min];
+                    }
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw('(available_stocks_count - pending_orders_count) BETWEEN ? AND ?', [$min, $max]);
+                }
 
                 // Check for operators
                 if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {

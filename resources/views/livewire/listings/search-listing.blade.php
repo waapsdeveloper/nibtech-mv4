@@ -86,6 +86,7 @@
                 <option value="custom" @if((isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) || (!isset($_GET['listed_stock']) && isset($_GET['listed_stock_custom']) && $_GET['listed_stock_custom'] !== '')) {{'selected'}}@endif>Custom Value</option>
             </select>
             <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@elseif(isset($_GET['listed_stock_custom'])){{$_GET['listed_stock_custom']}}@endif" style="display: @if((isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) || (!isset($_GET['listed_stock']) && isset($_GET['listed_stock_custom']) && $_GET['listed_stock_custom'] !== ''))block@else none;@endif">
+            <small class="text-muted d-block">Use operators: &lt;5 (less than), &gt;10 (greater than), &gt;=8, &lt;=12, exact 20, or range 2-4 / between 2 and 4.</small>
         </div>
         <div class="col-md col-sm-6">
             <select name="available_stock" id="available_stock_select" class="form-control form-select" data-bs-placeholder="Select Available Stock">
@@ -95,6 +96,7 @@
                 <option value="custom" @if((isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) || (!isset($_GET['available_stock']) && isset($_GET['available_stock_custom']) && $_GET['available_stock_custom'] !== '')) {{'selected'}}@endif>Custom Value</option>
             </select>
             <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@elseif(isset($_GET['available_stock_custom'])){{$_GET['available_stock_custom']}}@endif" style="display: @if((isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) || (!isset($_GET['available_stock']) && isset($_GET['available_stock_custom']) && $_GET['available_stock_custom'] !== ''))block@else none;@endif">
+            <small class="text-muted d-block">Use operators: &lt;5 (less than), &gt;10 (greater than), &gt;=8, &lt;=12, exact 20, or range 2-4 / between 2 and 4.</small>
         </div>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
