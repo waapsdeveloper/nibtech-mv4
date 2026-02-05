@@ -178,23 +178,61 @@ class ListingController extends Controller
             });
         })
         ->when($request->filled('listed_stock'), function ($q) use ($request) {
-            if ((int) $request->input('listed_stock') === 1) {
+            $listedStock = $request->input('listed_stock');
+
+            if ((int) $listedStock === 1) {
                 return $q->where('listed_stock', '>', 0);
             }
 
-            if ((int) $request->input('listed_stock') === 2) {
+            if ((int) $listedStock === 2) {
                 return $q->where('listed_stock', '<=', 0);
+            }
+
+            // Handle custom values like >20, <30, >=10, <=50, or just 20
+            if (!in_array($listedStock, ['1', '2', ''])) {
+                $value = trim($listedStock);
+
+                // Check for operators
+                if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {
+                    $operator = $matches[1];
+                    $number = (int) $matches[2];
+                    return $q->where('listed_stock', $operator, $number);
+                }
+                // Just a number
+                elseif (is_numeric($value)) {
+                    return $q->where('listed_stock', '=', (int) $value);
+                }
             }
         })
         ->when($request->filled('available_stock'), function ($q) use ($request) {
-            if ((int) $request->input('available_stock') === 1) {
+            $availableStock = $request->input('available_stock');
+
+            if ((int) $availableStock === 1) {
                 return $q->whereHas('available_stocks')
                     ->withCount(['available_stocks', 'pending_orders'])
                     ->havingRaw('(available_stocks_count - pending_orders_count) > 0');
             }
 
-            if ((int) $request->input('available_stock') === 2) {
+            if ((int) $availableStock === 2) {
                 return $q->whereDoesntHave('available_stocks');
+            }
+
+            // Handle custom values like >20, <30, >=10, <=50, or just 20
+            if (!in_array($availableStock, ['1', '2', ''])) {
+                $value = trim($availableStock);
+
+                // Check for operators
+                if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {
+                    $operator = $matches[1];
+                    $number = (int) $matches[2];
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw("(available_stocks_count - pending_orders_count) {$operator} {$number}");
+                }
+                // Just a number
+                elseif (is_numeric($value)) {
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw("(available_stocks_count - pending_orders_count) = " . (int) $value);
+                }
             }
         });
 
