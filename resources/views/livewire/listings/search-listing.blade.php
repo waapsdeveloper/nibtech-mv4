@@ -79,19 +79,80 @@
             </select>
         </div>
         <div class="col-md col-sm-6">
-            <select name="listed_stock" class="form-control form-select" data-bs-placeholder="Select listed Stock">
+            <select name="listed_stock" id="listed_stock_select" class="form-control form-select" data-bs-placeholder="Select listed Stock" onchange="toggleListedStockCustom()">
                 <option value="">Listed Stock</option>
                 <option value="1" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 1) {{'selected'}}@endif>With Listing</option>
                 <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
+                <option value="custom" @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
             </select>
+            <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@endif" style="display: @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2']))block@else none @endif;">
         </div>
+        <script>
+            function toggleListedStockCustom() {
+                const select = document.getElementById('listed_stock_select');
+                const customInput = document.getElementById('listed_stock_custom');
+                if (select.value === 'custom') {
+                    customInput.style.display = 'block';
+                    customInput.required = true;
+                } else {
+                    customInput.style.display = 'none';
+                    customInput.required = false;
+                    customInput.value = '';
+                }
+            }
+
+            // On form submit, merge custom value if selected
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form');
+                if (form) {
+                    form.addEventListener('submit', function(e) {
+                        const select = document.getElementById('listed_stock_select');
+                        const customInput = document.getElementById('listed_stock_custom');
+                        if (select.value === 'custom' && customInput.value) {
+                            select.value = customInput.value;
+                        }
+                    });
+                }
+            });
+        </script>
         <div class="col-md col-sm-6">
-            <select name="available_stock" class="form-control form-select" data-bs-placeholder="Select Available Stock">
+            <select name="available_stock" id="available_stock_select" class="form-control form-select" data-bs-placeholder="Select Available Stock" onchange="toggleAvailableStockCustom()">
                 <option value="">Available Stock</option>
                 <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
                 <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
+                <option value="custom" @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
             </select>
+            <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@endif" style="display: @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2']))block@else none @endif;">
         </div>
+        <script>
+            function toggleAvailableStockCustom() {
+                const select = document.getElementById('available_stock_select');
+                const customInput = document.getElementById('available_stock_custom');
+                if (select.value === 'custom') {
+                    customInput.style.display = 'block';
+                    customInput.required = true;
+                } else {
+                    customInput.style.display = 'none';
+                    customInput.required = false;
+                    customInput.value = '';
+                }
+            }
+
+            // On form submit, merge custom value if selected
+            document.addEventListener('DOMContentLoaded', function() {
+                const form = document.querySelector('form');
+                if (form) {
+                    const existingListener = form.onsubmit;
+                    form.addEventListener('submit', function(e) {
+                        const select = document.getElementById('available_stock_select');
+                        const customInput = document.getElementById('available_stock_custom');
+                        if (select.value === 'custom' && customInput.value) {
+                            select.value = customInput.value;
+                        }
+                    });
+                }
+            });
+        </script>
         <div class="col-md col-sm-6">
             <select name="state" class="form-control form-select" data-bs-placeholder="Select Publication State">
                 <option value="">Published</option>
