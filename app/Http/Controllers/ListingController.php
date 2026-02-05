@@ -177,8 +177,10 @@ class ListingController extends Controller
                 $verificationQuery->where('process_id', $request->input('topup'));
             });
         })
-        ->when($request->filled('listed_stock'), function ($q) use ($request) {
-            $listedStock = $request->input('listed_stock');
+        ->when($request->filled('listed_stock') || $request->filled('listed_stock_custom'), function ($q) use ($request) {
+            $listedStock = $request->filled('listed_stock')
+                ? $request->input('listed_stock')
+                : $request->input('listed_stock_custom');
 
             if ((int) $listedStock === 1) {
                 return $q->where('listed_stock', '>', 0);
@@ -204,8 +206,10 @@ class ListingController extends Controller
                 }
             }
         })
-        ->when($request->filled('available_stock'), function ($q) use ($request) {
-            $availableStock = $request->input('available_stock');
+        ->when($request->filled('available_stock') || $request->filled('available_stock_custom'), function ($q) use ($request) {
+            $availableStock = $request->filled('available_stock')
+                ? $request->input('available_stock')
+                : $request->input('available_stock_custom');
 
             if ((int) $availableStock === 1) {
                 return $q->whereHas('available_stocks')

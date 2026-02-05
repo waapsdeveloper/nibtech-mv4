@@ -83,18 +83,18 @@
                 <option value="">Listed Stock</option>
                 <option value="1" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 1) {{'selected'}}@endif>With Listing</option>
                 <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
-                <option value="custom" @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
+                <option value="custom" @if((isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) || (!isset($_GET['listed_stock']) && isset($_GET['listed_stock_custom']) && $_GET['listed_stock_custom'] !== '')) {{'selected'}}@endif>Custom Value</option>
             </select>
-            <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@endif" style="display: @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2']))block@else none;@endif">
+            <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@elseif(isset($_GET['listed_stock_custom'])){{$_GET['listed_stock_custom']}}@endif" style="display: @if((isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) || (!isset($_GET['listed_stock']) && isset($_GET['listed_stock_custom']) && $_GET['listed_stock_custom'] !== ''))block@else none;@endif">
         </div>
         <div class="col-md col-sm-6">
             <select name="available_stock" id="available_stock_select" class="form-control form-select" data-bs-placeholder="Select Available Stock">
                 <option value="">Available Stock</option>
                 <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
                 <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
-                <option value="custom" @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
+                <option value="custom" @if((isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) || (!isset($_GET['available_stock']) && isset($_GET['available_stock_custom']) && $_GET['available_stock_custom'] !== '')) {{'selected'}}@endif>Custom Value</option>
             </select>
-            <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@endif" style="display: @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2']))block@else none;@endif">
+            <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@elseif(isset($_GET['available_stock_custom'])){{$_GET['available_stock_custom']}}@endif" style="display: @if((isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) || (!isset($_GET['available_stock']) && isset($_GET['available_stock_custom']) && $_GET['available_stock_custom'] !== ''))block@else none;@endif">
         </div>
         <script>
             document.addEventListener('DOMContentLoaded', function() {
@@ -119,6 +119,15 @@
                     if (!isCustom) availableStockCustom.value = '';
                 };
 
+                // If only *_custom is present in the query, pre-select "custom"
+                if (listedStockSelect && listedStockCustom && listedStockCustom.value && !listedStockSelect.value) {
+                    listedStockSelect.value = 'custom';
+                }
+
+                if (availableStockSelect && availableStockCustom && availableStockCustom.value && !availableStockSelect.value) {
+                    availableStockSelect.value = 'custom';
+                }
+
                 if (listedStockSelect) {
                     toggleListedStockCustom();
                     listedStockSelect.addEventListener('change', toggleListedStockCustom);
@@ -132,11 +141,11 @@
                 const form = listedStockSelect?.form || availableStockSelect?.form || document.querySelector('form');
                 if (form) {
                     form.addEventListener('submit', function() {
-                        if (listedStockSelect && listedStockCustom && listedStockSelect.value === 'custom' && listedStockCustom.value) {
+                        if (listedStockSelect && listedStockCustom && listedStockCustom.value) {
                             listedStockSelect.value = listedStockCustom.value;
                         }
 
-                        if (availableStockSelect && availableStockCustom && availableStockSelect.value === 'custom' && availableStockCustom.value) {
+                        if (availableStockSelect && availableStockCustom && availableStockCustom.value) {
                             availableStockSelect.value = availableStockCustom.value;
                         }
                     }, { once: false });
