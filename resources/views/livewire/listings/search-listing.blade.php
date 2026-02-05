@@ -85,7 +85,16 @@
                 <option value="2" @if(isset($_GET['listed_stock']) && $_GET['listed_stock'] == 2) {{'selected'}}@endif>Without Listing</option>
                 <option value="custom" @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
             </select>
-            <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@endif" style="display: @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2']))block@else none @endif;">
+            <input type="text" name="listed_stock_custom" id="listed_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2'])){{$_GET['listed_stock']}}@endif" style="display: @if(isset($_GET['listed_stock']) && !in_array($_GET['listed_stock'], ['', '1', '2']))block@else none;@endif">
+        </div>
+        <div class="col-md col-sm-6">
+            <select name="available_stock" id="available_stock_select" class="form-control form-select" data-bs-placeholder="Select Available Stock" onchange="toggleAvailableStockCustom()">
+                <option value="">Available Stock</option>
+                <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
+                <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
+                <option value="custom" @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
+            </select>
+            <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@endif" style="display: @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2']))block@else none;@endif">
         </div>
         <script>
             function toggleListedStockCustom() {
@@ -101,30 +110,6 @@
                 }
             }
 
-            // On form submit, merge custom value if selected
-            document.addEventListener('DOMContentLoaded', function() {
-                const form = document.querySelector('form');
-                if (form) {
-                    form.addEventListener('submit', function(e) {
-                        const select = document.getElementById('listed_stock_select');
-                        const customInput = document.getElementById('listed_stock_custom');
-                        if (select.value === 'custom' && customInput.value) {
-                            select.value = customInput.value;
-                        }
-                    });
-                }
-            });
-        </script>
-        <div class="col-md col-sm-6">
-            <select name="available_stock" id="available_stock_select" class="form-control form-select" data-bs-placeholder="Select Available Stock" onchange="toggleAvailableStockCustom()">
-                <option value="">Available Stock</option>
-                <option value="1" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 1) {{'selected'}}@endif>With Stock</option>
-                <option value="2" @if(isset($_GET['available_stock']) && $_GET['available_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
-                <option value="custom" @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])) {{'selected'}}@endif>Custom Value</option>
-            </select>
-            <input type="text" name="available_stock_custom" id="available_stock_custom" class="form-control mt-2" placeholder="e.g., >20, <30, 20, >=10, <=50" value="@if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2'])){{$_GET['available_stock']}}@endif" style="display: @if(isset($_GET['available_stock']) && !in_array($_GET['available_stock'], ['', '1', '2']))block@else none @endif;">
-        </div>
-        <script>
             function toggleAvailableStockCustom() {
                 const select = document.getElementById('available_stock_select');
                 const customInput = document.getElementById('available_stock_custom');
@@ -138,16 +123,23 @@
                 }
             }
 
-            // On form submit, merge custom value if selected
+            // On form submit, merge custom values if selected
             document.addEventListener('DOMContentLoaded', function() {
                 const form = document.querySelector('form');
                 if (form) {
-                    const existingListener = form.onsubmit;
                     form.addEventListener('submit', function(e) {
-                        const select = document.getElementById('available_stock_select');
-                        const customInput = document.getElementById('available_stock_custom');
-                        if (select.value === 'custom' && customInput.value) {
-                            select.value = customInput.value;
+                        // Handle listed_stock custom value
+                        const listedStockSelect = document.getElementById('listed_stock_select');
+                        const listedStockCustom = document.getElementById('listed_stock_custom');
+                        if (listedStockSelect.value === 'custom' && listedStockCustom.value) {
+                            listedStockSelect.value = listedStockCustom.value;
+                        }
+
+                        // Handle available_stock custom value
+                        const availableStockSelect = document.getElementById('available_stock_select');
+                        const availableStockCustom = document.getElementById('available_stock_custom');
+                        if (availableStockSelect.value === 'custom' && availableStockCustom.value) {
+                            availableStockSelect.value = availableStockCustom.value;
                         }
                     });
                 }
