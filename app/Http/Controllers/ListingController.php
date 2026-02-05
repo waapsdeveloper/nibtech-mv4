@@ -513,7 +513,7 @@ class ListingController extends Controller
 
         // Remove restrictive whereHas filter to show ALL available stocks
         // Previously: ->whereHas('latest_listing_or_topup') was limiting results
-        $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1);
+        $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1)->whereHas('latest_closed_listing_or_topup');
 
         // Order by ID descending (latest stocks first)
         $stocks = $stocksQuery->orderByDesc('id')->paginate($perPage, ['*'], 'page', $page);
