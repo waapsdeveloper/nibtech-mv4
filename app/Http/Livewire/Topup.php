@@ -248,7 +248,8 @@ class Topup extends Component
         $data['last_ten'] = $last_ten;
 
 
-        $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
+        // Only load all variations if absolutely needed - this can be very slow
+        // $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
         $process = Process_model::findOrFail($process_id);
         $data['process'] = $process;
         $processStockStats = Process_stock_model::where('process_id', $process_id)
@@ -272,13 +273,22 @@ class Topup extends Component
         $data['products'] = session('dropdown_data')['products'];
         $data['storages'] = session('dropdown_data')['storages'];
         if(request('show') != null){
-            $processStocks = Process_stock_model::where('process_id', $process_id)->get();
+            // Optimize: Get process stocks more efficiently
+            $processStocks = Process_stock_model::where('process_id', $process_id)
+                ->select('id', 'stock_id', 'variation_id', 'status', 'admin_id', 'verified_by')
+                ->get();
             $data['process_stocks_by_stock'] = $processStocks->keyBy('stock_id');
-            $stocks = Stock_model::whereIn('id',$processStocks->pluck('stock_id')->toArray())
+
+            // Get stock IDs directly
+            $stock_ids = $processStocks->pluck('stock_id');
+            $stocks = Stock_model::whereIn('id', $stock_ids)
                 ->with(['latest_operation'])
                 ->get();
-            // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+
+            // Get variation IDs more efficiently
             $variation_ids = $processStocks->pluck('variation_id')->unique();
+
+            // Load variations with optimized query
             $variations = Variation_model::whereIn('variation.id', $variation_ids)
             ->join('products', 'products.id', '=', 'variation.product_id')
             ->orderBy('products.model', 'asc')
@@ -287,14 +297,43 @@ class Topup extends Component
             ->orderBy('variation.grade', 'asc')
             ->select('variation.*')
             ->get();
-            $data['variations'] = $variations
-            // ->sortBy(function ($variation) use ($process_id) {
-            //     return Process_stock_model::where('process_id', $process_id)
-            //         ->where('variation_id', $variation->id)
-            //         ->orderBy('id', 'asc')
-            //         ->value('id');
-            // })
-            ;
+
+            // Pre-calculate available and pending stocks using efficient queries
+            $variation_stats = [];
+
+            // Get available stock counts in one query
+            $available_counts = \DB::table('stock')
+                ->whereIn('variation_id', $variation_ids)
+                ->whereIn('status', [1, 3])
+                ->groupBy('variation_id')
+                ->pluck(\DB::raw('COUNT(*)'), 'variation_id');
+
+            // Get pending order counts in one query
+            $pending_results = \DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereIn('order_items.variation_id', $variation_ids)
+                ->whereIn('orders.status', [1, 2, 3])
+                ->select('order_items.variation_id', \DB::raw('SUM(order_items.quantity) as total_quantity'))
+                ->groupBy('order_items.variation_id')
+                ->get();
+
+            // Convert to array for easy lookup
+            $pending_counts = [];
+            foreach($pending_results as $result) {
+                $pending_counts[$result->variation_id] = $result->total_quantity;
+            }
+
+            foreach($variations as $variation) {
+                $available_count = $available_counts[$variation->id] ?? 0;
+                $pending_count = $pending_counts[$variation->id] ?? 0;
+                $variation_stats[$variation->id] = [
+                    'available_stock_count' => $available_count - $pending_count,
+                    'pending_orders_count' => $pending_count
+                ];
+            }
+            $data['variation_stats'] = $variation_stats;
+
+            $data['variations'] = $variations;
             $data['stocks'] = $stocks;
             $data['listed_stock_totals_by_variation'] = $listedStocks
                 ->groupBy('variation_id')
