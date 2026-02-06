@@ -2254,13 +2254,17 @@ class ListingController extends Controller
     public function getMarketplaceStockComparison(int $variationId)
     {
         try {
-            $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id'])->find($variationId);
+            // Load available_stocks so "available" matches variation card (inventory count, not marketplace_stock.available_stock)
+            $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id', 'available_stocks'])->find($variationId);
             if (!$variation) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Variation not found'
                 ], 404);
             }
+
+            // Available stock = physical inventory count (same as variation card) – same for all marketplaces
+            $variationAvailableCount = ($variation->available_stocks ?? collect())->count();
 
             // Get all marketplaces
             $marketplaces = Marketplace_model::all()->keyBy('id');
@@ -2286,7 +2290,6 @@ class ListingController extends Controller
             // Build comparison data
             $comparisonData = [];
             $totalListedStock = 0;
-            $totalAvailableStock = 0;
             $totalLockedStock = 0;
 
             foreach ($marketplaces as $marketplaceId => $marketplace) {
@@ -2294,10 +2297,8 @@ class ListingController extends Controller
                 $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
                 
                 $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
-                // Stock lock system removed - available stock = listed stock
-                $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
-                    ? (int) $marketplaceStock->available_stock 
-                    : max(0, $listedStock);
+                // Available stock comes from inventory (variation-level), same as variation card – do NOT use marketplace_stock.available_stock
+                $availableStock = $variationAvailableCount;
 
                 // Get listing count for this marketplace
                 $listingCount = Listing_model::where('variation_id', $variationId)
@@ -2315,9 +2316,10 @@ class ListingController extends Controller
                 ];
 
                 $totalListedStock += $listedStock;
-                $totalAvailableStock += $availableStock;
                 // Stock lock system removed - locked stock always 0
             }
+
+            $totalAvailableStock = $variationAvailableCount;
 
             // Get total stock from variation (this is the total stock we have in the system)
             $totalStock = (int) ($variation->listed_stock ?? 0);
@@ -2355,7 +2357,7 @@ class ListingController extends Controller
                 'marketplaces' => $comparisonData,
                 'totals' => [
                     'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
-                    'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
+                    'available_stock' => $totalAvailableStock, // Physical inventory count (same as variation card)
                     'locked_stock' => 0 // Stock lock system removed
                 ]
             ]);

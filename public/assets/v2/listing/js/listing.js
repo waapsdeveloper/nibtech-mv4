@@ -136,9 +136,12 @@ function show_variation_history(variationId, variationName) {
             let historyTable = '';
             if (data.listed_stock_verifications && data.listed_stock_verifications.length > 0) {
                 data.listed_stock_verifications.forEach(function(item) {
+                    const ref = item.process_ref ?? '';
+                    const is9xxx = /^9\d{3}$/.test(String(ref));
+                    const refCell = is9xxx ? `${ref} <span class="badge bg-secondary ms-1" title="Full verification: Qty Added = scanned, Qty After = listed (scan − Pending Orders)">Verification</span>` : ref;
                     historyTable += `
                         <tr>
-                            <td>${item.process_ref ?? ''}</td>
+                            <td>${refCell}</td>
                             <td>${item.pending_orders ?? ''}</td>
                             <td>${item.qty_from ?? ''}</td>
                             <td>${item.qty_change ?? ''}</td>
