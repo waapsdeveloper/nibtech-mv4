@@ -133,7 +133,7 @@ class Order_item_model extends Model
     public function get_latest_care($bm)
     {
 
-        $last_id = Order_item_model::select('care_id')->where('care_id','!=',null)->whereHas('order', function($query){
+        $last_id = Order_item_model::select('care_id')->where('care_id','!=',null)->where('care_id','<',151424283)->whereHas('order', function($query){
             $query->where('marketplace_id',1);
         })
         ->orderByDesc('care_id')->first()->care_id;
