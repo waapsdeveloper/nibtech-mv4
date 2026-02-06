@@ -26,6 +26,9 @@
                         <!-- Data will be populated here via AJAX -->
                     </tbody>
                 </table>
+                <p class="small text-muted mt-2 mb-0">
+                    <strong>Note:</strong> For full verification (Topup Ref 9xxx): Qty Before = listed before this push, Qty Added = items scanned, Qty After = listed after push (may be scan − Pending Orders).
+                </p>
             </div>
         </div>
     </div>

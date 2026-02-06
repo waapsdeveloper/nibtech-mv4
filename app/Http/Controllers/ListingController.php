@@ -1028,7 +1028,7 @@ class ListingController extends Controller
 
         // If active verification exists, use firstOrNew, otherwise create new
         if($check_active_verification != null){
-            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from
+            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from (from zero_listing_verification step)
             $listed_stock_verification = Listed_stock_verification_model::where('process_id', $process_id)
                 ->where('variation_id', $variation->id)
                 ->whereNull('qty_to')
@@ -1040,6 +1040,10 @@ class ListingController extends Controller
                 $listed_stock_verification = new Listed_stock_verification_model();
                 $listed_stock_verification->process_id = $process_id;
                 $listed_stock_verification->variation_id = $variation->id;
+                $listed_stock_verification->qty_from = $previous_qty;
+            } else {
+                // Updating existing zero-record on close: set qty_from = listed at push time (0 after zero) so History shows 0, scanned, qty_to and 0 + scanned vs qty_to (pending) is clear
+                $listed_stock_verification->qty_from = $previous_qty;
             }
         } else {
             $listed_stock_verification = new Listed_stock_verification_model();

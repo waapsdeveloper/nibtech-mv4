@@ -123,7 +123,7 @@ class Topup extends Component
                     echo $listingController->add_quantity($variation->variation_id, $variation->total, $process->id);
                 }elseif($listed_stock->qty_change < $variation->total){
                     $new_qty = $variation->total - $listed_stock->qty_change;
-                    echo $listingController->add_quantity($variation->variation_id1, $new_qty, $process->id);
+                    echo $listingController->add_quantity($variation->variation_id, $new_qty, $process->id);
                 }
                 // $listed_stock = Listed_stock_verification_model::where('process_id', $process->id)->where('variation_id', $variation->variation_id)->get();
                 // if($listed_stock->count() > 0){
