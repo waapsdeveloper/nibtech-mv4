@@ -170,15 +170,9 @@
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
                         </button>`;
-                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.last_page})" title="Last page" style="line-height: 1;">
-                            <i class="fas fa-angle-double-right" style="font-size: 0.7rem;"></i>
-                        </button>`;
                     } else {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
-                        </button>`;
-                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
-                            <i class="fas fa-angle-double-right" style="font-size: 0.7rem;"></i>
                         </button>`;
                     }
 
