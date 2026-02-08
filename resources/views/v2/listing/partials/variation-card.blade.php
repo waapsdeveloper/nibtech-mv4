@@ -37,7 +37,7 @@
     if(empty($colorCode) || !preg_match('/^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$|^[a-z]+$/i', $colorCode)) {
         $colorCode = '#ccc'; // Default gray
     }
-    
+
     $storageId = $variation->storage ?? null;
     $storageName = isset($storages[$storageId]) ? $storages[$storageId] : '';
     $gradeId = $variation->grade ?? null;
@@ -62,7 +62,7 @@
                 $manualAdjustment = (int)($marketplaceStock->manual_adjustment ?? 0);
                 $totalStock += $listedStock;
                 $totalManualAdjustment += $manualAdjustment;
-                
+
                 // Calculate available stock for this marketplace (simplified: just use listed_stock, no locked calculation)
                 $availableStock = $listedStock;
                 $totalAvailableStock += $availableStock;
@@ -71,16 +71,16 @@
     }
     // Add manual adjustments to total stock
     $totalStock = $totalStock + $totalManualAdjustment;
-    
+
     // Fallback to variation.listed_stock if no marketplace stock exists yet
     if($totalStock == 0 && $totalManualAdjustment == 0) {
         $totalStock = $variation->listed_stock ?? 0;
     }
-    
+
     // Ensure available stock never exceeds total stock (safety check)
     // Available stock should logically never exceed total stock, but we cap it just in case
     $totalAvailableStock = min($totalAvailableStock, $totalStock);
-    
+
     // Use physical stock count (matching V1 behavior)
     $availableStocks = $variation->available_stocks ?? collect();
     $pendingOrders = $variation->pending_orders ?? collect();
@@ -88,11 +88,11 @@
     $physicalAvailableCount = $availableStocks->count(); // Physical stock items count
     $pendingCount = $pendingOrders->sum('quantity'); // Sum of quantities (matching V1 behavior)
     $pendingBmCount = $pendingBmOrders->count();
-    
+
     // Use physical inventory count for display (matching V1)
     $availableCount = $physicalAvailableCount;
     $difference = $availableCount - $pendingCount;
-    
+
     // Calculate average cost from available stocks
     $averageCost = 0;
     if($availableStocks->count() > 0) {
@@ -100,12 +100,12 @@
         $stockCosts = \App\Models\Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id', 1);
         })->whereIn('stock_id', $stockIds)->pluck('price');
-        
+
         if($stockCosts->count() > 0) {
             $averageCost = $stockCosts->avg();
         }
     }
-    
+
     // Get withoutBuybox HTML from variation data
     $withoutBuybox = $variation->withoutBuybox ?? '';
 @endphp
@@ -142,7 +142,7 @@
                 'availableCount' => $availableCount,
                 'process_id' => $process_id ?? null
             ])
-            
+
             {{-- Listing Total Quantity and Average Cost --}}
             <div class="d-flex flex-row align-items-center gap-2" style="font-size: 0.85rem;">
                 {{-- <div class="text-muted">
@@ -176,11 +176,11 @@
             </div>
         </div>
 
-        
+
 
         {{-- Details toggle button removed - tables now shown in marketplace toggle sections --}}
     </div>
-    
+
     {{-- Marketplace & Stocks Section (Always Expanded) --}}
     <div class="show" id="marketplace_stocks_dropdown_{{ $variationId }}">
         <div class="card-body border-top p-0" style="width: 100%;">
@@ -212,7 +212,7 @@
                         @endif
                     </div>
                 </div>
-                
+
                 {{-- Expandable Right Side Stock Panel (Inside Card) --}}
                 <div class="stock-panel" id="stock_panel_{{ $variationId }}" style="display: none; width: 0; overflow: hidden; transition: width 0.3s ease; border-left: 1px solid #dee2e6; flex-shrink: 0;">
                     <div class="d-flex flex-column h-100" style="width: 400px;">
@@ -274,7 +274,7 @@
         const icon = $('#stock_expand_icon_' + variationId);
         const marketplaceColumn = $('#marketplace_column_' + variationId);
         const isExpanded = panel.hasClass('show');
-        
+
         if (isExpanded) {
             // Collapse
             panel.removeClass('show');
@@ -287,7 +287,7 @@
             icon.removeClass('fa-chevron-right').addClass('fa-chevron-left');
             // Set marketplace column width to make room for panel
             marketplaceColumn.css('width', 'calc(100% - 400px)');
-            
+
             // Load stocks if not already loaded
             const tableBody = $('#stocks_table_panel_' + variationId);
             const firstRow = tableBody.find('tr:first');
@@ -296,19 +296,19 @@
             }
         }
     }
-    
+
     function loadStocksForPanel(variationId, page = 1) {
         const stocksTableBody = $('#stocks_table_panel_' + variationId);
         const averageCostElement = $('#average_cost_stocks_panel_' + variationId);
-        
+
         if (!window.ListingConfig || !window.ListingConfig.urls || !window.ListingConfig.urls.getVariationStocks) {
             stocksTableBody.html('<tr><td colspan="3" class="text-center text-danger small">Configuration error</td></tr>');
             return;
         }
-        
+
         // Show loader
         stocksTableBody.html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
-        
+
         $.ajax({
             url: window.ListingConfig.urls.getVariationStocks + '/' + variationId + '?page=' + page + '&per_page=50',
             type: 'GET',
@@ -316,7 +316,7 @@
             success: function(data) {
                 let stocksTable = '';
                 let stockPrices = [];
-                
+
                 if (data.stocks && data.stocks.length > 0) {
                     // Calculate starting row number based on pagination
                     let startRow = data.pagination ? ((data.pagination.current_page - 1) * data.pagination.per_page) : 0;
@@ -325,12 +325,12 @@
                         let topup_ref = data.topup_reference[data.latest_topup_items[item.id]] || '';
                         let vendor = data.vendors && data.po && data.po[item.order_id] ? (data.vendors[data.po[item.order_id]] || '') : '';
                         let reference_id = data.reference && data.reference[item.order_id] ? data.reference[item.order_id] : '';
-                        
+
                         // Collect price for average calculation
                         if (price) {
                             stockPrices.push(parseFloat(price));
                         }
-                        
+
                         const imeiUrl = window.ListingConfig.urls.imei || '';
                         stocksTable += `
                             <tr>
@@ -348,9 +348,9 @@
                 } else {
                     stocksTable = '<tr><td colspan="3" class="text-center text-muted small">No stocks available</td></tr>';
                 }
-                
+
                 stocksTableBody.html(stocksTable);
-                
+
                 // Calculate average cost value first (before updating header)
                 let averageCostValue = '€0.00';
                 if (data.average_cost !== undefined) {
@@ -362,11 +362,11 @@
                         averageCostValue = `€${average.toFixed(2)}`;
                     }
                 }
-                
+
                 // Create pagination HTML function
                 function createPaginationHtml(pagination, variationId, isHeader = false) {
                     let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
-                    
+
                     if (pagination.current_page > 1) {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForPanel(${variationId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
                             <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
@@ -376,24 +376,30 @@
                             <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
                         </button>`;
                     }
-                    
+
                     // Show current/total format for both header and bottom
                     paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
-                    
+
                     if (pagination.current_page < pagination.last_page) {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForPanel(${variationId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
+                        </button>`;
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForPanel(${variationId}, ${pagination.last_page})" title="Last page" style="line-height: 1;">
+                            <i class="fas fa-forward" style="font-size: 0.7rem;"></i>
                         </button>`;
                     } else {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
                         </button>`;
+                        paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" disabled style="line-height: 1;">
+                            <i class="fas fa-forward" style="font-size: 0.7rem;"></i>
+                        </button>`;
                     }
-                    
+
                     paginationHtml += '</div>';
                     return paginationHtml;
                 }
-                
+
                 // Set average cost in table header (without pagination)
                 let costHeader = $('#stocks_table_panel_' + variationId).closest('table').find('thead th').last();
                 if (costHeader.length) {
@@ -402,13 +408,13 @@
                     // Fallback: set average cost if header not found
                     averageCostElement.text(averageCostValue);
                 }
-                
+
                 // Add pagination controls if pagination data exists
                 if (data.pagination) {
                     // Add pagination to parent header (next to "Stock List")
                     let headerPaginationHtml = createPaginationHtml(data.pagination, variationId, true);
                     $('#stocks_pagination_panel_header_'+variationId).html(headerPaginationHtml);
-                    
+
                     // Add pagination on bottom (after tbody)
                     $('#stocks_pagination_panel_bottom_'+variationId).remove();
                     let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, false);

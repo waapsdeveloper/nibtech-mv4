@@ -415,7 +415,10 @@
                                         Returned items detected (stock status available). Use <strong>Split refund</strong> to issue a refund for returned items and a separate invoice for remaining items.
                                         <ul class="mb-0 ps-3">
                                             @foreach ($returnedItems as $itm)
-                                                @php $idVal = $itm->effective_imei ?? $itm->stock->imei ?? $itm->stock->serial_number; @endphp
+                                                @php
+                                                    $stock = optional($itm->stock);
+                                                    $idVal = $itm->effective_imei ?? $stock->imei ?? $stock->serial_number;
+                                                @endphp
                                                 <li>
                                                     {{ optional($itm->variation)->sku ?? $itm->reference ?? 'Item' }}
                                                     @if ($idVal)
@@ -434,7 +437,8 @@
                                                 <span class="fw-semibold">{{ optional($item->variation)->sku ?? $item->reference ?? 'n/a' }}</span>
                                                 <span class="text-muted ms-1">(1)</span>
                                                 @php
-                                                    $idValue = $item->effective_imei ?? $item->stock->imei ?? $item->stock->serial_number;
+                                                    $stock = optional($item->stock);
+                                                    $idValue = $item->effective_imei ?? $stock->imei ?? $stock->serial_number;
                                                     $replacementImei = null;
                                                     if (!empty($item->replacement)) {
                                                         $rep = $item->replacement;

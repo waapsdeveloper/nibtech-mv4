@@ -24,7 +24,7 @@
 @endphp
 
 <div class="marketplace-stocks-section" data-variation-id="{{ $variationId }}" data-first-marketplace-id="{{ $firstMarketplaceId ?? '' }}">
-    
+
     {{-- Stock Table --}}
     <div class="mt-3">
         <div class="table-responsive" style="max-height: 400px; overflow-y: auto;">
@@ -54,10 +54,10 @@
         const selectedOption = select.find('option:selected');
         const currentStock = selectedOption.data('stock') || 0;
         const marketplaceIdInt = parseInt(marketplaceId);
-        
+
         // Remove existing editor
         $('#marketplace_stock_editor_container_' + variationId).empty();
-        
+
         // Create new editor HTML
         const editorHtml = `
             <div class="marketplace-stock-container d-flex align-items-center gap-1" id="marketplace_stock_${variationId}_${marketplaceIdInt}">
@@ -74,27 +74,27 @@
             </div>
             <span class="text-success small d-none" id="success_marketplace_${variationId}_${marketplaceIdInt}"></span>
         `;
-        
+
         $('#marketplace_stock_editor_container_' + variationId).html(editorHtml);
-        
+
         // Initialize original value
         if (typeof window.originalStockValues === 'undefined') {
             window.originalStockValues = {};
         }
         window.originalStockValues[variationId + '_' + marketplaceIdInt] = currentStock;
-        
+
         // Load stocks for the selected marketplace
         loadStocksForMarketplace(variationId, marketplaceIdInt);
     };
-    
+
     // Function to load stocks for selected marketplace
     window.loadStocksForMarketplace = function(variationId, marketplaceId, page = 1) {
         const stocksTableBody = $('#stocks_table_' + variationId);
         const averageCostElement = $('#average_cost_stocks_' + variationId);
-        
+
         // Show loader
         stocksTableBody.html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
-        
+
         $.ajax({
             url: window.ListingConfig.urls.getVariationStocks + '/' + variationId + '?page=' + page + '&per_page=50',
             type: 'GET',
@@ -102,7 +102,7 @@
             success: function(data) {
                 let stocksTable = '';
                 let stockPrices = [];
-                
+
                 if (data.stocks && data.stocks.length > 0) {
                     // Calculate starting row number based on pagination
                     let startRow = data.pagination ? ((data.pagination.current_page - 1) * data.pagination.per_page) : 0;
@@ -111,12 +111,12 @@
                         let topup_ref = data.topup_reference[data.latest_topup_items[item.id]] || '';
                         let vendor = data.vendors && data.po && data.po[item.order_id] ? (data.vendors[data.po[item.order_id]] || '') : '';
                         let reference_id = data.reference && data.reference[item.order_id] ? data.reference[item.order_id] : '';
-                        
+
                         // Collect price for average calculation
                         if (price) {
                             stockPrices.push(parseFloat(price));
                         }
-                        
+
                         const imeiUrl = window.ListingConfig.urls.imei || '';
                         stocksTable += `
                             <tr>
@@ -134,9 +134,9 @@
                 } else {
                     stocksTable = '<tr><td colspan="3" class="text-center text-muted small">No stocks available</td></tr>';
                 }
-                
+
                 stocksTableBody.html(stocksTable);
-                
+
                 // Calculate average cost value first (before updating header)
                 let averageCostValue = '€0.00';
                 if (data.average_cost !== undefined) {
@@ -148,11 +148,11 @@
                         averageCostValue = `€${average.toFixed(2)}`;
                     }
                 }
-                
+
                 // Create pagination HTML function
                 function createPaginationHtml(pagination, variationId, marketplaceId, isHeader = false) {
                     let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
-                    
+
                     if (pagination.current_page > 1) {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
                             <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
@@ -162,10 +162,10 @@
                             <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
                         </button>`;
                     }
-                    
+
                     // Show current/total format for both header and bottom
                     paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
-                    
+
                     if (pagination.current_page < pagination.last_page) {
                         paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="loadStocksForMarketplace(${variationId}, ${marketplaceId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
@@ -175,11 +175,11 @@
                             <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
                         </button>`;
                     }
-                    
+
                     paginationHtml += '</div>';
                     return paginationHtml;
                 }
-                
+
                 // Add pagination controls if pagination data exists
                 if (data.pagination) {
                     // Update header with pagination - include average cost value in the HTML
@@ -188,7 +188,7 @@
                     if (costHeader.length) {
                         costHeader.html(`<div class="d-flex justify-content-between align-items-center"><div><small><b>Cost</b> (<b id="average_cost_stocks_${variationId}">${averageCostValue}</b>)</small></div><div>${headerPaginationHtml}</div></div>`);
                     }
-                    
+
                     // Add pagination on bottom (after tbody)
                     $('#stocks_pagination_'+variationId+'_bottom').remove();
                     let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, marketplaceId, false);
@@ -204,7 +204,7 @@
             }
         });
     }
-    
+
     // Load stocks for first marketplace when the section becomes visible
     $(document).ready(function() {
         // Function to initialize stock table for a variation
@@ -212,7 +212,7 @@
             const stocksSection = $('#marketplace_stocks_dropdown_' + variationId);
             const stocksContent = $('.marketplace-stocks-section[data-variation-id="' + variationId + '"]');
             const firstMarketplaceId = stocksContent.data('first-marketplace-id');
-            
+
             if (stocksSection.length && firstMarketplaceId) {
                 // Use Bootstrap collapse event to detect when section is shown
                 stocksSection.on('shown.bs.collapse', function() {
@@ -220,7 +220,7 @@
                         window.loadStocksForMarketplace(variationId, parseInt(firstMarketplaceId));
                     }
                 });
-                
+
                 // Also try to load if already visible
                 if (stocksSection.hasClass('show')) {
                     if (typeof window.loadStocksForMarketplace === 'function') {
@@ -229,7 +229,7 @@
                 }
             }
         }
-        
+
         // Initialize for all variations on page
         $('[id^="marketplace_stocks_dropdown_"]').each(function() {
             const id = $(this).attr('id');
@@ -238,7 +238,7 @@
                 initializeStockTable(matches[1]);
             }
         });
-        
+
         // Also initialize for any marketplace-stocks-section elements
         $('.marketplace-stocks-section').each(function() {
             const variationId = $(this).data('variation-id');
