@@ -288,6 +288,10 @@
                         <input class="form-check-input" type="checkbox" id="bypass_missing" name="bypass_missing" value="1" @if (request('bypass_missing') == "1") {{'checked'}} @endif>
                         <label class="form-check-label" for="bypass_missing">Bypass Missing</label>
                     </div>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="status_zero" name="status_zero" value="1" @if (request('status_zero') == "1") {{'checked'}} @endif>
+                        <label class="form-check-label" for="status_zero">Order status 0</label>
+                    </div>
                 </div>
                 <input type="hidden" name="page" value="{{ Request::get('page') }}">
                 @if (Request::get('care') == 1)
@@ -342,6 +346,9 @@
             <input type="hidden" name="end_date" value="{{ Request::get('end_date') }}">
             <input type="hidden" name="end_time" value="{{ Request::get('end_time') }}">
             <input type="hidden" name="status" value="{{ Request::get('status') }}">
+            @if (Request::get('status_zero') == 1)
+                <input type="hidden" name="status_zero" value="1">
+            @endif
             <input type="hidden" name="adm" value="{{ Request::get('adm') }}">
             <input type="hidden" name="order_id" value="{{ Request::get('order_id') }}">
             <input type="hidden" name="sku" value="{{ Request::get('sku') }}">
@@ -584,7 +591,7 @@
                                         $stock->availability();
                                     }
                                 @endphp
-                                <tr @if (($customer?->orders?->count() ?? 0) > 1) class="bg-light" @endif>
+                                <tr @if (($customer?->orders?->count() ?? 0) > 1) class="bg-light" @endif data-order-id="{{ $order->id }}">
                                     @if ($itemIndex == 0)
                                         <td rowspan="{{ $items_count }}"><input type="checkbox" name="ids[]" value="{{ $order->id }}" form="pdf"></td>
                                         <td rowspan="{{ $items_count }}">{{ $i + 1 }}</td>
@@ -709,19 +716,17 @@
 
                                     @endif
                                     @if ($itemIndex == 0 && $order->status != 3)
-                                    <td style="width:240px" rowspan="{{ count($items) }}">
+                                    <td style="width:240px" rowspan="{{ count($items) }}" data-order-imei-cell="{{ $order->id }}">
 
-                                        @if ((isset($stock) && $item->status == 2 && !session()->has('refresh')) || $order->status == 0)
+                                        @if ((isset($stock) && $item->status == 2 && !session()->has('refresh')) || ($order->status == 0 && request('status_zero') != 1))
                                             @if (request('marketplace') == 4)
                                             @else
                                             @php
                                                 session()->put('refresh', true);
                                             @endphp
-                                            <script>
-                                                document.addEventListener('DOMContentLoaded', function() {
-                                                    window.location.href = "{{url('order')}}/refresh/{{ $order->reference_id }}";
-                                                });
-                                            </script>
+                                            <div class="order-refresh-ajax" data-refresh-url="{{ url('order') }}/refresh/{{ $order->reference_id }}" data-order-id="{{ $order->id }}">
+                                                <span class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status"></span>Refreshing order...</span>
+                                            </div>
                                             @endif
                                         @endif
 
@@ -848,7 +853,7 @@
                                             <a class="dropdown-item" href="{{ route('order.refurbed_resend_shipped', ['id' => $order->id]) }}" onclick="return confirm('Resend Refurbed SHIPPED request for this order?');">Resend Refurbed Shipped</a>
                                             <a class="dropdown-item" href="{{ route('order.refurbed_reprint_label', ['order' => $order->id]) }}" target="_blank" rel="noopener">Reprint Refurbed Label</a>
                                             @else
-                                            <a class="dropdown-item" href="{{url('order')}}/refresh/{{ $order->reference_id }}">Refresh</a>
+                                            <a class="dropdown-item order-refresh-link" href="{{ url('order') }}/refresh/{{ $order->reference_id }}" data-order-id="{{ $order->id }}" data-refresh-url="{{ url('order') }}/refresh/{{ $order->reference_id }}">Refresh</a>
                                             @endif
                                             {{-- @if ($item->order->processed_at > $last_hour || $user_id == 1) --}}
                                             @if (session('user')->hasPermission('change_order_tracking'))
@@ -1332,6 +1337,42 @@
 
     @section('scripts')
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            function doAjaxRefresh(url, orderId) {
+                var cell = document.querySelector('[data-order-imei-cell="' + orderId + '"]');
+                if (!cell) return false;
+                var ajaxUrl = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'ajax=1';
+                cell.innerHTML = '<span class="text-muted small"><span class="spinner-border spinner-border-sm me-1" role="status"></span>Refreshing...</span>';
+                fetch(ajaxUrl, { headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' } })
+                    .then(function (r) { return r.json(); })
+                    .then(function (data) {
+                        if (data.success && data.html) {
+                            cell.innerHTML = data.html;
+                        } else {
+                            cell.innerHTML = '<span class="text-danger small">Refresh failed. <a href="' + url + '">Refresh in new page</a></span>';
+                        }
+                    })
+                    .catch(function () {
+                        cell.innerHTML = '<span class="text-warning small">Refresh failed. <a href="' + url + '">Refresh in new page</a></span>';
+                    });
+                return true;
+            }
+            var refreshEl = document.querySelector('.order-refresh-ajax');
+            if (refreshEl) {
+                var url = refreshEl.getAttribute('data-refresh-url');
+                var orderId = refreshEl.getAttribute('data-order-id');
+                if (url && orderId) doAjaxRefresh(url, orderId);
+            }
+            document.querySelectorAll('.order-refresh-link').forEach(function (link) {
+                link.addEventListener('click', function (e) {
+                    var url = this.getAttribute('data-refresh-url');
+                    var orderId = this.getAttribute('data-order-id');
+                    if (url && orderId && doAjaxRefresh(url, orderId)) e.preventDefault();
+                });
+            });
+        });
+    </script>
     <script>
 
         document.addEventListener('DOMContentLoaded', function () {

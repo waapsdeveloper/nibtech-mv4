@@ -28,7 +28,7 @@
                                         <div class="panel-body tabs-menu-body border-0 p-3">
                                             <div class="tab-content">
                                                 <div class="tab-pane active" id="tab5">
-                                                    @if (env('APP_ENV') !== 'local')
+                                                    @if (!filter_var(env('DISABLE_CAPTCHA', false), FILTER_VALIDATE_BOOLEAN) && env('APP_ENV') !== 'local')
                                                         {!! NoCaptcha::renderJs() !!}
                                                     @endif
                                                     <form action="{{url('/login')}}" method="POST">
@@ -39,7 +39,7 @@
                                                         <div class="form-group">
                                                             <label>Password</label> <input class="form-control" placeholder="Enter your password" name="password" type="password">
                                                         </div>
-                                                        @if (env('APP_ENV') !== 'local')
+                                                        @if (!filter_var(env('DISABLE_CAPTCHA', false), FILTER_VALIDATE_BOOLEAN) && env('APP_ENV') !== 'local')
                                                             <div class="mt-3">
                                                                 {!! NoCaptcha::display() !!}
                                                             </div>
@@ -54,8 +54,8 @@
                                                                 });
                                                             </script>
                                                         @else
-                                                            {{-- Bypass reCAPTCHA for local development --}}
-                                                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" value="local-bypass">
+                                                            {{-- CAPTCHA disabled via DISABLE_CAPTCHA or local env --}}
+                                                            <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" value="captcha-disabled">
                                                         @endif
                                                         @if(isset($error))
                                                             <div class="alert alert-danger alert-dismissible fade show mb-0" role="alert">

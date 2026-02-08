@@ -29,8 +29,8 @@ class Signin extends Component
             'password' => 'required',
         ];
 
-        // Only require reCAPTCHA in non-local environments
-        if (env('APP_ENV') !== 'local') {
+        // Only require reCAPTCHA when not disabled and in non-local environments
+        if (!filter_var(env('DISABLE_CAPTCHA', false), FILTER_VALIDATE_BOOLEAN) && env('APP_ENV') !== 'local') {
             $rules['g-recaptcha-response'] = 'required|captcha';
         }
 
