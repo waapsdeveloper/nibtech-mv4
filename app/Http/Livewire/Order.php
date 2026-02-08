@@ -3620,6 +3620,25 @@ class Order extends Component
     }
     public function dispatch($id)
     {
+
+        // if order has order items and if any order item has stock id attached and data null then return redirect back with error
+        $order = Order_model::find($id);
+        if($order == null){
+            session()->put('error', "Order Not Found");
+            return redirect()->back();
+        }
+        $order_items = Order_item_model::where('order_id', $id)->get();
+        foreach($order_items as $item){
+            if($item->stock_id != null && $item->stock == null){
+                session()->put('error', "Stock not Found");
+                return redirect()->back();
+            }
+            if($item->stock_id != null && $item->stock->qty < $item->quantity){
+                session()->put('error', "Stock quantity not enough");
+                return redirect()->back();
+            }
+        }
+
         $order = Order_model::find($id);
 
         if($order == null){
