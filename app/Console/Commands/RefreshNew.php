@@ -78,8 +78,6 @@ class RefreshNew extends Command
             'new_orderlines_validated' => 0,
             'incomplete_orders_found' => 0,
             'incomplete_orders_synced' => 0,
-            'status_correct_found' => 0,
-            'status_correct_synced' => 0,
             'order_ids_synced' => []
         ];
 
@@ -131,22 +129,6 @@ class RefreshNew extends Command
             }
         }
 
-        // Re-sync orders we have as status 3 (or 6) so we can correct status from Back Market when BM shows them as pending
-        $statusCorrectOrders = Order_model::whereIn('status', [3, 6])
-            ->where('order_type_id', 3)
-            ->where('updated_at', '>=', Carbon::now()->subDays(7))
-            ->pluck('reference_id');
-
-        $stats['status_correct_found'] = $statusCorrectOrders->count();
-
-        foreach ($statusCorrectOrders as $orderRef) {
-            $this->updateBMOrder($orderRef, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
-            $stats['status_correct_synced']++;
-            if (!in_array($orderRef, $stats['order_ids_synced'])) {
-                $stats['order_ids_synced'][] = $orderRef;
-            }
-        }
-
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
 
@@ -160,9 +142,6 @@ class RefreshNew extends Command
         }
         if ($stats['incomplete_orders_synced'] > 0) {
             $summaryParts[] = "Incomplete: {$stats['incomplete_orders_synced']} order(s)";
-        }
-        if ($stats['status_correct_synced'] > 0) {
-            $summaryParts[] = "Status corrected: {$stats['status_correct_synced']} order(s)";
         }
 
         $summaryText = !empty($summaryParts)
@@ -191,8 +170,6 @@ class RefreshNew extends Command
         //             'new_orderlines_validated' => $stats['new_orderlines_validated'],
         //             'incomplete_orders_found' => $stats['incomplete_orders_found'],
         //             'incomplete_orders_synced' => $stats['incomplete_orders_synced'],
-        //             'status_correct_found' => $stats['status_correct_found'],
-        //             'status_correct_synced' => $stats['status_correct_synced'],
         //             'total_orders_synced' => count($stats['order_ids_synced']),
         //             'order_ids_sample' => $orderIdsForLog
         //         ]
