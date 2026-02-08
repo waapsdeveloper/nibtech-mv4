@@ -46,7 +46,7 @@ class RefreshOrders extends Command
 
         $currency_codes = Currency_model::pluck('id','code')->toArray();
         $country_codes = Country_model::pluck('id','code')->toArray();
-        echo 1;
+
         $resArray1 = $bm->getNewOrders(['page-size'=>50]);
         if ($resArray1 !== null) {
             foreach ($resArray1 as $orderObj) {
@@ -56,8 +56,37 @@ class RefreshOrders extends Command
                     }
                 }
             }
+
+            // Align our status with Back Market for pending orders: if BM says pending (state=1) but we have status != 2,
+            // set our status to 2 (pending) — but only when no IMEI is attached (order not yet processed).
+            $statusCorrected = 0;
+            foreach ($resArray1 as $orderObj) {
+                if (empty($orderObj) || empty($orderObj->order_id)) {
+                    continue;
+                }
+                $referenceId = $orderObj->order_id;
+                $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+                $order = Order_model::where('reference_id', $referenceId)
+                    ->where('marketplace_id', $marketplaceId)
+                    ->where('order_type_id', 3)
+                    ->first();
+                if (!$order || $order->status == 2) {
+                    continue;
+                }
+                $hasImeiAttached = Order_item_model::where('order_id', $order->id)
+                    ->where('stock_id', '>', 0)
+                    ->exists();
+                if ($hasImeiAttached) {
+                    continue;
+                }
+                $order->status = 2;
+                $order->save();
+                $statusCorrected++;
+            }
+            if ($statusCorrected > 0) {
+                $this->info("Status corrected to pending (2): {$statusCorrected} order(s) to match Back Market.");
+            }
         }
-        echo 2;
 
             $modification = false;
         $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
@@ -66,7 +95,6 @@ class RefreshOrders extends Command
                 if (!empty($orderObj)) {
                 $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
                 $order_item_model->updateOrderItemsInDB($orderObj,null,$bm);
-                echo 3;
                 }
             }
         } else {
