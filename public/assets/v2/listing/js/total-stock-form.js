@@ -140,6 +140,15 @@
                     // Only update once to avoid double updates
                     updateMarketplaceStockDisplays(variationId, marketplaceStocks);
                     
+                    // Run getUpdatedQuantity AJAX to refresh the Backmarket stock badge
+                    if (typeof window.fetchBackmarketStockQuantity === 'function' && typeof window.updateBackmarketStockBadge === 'function') {
+                        window.fetchBackmarketStockQuantity(variationId, 1).then(function(result) {
+                            if (result !== null) {
+                                window.updateBackmarketStockBadge(variationId, 1, result);
+                            }
+                        });
+                    }
+                    
                     // Update current total for next push
                     const input = $('#add_total_' + variationId);
                     input.data('current-total', totalStock);

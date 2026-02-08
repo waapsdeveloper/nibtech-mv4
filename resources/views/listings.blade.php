@@ -233,6 +233,18 @@
         function buildListingFilters(overrides) {
             overrides = overrides || {};
 
+            const listedStockValue = $('#listed_stock_select').val();
+            const listedStockCustom = $('#listed_stock_custom').val();
+            const availableStockValue = $('#available_stock_select').val();
+            const availableStockCustom = $('#available_stock_custom').val();
+
+            const listedStock = listedStockValue === 'custom'
+                ? listedStockCustom
+                : (listedStockCustom || listedStockValue);
+            const availableStock = availableStockValue === 'custom'
+                ? availableStockCustom
+                : (availableStockCustom || availableStockValue);
+
             let params = {
                 product_name: $('#product_name').val(),
                 reference_id: $('#reference_id').val(),
@@ -244,8 +256,8 @@
                 category: $('select[name="category"]').val(),
                 brand: $('select[name="brand"]').val(),
                 marketplace: $('select[name="marketplace"]').val(),
-                listed_stock: $('select[name="listed_stock"]').val(),
-                available_stock: $('select[name="available_stock"]').val(),
+                listed_stock: listedStock,
+                available_stock: availableStock,
                 handler_status: $('select[name="handler_status"]').val(),
                 state: $('select[name="state"]').val(),
                 sort: $('select[name="sort"]').val(),
@@ -388,7 +400,7 @@
                 success: function(data) {
                     // Parse response - data is already parsed as JSON object
                     var responseQuantity = (data && typeof data === 'object' && data.quantity !== undefined) ? data.quantity : data;
-                    
+
                     // alert("Success: Quantity changed to " + responseQuantity); // show response from the PHP script.
                     $('#send_' + variationId).addClass('d-none'); // hide the button after submission
                     $('#quantity_' + variationId).val(responseQuantity);
@@ -987,7 +999,7 @@
         function getStocks(variationId, page = 1){
             // Show loader
             $('#stocks_'+variationId).html('<tr><td colspan="3" class="text-center p-3"><div class="spinner-border spinner-border-sm text-primary" role="status"><span class="visually-hidden">Loading...</span></div> <small class="ms-2 text-muted">Loading stocks...</small></td></tr>');
-            
+
             let stocksTable = '';
             let stockPrices = [];
             let params = {
@@ -1041,11 +1053,11 @@
                     }
                     stocksTable = datass;
                     $('#stocks_'+variationId).html(datass);
-                    
+
                     // Create pagination HTML function
                     function createPaginationHtml(pagination, variationId, isHeader = false) {
                         let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
-                        
+
                         if (pagination.current_page > 1) {
                             paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="getStocks(${variationId}, ${pagination.current_page - 1})" title="Previous page" style="line-height: 1;">
                                 <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
@@ -1055,10 +1067,10 @@
                                 <i class="fas fa-chevron-left" style="font-size: 0.7rem;"></i>
                             </button>`;
                         }
-                        
+
                         // Show current/total format for both header and bottom
                         paginationHtml += `<span class="badge bg-secondary" style="font-size: ${isHeader ? '0.7rem' : '0.75rem'};">${pagination.current_page}/${pagination.last_page}</span>`;
-                        
+
                         if (pagination.current_page < pagination.last_page) {
                             paginationHtml += `<button type="button" class="btn btn-sm btn-outline-secondary p-1" onclick="getStocks(${variationId}, ${pagination.current_page + 1})" title="Next page" style="line-height: 1;">
                                 <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
@@ -1068,11 +1080,11 @@
                                 <i class="fas fa-chevron-right" style="font-size: 0.7rem;"></i>
                             </button>`;
                         }
-                        
+
                         paginationHtml += '</div>';
                         return paginationHtml;
                     }
-                    
+
                     // Add pagination controls if pagination data exists
                     if (data.pagination) {
                         // Update header with pagination - include average cost value in the HTML
@@ -1081,7 +1093,7 @@
                         if (costHeader.length) {
                             costHeader.html(`<div class="d-flex justify-content-between align-items-center"><div><small><b>Cost</b> (<b id="average_cost_${variationId}">${averageCostValue}</b>)</small></div><div>${headerPaginationHtml}</div></div>`);
                         }
-                        
+
                         // Add pagination on bottom (after tbody)
                         $('#stocks_pagination_bottom_'+variationId).remove();
                         let bottomPaginationHtml = createPaginationHtml(data.pagination, variationId, false);
@@ -1090,7 +1102,7 @@
                         // If no pagination, just set the average cost normally
                         $(`#average_cost_${variationId}`).text(averageCostValue);
                     }
-                    
+
                     // Update best_price (breakeven price) from server response
                     // Formula: (average_cost + 20) / 0.88 - already calculated server-side
                     if (data.breakeven_price !== undefined && data.breakeven_price > 0) {
@@ -1100,7 +1112,7 @@
                         let breakevenPrice = ((parseFloat(data.average_cost) + 20) / 0.88).toFixed(2);
                         $('#best_price_'+variationId).text(breakevenPrice);
                     }
-                    
+
                     // $('#available_stock_'+variationId).html(count + ' Available');
                 },
                 error: function(xhr) {
@@ -1628,14 +1640,14 @@
                                     <div class="text-center">
                                         <h6 class="mb-0">
                                         <a class="" href="{{url('order').'?sku='}}${variation.sku}&status=2" target="_blank">
-                                            Pending Order Items: ${(variation.pending_orders && variation.pending_orders.length > 0) ? variation.pending_orders.reduce((sum, order) => sum + (order.quantity || 0), 0) : 0} (BM Orders: ${variation.pending_bm_orders ? variation.pending_bm_orders.length || 0 : 0})
+                                            Pending Order Items: ${variation.pending_orders_count !== undefined ? variation.pending_orders_count : ((variation.pending_orders && variation.pending_orders.length > 0) ? variation.pending_orders.reduce((sum, order) => sum + (order.quantity || 0), 0) : 0)} (BM Orders: ${variation.pending_bm_orders ? variation.pending_bm_orders.length || 0 : 0})
                                         </a></h6>
                                         <h6 class="mb-0" id="available_stock_${variation.id}">
                                             <a href="{{url('inventory').'?product='}}${variation.product_id}&storage=${variation.storage}&color=${variation.color}&grade[]=${variation.grade}" target="_blank">
-                                                Available: ${variation.available_stocks.length || 0}
+                                                Available: ${variation.available_stocks_count !== undefined ? variation.available_stocks_count : (variation.available_stocks ? variation.available_stocks.length : 0)}
                                             </a>
                                         </h6>
-                                        <h6 class="mb-0">Difference: ${(variation.available_stocks ? variation.available_stocks.length : 0) - ((variation.pending_orders && variation.pending_orders.length > 0) ? variation.pending_orders.reduce((sum, order) => sum + (order.quantity || 0), 0) : 0)}</h6>
+                                        <h6 class="mb-0">Difference: ${(variation.available_stocks_count !== undefined ? variation.available_stocks_count : (variation.available_stocks ? variation.available_stocks.length : 0)) - (variation.pending_orders_count !== undefined ? variation.pending_orders_count : ((variation.pending_orders && variation.pending_orders.length > 0) ? variation.pending_orders.reduce((sum, order) => sum + (order.quantity || 0), 0) : 0))}</h6>
                                     </div>
 
                                     <button class="btn btn-link" type="button" data-bs-toggle="collapse" data-bs-target="#details_${variation.id}" aria-expanded="false" aria-controls="details_${variation.id}" onClick="getVariationDetails(${variation.id}, ${eurToGbp}, ${m_min_price}, ${m_price})">

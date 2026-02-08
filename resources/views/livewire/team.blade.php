@@ -69,6 +69,30 @@
                         </div>
                     </div>
                     <div class="card-body">
+                        <!-- Status Filter Tabs -->
+                        <ul class="nav nav-tabs mb-3" role="tablist">
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'all' ? 'active' : '' }}"
+                                   href="{{ url('team?status=all') }}">
+                                    <i class="fe fe-users"></i> All Members
+                                    <span class="badge bg-primary ms-1">{{ $total_count }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'active' ? 'active' : '' }}"
+                                   href="{{ url('team?status=active') }}">
+                                    <i class="fe fe-check-circle"></i> Active
+                                    <span class="badge bg-success ms-1">{{ $active_count }}</span>
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link {{ $current_status === 'inactive' ? 'active' : '' }}"
+                                   href="{{ url('team?status=inactive') }}">
+                                    <i class="fe fe-x-circle"></i> Inactive
+                                    <span class="badge bg-danger ms-1">{{ $inactive_count }}</span>
+                                </a>
+                            </li>
+                        </ul>
                         <div class="table-responsive">
                             <table class="table table-bordered table-hover mb-0 text-md-nowrap">
                                 <thead>
@@ -78,7 +102,8 @@
                                         <th><small><b>{{ __('locale.Last Name') }}</b></small></th>
                                         <th><small><b>{{ __('locale.Email') }}</b></small></th>
                                         <th><small><b>Username</b></small></th>
-                                        <th colspan="2"><center><small><b>{{ __('locale.Action') }}</b></small></center></th>
+                                        <th><small><b>2FA Status</b></small></th>
+                                        <th colspan="3"><center><small><b>{{ __('locale.Action') }}</b></small></center></th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -95,7 +120,25 @@
                                             <td>{{$item->last_name}}</td>
                                             <td>{{$item->email}}</td>
                                             <td>{{$item->username}}</td>
+                                            <td>
+                                                <center>
+                                                    @if ($item->google2fa_secret && $item->is_2fa_enabled)
+                                                        <span class="badge bg-success" title="2FA is enabled">Enabled</span>
+                                                    @else
+                                                        <span class="badge bg-warning" title="2FA is not enabled">Not Enabled</span>
+                                                    @endif
+                                                </center>
+                                            </td>
                                             <td><center><a href="edit-member/{{$item->id}}" class="text text-success w-100 vh-100">{{ __('locale.Edit') }}</a></center></td>
+                                            <td>
+                                                <center>
+                                                    @if ($item->google2fa_secret && $item->is_2fa_enabled)
+                                                        <a href="reset-2fa/{{$item->id}}" class="text text-danger w-100 vh-100" title="Click to Reset 2FA" onclick="return confirm('Are you sure you want to reset 2FA for this user?')">Reset 2FA</a>
+                                                    @else
+                                                        <span class="text-muted">-</span>
+                                                    @endif
+                                                </center>
+                                            </td>
                                             <td>
                                                 <center>
                                                     @if ($item->status == 1)

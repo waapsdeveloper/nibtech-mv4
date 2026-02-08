@@ -119,13 +119,16 @@ class ListingController extends Controller
             'listings.currency',
             'listings.marketplace',
             'product',
-            'available_stocks',
-            'pending_orders',
             'pending_bm_orders',
             'storage_id',
             'color_id',
             'grade_id',
-        ]);
+        ])
+        // Only eager load available_stocks and pending_orders if not filtering by available_stock
+        // to avoid duplicate column error when withCount is used
+        ->when(!$request->filled('available_stock'), function ($q) {
+            return $q->with(['available_stocks', 'pending_orders']);
+        });
 
         $query->when($request->filled('reference_id'), function ($q) use ($request) {
             return $q->where('reference_id', $request->input('reference_id'));
@@ -174,24 +177,87 @@ class ListingController extends Controller
                 $verificationQuery->where('process_id', $request->input('topup'));
             });
         })
-        ->when($request->filled('listed_stock'), function ($q) use ($request) {
-            if ((int) $request->input('listed_stock') === 1) {
+        ->when($request->filled('listed_stock') || $request->filled('listed_stock_custom'), function ($q) use ($request) {
+            $listedStock = $request->filled('listed_stock')
+                ? $request->input('listed_stock')
+                : $request->input('listed_stock_custom');
+
+            if ((int) $listedStock === 1) {
                 return $q->where('listed_stock', '>', 0);
             }
 
-            if ((int) $request->input('listed_stock') === 2) {
+            if ((int) $listedStock === 2) {
                 return $q->where('listed_stock', '<=', 0);
             }
+
+            // Handle custom values like >20, <30, >=10, <=50, ranges like 2-4, or just 20
+            if (!in_array($listedStock, ['1', '2', ''])) {
+                $value = trim($listedStock);
+
+                // Range: 2-4 or between 2 and 4
+                if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $value, $range) || preg_match('/^between\s+(\d+)\s+and\s+(\d+)$/i', $value, $range)) {
+                    $min = (int) $range[1];
+                    $max = (int) $range[2];
+                    if ($min > $max) {
+                        [$min, $max] = [$max, $min];
+                    }
+                    return $q->whereBetween('listed_stock', [$min, $max]);
+                }
+
+                // Check for operators
+                if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {
+                    $operator = $matches[1];
+                    $number = (int) $matches[2];
+                    return $q->where('listed_stock', $operator, $number);
+                }
+                // Just a number
+                elseif (is_numeric($value)) {
+                    return $q->where('listed_stock', '=', (int) $value);
+                }
+            }
         })
-        ->when($request->filled('available_stock'), function ($q) use ($request) {
-            if ((int) $request->input('available_stock') === 1) {
+        ->when($request->filled('available_stock') || $request->filled('available_stock_custom'), function ($q) use ($request) {
+            $availableStock = $request->filled('available_stock')
+                ? $request->input('available_stock')
+                : $request->input('available_stock_custom');
+
+            if ((int) $availableStock === 1) {
                 return $q->whereHas('available_stocks')
                     ->withCount(['available_stocks', 'pending_orders'])
                     ->havingRaw('(available_stocks_count - pending_orders_count) > 0');
             }
 
-            if ((int) $request->input('available_stock') === 2) {
+            if ((int) $availableStock === 2) {
                 return $q->whereDoesntHave('available_stocks');
+            }
+
+            // Handle custom values like >20, <30, >=10, <=50, ranges like 2-4, or just 20
+            if (!in_array($availableStock, ['1', '2', ''])) {
+                $value = trim($availableStock);
+
+                // Range: 2-4 or between 2 and 4
+                if (preg_match('/^(\d+)\s*-\s*(\d+)$/', $value, $range) || preg_match('/^between\s+(\d+)\s+and\s+(\d+)$/i', $value, $range)) {
+                    $min = (int) $range[1];
+                    $max = (int) $range[2];
+                    if ($min > $max) {
+                        [$min, $max] = [$max, $min];
+                    }
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw('(available_stocks_count - pending_orders_count) BETWEEN ? AND ?', [$min, $max]);
+                }
+
+                // Check for operators
+                if (preg_match('/^(>=|<=|>|<)(\d+)$/', $value, $matches)) {
+                    $operator = $matches[1];
+                    $number = (int) $matches[2];
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw("(available_stocks_count - pending_orders_count) {$operator} {$number}");
+                }
+                // Just a number
+                elseif (is_numeric($value)) {
+                    return $q->withCount(['available_stocks', 'pending_orders'])
+                        ->havingRaw("(available_stocks_count - pending_orders_count) = " . (int) $value);
+                }
             }
         });
 
@@ -503,21 +569,21 @@ class ListingController extends Controller
     }
     public function get_variation_available_stocks($id){
         $variation = Variation_model::find($id);
-        
+
         // Get pagination parameters
         $page = request('page', 1);
         $perPage = request('per_page', 50); // Default 50 items per page
-        
+
         // Remove restrictive whereHas filter to show ALL available stocks
         // Previously: ->whereHas('latest_listing_or_topup') was limiting results
-        $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1);
-        
+        $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1)->whereHas('latest_closed_listing_or_topup');
+
         // Order by ID descending (latest stocks first)
         $stocks = $stocksQuery->orderByDesc('id')->paginate($perPage, ['*'], 'page', $page);
-        
+
         // Get stock IDs from paginated items (for current page)
         $stockIds = $stocks->pluck('id');
-        
+
         // Get ALL stock IDs for this variation (for average cost calculation)
         $allStockIds = Stock_model::where('variation_id', $id)->where('status', 1)->pluck('id');
 
@@ -525,12 +591,12 @@ class ListingController extends Controller
         $stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
         })->whereIn('stock_id', $stockIds)->pluck('price','stock_id');
-        
+
         // Calculate average cost from ALL stocks (not just current page)
         $all_stock_costs = Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id',1);
         })->whereIn('stock_id', $allStockIds)->pluck('price');
-        
+
         $average_cost = $all_stock_costs->count() > 0 ? $all_stock_costs->average() : 0;
 
         $vendors = Customer_model::whereNotNull('is_vendor')->pluck('last_name','id');
@@ -572,12 +638,12 @@ class ListingController extends Controller
 
         return response()->json([
             'stocks'=>$stocks->items(), // Get items from paginated collection
-            'stock_costs'=>$stock_costs, 
-            'vendors'=>$vendors, 
-            'po'=>$po, 
-            'reference'=>$reference, 
-            'breakeven_price'=>$breakeven_price, 
-            'latest_topup_items'=>$latest_topup_items, 
+            'stock_costs'=>$stock_costs,
+            'vendors'=>$vendors,
+            'po'=>$po,
+            'reference'=>$reference,
+            'breakeven_price'=>$breakeven_price,
+            'latest_topup_items'=>$latest_topup_items,
             'topup_reference'=>$topup_reference,
             'updatedQuantity' => (int)$updatedQuantity,
             'average_cost' => $average_cost, // Server-calculated average cost from ALL stocks
@@ -856,11 +922,11 @@ class ListingController extends Controller
             // Accept both 'stock' and 'quantity' fields for backward compatibility
             $stock = request('stock') ?? request('quantity');
         }
-        
+
         // Check if this is an exact stock set request (from stock formula page)
         $setExactStock = request('set_exact_stock', false);
         $exactStockValue = request('exact_stock_value', null);
-        
+
         if($process_id == null && request('process_id') != null){
             $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
             if($process != null){
@@ -882,7 +948,7 @@ class ListingController extends Controller
 
         // Check for active verification (needed for both quantity calculation and verification record creation)
         $check_active_verification = Process_model::where('process_type_id',21)->where('status',1)->where('id', $process_id)->first();
-        
+
         // If setting exact stock, use the exact value directly
         if($setExactStock && $exactStockValue !== null){
             $new_quantity = (int)$exactStockValue;
@@ -899,14 +965,14 @@ class ListingController extends Controller
                 }
             }
         }
-        
+
         // V1 listing: Skip buffer (buffer only applies to V2 listing)
         $response = $bm->updateOneListing($variation->reference_id,json_encode(['quantity'=>$new_quantity]), null, true);
         if(is_string($response) || is_int($response) || is_null($response)){
             Log::error("Error updating quantity for variation ID $id: $response");
             return $response;
         }
-        
+
         // Check if response is valid object and has quantity property
         $responseQuantity = null;
         if($response && is_object($response) && isset($response->quantity)){
@@ -919,12 +985,12 @@ class ListingController extends Controller
             $responseQuantity = $actualQuantity;
             Log::warning("API response missing quantity property for variation ID $id, fetched actual quantity from API: $actualQuantity (sent: $new_quantity)");
         }
-        
+
         if($responseQuantity != null){
             $oldStock = $variation->listed_stock;
             $variation->listed_stock = $responseQuantity;
             $variation->save();
-            
+
             // Calculate stock change
             if($setExactStock && $exactStockValue !== null){
                 // For exact stock set: calculate the difference
@@ -933,7 +999,7 @@ class ListingController extends Controller
                 // For normal addition: use the stock parameter
                 $stockChange = (int)$stock;
             }
-            
+
             // Distribute stock to marketplaces based on formulas (synchronously)
             if($stockChange != 0 && $this->stockDistributionService !== null){
                 // Call distribution service directly to ensure it completes before response
@@ -944,12 +1010,12 @@ class ListingController extends Controller
                     $responseQuantity, // Pass total stock for formulas that use apply_to: total
                     $setExactStock // Pass flag to ignore remaining stock
                 );
-                
+
                 // Note: Event listener is disabled to prevent double distribution
                 // Distribution is done synchronously above to ensure it completes before response
                 // If you need event logging, add it here without triggering distribution
             }
-            
+
             // Get updated marketplace stocks after distribution
             $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variation->id)
                 ->get()
@@ -959,31 +1025,35 @@ class ListingController extends Controller
         } else {
             $marketplaceStocks = collect();
         }
-        
+
         // If active verification exists, use firstOrNew, otherwise create new
         if($check_active_verification != null){
-            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from
+            // Try to find existing record with process_id, variation_id, null qty_to, and not null qty_from (from zero_listing_verification step)
             $listed_stock_verification = Listed_stock_verification_model::where('process_id', $process_id)
                 ->where('variation_id', $variation->id)
                 ->whereNull('qty_to')
                 ->whereNotNull('qty_from')
                 ->first();
-            
+
             // If not found, create a new one
             if (!$listed_stock_verification) {
                 $listed_stock_verification = new Listed_stock_verification_model();
                 $listed_stock_verification->process_id = $process_id;
                 $listed_stock_verification->variation_id = $variation->id;
+                $listed_stock_verification->qty_from = $previous_qty;
+            } else {
+                // Updating existing zero-record on close: set qty_from = listed at push time (0 after zero) so History shows 0, scanned, qty_to and 0 + scanned vs qty_to (pending) is clear
+                $listed_stock_verification->qty_from = $previous_qty;
             }
         } else {
             $listed_stock_verification = new Listed_stock_verification_model();
             $listed_stock_verification->qty_from = $previous_qty;
         }
-        
+
         $listed_stock_verification->process_id = $process_id;
         $listed_stock_verification->variation_id = $variation->id;
         $listed_stock_verification->pending_orders = $pending_orders;
-        
+
         $listed_stock_verification->qty_change = $stock;
         $listed_stock_verification->qty_to = $responseQuantity ?? 0;
         $listed_stock_verification->admin_id = session('user_id');
@@ -1001,18 +1071,18 @@ class ListingController extends Controller
                 'marketplace_stocks' => $marketplaceStocks->toArray()
             ]);
         }
-        
+
         // For non-AJAX requests, return plain text (backward compatibility)
         return (string)($responseQuantity ?? 0);
     }
-    
+
     /**
      * Add quantity for a specific marketplace
      * Updates marketplace_stock table for the specific marketplace
      */
     public function add_quantity_marketplace($variationId, $marketplaceId){
         $stockToAdd = request('stock');
-        
+
         // Log incoming request for debugging
         Log::info("Marketplace stock add request", [
             'variation_id' => $variationId,
@@ -1021,11 +1091,11 @@ class ListingController extends Controller
             'stock_to_add' => $stockToAdd,
             'all_request_data' => request()->all()
         ]);
-        
+
         if($stockToAdd == null || $stockToAdd == ''){
             return response()->json(['error' => 'Stock value is required'], 400);
         }
-        
+
         $process_id = null;
         if(request('process_id') != null){
             $process = Process_model::where('process_type_id',22)->where('id', request('process_id'))->first();
@@ -1033,19 +1103,19 @@ class ListingController extends Controller
                 $process_id = $process->id;
             }
         }
-        
+
         $variation = Variation_model::find($variationId);
         if(!$variation){
             return response()->json(['error' => 'Variation not found'], 404);
         }
-        
+
         if(!in_array($variation->state, [0,1,2,3])){
             return response()->json(['error' => 'Ad State is not valid for Topup: '.$variation->state], 400);
         }
-        
+
         // Ensure marketplace_id is integer
         $marketplaceId = (int)$marketplaceId;
-        
+
         // Get or create marketplace_stock record
         $marketplaceStock = MarketplaceStockModel::firstOrCreate(
             [
@@ -1057,36 +1127,36 @@ class ListingController extends Controller
                 'admin_id' => session('user_id')
             ]
         );
-        
+
         $previous_qty = $marketplaceStock->listed_stock ?? 0;
         $pending_orders = $variation->pending_orders->sum('quantity');
-        
+
         // Calculate new quantity for this marketplace
         $new_quantity = (int)$previous_qty + (int)$stockToAdd;
         if($new_quantity < 0) {
             $new_quantity = 0;
         }
-        
+
         // Update marketplace stock
         $marketplaceStock->listed_stock = $new_quantity;
         // available_stock will be automatically recalculated by model observer
         $marketplaceStock->admin_id = session('user_id');
         $marketplaceStock->save();
-        
+
         // Calculate total stock across all marketplaces
         $totalStock = MarketplaceStockModel::where('variation_id', $variationId)
             ->sum('listed_stock');
-        
+
         // Update variation.listed_stock to reflect total (for backward compatibility)
         $variation->listed_stock = $totalStock;
         $variation->save();
-        
+
         // Update via API if variation has reference_id (BackMarket integration)
         if($variation->reference_id) {
             $bm = new BackMarketAPIController();
             // V1 listing: Skip buffer (buffer only applies to V2 listing)
             $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $totalStock]), null, true);
-            
+
             if(is_string($apiResponse) || is_int($apiResponse) || is_null($apiResponse)){
                 Log::warning("API update warning for variation ID $variationId: $apiResponse");
                 // Continue even if API update fails - we've updated the database
@@ -1096,7 +1166,7 @@ class ListingController extends Controller
                 $variation->save();
             }
         }
-        
+
         // Create verification record
         $listed_stock_verification = new Listed_stock_verification_model();
         $listed_stock_verification->process_id = $process_id;
@@ -1107,7 +1177,7 @@ class ListingController extends Controller
         $listed_stock_verification->qty_to = $new_quantity;
         $listed_stock_verification->admin_id = session('user_id');
         $listed_stock_verification->save();
-        
+
         Log::info("Marketplace stock update", [
             'variation_id' => $variationId,
             'marketplace_id' => $marketplaceId,
@@ -1116,14 +1186,14 @@ class ListingController extends Controller
             'new_marketplace_qty' => $new_quantity,
             'total_stock' => $totalStock
         ]);
-        
+
         // Return both marketplace stock and total stock
         return response()->json([
             'marketplace_stock' => $new_quantity,
             'total_stock' => $totalStock
         ]);
     }
-    
+
     public function update_price($id){
         $listing = Listing_model::with(['variation', 'marketplace', 'country_id', 'currency'])->find($id);
         if($listing == null){
@@ -1174,7 +1244,7 @@ class ListingController extends Controller
         if (!empty($updateData)) {
             // Capture snapshot BEFORE updating the listing
             $rowSnapshot = $this->captureListingSnapshot($listing);
-            
+
             $listing->fill($updateData);
             $listing->save();
 
@@ -1266,7 +1336,7 @@ class ListingController extends Controller
 
         // Get the listing to retrieve actual values for first-time changes
         $listing = Listing_model::find($listingId);
-        
+
         // If snapshot not provided, capture it now (before any updates)
         if ($rowSnapshot === null) {
             $rowSnapshot = $this->captureListingSnapshot($listing);
@@ -1431,11 +1501,11 @@ class ListingController extends Controller
     }
     public function update_target($id){
         $listing = Listing_model::find($id);
-        
+
         if (!$listing) {
             return response()->json(['error' => 'Listing not found'], 404);
         }
-        
+
         // V1/V2 Pattern: Only update EUR listings (currency_id = 4, country = 73)
         // Safety check: Ensure we're only updating EUR listings (even though get_target_variations filters by country 73)
         if ($listing->currency_id != 4) {
@@ -1444,7 +1514,7 @@ class ListingController extends Controller
                 'currency_id' => $listing->currency_id
             ], 400);
         }
-        
+
         $listing->target_price = request('target');
         $listing->target_percentage = request('percent');
 
@@ -1453,7 +1523,7 @@ class ListingController extends Controller
         // die;
         return $listing;
     }
-    
+
     /**
      * Toggle enable/disable status for a listing
      */
@@ -1462,7 +1532,7 @@ class ListingController extends Controller
         if($listing == null){
             return response()->json(['error' => 'Listing not found'], 404);
         }
-        
+
         // Get the requested status (1 = enabled, 0 = disabled)
         $isEnabled = request('is_enabled');
         if($isEnabled === null){
@@ -1471,14 +1541,14 @@ class ListingController extends Controller
         } else {
             $listing->is_enabled = (int)$isEnabled;
         }
-        
+
         $listing->save();
-        
+
         Log::info("Listing enable/disable toggled", [
             'listing_id' => $id,
             'is_enabled' => $listing->is_enabled
         ]);
-        
+
         return response()->json([
             'success' => true,
             'is_enabled' => $listing->is_enabled,

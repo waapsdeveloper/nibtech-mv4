@@ -183,7 +183,11 @@ class ListedStockVerification extends Component
         $data['colors'] = session('dropdown_data')['colors'];
 
         $process = Process_model::with(['process_stocks'])->find($process_id);
-        $last_ten = Listed_stock_verification_model::where('process_id',$process_id)->orderBy('id','desc')->limit($per_page)->get();
+        $last_ten = Listed_stock_verification_model::where('process_id',$process_id)
+            ->with(['variation', 'admin'])
+            ->orderBy('id','desc')
+            ->limit($per_page)
+            ->get();
         $data['last_ten'] = $last_ten;
 
         $data['scanned_total'] = Process_stock_model::where('process_id',$process_id)->where('admin_id',session('user_id'))->count();
@@ -201,29 +205,45 @@ class ListedStockVerification extends Component
                   ->orWhereNull('qty_from')
                   ->orWhereNull('qty_to');
         })
+        ->with(['variation', 'admin'])
         ->orderByDesc('updated_at')->get();
         $data['changed_listed_stocks'] = $changed_listed_stocks;
         $same_listed_stocks = Listed_stock_verification_model::where(['process_id'=>$process_id])
         ->whereColumn('qty_from', 'qty_to')
+        ->with(['variation', 'admin'])
         ->orderByDesc('updated_at')->get();
         $data['same_listed_stocks'] = $same_listed_stocks;
 
-        $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
+        // Only load all variations if absolutely needed - this can be very slow
+        // $data['all_variations'] = Variation_model::whereNotNull('sku')->get();
+
         $data['process'] = Process_model::find($process_id);
 
         $data['process_id'] = $process_id;
 
-        foreach($data['process']->process_stocks as $process_stock){
-            if($process_stock->stock->status == 2){
-                $process_stock->status = 2;
-                $process_stock->save();
-            }
+        // Optimize process_stocks update - use bulk update instead of loop
+        $process_stock_ids = $data['process']->process_stocks()
+            ->whereHas('stock', function($q) {
+                $q->where('status', 2);
+            })
+            ->where('status', '!=', 2)
+            ->pluck('id');
+
+        if($process_stock_ids->isNotEmpty()) {
+            Process_stock_model::whereIn('id', $process_stock_ids)->update(['status' => 2]);
         }
 
         if(request('show') != null){
-            $stocks = Stock_model::whereIn('id',$data['process']->process_stocks->where('status', 1)->pluck('stock_id')->toArray())->get();
-            // $variations = Variation_model::whereIn('id',$stocks->pluck('variation_id')->toArray())->get();
+            // Optimize stocks query - get stock IDs directly from database instead of loading all process_stocks first
+            $stock_ids = Process_stock_model::where('process_id', $process_id)
+                ->where('status', 1)
+                ->pluck('stock_id');
+            $stocks = Stock_model::whereIn('id', $stock_ids)->get();
+
+            // Get variation IDs more efficiently
             $variation_ids = Process_stock_model::where('process_id', $process_id)->pluck('variation_id')->unique();
+
+            // Load variations with optimized eager loading
             $variations = Variation_model::whereIn('variation.id', $variation_ids)
             ->join('products', 'products.id', '=', 'variation.product_id')
             ->orderBy('products.model', 'asc')
@@ -232,6 +252,42 @@ class ListedStockVerification extends Component
             ->orderBy('variation.grade', 'asc')
             ->select('variation.*')
             ->get();
+
+            // Pre-calculate available and pending stocks using more efficient queries
+            $variation_stats = [];
+
+            // Get available stock counts in one query
+            $available_counts = \DB::table('stock')
+                ->whereIn('variation_id', $variation_ids)
+                ->whereIn('status', [1, 3])
+                ->groupBy('variation_id')
+                ->pluck(\DB::raw('COUNT(*)'), 'variation_id');
+
+            // Get pending order counts in one query
+            $pending_results = \DB::table('order_items')
+                ->join('orders', 'orders.id', '=', 'order_items.order_id')
+                ->whereIn('order_items.variation_id', $variation_ids)
+                ->whereIn('orders.status', [1, 2, 3])
+                ->select('order_items.variation_id', \DB::raw('SUM(order_items.quantity) as total_quantity'))
+                ->groupBy('order_items.variation_id')
+                ->get();
+
+            // Convert to array for easy lookup
+            $pending_counts = [];
+            foreach($pending_results as $result) {
+                $pending_counts[$result->variation_id] = $result->total_quantity;
+            }
+
+            foreach($variations as $variation) {
+                $available_count = $available_counts[$variation->id] ?? 0;
+                $pending_count = $pending_counts[$variation->id] ?? 0;
+                $variation_stats[$variation->id] = [
+                    'available_stock_count' => $available_count - $pending_count,
+                    'pending_orders_count' => $pending_count
+                ];
+            }
+            $data['variation_stats'] = $variation_stats;
+
             $data['variations'] = $variations;
             $data['stocks'] = $stocks;
 

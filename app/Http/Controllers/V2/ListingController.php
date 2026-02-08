@@ -281,6 +281,11 @@ class ListingController extends Controller
             if ((int) $request->input('available_stock') === 2) {
                 return $q->whereDoesntHave('available_stocks');
             }
+        })
+        ->when($request->filled('stock_mismatch'), function ($q) {
+            // Show only variations where listed stock ≠ available stock (Backmarket or total)
+            return $q->withCount('available_stocks')
+                ->havingRaw('variation.listed_stock != available_stocks_count OR (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1) != available_stocks_count');
         });
 
         $state = $request->input('state');
@@ -1177,52 +1182,105 @@ class ListingController extends Controller
             }
         }
 
-        // FIX: For manual pushes, add to manual_adjustment column instead of updating API
-        // This keeps manual adjustments separate from API-synced stock
-        // listed_stock = sum of marketplace stocks (from API/distribution)
-        // manual_adjustment = manual pushes (separate tracking)
-        // Total = listed_stock + manual_adjustment
-        // This keeps manual adjustments separate from API-synced stock
-        // Manual pushes go to marketplace 1 (BackMarket) only
         $stockChange = (int)$stock; // The pushed value (e.g., +1 or -1)
         
         // EDGE CASE: Prevent total stock from going below zero
-        // If user tries to subtract more than available, limit the change so total becomes 0 (not negative)
-        // Example: current_total = 3, user enters -10 → adjust to -3 so total becomes 0
         if($stockChange < 0) {
-            $maxAllowedSubtraction = -$current_listed_stock; // Maximum negative change (e.g., -3 if current is 3)
-            $stockChange = max($stockChange, $maxAllowedSubtraction); // Limit to -3, not -10
+            $maxAllowedSubtraction = -$current_listed_stock;
+            $stockChange = max($stockChange, $maxAllowedSubtraction);
         }
         
+        $backmarketApiQuantity = null; // For badge update (only set when we push to API)
+        
+        // Get or create marketplace stock for BackMarket (marketplace_id = 1)
+        $marketplace1Stock = MarketplaceStockModel::firstOrCreate(
+            [
+                'variation_id' => $variation->id,
+                'marketplace_id' => 1
+            ],
+            [
+                'listed_stock' => 0,
+                'manual_adjustment' => 0,
+                'locked_stock' => 0,
+                'admin_id' => session('user_id') ?? 1
+            ]
+        );
+        
         if($stockChange != 0){
-                // Get or create marketplace stock for BackMarket (marketplace_id = 1)
-                $marketplace1Stock = MarketplaceStockModel::firstOrCreate(
-                    [
-                        'variation_id' => $variation->id,
-                        'marketplace_id' => 1
-                    ],
-                    [
-                        'listed_stock' => 0,
-                        'manual_adjustment' => 0,
-                        'locked_stock' => 0,
-                        'admin_id' => session('user_id') ?? 1
-                    ]
-                );
+            // Push to Backmarket API when variation has reference_id (like V1)
+            if($variation->reference_id) {
+                $bmCurrent = (int)($marketplace1Stock->listed_stock ?? 0) + (int)($marketplace1Stock->manual_adjustment ?? 0);
+                $quantityToPushToApi = $bmCurrent + $stockChange;
+                $quantityToPushToApi = max(0, $quantityToPushToApi);
                 
-                // Add the pushed value to manual_adjustment (separate from listed_stock)
+                Log::info("V2 add_quantity: Calling Backmarket API updateOneListing", [
+                    'variation_id' => $id,
+                    'reference_id' => $variation->reference_id,
+                    'quantity' => $quantityToPushToApi,
+                    'stock_change' => $stockChange
+                ]);
+                $response = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $quantityToPushToApi]), null, true);
+                Log::info("V2 add_quantity: Backmarket API updateOneListing completed", [
+                    'variation_id' => $id,
+                    'response_type' => is_object($response) ? 'object' : gettype($response),
+                    'has_quantity' => is_object($response) && isset($response->quantity)
+                ]);
+                
+                if(is_string($response) || is_int($response) || is_null($response)){
+                    Log::error("V2 add_quantity: Backmarket API error for variation ID $id", ['response' => $response]);
+                    return response()->json([
+                        'error' => 'Failed to update Backmarket: ' . (is_string($response) ? $response : 'API error')
+                    ], 500);
+                }
+                
+                $responseQuantity = null;
+                $quantityFromResponse = is_object($response) ? ($response->quantity ?? null) : (is_array($response) ? ($response['quantity'] ?? null) : null);
+                if($quantityFromResponse !== null){
+                    $responseQuantity = (int)$quantityFromResponse;
+                } else {
+                    $variation->refresh();
+                    $responseQuantity = (int)($variation->update_qty($bm) ?? $quantityToPushToApi);
+                    Log::warning("V2 add_quantity: API response missing quantity, fetched: $responseQuantity");
+                }
+                
+                $backmarketApiQuantity = $responseQuantity;
+                
+                $listedStockBefore = (int)($marketplace1Stock->listed_stock ?? 0);
+                // Sync DB: listed_stock = API response, clear manual_adjustment for Backmarket
+                $marketplace1Stock->listed_stock = $responseQuantity;
+                $marketplace1Stock->manual_adjustment = 0;
+                $marketplace1Stock->admin_id = session('user_id') ?? 1;
+                $marketplace1Stock->save();
+                
+                \App\Models\V2\MarketplaceStockHistory::create([
+                    'marketplace_stock_id' => $marketplace1Stock->id,
+                    'variation_id' => $variation->id,
+                    'marketplace_id' => 1,
+                    'listed_stock_before' => $listedStockBefore,
+                    'listed_stock_after' => $responseQuantity,
+                    'locked_stock_before' => $marketplace1Stock->locked_stock ?? 0,
+                    'locked_stock_after' => $marketplace1Stock->locked_stock ?? 0,
+                    'available_stock_before' => $marketplace1Stock->available_stock ?? 0,
+                    'available_stock_after' => $marketplace1Stock->available_stock ?? 0,
+                    'quantity_change' => $stockChange,
+                    'change_type' => 'api_sync',
+                    'admin_id' => session('user_id') ?? 1,
+                    'notes' => "Pushed to Backmarket API: " . ($stockChange > 0 ? '+' : '') . $stockChange
+                ]);
+            } else {
+                // No reference_id: store in manual_adjustment only (fallback)
                 $oldManualAdjustment = (int)($marketplace1Stock->manual_adjustment ?? 0);
                 $newManualAdjustment = $oldManualAdjustment + $stockChange;
                 $marketplace1Stock->manual_adjustment = $newManualAdjustment;
                 $marketplace1Stock->admin_id = session('user_id') ?? 1;
                 $marketplace1Stock->save();
                 
-                // Log to history
                 \App\Models\V2\MarketplaceStockHistory::create([
                     'marketplace_stock_id' => $marketplace1Stock->id,
                     'variation_id' => $variation->id,
                     'marketplace_id' => 1,
                     'listed_stock_before' => $marketplace1Stock->listed_stock,
-                    'listed_stock_after' => $marketplace1Stock->listed_stock, // listed_stock doesn't change
+                    'listed_stock_after' => $marketplace1Stock->listed_stock,
                     'locked_stock_before' => $marketplace1Stock->locked_stock ?? 0,
                     'locked_stock_after' => $marketplace1Stock->locked_stock ?? 0,
                     'available_stock_before' => $marketplace1Stock->available_stock ?? 0,
@@ -1230,8 +1288,9 @@ class ListingController extends Controller
                     'quantity_change' => $stockChange,
                     'change_type' => 'manual',
                     'admin_id' => session('user_id') ?? 1,
-                    'notes' => "Manual stock adjustment: " . ($stockChange > 0 ? '+' : '') . $stockChange . " (pushed value)"
+                    'notes' => "Manual stock adjustment (no Backmarket ref): " . ($stockChange > 0 ? '+' : '') . $stockChange
                 ]);
+            }
         }
 
         // Get updated marketplace stocks (including manual_adjustment) AFTER saving
@@ -1290,14 +1349,18 @@ class ListingController extends Controller
         $listed_stock_verification->save();
 
         // Always return JSON response for V2 API
-        // Include distribution preview for instant frontend feedback
-        return response()->json([
+        // Include backmarket_api_quantity when we pushed to API - frontend uses this to update badge without extra fetch
+        $responseData = [
             'quantity' => $calculatedTotalStock,
-            'total_stock' => $calculatedTotalStock, // Total = listed_stock + manual_adjustment
+            'total_stock' => $calculatedTotalStock,
             'marketplace_stocks' => $marketplaceStocks->toArray(),
-            'distribution_preview' => $distributionPreview, // Preview of how stock would be distributed (for instant UI update)
-            'stock_change' => $stockChange // The pushed value for reference
-        ]);
+            'distribution_preview' => $distributionPreview,
+            'stock_change' => $stockChange
+        ];
+        if ($backmarketApiQuantity !== null) {
+            $responseData['backmarket_api_quantity'] = $backmarketApiQuantity;
+        }
+        return response()->json($responseData);
     }
 
     /**
@@ -2191,13 +2254,17 @@ class ListingController extends Controller
     public function getMarketplaceStockComparison(int $variationId)
     {
         try {
-            $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id'])->find($variationId);
+            // Load available_stocks so "available" matches variation card (inventory count, not marketplace_stock.available_stock)
+            $variation = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id', 'available_stocks'])->find($variationId);
             if (!$variation) {
                 return response()->json([
                     'success' => false,
                     'error' => 'Variation not found'
                 ], 404);
             }
+
+            // Available stock = physical inventory count (same as variation card) – same for all marketplaces
+            $variationAvailableCount = ($variation->available_stocks ?? collect())->count();
 
             // Get all marketplaces
             $marketplaces = Marketplace_model::all()->keyBy('id');
@@ -2223,7 +2290,6 @@ class ListingController extends Controller
             // Build comparison data
             $comparisonData = [];
             $totalListedStock = 0;
-            $totalAvailableStock = 0;
             $totalLockedStock = 0;
 
             foreach ($marketplaces as $marketplaceId => $marketplace) {
@@ -2231,10 +2297,8 @@ class ListingController extends Controller
                 $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
                 
                 $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
-                // Stock lock system removed - available stock = listed stock
-                $availableStock = $marketplaceStock && $marketplaceStock->available_stock !== null 
-                    ? (int) $marketplaceStock->available_stock 
-                    : max(0, $listedStock);
+                // Available stock comes from inventory (variation-level), same as variation card – do NOT use marketplace_stock.available_stock
+                $availableStock = $variationAvailableCount;
 
                 // Get listing count for this marketplace
                 $listingCount = Listing_model::where('variation_id', $variationId)
@@ -2252,9 +2316,10 @@ class ListingController extends Controller
                 ];
 
                 $totalListedStock += $listedStock;
-                $totalAvailableStock += $availableStock;
                 // Stock lock system removed - locked stock always 0
             }
+
+            $totalAvailableStock = $variationAvailableCount;
 
             // Get total stock from variation (this is the total stock we have in the system)
             $totalStock = (int) ($variation->listed_stock ?? 0);
@@ -2292,7 +2357,7 @@ class ListingController extends Controller
                 'marketplaces' => $comparisonData,
                 'totals' => [
                     'listed_stock' => $totalListedStock, // Sum of all marketplace listed stocks
-                    'available_stock' => $totalAvailableStock, // Sum of all marketplace available stocks
+                    'available_stock' => $totalAvailableStock, // Physical inventory count (same as variation card)
                     'locked_stock' => 0 // Stock lock system removed
                 ]
             ]);
