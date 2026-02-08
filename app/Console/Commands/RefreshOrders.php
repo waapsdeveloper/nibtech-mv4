@@ -2,18 +2,13 @@
 
 namespace App\Console\Commands;
 
-use App\Jobs\UpdateOrderInDB;
-
 use App\Http\Controllers\BackMarketAPIController;
-
+use App\Jobs\SyncShippedOrderToBackMarketJob;
 use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
-
-
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
 class RefreshOrders extends Command
@@ -86,6 +81,41 @@ class RefreshOrders extends Command
             if ($statusCorrected > 0) {
                 $this->info("Status corrected to pending (2): {$statusCorrected} order(s) to match Back Market.");
             }
+
+            // We shipped (IMEI + invoice) but BM still shows pending: post to Back Market in a job to update their status.
+            $shippedSyncDispatched = 0;
+            foreach ($resArray1 as $orderObj) {
+                if (empty($orderObj) || empty($orderObj->order_id)) {
+                    continue;
+                }
+                $referenceId = $orderObj->order_id;
+                $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+                $order = Order_model::where('reference_id', $referenceId)
+                    ->where('marketplace_id', $marketplaceId)
+                    ->where('order_type_id', 3)
+                    ->first();
+                if (!$order) {
+                    continue;
+                }
+                if (!in_array((int) $order->status, [3, 6], true)) {
+                    continue;
+                }
+                $hasImeiAttached = Order_item_model::where('order_id', $order->id)
+                    ->where('stock_id', '>', 0)
+                    ->exists();
+                if (!$hasImeiAttached) {
+                    continue;
+                }
+                $hasInvoice = $order->processed_at !== null;
+                if (!$hasInvoice || !$order->tracking_number) {
+                    continue;
+                }
+                SyncShippedOrderToBackMarketJob::dispatch($order->id);
+                $shippedSyncDispatched++;
+            }
+            if ($shippedSyncDispatched > 0) {
+                $this->info("Dispatched {$shippedSyncDispatched} job(s) to sync shipped status to Back Market.");
+            }
         }
 
             $modification = false;
@@ -101,6 +131,7 @@ class RefreshOrders extends Command
             echo 'No orders have been modified in 3 months!';
         }
 
+        return 0;
     }
 
     private function validateOrderlines($order_id, $sku, $bm)
