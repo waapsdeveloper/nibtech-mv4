@@ -190,6 +190,9 @@ class Order extends Component
         ->when(request('status') != '', function ($q) {
             return $q->where('orders.status', request('status'));
         })
+        ->when(request('status_zero') == 1, function ($q) {
+            return $q->where('orders.status', 0);
+        })
         ->when(request('adm') != '', function ($q) {
             if(request('adm') == 0){
                 return $q->where('orders.processed_by', null);
@@ -511,6 +514,9 @@ class Order extends Component
         ->when(request('status') != '', function ($q) {
             return $q->where('status', request('status'));
         })
+        ->when(request('status_zero') == 1, function ($q) {
+            return $q->where('status', 0);
+        })
         ->when(request('adm') != '', function ($q) {
             if(request('adm') == 0){
                 return $q->where('processed_by', null);
@@ -617,6 +623,9 @@ class Order extends Component
         })
         ->when(request('status'), function ($q) {
             return $q->where('orders.status', request('status'));
+        })
+        ->when(request('status_zero') == 1, function ($q) {
+            return $q->where('orders.status', 0);
         })
         ->when(request('status') == 3 && request('stock') == 0, function ($query) {
             return $query->having('available_stock', '=', 0);
@@ -6128,12 +6137,26 @@ class Order extends Component
         }
         if($data == true){
             return $orderObj;
-        }else{
-            return redirect()->back();
         }
-
-
-
+        $wantsJson = request()->ajax() || request()->wantsJson() || request('ajax') == 1;
+        if ($wantsJson) {
+            $order = Order_model::with(['order_items', 'order_items.stock', 'order_items.variation'])->where('reference_id', $order_id)->first();
+            if (!$order) {
+                return response()->json(['success' => false, 'error' => 'Order not found'], 404);
+            }
+            $order_statuses = Order_status_model::pluck('name', 'id');
+            $admins = Admin_model::pluck('first_name', 'id');
+            $html = view('livewire.order.partials.order-imei-cell', [
+                'order' => $order,
+                'order_statuses' => $order_statuses,
+                'admins' => $admins,
+            ])->render();
+            return response()->json(['success' => true, 'order_id' => $order->id, 'html' => $html]);
+        }
+        // Redirect back to order list with same filters (preserve query string)
+        $query = request()->query();
+        $orderListUrl = count($query) > 0 ? url('order') . '?' . http_build_query($query) : url('order');
+        return redirect()->to($orderListUrl);
     }
     public function updateBMOrdersAll($page = 1)
     {

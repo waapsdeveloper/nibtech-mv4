@@ -50,6 +50,9 @@ class OrdersExport
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
             })
+            ->when(request('status_zero') == 1, function ($q) {
+                return $q->where('orders.status', 0);
+            })
             ->when(request('order_id') != '', function ($q) {
                 if (str_contains(request('order_id'), '<')) {
                     $order_ref = str_replace('<', '', request('order_id'));
