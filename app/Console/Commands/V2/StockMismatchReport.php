@@ -33,16 +33,8 @@ class StockMismatchReport extends Command
         $mismatchVariations = $this->getTopup9014VerificationMismatches();
         $logger = Log::channel('stock_mismatch_report');
         $logger->info('========== STOCK MISMATCH REPORT (Topup 9014 vs next verification) ' . now()->toDateTimeString() . ' ==========');
-        $toLog = $mismatchVariations->filter(function ($row) {
-            if (! empty($row->edited_by_admin)) {
-                return false;
-            }
-            if (isset($row->difference, $row->total_stock) && $row->difference <= $row->total_stock) {
-                return false;
-            }
-            return true;
-        });
-        $logger->info('Variations where qty_to (after 9014) != qty_from (before next record) and (available - pending) > total_stock: ' . $toLog->count() . ' (omitted: edited by admin, or (available - pending) <= total stock)');
+        $toLog = $mismatchVariations;
+        $logger->info('Variations (admin_id 56 only, verification history last 5 days) where qty_to (after 9014) != qty_from (before next record): ' . $toLog->count());
         $logger->info('');
         foreach ($toLog as $row) {
             $diffStr = ($row->mismatch_amount >= 0 ? '+' : '') . $row->mismatch_amount;
@@ -60,7 +52,7 @@ class StockMismatchReport extends Command
      * Variations that have a topup ref 9014 record and immediately after a verification record,
      * where topup.qty_to != next_record.qty_from.
      *
-     * @return \Illuminate\Support\Collection<object{variation_id: int, sku: string|null, topup_id: int, topup_qty_to: int, next_id: int, next_qty_from: int, mismatch_amount: int, edited_by_admin: bool, available_count: int, pending: int, difference: int, total_stock: int}>
+     * @return \Illuminate\Support\Collection<object{variation_id: int, sku: string|null, topup_id: int, topup_qty_to: int, next_id: int, next_qty_from: int, mismatch_amount: int, available_count: int, pending: int, difference: int, total_stock: int}>
      */
     private function getTopup9014VerificationMismatches(): \Illuminate\Support\Collection
     {
@@ -69,8 +61,10 @@ class StockMismatchReport extends Command
             return collect();
         }
 
+        $since = now()->subDays(5);
         $topupRecords = Listed_stock_verification_model::query()
             ->whereIn('process_id', $processIds9014)
+            ->where('created_at', '>=', $since)
             ->orderBy('variation_id')
             ->orderBy('id')
             ->get();
@@ -80,8 +74,21 @@ class StockMismatchReport extends Command
             return collect();
         }
 
+        $variationIdsWithAdmin56 = Listed_stock_verification_model::query()
+            ->whereIn('variation_id', $variationIds)
+            ->where('admin_id', 56)
+            ->where('created_at', '>=', $since)
+            ->pluck('variation_id')
+            ->unique()
+            ->values();
+        $variationIds = $variationIds->intersect($variationIdsWithAdmin56)->values();
+        if ($variationIds->isEmpty()) {
+            return collect();
+        }
+
         $allForVariations = Listed_stock_verification_model::query()
             ->whereIn('variation_id', $variationIds)
+            ->where('created_at', '>=', $since)
             ->orderBy('variation_id')
             ->orderBy('id')
             ->get();
@@ -114,7 +121,6 @@ class StockMismatchReport extends Command
                     $variation = $variations->get($variationId);
                     $topupQty = (int) $current->qty_to;
                     $nextQty = (int) $next->qty_from;
-                    $editedByAdmin = $sorted->where('id', '>', $current->id)->contains('admin_id', 1);
                     $availableCount = (int) ($variation->available_stocks_count ?? 0);
                     $pending = (int) $variation->pending_orders->sum('quantity');
                     $difference = $availableCount - $pending;
@@ -127,7 +133,6 @@ class StockMismatchReport extends Command
                         'next_id' => $next->id,
                         'next_qty_from' => $nextQty,
                         'mismatch_amount' => $topupQty - $nextQty,
-                        'edited_by_admin' => $editedByAdmin,
                         'available_count' => $availableCount,
                         'pending' => $pending,
                         'difference' => $difference,
