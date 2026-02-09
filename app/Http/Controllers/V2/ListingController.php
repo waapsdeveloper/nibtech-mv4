@@ -1364,6 +1364,45 @@ class ListingController extends Controller
     }
 
     /**
+     * Set listed stock to match available (physical) count. Admin only.
+     * Computes delta = available - current_total and pushes via add_quantity.
+     */
+    public function set_listed_available($id)
+    {
+        if ((int) session('user_id') !== 1) {
+            return response()->json(['error' => 'Unauthorized. Admin only.'], 403);
+        }
+
+        $variation = Variation_model::with('available_stocks')->find($id);
+        if (!$variation) {
+            return response()->json(['error' => 'Variation not found'], 404);
+        }
+
+        $currentTotalListedStock = MarketplaceStockModel::where('variation_id', $variation->id)->sum('listed_stock');
+        $currentTotalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)->sum('manual_adjustment');
+        $currentTotal = (int) $currentTotalListedStock + (int) $currentTotalManualAdjustment;
+        if ($currentTotal === 0 && $currentTotalListedStock == 0 && $currentTotalManualAdjustment == 0) {
+            $currentTotal = (int) ($variation->listed_stock ?? 0);
+        }
+
+        $availableCount = $variation->available_stocks->count();
+        $delta = $availableCount - $currentTotal;
+
+        if ($delta === 0) {
+            return response()->json([
+                'total_stock' => $currentTotal,
+                'quantity' => $currentTotal,
+                'marketplace_stocks' => [],
+                'stock_change' => 0,
+                'no_change' => true,
+            ]);
+        }
+
+        request()->merge(['stock' => (string) $delta]);
+        return $this->add_quantity($id, $delta, null, false);
+    }
+
+    /**
      * Get listing history for a specific listing
      */
     public function get_listing_history($listingId, Request $request)
