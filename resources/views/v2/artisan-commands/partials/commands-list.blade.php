@@ -48,6 +48,14 @@
                     <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
                 </div>
                 @endif
+                {{-- Log file link (e.g. for reports that write to a specific log) --}}
+                @if(!empty($command['log_file']))
+                <div class="mb-3">
+                    <a href="{{ route('v2.logs.log-file', ['file' => $command['log_file']]) }}" class="btn btn-outline-secondary btn-sm" target="_blank">
+                        <i class="fe fe-file-text me-1"></i>View report log ({{ $command['log_file'] }})
+                    </a>
+                </div>
+                @endif
                 {{-- Documentation Links --}}
                 @if(!empty($command['docs']))
                 <div class="mb-3">
