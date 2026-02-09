@@ -34,7 +34,7 @@ class StockMismatchReport extends Command
         $logger = Log::channel('stock_mismatch_report');
         $logger->info('========== STOCK MISMATCH REPORT (Topup 9014 vs next verification) ' . now()->toDateTimeString() . ' ==========');
         $toLog = $mismatchVariations;
-        $logger->info('Variations (admin_id 56 only, verification history last 5 days) where qty_to (after 9014) != qty_from (before next record): ' . $toLog->count());
+        $logger->info('Variations with verification changes by admin_id 56 in the last week where qty_to (after 9014) != qty_from (before next record): ' . $toLog->count());
         $logger->info('');
         foreach ($toLog as $row) {
             $diffStr = ($row->mismatch_amount >= 0 ? '+' : '') . $row->mismatch_amount;
@@ -49,40 +49,27 @@ class StockMismatchReport extends Command
     }
 
     /**
-     * Variations that have a topup ref 9014 record and immediately after a verification record,
-     * where topup.qty_to != next_record.qty_from.
+     * From all variations that have verification changes by admin_id 56 in the last week:
+     * find 9014 topup + next record pairs where topup.qty_to != next.qty_from.
      *
      * @return \Illuminate\Support\Collection<object{variation_id: int, sku: string|null, topup_id: int, topup_qty_to: int, next_id: int, next_qty_from: int, mismatch_amount: int, available_count: int, pending: int, difference: int, total_stock: int}>
      */
     private function getTopup9014VerificationMismatches(): \Illuminate\Support\Collection
     {
-        $processIds9014 = Process_model::where('reference_id', '9014')->pluck('id');
-        if ($processIds9014->isEmpty()) {
-            return collect();
-        }
+        $since = now()->subDays(7);
 
-        $since = now()->subDays(5);
-        $topupRecords = Listed_stock_verification_model::query()
-            ->whereIn('process_id', $processIds9014)
-            ->where('created_at', '>=', $since)
-            ->orderBy('variation_id')
-            ->orderBy('id')
-            ->get();
-
-        $variationIds = $topupRecords->pluck('variation_id')->unique()->values();
-        if ($variationIds->isEmpty()) {
-            return collect();
-        }
-
-        $variationIdsWithAdmin56 = Listed_stock_verification_model::query()
-            ->whereIn('variation_id', $variationIds)
+        $variationIds = Listed_stock_verification_model::query()
             ->where('admin_id', 56)
             ->where('created_at', '>=', $since)
             ->pluck('variation_id')
             ->unique()
             ->values();
-        $variationIds = $variationIds->intersect($variationIdsWithAdmin56)->values();
         if ($variationIds->isEmpty()) {
+            return collect();
+        }
+
+        $processIds9014 = Process_model::where('reference_id', '9014')->pluck('id');
+        if ($processIds9014->isEmpty()) {
             return collect();
         }
 
