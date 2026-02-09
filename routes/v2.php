@@ -60,6 +60,7 @@ Route::prefix('v2')->group(function () {
     
     // V2 Listing API routes
     Route::post('listings/add_quantity/{id}', [V2ListingController::class, 'add_quantity'])->name('v2.listing.add_quantity');
+    Route::post('listings/set_listed_available/{id}', [V2ListingController::class, 'set_listed_available'])->name('v2.listing.set_listed_available');
     Route::get('listings/get_listing_history/{id}', [V2ListingController::class, 'get_listing_history'])->name('v2.listing.get_listing_history');
     Route::post('listings/record_change', [V2ListingController::class, 'record_listing_change'])->name('v2.listing.record_change');
     Route::post('listings/update_price/{id}', [V2ListingController::class, 'update_price'])->name('v2.listing.update_price');

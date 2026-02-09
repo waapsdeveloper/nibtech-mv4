@@ -39,6 +39,65 @@
             pushButton.removeClass('d-none');
         });
 
+        // "Set listed = available" button (admin only)
+        $(document).on('click', '.set-listed-available-btn', function() {
+            const btn = $(this);
+            const variationId = btn.data('variation-id');
+            const url = btn.data('url');
+            const currentTotal = parseFloat($('#total_stock_' + variationId).val()) || 0;
+
+            if (!url || !variationId) return;
+
+            const spinner = $('#set_listed_spinner_' + variationId);
+            const successEl = $('#set_listed_success_' + variationId);
+            const errorEl = $('#set_listed_error_' + variationId);
+            successEl.addClass('d-none').text('');
+            errorEl.addClass('d-none').text('');
+            spinner.removeClass('d-none');
+            btn.prop('disabled', true);
+
+            const token = $('input[name="_token"]').val() || $('meta[name="csrf-token"]').attr('content');
+
+            $.ajax({
+                type: 'POST',
+                url: url,
+                data: { _token: token },
+                dataType: 'json',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Accept': 'application/json' },
+                success: function(response) {
+                    spinner.addClass('d-none');
+                    btn.prop('disabled', false);
+
+                    const totalStock = parseFloat(response.total_stock) || parseFloat(response.quantity) || 0;
+                    $('#total_stock_' + variationId).val(totalStock);
+                    if (response.no_change) {
+                        successEl.removeClass('d-none').text('Already in sync.');
+                    } else {
+                        successEl.removeClass('d-none').text('Listed set to ' + totalStock + ' (matches available).');
+                        if (response.marketplace_stocks && Object.keys(response.marketplace_stocks).length) {
+                            updateMarketplaceStockDisplays(variationId, response.marketplace_stocks);
+                        }
+                        const listingTotalEl = $('#listing_total_quantity_' + variationId);
+                        if (listingTotalEl.length) listingTotalEl.text(totalStock);
+                        if (typeof window.fetchBackmarketStockQuantity === 'function' && typeof window.updateBackmarketStockBadge === 'function') {
+                            window.fetchBackmarketStockQuantity(variationId, 1).then(function(result) {
+                                if (result !== null) window.updateBackmarketStockBadge(variationId, 1, result);
+                            });
+                        }
+                        btn.closest('.d-flex.align-items-center.gap-1').fadeOut(400);
+                    }
+                    setTimeout(function() { successEl.addClass('d-none').text(''); }, 4000);
+                },
+                error: function(jqXHR) {
+                    spinner.addClass('d-none');
+                    btn.prop('disabled', false);
+                    const msg = (jqXHR.responseJSON && jqXHR.responseJSON.error) ? jqXHR.responseJSON.error : (jqXHR.statusText || 'Request failed');
+                    errorEl.removeClass('d-none').text(msg);
+                    setTimeout(function() { errorEl.addClass('d-none').text(''); }, 5000);
+                }
+            });
+        });
+
         // Handle form submission
         $(document).on('submit', '[id^="add_qty_total_"]', function(e) {
             e.preventDefault();

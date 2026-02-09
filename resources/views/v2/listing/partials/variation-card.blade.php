@@ -143,6 +143,23 @@
                 'process_id' => $process_id ?? null
             ])
 
+            @if (session('user_id') == 1 && $totalStock != $availableCount)
+                <div class="d-flex align-items-center gap-1">
+                    <button type="button"
+                            class="btn btn-sm btn-outline-warning set-listed-available-btn"
+                            data-variation-id="{{ $variationId }}"
+                            data-url="{{ url('v2/listings/set_listed_available/' . $variationId) }}"
+                            data-current-total="{{ $totalStock }}"
+                            data-available-count="{{ $availableCount }}"
+                            title="Set listed stock to match available ({{ $availableCount }})">
+                        <i class="fas fa-sync-alt me-1"></i>Set listed = available
+                    </button>
+                    <span class="text-muted small d-none" id="set_listed_spinner_{{ $variationId }}"><span class="spinner-border spinner-border-sm" role="status"></span></span>
+                    <span class="text-success small d-none" id="set_listed_success_{{ $variationId }}"></span>
+                    <span class="text-danger small d-none" id="set_listed_error_{{ $variationId }}"></span>
+                </div>
+            @endif
+
             {{-- Listing Total Quantity and Average Cost --}}
             <div class="d-flex flex-row align-items-center gap-2" style="font-size: 0.85rem;">
                 {{-- <div class="text-muted">
