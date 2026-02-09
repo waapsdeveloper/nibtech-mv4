@@ -8,6 +8,7 @@ use App\Models\Process_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
 class StockMismatchReport extends Command
@@ -22,6 +23,13 @@ class StockMismatchReport extends Command
     {
         $limit = (int) $this->option('limit');
         $page = (int) $this->option('page');
+
+        $logPath = storage_path('logs/stock_mismatch_report.log');
+        $logDir = dirname($logPath);
+        if (!File::isDirectory($logDir)) {
+            File::makeDirectory($logDir, 0755, true);
+        }
+        $this->line('Log file: ' . $logPath);
 
         $query = Variation_model::query()
             ->with(['product', 'available_stocks', 'pending_orders'])
@@ -59,7 +67,14 @@ class StockMismatchReport extends Command
         $logger->info('');
         $logger->info('========== END REPORT ==========');
 
+        $exists = File::exists($logPath);
         $this->info("Report written to storage/logs/stock_mismatch_report.log ({$variations->count()} items, total matching: {$total}).");
+        $this->line('Full path: ' . $logPath);
+        if ($exists) {
+            $this->line('File exists: yes, size ' . File::size($logPath) . ' bytes.');
+        } else {
+            $this->warn('File was not created. Check write permissions on storage/logs/');
+        }
 
         return 0;
     }
