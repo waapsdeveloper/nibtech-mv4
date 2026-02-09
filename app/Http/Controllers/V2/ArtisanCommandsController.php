@@ -474,6 +474,34 @@ class ArtisanCommandsController extends Controller
                 'scheduled' => 'Every 5 minutes'
             ],
             [
+                'signature' => 'listing:stock-mismatch-report',
+                'name' => 'Stock Mismatch Report',
+                'description' => 'Report variations where listed stock ≠ available stock (same as stock_mismatch=1 on listings). Writes to storage/logs/stock_mismatch_report.log.',
+                'category' => 'Listing',
+                'log_file' => 'stock_mismatch_report.log',
+                'options' => [
+                    'page' => [
+                        'label' => 'Page',
+                        'type' => 'number',
+                        'placeholder' => '1',
+                        'default' => '1',
+                        'required' => false
+                    ],
+                    'limit' => [
+                        'label' => 'Limit (0 = all, max 500)',
+                        'type' => 'number',
+                        'placeholder' => '0',
+                        'default' => '0',
+                        'required' => false
+                    ]
+                ],
+                'examples' => [
+                    'php artisan listing:stock-mismatch-report --page=1',
+                    'php artisan listing:stock-mismatch-report --page=35',
+                    'php artisan listing:stock-mismatch-report --limit=50'
+                ]
+            ],
+            [
                 'signature' => 'refresh:latest',
                 'name' => 'Refresh Latest Care Records',
                 'description' => 'Sync latest care/replacement records from BackMarket API. Runs every 5 minutes via scheduler.',
