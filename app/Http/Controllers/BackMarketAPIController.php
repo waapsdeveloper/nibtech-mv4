@@ -915,22 +915,22 @@ class BackMarketAPIController extends Controller
         if (isset($requestData['quantity']) && !$skipBuffer) {
             $variation = \App\Models\Variation_model::where('reference_id', $listing_id)->first();
 
-            if ($variation) {
+            // if ($variation) {
                 // Get marketplace stock (default to marketplace_id = 1 for Back Market)
-                $marketplaceStock = \App\Models\MarketplaceStockModel::where([
-                    'variation_id' => $variation->id,
-                    'marketplace_id' => 1
-                ])->first();
+                // $marketplaceStock = \App\Models\MarketplaceStockModel::where([
+                //     'variation_id' => $variation->id,
+                //     'marketplace_id' => 1
+                // ])->first();
 
                 // If marketplace stock exists and has buffer_percentage, apply buffer
-                if ($marketplaceStock && $marketplaceStock->buffer_percentage > 0) {
-                    $originalQuantity = $requestData['quantity'];
-                    $bufferPercentage = $marketplaceStock->buffer_percentage;
-                    $bufferedQuantity = max(0, floor($originalQuantity * (1 - $bufferPercentage / 100)));
+                // if ($marketplaceStock && $marketplaceStock->buffer_percentage > 0) {
+                //     $originalQuantity = $requestData['quantity'];
+                //     $bufferPercentage = $marketplaceStock->buffer_percentage;
+                //     $bufferedQuantity = max(0, floor($originalQuantity * (1 - $bufferPercentage / 100)));
 
-                    // Update request with buffered quantity
-                    $requestData['quantity'] = $bufferedQuantity;
-                    $request_JSON = json_encode($requestData);
+                //     // Update request with buffered quantity
+                //     $requestData['quantity'] = $bufferedQuantity;
+                //     $request_JSON = json_encode($requestData);
 
                     // \Illuminate\Support\Facades\Log::info("Applied buffer to stock update", [
                     //     'variation_id' => $variation->id,
@@ -939,8 +939,8 @@ class BackMarketAPIController extends Controller
                     //     'buffer_percentage' => $bufferPercentage,
                     //     'buffered_quantity' => $bufferedQuantity
                     // ]);
-                }
-            }
+                // }
+            // }
         }
 
         $end_point = 'listings/' . $listing_id;
