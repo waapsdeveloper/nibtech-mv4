@@ -143,7 +143,7 @@
                 'process_id' => $process_id ?? null
             ])
 
-            @if (session('user_id') == 1 && $totalStock != $availableCount)
+            @if (session('user') && (int)(session('user')->role_id ?? 0) === 1 && $totalStock != $availableCount)
                 <div class="d-flex align-items-center gap-1">
                     <button type="button"
                             class="btn btn-sm btn-outline-warning set-listed-available-btn"
