@@ -36,7 +36,8 @@ class StockMismatchReport extends Command
         $logger->info('');
         foreach ($mismatchVariations as $row) {
             $diffStr = ($row->mismatch_amount >= 0 ? '+' : '') . $row->mismatch_amount;
-            $logger->info("variation_id: {$row->variation_id} | sku: " . ($row->sku ?? 'N/A') . " | TopupRef 9014 id: {$row->topup_id} qty_to: {$row->topup_qty_to} | Next verification id: {$row->next_id} qty_from: {$row->next_qty_from} | MISMATCH (diff: {$diffStr})");
+            $editedTag = ! empty($row->edited_by_admin) ? ' | edited by admin' : '';
+            $logger->info("variation_id: {$row->variation_id} | sku: " . ($row->sku ?? 'N/A') . " | TopupRef 9014 id: {$row->topup_id} qty_to: {$row->topup_qty_to} | Next verification id: {$row->next_id} qty_from: {$row->next_qty_from} | MISMATCH (diff: {$diffStr}){$editedTag}");
         }
         $logger->info('');
         $logger->info('========== END REPORT ==========');
@@ -50,7 +51,7 @@ class StockMismatchReport extends Command
      * Variations that have a topup ref 9014 record and immediately after a verification record,
      * where topup.qty_to != next_record.qty_from.
      *
-     * @return \Illuminate\Support\Collection<object{variation_id: int, sku: string|null, topup_id: int, topup_qty_to: int, next_id: int, next_qty_from: int, mismatch_amount: int}>
+     * @return \Illuminate\Support\Collection<object{variation_id: int, sku: string|null, topup_id: int, topup_qty_to: int, next_id: int, next_qty_from: int, mismatch_amount: int, edited_by_admin: bool}>
      */
     private function getTopup9014VerificationMismatches(): \Illuminate\Support\Collection
     {
@@ -95,6 +96,7 @@ class StockMismatchReport extends Command
                     $variation = $variations->get($variationId);
                     $topupQty = (int) $current->qty_to;
                     $nextQty = (int) $next->qty_from;
+                    $editedByAdmin = $sorted->where('id', '>', $current->id)->contains('admin_id', 1);
                     $mismatches->push((object) [
                         'variation_id' => $variationId,
                         'sku' => $variation->sku ?? null,
@@ -103,6 +105,7 @@ class StockMismatchReport extends Command
                         'next_id' => $next->id,
                         'next_qty_from' => $nextQty,
                         'mismatch_amount' => $topupQty - $nextQty,
+                        'edited_by_admin' => $editedByAdmin,
                     ]);
                 }
                 break; // one 9014 record per variation in this flow; skip rest
