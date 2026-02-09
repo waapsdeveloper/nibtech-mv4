@@ -307,11 +307,6 @@
 
         </form>
 
-        <div class="alert alert-warning py-2 mb-2 mb-md-3 d-flex align-items-center flex-wrap gap-2" role="status">
-            <span class="fw-semibold me-1">Note:</span>
-            <span>Records refresh every 5 minutes due to the refresh orders schedule.</span>
-        </div>
-
         <div class="d-flex justify-content-between">
             <div class="">
                 <a href="{{url('order')}}" class="btn btn-link">All Order</a>
