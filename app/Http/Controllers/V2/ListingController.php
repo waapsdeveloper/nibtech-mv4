@@ -1369,8 +1369,9 @@ class ListingController extends Controller
      */
     public function set_listed_available($id)
     {
-        if ((int) session('user_id') !== 1) {
-            return response()->json(['error' => 'Unauthorized. Admin only.'], 403);
+        $user = session('user');
+        if (!$user || (int) ($user->role_id ?? 0) !== 1) {
+            return response()->json(['error' => 'Unauthorized. Admin role only.'], 403);
         }
 
         $variation = Variation_model::with('available_stocks')->find($id);
