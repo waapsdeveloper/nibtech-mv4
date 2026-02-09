@@ -81,30 +81,29 @@ class RefreshNew extends Command
             'order_ids_synced' => []
         ];
 
-        // Get new orders from API
-        $resArray1 = $bm->getNewOrders();
-        $orders = [];
-        if ($resArray1 !== null) {
+        // Get new (pending) orders from BM API – single call with page-size for speed
+        $resArray1 = $bm->getNewOrders(['page-size' => 50]);
+        if ($resArray1 !== null && is_array($resArray1)) {
             $stats['new_orders_found'] = count($resArray1);
 
+            // 1) Sync all pending orders to DB first (no extra getOneOrder per order) so they appear immediately
             foreach ($resArray1 as $orderObj) {
-                if (!empty($orderObj)) {
-                    // Validate orderlines
-                    if (isset($orderObj->orderlines) && is_array($orderObj->orderlines)) {
-                        foreach($orderObj->orderlines as $orderline){
-                            $this->validateOrderlines($orderObj->order_id, $orderline->listing, $bm);
-                            $stats['new_orderlines_validated']++;
-                        }
-                    }
-                    $orders[] = $orderObj->order_id;
+                if (empty($orderObj) || empty($orderObj->order_id)) {
+                    continue;
                 }
+                $this->updateBMOrder($orderObj->order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model, $orderObj);
+                $stats['new_orders_synced']++;
+                $stats['order_ids_synced'][] = $orderObj->order_id;
             }
 
-            // Sync new orders
-            foreach($orders as $or){
-                $this->updateBMOrder($or, $bm, $currency_codes, $country_codes, $order_model, $order_item_model);
-                $stats['new_orders_synced']++;
-                $stats['order_ids_synced'][] = $or;
+            // 2) Validate orderlines after sync (so pending list is already visible)
+            foreach ($resArray1 as $orderObj) {
+                if (!empty($orderObj) && isset($orderObj->orderlines) && is_array($orderObj->orderlines)) {
+                    foreach ($orderObj->orderlines as $orderline) {
+                        $this->validateOrderlines($orderObj->order_id, $orderline->listing, $bm);
+                        $stats['new_orderlines_validated']++;
+                    }
+                }
             }
         }
 
@@ -180,10 +179,23 @@ class RefreshNew extends Command
 
         return 0;
     }
-    private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model){
+    /**
+     * Sync one BM order to DB. When $orderObjFromList is provided (from getNewOrders), use it to avoid getOneOrder for speed.
+     * If list object has no orderlines, fetch full order so items can be synced.
+     */
+    private function updateBMOrder($order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model, $orderObjFromList = null)
+    {
+        $orderObj = null;
+        if ($orderObjFromList !== null && isset($orderObjFromList->order_id)) {
+            $orderObj = $orderObjFromList;
+            if (empty($orderObj->orderlines) || (is_array($orderObj->orderlines) && count($orderObj->orderlines) === 0)) {
+                $orderObj = $bm->getOneOrder($order_id);
+            }
+        } else {
+            $orderObj = $bm->getOneOrder($order_id);
+        }
 
-        $orderObj = $bm->getOneOrder($order_id);
-        if(isset($orderObj->order_id)){
+        if (isset($orderObj->order_id)) {
 
             // Get order before update to check if it's new or status changed
             $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
