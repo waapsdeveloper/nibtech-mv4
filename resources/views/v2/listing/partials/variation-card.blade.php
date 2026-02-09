@@ -143,7 +143,7 @@
                 'process_id' => $process_id ?? null
             ])
 
-            @if (session('user') && (int)(session('user')->role_id ?? 0) === 1 && $totalStock != $availableCount)
+            {{-- @if (session('user') && (int)(session('user')->role_id ?? 0) === 1 && $totalStock != $availableCount)
                 <div class="d-flex align-items-center gap-1">
                     <button type="button"
                             class="btn btn-sm btn-outline-warning set-listed-available-btn"
@@ -158,7 +158,7 @@
                     <span class="text-success small d-none" id="set_listed_success_{{ $variationId }}"></span>
                     <span class="text-danger small d-none" id="set_listed_error_{{ $variationId }}"></span>
                 </div>
-            @endif
+            @endif --}}
 
             {{-- Listing Total Quantity and Average Cost --}}
             <div class="d-flex flex-row align-items-center gap-2" style="font-size: 0.85rem;">
