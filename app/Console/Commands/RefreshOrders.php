@@ -52,6 +52,14 @@ class RefreshOrders extends Command
                 }
             }
 
+            // Sync new orders into DB so processed_at (from BM date_shipping) and other fields are updated.
+            foreach ($resArray1 as $orderObj) {
+                if (!empty($orderObj)) {
+                    $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
+                    $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+                }
+            }
+
             // Align our status with Back Market for pending orders: if BM says pending (state=1) but we have status != 2,
             // set our status to 2 (pending) — but only when no IMEI is attached (order not yet processed).
             $statusCorrected = 0;
@@ -129,6 +137,18 @@ class RefreshOrders extends Command
             }
         } else {
             echo 'No orders have been modified in 3 months!';
+        }
+
+        // Backfill processed_at so orders don't appear in "missing processed_at" when they are already shipped.
+        $backfilled = Order_model::where('order_type_id', 3)
+            ->whereIn('status', [3, 6])
+            ->whereNull('processed_at')
+            ->where(function ($q) {
+                $q->whereNotNull('tracking_number')->orWhereNotNull('label_url');
+            })
+            ->update(['processed_at' => DB::raw('updated_at')]);
+        if ($backfilled > 0) {
+            $this->info("Backfilled processed_at for {$backfilled} order(s) so they no longer appear as missing invoice.");
         }
 
         return 0;
