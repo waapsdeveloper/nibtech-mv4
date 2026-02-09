@@ -37,7 +37,7 @@ class StockMismatchReport extends Command
         foreach ($mismatchVariations as $row) {
             $diffStr = ($row->mismatch_amount >= 0 ? '+' : '') . $row->mismatch_amount;
             $editedTag = ! empty($row->edited_by_admin) ? ' | edited by admin' : '';
-            $logger->info("variation_id: {$row->variation_id} | sku: " . ($row->sku ?? 'N/A') . " | TopupRef 9014 id: {$row->topup_id} qty_to: {$row->topup_qty_to} | Next verification id: {$row->next_id} qty_from: {$row->next_qty_from} | MISMATCH (diff: {$diffStr}){$editedTag}");
+            $logger->info("sku: " . ($row->sku ?? 'N/A') . " | TopupRef 9014 id: {$row->topup_id} qty_to: {$row->topup_qty_to} | Next verification id: {$row->next_id} qty_from: {$row->next_qty_from} | MISMATCH (diff: {$diffStr}){$editedTag}");
         }
         $logger->info('');
         $logger->info('========== END REPORT ==========');
