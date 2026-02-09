@@ -3471,6 +3471,16 @@ class Order extends Component
         }
         $packingMode = (string) request('packing') === '1' || (string) $packing === '1';
 
+        $requestedLocale = request('lang');
+        $invoiceLocale = $this->resolveInvoiceLocale($order->customer, $requestedLocale);
+        $invoiceLocales = [
+            'en' => 'English',
+            'fr' => 'Français',
+            'es' => 'Español',
+        ];
+
+        app()->setLocale($invoiceLocale);
+
         // Generate PDF for the invoice content
         $data = [
             'order' => $order,
@@ -3481,6 +3491,8 @@ class Order extends Component
             'labelUrl' => $order->label_url,
             'sessionA4Printer' => session('a4_printer'),
             'sessionLabelPrinter' => session('label_printer'),
+            'invoiceLocale' => $invoiceLocale,
+            'invoiceLocales' => $invoiceLocales,
         ];
 
         // Create a new TCPDF instance
@@ -3508,6 +3520,47 @@ class Order extends Component
         $view = $packingMode ? 'livewire.invoice_2_new' : 'livewire.invoice_new';
 
         return view($view)->with($data);
+    }
+
+    private function resolveInvoiceLocale($customer, ?string $requestedLocale = null): string
+    {
+        $supportedLocales = ['en', 'fr', 'es'];
+
+        if ($requestedLocale && in_array($requestedLocale, $supportedLocales, true)) {
+            return $requestedLocale;
+        }
+
+        $countryTitle = strtolower(trim((string) optional(optional($customer)->country_id)->title));
+
+        if ($countryTitle !== '') {
+            // French-speaking countries
+            if (
+                str_contains($countryTitle, 'france') ||
+                str_contains($countryTitle, 'belgium') ||
+                str_contains($countryTitle, 'switzerland') ||
+                str_contains($countryTitle, 'luxembourg') ||
+                str_contains($countryTitle, 'monaco')
+            ) {
+                return 'fr';
+            }
+
+            // Spanish-speaking countries
+            if (
+                str_contains($countryTitle, 'spain') ||
+                str_contains($countryTitle, 'mexico') ||
+                str_contains($countryTitle, 'argentina') ||
+                str_contains($countryTitle, 'colombia') ||
+                str_contains($countryTitle, 'venezuela') ||
+                str_contains($countryTitle, 'peru') ||
+                str_contains($countryTitle, 'chile')
+            ) {
+                return 'es';
+            }
+        }
+
+        $fallbackLocale = config('app.locale', 'en');
+
+        return in_array($fallbackLocale, $supportedLocales, true) ? $fallbackLocale : 'en';
     }
 
     public function storePrinterPreferences(Request $request)

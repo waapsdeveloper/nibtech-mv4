@@ -27,6 +27,21 @@
         padding-bottom: 10px;
         margin-bottom: 20px;
     }
+    .language-selector {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        font-size: 12px;
+    }
+    .language-selector select {
+        padding: 4px 8px;
+        font-size: 12px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        background: #fff;
+    }
     .invoice-headers img {
         max-height: 80px;
     }
@@ -87,6 +102,9 @@
     body{
         background-color: #fff !important;
     }
+    .language-selector {
+        display: none !important;
+    }
     /* #pdf-container {
     display: flex;
     flex-direction: column;
@@ -107,7 +125,21 @@ canvas {
 
     @section('content')
 
+    @php
+        $invoiceLocales = $invoiceLocales ?? ['en' => 'English', 'fr' => 'Français', 'es' => 'Español'];
+        $invoiceLocale = $invoiceLocale ?? app()->getLocale();
+    @endphp
+
     <div class="invoice-container">
+
+        <div class="language-selector">
+            <label for="invoice-language"><strong>{{ __('invoice.language') }}</strong></label>
+            <select id="invoice-language" aria-label="{{ __('invoice.language') }}">
+                @foreach ($invoiceLocales as $code => $label)
+                    <option value="{{ $code }}" @if ($code === $invoiceLocale) selected @endif>{{ $label }}</option>
+                @endforeach
+            </select>
+        </div>
 
         <div class="invoice-headers">
             <div class="company-info">
@@ -127,7 +159,7 @@ canvas {
 <br>
         <div class="invoice-details">
             <div class="bill-to ">
-                <h2><strong>Bill To:</strong></h2>
+                <h2><strong>{{ __('invoice.bill_to') }}</strong></h2>
                 @if($customer->company != null)
                     <p class="mb-0">{{ $customer->company }}</p>
                 @endif
@@ -148,24 +180,24 @@ canvas {
                 @endif
             </div>
             <div class="invoice-info">
-                <h1><strong>INVOICE</strong></h1>
+                <h1><strong>{{ __('invoice.invoice') }}</strong></h1>
                 <table>
                     <tr>
-                        <td class="px-2"><strong>Order ID:</strong></td>
+                        <td class="px-2"><strong>{{ __('invoice.order_id') }}</strong></td>
                         <td>{{ $order->reference_id }}</td>
                     </tr>
                     @if ($order->admin)
                         <tr>
-                            <td class="px-2"><strong>Sales Rep:</strong></td>
+                            <td class="px-2"><strong>{{ __('invoice.sales_rep') }}</strong></td>
                             <td>{{ $order->admin->first_name }}</td>
                         </tr>
                     @endif
                     <tr>
-                        <td class="px-2"><strong>Order Date:</strong></td>
+                        <td class="px-2"><strong>{{ __('invoice.order_date') }}</strong></td>
                         <td>{{ \Carbon\Carbon::parse($order->created_at)->format('d-m-Y') }}</td>
                     </tr>
                     <tr>
-                        <td class="px-2"><strong>Invoice Date:</strong></td>
+                        <td class="px-2"><strong>{{ __('invoice.invoice_date') }}</strong></td>
                         <td>{{ \Carbon\Carbon::parse($order->processed_at)->format('d-m-Y') }}</td>
                     </tr>
                 </table>
@@ -175,14 +207,14 @@ canvas {
         <br>
 
         <!-- Order Items -->
-        <h2><strong>Order Items</strong></h2>
+        <h2><strong>{{ __('invoice.order_items') }}</strong></h2>
         <table class="invoice-items">
             <thead>
                 <tr>
-                    <th>Product Name</th>
-                    <th>Price</th>
-                    <th>Qty</th>
-                    <th>Total</th>
+                    <th>{{ __('invoice.product_name') }}</th>
+                    <th>{{ __('invoice.price') }}</th>
+                    <th>{{ __('invoice.qty') }}</th>
+                    <th>{{ __('invoice.total') }}</th>
                 </tr>
             </thead>
             <tbody>
@@ -221,7 +253,7 @@ canvas {
                     </tr>
                 @endforeach
                 <tr>
-                    <td>Accessories</td>
+                    <td>{{ __('invoice.accessories') }}</td>
                     <td align="right">{{ $order->currency_id->sign }}0.00</td>
                     <td align="right">{{ $totalQty }}</td>
                     <td align="right">{{ $order->currency_id->sign }}0.00</td>
@@ -230,15 +262,15 @@ canvas {
 <br>
 <tfoot>
                 <tr>
-                    <td colspan="3" style="text-align: right;"><strong>Sub Total:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>{{ __('invoice.sub_total') }}</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="text-align: right;"><strong>VAT:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>{{ __('invoice.vat') }}</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}0.00</strong></td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="text-align: right;"><strong>Amount Due:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>{{ __('invoice.amount_due') }}</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
                 @php
@@ -254,7 +286,7 @@ canvas {
                     <td align="right"><strong>{{ $order->currency_id->sign }}{{ number_format($totalAmount, 2) }}</strong></td>
                 </tr>
                 <tr>
-                    <td colspan="3" style="text-align: right;"><strong>Change:</strong></td>
+                    <td colspan="3" style="text-align: right;"><strong>{{ __('invoice.change') }}</strong></td>
                     <td align="right"><strong>{{ $order->currency_id->sign }}0.00</strong></td>
                 </tr>
             </tfoot>
@@ -263,9 +295,9 @@ canvas {
 
         <!-- Store Policy -->
         <div class="store-policy">
-            <h3>Store Policy</h3>
+            <h3>{{ __('invoice.store_policy') }}</h3>
             <hr>
-            <p>Stock Sold on Marginal VAT Scheme. VAT Number: {{ env('APP_VAT')}}</p>
+            <p>{{ __('invoice.vat_notice', ['vat' => env('APP_VAT')]) }}</p>
         </div>
     </div>
     @endsection
@@ -280,6 +312,15 @@ canvas {
 
         // Cache logo image as base64 for faster rendering
         document.addEventListener('DOMContentLoaded', () => {
+            const languageSelect = document.getElementById('invoice-language');
+            if (languageSelect) {
+                languageSelect.addEventListener('change', (event) => {
+                    const selected = event.target.value;
+                    const url = new URL(window.location.href);
+                    url.searchParams.set('lang', selected);
+                    window.location.href = url.toString();
+                });
+            }
             cacheLogoImage();
             createPrinterInfoPanel();
             tryQzPrint()
