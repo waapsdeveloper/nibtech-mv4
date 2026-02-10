@@ -128,9 +128,10 @@ class ListingQueryService
                 });
             })
             ->when($request->filled('stock_mismatch'), function ($q) {
-                // Show only variations where listed stock ≠ available stock (Backmarket or total)
+                // Mismatch when (available - pending orders) ≠ listed stock (same logic as stock_mismatch_report.log)
                 return $q->withCount('available_stocks')
-                    ->havingRaw('variation.listed_stock != available_stocks_count OR (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1) != available_stocks_count');
+                    ->withSum('pending_orders', 'quantity', 'pending_quantity')
+                    ->havingRaw('(available_stocks_count - COALESCE(pending_quantity, 0)) != variation.listed_stock OR (available_stocks_count - COALESCE(pending_quantity, 0)) != (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1)');
             });
         
         // Apply state filter - matches original order (before sale_40, handler_status, whereNotNull)
