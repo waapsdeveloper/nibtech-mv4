@@ -161,7 +161,7 @@
                 </div>
                 <div class="form-check form-switch d-flex align-items-center gap-2">
                     <input class="form-check-input" type="checkbox" id="stock_mismatch" name="stock_mismatch" value="1" @if (request('stock_mismatch')) {{'checked'}} @endif>
-                    <label class="form-check-label" for="stock_mismatch" title="Listings where listed stock ≠ available stock (Backmarket or total)">Stock mismatch (listed ≠ available)</label>
+                    <label class="form-check-label" for="stock_mismatch" title="Variations where (available - pending orders) != listed stock (total or Backmarket). Same logic as stock_mismatch_report.log">Stock mismatch ((available - pending) != listed)</label>
                 </div>
                 <button class="btn btn-primary pd-x-20" type="submit">{{ __('locale.Search') }}</button>
                 <a href="{{ route('v2.view_listing') }}?per_page=10" class="btn btn-default pd-x-20">Reset</a>
