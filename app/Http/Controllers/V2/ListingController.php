@@ -208,6 +208,7 @@ class ListingController extends Controller
             'listings.marketplace',
             'product',
             'available_stocks',
+            'available_listed_stocks',
             'pending_orders',
             'pending_bm_orders',
             'storage_id',

@@ -93,6 +93,9 @@
     $availableCount = $physicalAvailableCount;
     $difference = $availableCount - $pendingCount;
 
+    // Available listed stocks = available (status 1) stocks with closed listing/topup
+    $availableListedStocksCount = ($variation->available_listed_stocks ?? collect())->count();
+
     // Calculate average cost from available stocks
     $averageCost = 0;
     if($availableStocks->count() > 0) {
@@ -180,7 +183,7 @@
                     <span class="text-muted">|</span>
                     <h6 class="mb-0" id="available_stock_{{ $variationId }}">
                         <a href="{{url('inventory').'?product='}}{{$productId}}&storage={{$storageId}}&color={{$colorId}}&grade[]={{$gradeId}}" target="_blank">
-                            AV: {{ $availableCount }}
+                            AV: {{ $availableListedStocksCount }}
                         </a>
                     </h6>
                     <span class="text-muted">|</span>
