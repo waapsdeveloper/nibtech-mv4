@@ -128,10 +128,12 @@ class ListingQueryService
                 });
             })
             ->when($request->filled('stock_mismatch'), function ($q) {
-                // Mismatch when (available - pending orders) ≠ listed stock (same logic as stock_mismatch_report.log)
-                return $q->withCount('available_stocks')
-                    ->withSum('pending_orders', 'quantity', 'pending_quantity')
-                    ->havingRaw('(available_stocks_count - COALESCE(pending_quantity, 0)) != variation.listed_stock OR (available_stocks_count - COALESCE(pending_quantity, 0)) != (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1)');
+                // Mismatch when (available - pending orders) ≠ listed stock (same logic as stock_mismatch_report.log).
+                // Use subqueries in HAVING so pagination count query works (withCount/withSum are not in count subquery).
+                $availableSub = '(SELECT COUNT(*) FROM stock s WHERE s.variation_id = variation.id AND s.status = 1 AND s.deleted_at IS NULL)';
+                $pendingSub = '(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi INNER JOIN orders o ON oi.order_id = o.id WHERE oi.variation_id = variation.id AND o.order_type_id = 3 AND o.status = 2 AND oi.deleted_at IS NULL)';
+                $diff = "({$availableSub} - {$pendingSub})";
+                return $q->havingRaw("{$diff} != variation.listed_stock OR {$diff} != (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1)");
             });
         
         // Apply state filter - matches original order (before sale_40, handler_status, whereNotNull)
