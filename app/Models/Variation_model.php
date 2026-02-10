@@ -158,6 +158,15 @@ class Variation_model extends Model
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',1);
     }
+
+    // available listed stocks
+
+    public function available_listed_stocks()
+    {
+        return $this->hasMany(Stock_model::class, 'variation_id', 'id')
+            ->where('status', 1)
+            ->whereHas('latest_closed_listing_or_topup');
+    }
     public function available_stocks()
     {
         return $this->hasMany(Stock_model::class, 'variation_id', 'id')->where('status',1)->whereHas('active_order')->whereHas('latest_listing_or_topup');
