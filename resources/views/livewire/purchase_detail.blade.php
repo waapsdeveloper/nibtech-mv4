@@ -203,7 +203,7 @@
         </form>
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
         {{-- Sold Stocks:-
-        @foreach ($sold_summery as $sold_stock)
+        @foreach ($sold_summary as $sold_stock)
 
         @endforeach --}}
         {{-- <br> --}}
@@ -238,26 +238,26 @@
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=1" class="btn btn-link @if (request('status') == 1) bg-white @endif ">Available</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}?status=2" class="btn btn-link @if (request('status') == 2) bg-white @endif ">Sold</a>
                 <a href="{{url('purchase/detail')."/".$order->id}}" class="btn btn-link @if (!request('status')) bg-white @endif " >All</a>
-                @if (session('user')->hasPermission('view_purchase_summery'))
-                <a href="{{url('purchase/detail')."/".$order->id}}?summery=2" class="btn btn-link @if (request('summery') == 2) bg-white @endif ">Summery</a>
-                <a href="{{url('purchase/detail')."/".$order->id}}?summery=1" class="btn btn-link @if (request('summery') == 1) bg-white @endif ">P&L</a>
+                @if (session('user')->hasPermission('view_purchase_summary'))
+                <a href="{{url('purchase/detail')."/".$order->id}}?summary=2" class="btn btn-link @if (request('summary') == 2) bg-white @endif ">Summary</a>
+                <a href="{{url('purchase/detail')."/".$order->id}}?summary=1" class="btn btn-link @if (request('summary') == 1) bg-white @endif ">P&L</a>
 
                 @endif
             </div>
             <div class="">
                 <a href="{{ url('purchase/export').'/'.$order->id }}?sheet=2" class="btn btn-link"><i class="fa fa-file-excel"></i></a>
-                @if (request('summery'))
+                @if (request('summary'))
                     <button class="btn btn-sm btn-secondary" id="print_btn" onclick="PrintElem('print_inv')"><i class="fa fa-print"></i></button>
                 @endif
             </div>
         </div>
         <div id="print_inv">
-        @if (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 1)
-            @if ($sold_stock_summery && count($sold_stock_summery)>0)
+        @if (session('user')->hasPermission('view_purchase_summary') && request('summary') && request('summary') == 1)
+            @if ($sold_stock_summary && count($sold_stock_summary)>0)
 
             <div class="card">
                 <div class="card-header pb-0">
-                    Sold Stock Summery
+                    Sold Stock Summary
                 </div>
                 <div class="card-body"><div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -277,17 +277,17 @@
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($sold_stock_summery as $summery)
+                            @foreach ($sold_stock_summary as $summary)
                                 <tr>
                                     <td>{{ $i++ }}</td>
 
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".($storages[$summery['storage']] ?? null) }}</a></td>
-                                    <td>{{ $summery['quantity'] }}</td>
-                                    <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
-                                    <td>€{{ amount_formatter($summery['total_repair']) }}</td>
-                                    <td title="{{ $summery['average_charge'] }}">€{{ amount_formatter($summery['total_charge'],2) }}</td>
-                                    <td title="{{ $summery['average_price'] }}">€{{ amount_formatter($summery['total_price'],2) }}</td>
-                                    <td title="{{ $summery['average_profit'] }}">€{{ amount_formatter($summery['profit'],2) }}</td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summary['pss_id']}})">{{ $products[$summary['product_id']]." ".($storages[$summary['storage']] ?? null) }}</a></td>
+                                    <td>{{ $summary['quantity'] }}</td>
+                                    <td title="{{ $summary['average_cost'] }}">€{{ amount_formatter($summary['total_cost'],2) }}</td>
+                                    <td>€{{ amount_formatter($summary['total_repair']) }}</td>
+                                    <td title="{{ $summary['average_charge'] }}">€{{ amount_formatter($summary['total_charge'],2) }}</td>
+                                    <td title="{{ $summary['average_price'] }}">€{{ amount_formatter($summary['total_price'],2) }}</td>
+                                    <td title="{{ $summary['average_profit'] }}">€{{ amount_formatter($summary['profit'],2) }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
@@ -309,10 +309,66 @@
                 </div>
             </div>
             @endif
-            @if ($available_stock_summery && count($available_stock_summery)>0)
+            @if ($rma_stock_summary && count($rma_stock_summary)>0)
+
             <div class="card">
                 <div class="card-header pb-0">
-                    Available Stock Summery
+                    RMA Stock Summary
+                </div>
+                <div class="card-body"><div class="table-responsive">
+                    <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                        <thead>
+                            <tr>
+                                <th><small><b>No</b></small></th>
+                                <th><small><b>Model</b></small></th>
+                                <th><small><b>Quantity</b></small></th>
+                                <th><small><b>Cost</b></small></th>
+                                <th><small><b>Repair</b></small></th>
+                                <th><small><b>Charge</b></small></th>
+                                <th><small><b>Price</b></small></th>
+                                <th><small><b>Profit</b></small></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @php
+                                $i = 0;
+                            @endphp
+                            @foreach ($rma_stock_summary as $summary)
+                                <tr>
+                                    <td>{{ $i++ }}</td>
+
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductSaleDetails({{$order_id}},{{$summary['pss_id']}})">{{ $products[$summary['product_id']]." ".($storages[$summary['storage']] ?? null) }}</a></td>
+                                    <td>{{ $summary['quantity'] }}</td>
+                                    <td title="{{ $summary['average_cost'] }}">€{{ amount_formatter($summary['total_cost'],2) }}</td>
+                                    <td>€{{ amount_formatter($summary['total_repair']) }}</td>
+                                    <td title="{{ $summary['average_charge'] }}">€{{ amount_formatter($summary['total_charge'],2) }}</td>
+                                    <td title="{{ $summary['average_price'] }}">€{{ amount_formatter($summary['total_price'],2) }}</td>
+                                    <td title="{{ $summary['average_profit'] }}">€{{ amount_formatter($summary['profit'],2) }}</td>
+                                </tr>
+                                {{-- @endif --}}
+                            @endforeach
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th></th>
+                                <th><b>Total</b></th>
+                                <th><b>{{ $rma_total['total_quantity'] }}</b></th>
+                                <th title="{{ $rma_total['total_quantity'] > 0 ? $rma_total['total_cost']/$rma_total['total_quantity'] : 0 }}" ><b>€{{ amount_formatter($rma_total['total_cost'],2) }}</b></th>
+                                <th title="{{ $rma_total['total_quantity'] > 0 ? $rma_total['total_repair']/$rma_total['total_quantity'] : 0 }}"><b>€{{ amount_formatter($rma_total['total_repair'],2) }}</b></th>
+                                <th title="{{ $rma_total['total_quantity'] > 0 ? $rma_total['total_charge']/$rma_total['total_quantity'] : 0 }}"><b>€{{ amount_formatter($rma_total['total_charge'],2) }}</b></th>
+                                <th title="{{ $rma_total['total_quantity'] > 0 ? $rma_total['total_price']/$rma_total['total_quantity'] : 0 }}"><b>€{{ amount_formatter($rma_total['total_price'],2) }}</b></th>
+                                <th title="{{ $rma_total['total_quantity'] > 0 ? $rma_total['total_profit']/$rma_total['total_quantity'] : 0 }}"><b>€{{ amount_formatter($rma_total['total_profit'],2) }}</b></th>
+                            </tr>
+                        </tfoot>
+
+                    </table>
+                </div>
+            </div>
+            @endif
+            @if ($available_stock_summary && count($available_stock_summary)>0)
+            <div class="card">
+                <div class="card-header pb-0">
+                    Available Stock Summary
                 </div>
                 <div class="card-body"><div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -328,12 +384,12 @@
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($available_stock_summery as $summery)
+                            @foreach ($available_stock_summary as $summary)
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductAvailableDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".($storages[$summery['storage']] ?? null) }}</a></td>
-                                    <td>{{ $summery['quantity'] }}</td>
-                                    <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductAvailableDetails({{$order_id}},{{$summary['pss_id']}})">{{ $products[$summary['product_id']]." ".($storages[$summary['storage']] ?? null) }}</a></td>
+                                    <td>{{ $summary['quantity'] }}</td>
+                                    <td title="{{ $summary['average_cost'] }}">€{{ amount_formatter($summary['total_cost'],2) }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
@@ -350,10 +406,10 @@
                 </div>
             </div>
             @endif
-            @if ($repair_sent_stock_summery && count($repair_sent_stock_summery)>0)
+            @if ($repair_sent_stock_summary && count($repair_sent_stock_summary)>0)
             <div class="card">
                 <div class="card-header pb-0">
-                    Repair Sent Stock Summery
+                    Repair Sent Stock Summary
                 </div>
                 <div class="card-body"><div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -369,13 +425,13 @@
                             @php
                                 $i = 0;
                             @endphp
-                            @foreach ($repair_sent_stock_summery as $summery)
+                            @foreach ($repair_sent_stock_summary as $summary)
                                 <tr>
                                     <td>{{ ++$i }}</td>
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductRepairDetails({{$order_id}},{{$summery['pss_id']}})">{{ $products[$summery['product_id']]." ".($storages[$summery['storage']] ?? null) }}</a></td>
-                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
-                                    <td>{{ $summery['quantity'] }}</td>
-                                    <td title="{{ $summery['average_cost'] }}">€{{ amount_formatter($summery['total_cost'],2) }}</td>
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#color_graded_count_modal" onclick="loadProductRepairDetails({{$order_id}},{{$summary['pss_id']}})">{{ $products[$summary['product_id']]." ".($storages[$summary['storage']] ?? null) }}</a></td>
+                                    {{-- <td>{{ $products[$summary['product_id']]." ".$storages[$summary['storage']] }}</td> --}}
+                                    <td>{{ $summary['quantity'] }}</td>
+                                    <td title="{{ $summary['average_cost'] }}">€{{ amount_formatter($summary['total_cost'],2) }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach
@@ -393,10 +449,10 @@
                 </div>
             </div>
             @endif
-        @elseif (session('user')->hasPermission('view_purchase_summery') && request('summery') && request('summery') == 2)
+        @elseif (session('user')->hasPermission('view_purchase_summary') && request('summary') && request('summary') == 2)
             <div class="card">
                 <div class="card-header pb-0">
-                    Inventory Summery
+                    Inventory Summary
                 </div>
                 <div class="card-body"><div class="table-responsive">
                     <table class="table table-bordered table-hover mb-0 text-md-nowrap">
@@ -432,56 +488,56 @@
                                 $total_bt = 0;
                                 $total_other = 0;
                                 // if(session('user_id') == 1){
-                                //     dd($stock_summery);
+                                //     dd($stock_summary);
                                 // }
                             @endphp
 
-                            @foreach (collect($stock_summery)->sortBy('model') as $summery)
+                            @foreach (collect($stock_summary)->sortBy('model') as $summary)
 
                                 @php
-                                    $total_sold += $summery['sold_stock_count'];
-                                    $total_repair += $summery['repair_stock_count'];
-                                    $total_available += $summery['available_stock_count'];
-                                    $total_wip += $summery['wip_stock_count'];
-                                    $total_rtg += $summery['rtg_stock_count'];
-                                    $total_twox += $summery['twox_stock_count'];
-                                    $total_rep += $summery['rep_stock_count'];
-                                    $total_rma += $summery['rma_stock_count'];
-                                    $total_ws += $summery['ws_stock_count'];
-                                    $total_bt += $summery['bt_stock_count'];
-                                    $total_other += $summery['other_stock_count'];
+                                    $total_sold += $summary['sold_stock_count'];
+                                    $total_repair += $summary['repair_stock_count'];
+                                    $total_available += $summary['available_stock_count'];
+                                    $total_wip += $summary['wip_stock_count'];
+                                    $total_rtg += $summary['rtg_stock_count'];
+                                    $total_twox += $summary['twox_stock_count'];
+                                    $total_rep += $summary['rep_stock_count'];
+                                    $total_rma += $summary['rma_stock_count'];
+                                    $total_ws += $summary['ws_stock_count'];
+                                    $total_bt += $summary['bt_stock_count'];
+                                    $total_other += $summary['other_stock_count'];
                                 @endphp
                                 <tr>
                                     <td>{{ $i++ }}</td>
-                                    {{-- <td>{{ $products[$summery['product_id']]." ".$storages[$summery['storage']] }}</td> --}}
-                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}})">{{ $summery['model'] }}</a></td>
+                                    {{-- <td>{{ $products[$summary['product_id']]." ".$storages[$summary['storage']] }}</td> --}}
+                                    <td><a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summary['pss_id']}})">{{ $summary['model'] }}</a></td>
                                     <td>
-                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'sold')">
-                                        {{ $summery['sold_stock_count'] > 0 ? $summery['sold_stock_count'] : '-' }}
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summary['pss_id']}},'sold')">
+                                        {{ $summary['sold_stock_count'] > 0 ? $summary['sold_stock_count'] : '-' }}
                                         </a>
                                     </td>
                                     <td>
-                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'repair')">
-                                        {{ $summery['repair_stock_count'] > 0 ? $summery['repair_stock_count'] : '-' }}
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summary['pss_id']}},'repair')">
+                                        {{ $summary['repair_stock_count'] > 0 ? $summary['repair_stock_count'] : '-' }}
                                         </a>
                                     </td>
                                     <td title="RTG + Others">
-                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'available')">
-                                        {{ $summery['available_stock_count'] > 0 ? $summery['available_stock_count'] : '-' }}
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summary['pss_id']}},'available')">
+                                        {{ $summary['available_stock_count'] > 0 ? $summary['available_stock_count'] : '-' }}
                                         </a>
                                     </td>
-                                    <td>{{ $summery['wip_stock_count'] > 0 ? $summery['wip_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['wip_stock_count'] > 0 ? $summary['wip_stock_count'] : '-' }}</td>
                                     <td>
-                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summery['pss_id']}},'rtg')">
-                                        {{ $summery['rtg_stock_count'] > 0 ? $summery['rtg_stock_count'] : '-' }}
+                                        <a href="javascript:void(0);" data-bs-toggle="modal" data-bs-target="#graded_count_modal" onclick="loadProductDetails({{$order_id}},{{$summary['pss_id']}},'rtg')">
+                                        {{ $summary['rtg_stock_count'] > 0 ? $summary['rtg_stock_count'] : '-' }}
                                         </a>
                                     </td>
-                                    <td>{{ $summery['twox_stock_count'] > 0 ? $summery['twox_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['rep_stock_count'] > 0 ? $summery['rep_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['rma_stock_count'] > 0 ? $summery['rma_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['ws_stock_count'] > 0 ? $summery['ws_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['bt_stock_count'] > 0 ? $summery['bt_stock_count'] : '-' }}</td>
-                                    <td>{{ $summery['other_stock_count'] > 0 ? $summery['other_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['twox_stock_count'] > 0 ? $summary['twox_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['rep_stock_count'] > 0 ? $summary['rep_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['rma_stock_count'] > 0 ? $summary['rma_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['ws_stock_count'] > 0 ? $summary['ws_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['bt_stock_count'] > 0 ? $summary['bt_stock_count'] : '-' }}</td>
+                                    <td>{{ $summary['other_stock_count'] > 0 ? $summary['other_stock_count'] : '-' }}</td>
                                 </tr>
                                 {{-- @endif --}}
                             @endforeach

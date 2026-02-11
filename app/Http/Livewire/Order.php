@@ -827,7 +827,7 @@ class Order extends Component
             return $q->withTrashed();
         })->where('id',$order_id)->first();
 
-        if(request('summery') == 1){
+        if(request('summary') == 1){
             $sold_total = [
                 'total_cost' => 0,
                 'total_repair' => 0,
@@ -983,7 +983,7 @@ class Order extends Component
             }
 
             // dd($sold_stocks_2);
-            $data['sold_stock_summery'] = $sold_stocks_2;
+            $data['sold_stock_summary'] = $sold_stocks_2;
             $data['sold_total'] = $sold_total;
 
 
@@ -1057,7 +1057,7 @@ class Order extends Component
             }
 
             // dd($repair_stocks_2);
-            $data['repair_sent_stock_summery'] = $repair_stocks_2;
+            $data['repair_sent_stock_summary'] = $repair_stocks_2;
             $data['repair_sent_total'] = $repair_total;
 
 
@@ -1130,9 +1130,9 @@ class Order extends Component
             }
 
             // dd($available_stocks_2);
-            $data['available_stock_summery'] = $available_stocks_2;
+            $data['available_stock_summary'] = $available_stocks_2;
             $data['available_total'] = $available_total;
-        }elseif(request('summery') == 2){
+        }elseif(request('summary') == 2){
 
 
             ini_set('memory_limit', '2048M');
@@ -1184,7 +1184,7 @@ class Order extends Component
                 $result[] = $datas;
             }
 
-            $data['stock_summery'] = $result;
+            $data['stock_summary'] = $result;
 
             // dd($result);
 
