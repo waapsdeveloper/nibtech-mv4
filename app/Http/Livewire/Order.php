@@ -2507,7 +2507,7 @@ class Order extends Component
             }elseif($s_type == 'available'){
                 $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',1)->count();
             }else{
-                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->count();
+                $data['graded_count'][$grade_id]['quantity'] = $stocks->whereIn('variation_id',$graded_variations->pluck('id'))->where('status',1)->count();
             }
             $data['graded_count'][$grade_id]['grade'] = $grade;
             $data['graded_count'][$grade_id]['grade_id'] = $grade_id;
