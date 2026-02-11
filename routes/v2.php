@@ -137,6 +137,19 @@ Route::prefix('v2')->group(function () {
         Route::get('check-allow-unknown-ip/{userId}', [TeamController::class, 'check_allow_unknown_ip'])->name('v2.options.teams.check-allow-unknown-ip');
     });
     
+    // Listing-30 (Extras) – BM sync records: listing_thirty_orders + listing_thirty_order_refs
+    Route::prefix('listing-thirty')->name('v2.listing-thirty.')->group(function () {
+        Route::get('/', [\App\Http\Controllers\V2\ListingThirtyController::class, 'index'])->name('index');
+        Route::get('create', [\App\Http\Controllers\V2\ListingThirtyController::class, 'create'])->name('create');
+        Route::post('store', [\App\Http\Controllers\V2\ListingThirtyController::class, 'store'])->name('store');
+        Route::post('{id}/refs', [\App\Http\Controllers\V2\ListingThirtyController::class, 'storeRef'])->name('store-ref');
+        Route::delete('{id}/refs/{refId}', [\App\Http\Controllers\V2\ListingThirtyController::class, 'destroyRef'])->name('destroy-ref');
+        Route::get('{id}/edit', [\App\Http\Controllers\V2\ListingThirtyController::class, 'edit'])->name('edit');
+        Route::match(['put', 'patch'], '{id}', [\App\Http\Controllers\V2\ListingThirtyController::class, 'update'])->name('update');
+        Route::delete('{id}', [\App\Http\Controllers\V2\ListingThirtyController::class, 'destroy'])->name('destroy');
+        Route::get('{id}', [\App\Http\Controllers\V2\ListingThirtyController::class, 'show'])->name('show');
+    });
+
     // Stock Deduction Logs (Extras)
     Route::prefix('stock-deduction-logs')->group(function () {
         Route::get('/', [\App\Http\Controllers\V2\StockDeductionLogController::class, 'index'])->name('v2.stock-deduction-logs.index');
