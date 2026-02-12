@@ -6,6 +6,7 @@
             getStocks: "{{ url('v2/marketplace/stock-formula') }}/",
             saveFormula: "{{ url('v2/marketplace/stock-formula') }}/",
             deleteFormula: "{{ url('v2/marketplace/stock-formula') }}/",
+            deleteAllFormulas: "{{ url('v2/marketplace/stock-formula') }}/",
             resetStock: "{{ url('v2/marketplace/stock-formula') }}/",
         },
         csrfToken: "{{ csrf_token() }}",

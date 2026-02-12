@@ -73,6 +73,32 @@ class MarketplaceStockFormulaController extends Controller
         // Get active tab from request
         $data['activeTab'] = $request->input('tab', 'variations');
 
+        // Default list: variations that already have a formula set (on at least one marketplace_stock)
+        $data['defaultVariationsWithFormula'] = collect();
+        if (!$variationId) {
+            $variationIdsWithFormula = MarketplaceStockModel::whereNotNull('formula')
+                ->whereRaw("formula != '[]'")
+                ->distinct()
+                ->pluck('variation_id');
+            if ($variationIdsWithFormula->isNotEmpty()) {
+                $data['defaultVariationsWithFormula'] = Variation_model::with(['product', 'color_id', 'storage_id', 'grade_id'])
+                    ->whereIn('id', $variationIdsWithFormula)
+                    ->orderBy('updated_at', 'desc')
+                    ->limit(50)
+                    ->get()
+                    ->map(function ($variation) {
+                        return [
+                            'id' => $variation->id,
+                            'sku' => $variation->sku,
+                            'model' => $variation->product->model ?? 'N/A',
+                            'storage' => $variation->storage_id->name ?? 'N/A',
+                            'color' => $variation->color_id->name ?? 'N/A',
+                            'grade' => $variation->grade_id->name ?? 'N/A',
+                        ];
+                    });
+            }
+        }
+
         return view('v2.marketplace.stock-formula.index')->with($data);
     }
 
@@ -213,6 +239,30 @@ class MarketplaceStockFormulaController extends Controller
             'success' => false,
             'message' => 'Formula not found'
         ], 404);
+    }
+
+    /**
+     * Delete formula for all marketplaces for a variation (except marketplace 1)
+     */
+    public function deleteAllFormulas($variationId)
+    {
+        $updated = MarketplaceStockModel::where('variation_id', $variationId)
+            ->where('marketplace_id', '!=', 1)
+            ->whereNotNull('formula')
+            ->get();
+
+        foreach ($updated as $stock) {
+            $stock->formula = null;
+            $stock->save();
+        }
+
+        $count = $updated->count();
+        return response()->json([
+            'success' => true,
+            'message' => $count > 0
+                ? 'Formula(s) deleted successfully for ' . $count . ' marketplace(s).'
+                : 'No formulas were set for this variation.',
+        ]);
     }
 
     /**

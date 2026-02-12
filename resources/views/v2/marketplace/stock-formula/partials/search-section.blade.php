@@ -20,10 +20,35 @@
                     <small class="text-muted">Type at least 2 characters and press Enter or click Search</small>
                 </div>
 
-                <div id="search_results_container" class="mt-3" style="display: none;">
-                    <h6>Search Results:</h6>
+                @php
+                    $showDefaultList = !empty($defaultVariationsWithFormula) && $defaultVariationsWithFormula->isNotEmpty() && empty($selectedVariation);
+                @endphp
+                <div id="search_results_container" class="mt-3" style="{{ $showDefaultList ? '' : 'display: none;' }}">
+                    <h6 id="search_results_heading">{{ $showDefaultList ? 'Variations with formula set' : 'Search Results:' }}</h6>
                     <div id="search_results" class="list-group search-results">
-                        <!-- Results will be loaded here via AJAX -->
+                        @if($showDefaultList)
+                            @foreach($defaultVariationsWithFormula as $v)
+                                <div class="list-group-item list-group-item-action d-flex justify-content-between align-items-start">
+                                    <a href="javascript:void(0)" class="flex-grow-1 text-body text-decoration-none" onclick="selectVariation({{ $v['id'] }})">
+                                        <div class="d-flex w-100 justify-content-between">
+                                            <h6 class="mb-1">{{ $v['sku'] }}</h6>
+                                        </div>
+                                        <p class="mb-0">
+                                            <strong>Model:</strong> {{ $v['model'] }}<br>
+                                            <strong>Storage:</strong> {{ $v['storage'] }} |
+                                            <strong>Color:</strong> {{ $v['color'] }} |
+                                            <strong>Grade:</strong> {{ $v['grade'] }}
+                                        </p>
+                                    </a>
+                                    <button type="button"
+                                            class="btn btn-sm btn-outline-danger ms-2 stock-formula-delete-all-btn"
+                                            data-variation-id="{{ $v['id'] }}"
+                                            title="Delete formula altogether">
+                                        <i class="fe fe-trash-2"></i>
+                                    </button>
+                                </div>
+                            @endforeach
+                        @endif
                     </div>
                 </div>
             </div>

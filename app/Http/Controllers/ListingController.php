@@ -1152,17 +1152,21 @@ class ListingController extends Controller
         $variation->save();
 
         // Update via API if variation has reference_id (BackMarket integration)
-        if($variation->reference_id) {
+        // Multi-marketplace: only push THIS marketplace's quantity to BM, not total stock
+        if($variation->reference_id && $marketplaceId === 1) {
             $bm = new BackMarketAPIController();
-            // V1 listing: Skip buffer (buffer only applies to V2 listing)
-            $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $totalStock]), null, true);
+            $quantityToPush = $new_quantity; // BM (marketplace 1) quantity only, not total
+            $apiResponse = $bm->updateOneListing($variation->reference_id, json_encode(['quantity' => $quantityToPush]), null, true);
 
             if(is_string($apiResponse) || is_int($apiResponse) || is_null($apiResponse)){
                 Log::warning("API update warning for variation ID $variationId: $apiResponse");
                 // Continue even if API update fails - we've updated the database
             } else if($apiResponse && isset($apiResponse->quantity)) {
-                // If API returns different quantity, use that
-                $variation->listed_stock = $apiResponse->quantity;
+                // Sync BM marketplace_stock from API response, then recalc total
+                $marketplaceStock->listed_stock = (int)$apiResponse->quantity;
+                $marketplaceStock->save();
+                $totalStock = MarketplaceStockModel::where('variation_id', $variationId)->sum('listed_stock');
+                $variation->listed_stock = $totalStock;
                 $variation->save();
             }
         }
@@ -1187,9 +1191,9 @@ class ListingController extends Controller
             'total_stock' => $totalStock
         ]);
 
-        // Return both marketplace stock and total stock
+        // Return marketplace stock (use current value in case API overwrote it for BM) and total stock
         return response()->json([
-            'marketplace_stock' => $new_quantity,
+            'marketplace_stock' => (int)($marketplaceStock->listed_stock ?? $new_quantity),
             'total_stock' => $totalStock
         ]);
     }
