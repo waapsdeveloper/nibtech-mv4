@@ -14,6 +14,7 @@
     // Expose initializeStockFormula globally for dynamic content loading
     window.initializeStockFormula = function() {
         setupSearchInput();
+        setupDeleteAllFormulasInList();
         setupInlineForms();
         setupResetStockForms();
         setupTotalStockForm();
@@ -45,6 +46,8 @@
             }
 
             // Show loading
+            var resultsHeading = document.getElementById('search_results_heading');
+            if (resultsHeading) resultsHeading.textContent = 'Search Results:';
             resultsDiv.innerHTML = '<div class="list-group-item text-center">Searching...</div>';
             resultsContainer.style.display = 'block';
 
@@ -122,6 +125,59 @@
         window.location.href = window.StockFormulaConfig.urls.getStocks + '?variation_id=' + variationId;
     };
 
+    /**
+     * Setup click handler for "Delete formula altogether" buttons in the default list (event delegation)
+     */
+    function setupDeleteAllFormulasInList() {
+        $(document).on('click', '.stock-formula-delete-all-btn', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            var variationId = $(this).data('variation-id');
+            if (!variationId) return;
+            if (!confirm('Delete formula for this variation on all marketplaces? This cannot be undone.')) {
+                return;
+            }
+            var btn = this;
+            var row = btn.closest ? btn.closest('.list-group-item') : null;
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm" role="status" aria-hidden="true"></span>';
+            }
+            $.ajax({
+                url: window.StockFormulaConfig.urls.deleteAllFormulas + variationId + '/delete-all-formulas',
+                type: 'DELETE',
+                data: {
+                    _token: window.StockFormulaConfig.csrfToken
+                },
+                success: function(response) {
+                    if (response && response.success) {
+                        showAlert(response.message || 'Formula(s) deleted successfully.', 'success');
+                        if (row) {
+                            row.remove();
+                            var container = document.getElementById('search_results');
+                            if (container && container.children.length === 0) {
+                                container.innerHTML = '<div class="list-group-item text-muted">No variations with formula set.</div>';
+                            }
+                        }
+                    } else {
+                        showAlert(response && response.message ? response.message : 'Error deleting formula(s)', 'danger');
+                        if (btn) {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="fe fe-trash-2"></i>';
+                        }
+                    }
+                },
+                error: function(xhr) {
+                    var msg = (xhr.responseJSON && xhr.responseJSON.message) ? xhr.responseJSON.message : 'Error deleting formula(s)';
+                    showAlert(msg, 'danger');
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fe fe-trash-2"></i>';
+                    }
+                }
+            });
+        });
+    }
 
     /**
      * Setup inline forms
