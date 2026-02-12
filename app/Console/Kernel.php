@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Console\Commands\BMProSyncOrders;
 use App\Console\Commands\SupportSyncCommand;
+use App\Jobs\ExecuteArtisanCommandJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 
@@ -43,9 +44,9 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // Critical: new/pending orders sync – every 1 min for fast visibility (uses getNewOrders response directly, no per-order getOneOrder).
+        // Critical: new/pending orders sync – every 2 min (uses getNewOrders response directly, no per-order getOneOrder).
         $schedule->command('refresh:new')
-            ->everyMinute()
+            ->cron('*/2 * * * *')
             ->before(function () {
                 echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 FIRING: refresh:new\n";
             })
@@ -92,15 +93,16 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // Critical: BackMarket listings sync (runs refresh:new first then get_listings) – no compromise; revert to every 30 min
-        $schedule->command('functions:thirty')
-            ->everyThirtyMinutes()
+        // Critical: BackMarket listings sync – run via queue so scheduler stays light; dedicated listings-sync worker runs it
+        $schedule->job(
+            (new ExecuteArtisanCommandJob('functions:thirty', []))->onQueue('listings-sync')
+        )
+            ->hourly()
             ->before(function () {
-                echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 FIRING: functions:thirty\n";
+                echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 QUEUED: functions:thirty (listings-sync)\n";
             })
             ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            ->onOneServer();
 
         // $schedule->command('backup:email')
         //     ->hourly()

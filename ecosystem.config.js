@@ -74,6 +74,39 @@ module.exports = {
     },
 
     // =====================================================
+    // LISTINGS SYNC WORKER (functions:thirty – BackMarket listings sync, hourly)
+    // Separate from default worker so heavy sync doesn't block other jobs.
+    // =====================================================
+    {
+      name: 'sdpos-listings-sync',
+
+      script: 'artisan',
+      args: 'queue:work redis --queue=listings-sync --sleep=5 --tries=1 --timeout=7200 --max-jobs=10 --max-time=3600',
+
+      interpreter: 'php',
+      cwd: basePath,
+
+      exec_mode: 'fork',
+      instances: 1,
+
+      autorestart: true,
+      watch: false,
+      max_memory_restart: '512M',
+
+      error_file: path.join(logDir, 'pm2-listings-sync-error.log'),
+      out_file: path.join(logDir, 'pm2-listings-sync-out.log'),
+      log_file: path.join(logDir, 'pm2-listings-sync.log'),
+
+      time: true,
+      merge_logs: true,
+
+      env: {
+        APP_ENV: 'production',
+        APP_DEBUG: 'false'
+      }
+    },
+
+    // =====================================================
     // LARAVEL SCHEDULER
     // =====================================================
     {
