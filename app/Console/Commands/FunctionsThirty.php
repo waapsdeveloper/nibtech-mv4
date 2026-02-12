@@ -374,6 +374,8 @@ class FunctionsThirty extends Command
         $variationCache = [];
         // Accumulate publication_state per variation across all countries (so we can resolve "Online if any")
         $variationPublicationStates = [];
+        // Batch for listing_thirty_orders (insert in one go after loops to avoid slowing main operations)
+        $listingThirtyBatch = [];
 
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
@@ -471,41 +473,39 @@ class FunctionsThirty extends Command
                         $variation->save();
                     }
 
-                    // Record BM snapshot to listing_thirty_orders (independent sync record)
-                    try {
-                        $priceAmount = null;
-                        $priceCurrency = $curr ?? null;
-                        if (isset($list->price)) {
-                            if (is_object($list->price)) {
-                                $priceAmount = $list->price->amount ?? null;
-                                $priceCurrency = $list->price->currency ?? $priceCurrency;
-                            } elseif (is_numeric($list->price)) {
-                                $priceAmount = $list->price;
-                            }
+                    // Queue BM snapshot for batch insert into listing_thirty_orders (inserted after loop)
+                    $priceAmount = null;
+                    $priceCurrency = $curr ?? null;
+                    if (isset($list->price)) {
+                        if (is_object($list->price)) {
+                            $priceAmount = $list->price->amount ?? null;
+                            $priceCurrency = $list->price->currency ?? $priceCurrency;
+                        } elseif (is_numeric($list->price)) {
+                            $priceAmount = $list->price;
                         }
-                        $minPrice = isset($list->min_price) ? (is_object($list->min_price) ? ($list->min_price->amount ?? null) : (is_numeric($list->min_price) ? $list->min_price : null)) : null;
-                        $maxPrice = isset($list->max_price) ? (is_object($list->max_price) ? ($list->max_price->amount ?? null) : (is_numeric($list->max_price) ? $list->max_price : null)) : null;
-
-                        ListingThirtyOrder::create([
-                            'variation_id' => $variation->id,
-                            'country_code' => $country,
-                            'bm_listing_id' => trim($list->listing_id ?? ''),
-                            'bm_listing_uuid' => $list->id ?? null,
-                            'sku' => trim($list->sku ?? ''),
-                            'source' => 'get_listings',
-                            'quantity' => (int)($list->quantity ?? 0),
-                            'publication_state' => isset($list->publication_state) ? (int)$list->publication_state : null,
-                            'state' => isset($list->state) ? (int)$list->state : null,
-                            'title' => $list->title ?? null,
-                            'price_amount' => $priceAmount,
-                            'price_currency' => $priceCurrency,
-                            'min_price' => $minPrice,
-                            'max_price' => $maxPrice,
-                            'synced_at' => now(),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::warning('FunctionsThirty get_listings: failed to insert listing_thirty_orders', ['error' => $e->getMessage(), 'variation_id' => $variation->id ?? null]);
                     }
+                    $minPrice = isset($list->min_price) ? (is_object($list->min_price) ? ($list->min_price->amount ?? null) : (is_numeric($list->min_price) ? $list->min_price : null)) : null;
+                    $maxPrice = isset($list->max_price) ? (is_object($list->max_price) ? ($list->max_price->amount ?? null) : (is_numeric($list->max_price) ? $list->max_price : null)) : null;
+                    $now = now();
+                    $listingThirtyBatch[] = [
+                        'variation_id' => $variation->id,
+                        'country_code' => $country,
+                        'bm_listing_id' => trim($list->listing_id ?? ''),
+                        'bm_listing_uuid' => $list->id ?? null,
+                        'sku' => trim($list->sku ?? ''),
+                        'source' => 'get_listings',
+                        'quantity' => (int)($list->quantity ?? 0),
+                        'publication_state' => isset($list->publication_state) ? (int)$list->publication_state : null,
+                        'state' => isset($list->state) ? (int)$list->state : null,
+                        'title' => $list->title ?? null,
+                        'price_amount' => $priceAmount,
+                        'price_currency' => $priceCurrency,
+                        'min_price' => $minPrice,
+                        'max_price' => $maxPrice,
+                        'synced_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
                 }
             }
         }
@@ -522,6 +522,15 @@ class FunctionsThirty extends Command
                 $variation->save();
                 $stats['variations_updated']++;
                 echo $resolvedState . " ";
+            }
+        }
+
+        // Batch insert listing_thirty_orders (chunked) so main loop is not slowed by per-row writes
+        foreach (array_chunk($listingThirtyBatch, 500) as $chunk) {
+            try {
+                ListingThirtyOrder::insert($chunk);
+            } catch (\Throwable $e) {
+                Log::warning('FunctionsThirty get_listings: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
 
@@ -574,6 +583,8 @@ class FunctionsThirty extends Command
         // Cache currency id by code and variation by sku to avoid repeated DB queries
         $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
         $variationCacheBySku = [];
+        // Batch for listing_thirty_orders (insert in one go after loop to avoid slowing main operations)
+        $listingThirtyBatch = [];
 
         // Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
@@ -624,40 +635,47 @@ class FunctionsThirty extends Command
                         $stats['variations_updated']++;
                     }
 
-                    // Record BM snapshot to listing_thirty_orders (get_listingsBi source)
-                    try {
-                        $priceAmount = null;
-                        $priceCurrency = $list->currency ?? null;
-                        if (isset($list->price)) {
-                            if (is_object($list->price)) {
-                                $priceAmount = $list->price->amount ?? null;
-                                $priceCurrency = $list->price->currency ?? $priceCurrency;
-                            } elseif (is_numeric($list->price)) {
-                                $priceAmount = $list->price;
-                            }
+                    // Queue BM snapshot for batch insert into listing_thirty_orders (inserted after loop)
+                    $priceAmount = null;
+                    $priceCurrency = $list->currency ?? null;
+                    if (isset($list->price)) {
+                        if (is_object($list->price)) {
+                            $priceAmount = $list->price->amount ?? null;
+                            $priceCurrency = $list->price->currency ?? $priceCurrency;
+                        } elseif (is_numeric($list->price)) {
+                            $priceAmount = $list->price;
                         }
-
-                        ListingThirtyOrder::create([
-                            'variation_id' => $variation->id,
-                            'country_code' => $country,
-                            'bm_listing_id' => $variation->reference_id ?? trim($list->sku ?? '') ?: 'unknown',
-                            'bm_listing_uuid' => null,
-                            'sku' => trim($list->sku ?? ''),
-                            'source' => 'get_listingsBi',
-                            'quantity' => (int)($list->quantity ?? 0),
-                            'publication_state' => null,
-                            'state' => null,
-                            'title' => null,
-                            'price_amount' => $priceAmount,
-                            'price_currency' => $priceCurrency,
-                            'min_price' => null,
-                            'max_price' => null,
-                            'synced_at' => now(),
-                        ]);
-                    } catch (\Throwable $e) {
-                        Log::warning('FunctionsThirty get_listingsBi: failed to insert listing_thirty_orders', ['error' => $e->getMessage(), 'variation_id' => $variation->id ?? null]);
                     }
+                    $now = now();
+                    $listingThirtyBatch[] = [
+                        'variation_id' => $variation->id,
+                        'country_code' => $country,
+                        'bm_listing_id' => $variation->reference_id ?? trim($list->sku ?? '') ?: 'unknown',
+                        'bm_listing_uuid' => null,
+                        'sku' => trim($list->sku ?? ''),
+                        'source' => 'get_listingsBi',
+                        'quantity' => (int)($list->quantity ?? 0),
+                        'publication_state' => null,
+                        'state' => null,
+                        'title' => null,
+                        'price_amount' => $priceAmount,
+                        'price_currency' => $priceCurrency,
+                        'min_price' => null,
+                        'max_price' => null,
+                        'synced_at' => $now,
+                        'created_at' => $now,
+                        'updated_at' => $now,
+                    ];
                 }
+            }
+        }
+
+        // Batch insert listing_thirty_orders (chunked) so main loop is not slowed by per-row writes
+        foreach (array_chunk($listingThirtyBatch, 500) as $chunk) {
+            try {
+                ListingThirtyOrder::insert($chunk);
+            } catch (\Throwable $e) {
+                Log::warning('FunctionsThirty get_listingsBi: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
         // $list = $bm->getOneListing($itemObj->listing_id);

@@ -92,9 +92,9 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // Critical: BackMarket listings sync (runs refresh:new first then get_listings) – no compromise; revert to every 30 min
+        // Critical: BackMarket listings sync (runs refresh:new first then get_listings) – hourly
         $schedule->command('functions:thirty')
-            ->everyThirtyMinutes()
+            ->hourly()
             ->before(function () {
                 echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 FIRING: functions:thirty\n";
             })
