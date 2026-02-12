@@ -6,6 +6,7 @@ use App\Http\Controllers\BackMarketAPIController;
 use App\Jobs\SyncShippedOrderToBackMarketJob;
 use App\Models\Order_model;
 use App\Models\Order_item_model;
+use App\Models\ListingThirtyOrderRef;
 use App\Models\Currency_model;
 use App\Models\Country_model;
 use Illuminate\Console\Command;
@@ -58,6 +59,30 @@ class RefreshOrders extends Command
                     $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
                     $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
                 }
+            }
+
+            // Record new orders to listing_thirty_order_refs (independent sync record)
+            foreach ($resArray1 as $orderObj) {
+                if (empty($orderObj) || empty($orderObj->order_id)) {
+                    continue;
+                }
+                $bmOrderId = $orderObj->order_id;
+                $order = Order_model::where('reference_id', $bmOrderId)
+                    ->where('order_type_id', 3)
+                    ->first();
+                if (!$order) {
+                    continue;
+                }
+                $firstItem = Order_item_model::where('order_id', $order->id)->first();
+                ListingThirtyOrderRef::firstOrCreate(
+                    ['order_id' => $order->id],
+                    [
+                        'variation_id' => $firstItem->variation_id ?? null,
+                        'bm_order_id' => $bmOrderId,
+                        'source_command' => 'refresh:orders',
+                        'synced_at' => now(),
+                    ]
+                );
             }
 
             // Align our status with Back Market for pending orders: if BM says pending (state=1) but we have status != 2,

@@ -580,7 +580,7 @@ class ArtisanCommandsController extends Controller
                 'examples' => [
                     'php artisan functions:thirty'
                 ],
-                'scheduled' => 'Hourly'
+                'scheduled' => 'Every 30 minutes'
             ],
             [
                 'signature' => 'functions:daily',

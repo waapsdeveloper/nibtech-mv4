@@ -9,6 +9,7 @@ use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
 use App\Models\Listing_stock_comparison_model;
+use App\Models\ListingThirtyOrder;
 use App\Models\Order_item_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
@@ -469,6 +470,42 @@ class FunctionsThirty extends Command
                         $variation->reference_uuid = $list->id;
                         $variation->save();
                     }
+
+                    // Record BM snapshot to listing_thirty_orders (independent sync record)
+                    try {
+                        $priceAmount = null;
+                        $priceCurrency = $curr ?? null;
+                        if (isset($list->price)) {
+                            if (is_object($list->price)) {
+                                $priceAmount = $list->price->amount ?? null;
+                                $priceCurrency = $list->price->currency ?? $priceCurrency;
+                            } elseif (is_numeric($list->price)) {
+                                $priceAmount = $list->price;
+                            }
+                        }
+                        $minPrice = isset($list->min_price) ? (is_object($list->min_price) ? ($list->min_price->amount ?? null) : (is_numeric($list->min_price) ? $list->min_price : null)) : null;
+                        $maxPrice = isset($list->max_price) ? (is_object($list->max_price) ? ($list->max_price->amount ?? null) : (is_numeric($list->max_price) ? $list->max_price : null)) : null;
+
+                        ListingThirtyOrder::create([
+                            'variation_id' => $variation->id,
+                            'country_code' => $country,
+                            'bm_listing_id' => trim($list->listing_id ?? ''),
+                            'bm_listing_uuid' => $list->id ?? null,
+                            'sku' => trim($list->sku ?? ''),
+                            'source' => 'get_listings',
+                            'quantity' => (int)($list->quantity ?? 0),
+                            'publication_state' => isset($list->publication_state) ? (int)$list->publication_state : null,
+                            'state' => isset($list->state) ? (int)$list->state : null,
+                            'title' => $list->title ?? null,
+                            'price_amount' => $priceAmount,
+                            'price_currency' => $priceCurrency,
+                            'min_price' => $minPrice,
+                            'max_price' => $maxPrice,
+                            'synced_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning('FunctionsThirty get_listings: failed to insert listing_thirty_orders', ['error' => $e->getMessage(), 'variation_id' => $variation->id ?? null]);
+                    }
                 }
             }
         }
@@ -585,6 +622,40 @@ class FunctionsThirty extends Command
                     if ($variationIsDirty) {
                         $variation->save();
                         $stats['variations_updated']++;
+                    }
+
+                    // Record BM snapshot to listing_thirty_orders (get_listingsBi source)
+                    try {
+                        $priceAmount = null;
+                        $priceCurrency = $list->currency ?? null;
+                        if (isset($list->price)) {
+                            if (is_object($list->price)) {
+                                $priceAmount = $list->price->amount ?? null;
+                                $priceCurrency = $list->price->currency ?? $priceCurrency;
+                            } elseif (is_numeric($list->price)) {
+                                $priceAmount = $list->price;
+                            }
+                        }
+
+                        ListingThirtyOrder::create([
+                            'variation_id' => $variation->id,
+                            'country_code' => $country,
+                            'bm_listing_id' => $variation->reference_id ?? trim($list->sku ?? '') ?: 'unknown',
+                            'bm_listing_uuid' => null,
+                            'sku' => trim($list->sku ?? ''),
+                            'source' => 'get_listingsBi',
+                            'quantity' => (int)($list->quantity ?? 0),
+                            'publication_state' => null,
+                            'state' => null,
+                            'title' => null,
+                            'price_amount' => $priceAmount,
+                            'price_currency' => $priceCurrency,
+                            'min_price' => null,
+                            'max_price' => null,
+                            'synced_at' => now(),
+                        ]);
+                    } catch (\Throwable $e) {
+                        Log::warning('FunctionsThirty get_listingsBi: failed to insert listing_thirty_orders', ['error' => $e->getMessage(), 'variation_id' => $variation->id ?? null]);
                     }
                 }
             }
