@@ -1840,7 +1840,7 @@ class SupportTickets extends Component
         }
 
         try {
-            $response = app(GoogleController::class)->sendEmailInvoice($recipient, $subject, $mailable);
+            app(GoogleController::class)->sendEmailInvoice($recipient, $subject, $mailable);
         } catch (\Throwable $exception) {
             Log::error('Gmail invoice send failed', [
                 'recipient' => $recipient,
@@ -1851,10 +1851,6 @@ class SupportTickets extends Component
             ]);
 
             throw $exception;
-        }
-
-        if ($response instanceof \Illuminate\Http\RedirectResponse) {
-            throw new \RuntimeException('Google account not connected. Please authenticate Gmail.');
         }
     }
 

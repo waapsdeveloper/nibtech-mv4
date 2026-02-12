@@ -40,7 +40,26 @@ class RMA extends Component
         session()->put('page_title', $data['title_page']);
 
         $user_id = session('user_id');
-        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->pluck('first_name','id');
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->get();
+
+        $admin_customers = session('user')->admin_customers;
+        if($admin_customers != null){
+            $admin_customer_ids = $admin_customers->pluck('customer_id')->toArray();
+            $data['admin_customers'] = $admin_customers;
+            $data['admin_customer_ids'] = $admin_customer_ids;
+            // dd($admin_customers);
+        }else{
+            $admin_customers = null;
+            $admin_customer_ids = null;
+        }
+
+
+        if($admin_customer_ids != null){
+            $data['vendors'] = $data['vendors']->whereIn('id',$admin_customer_ids)->pluck('first_name','id');
+        }else{
+            $data['vendors'] = $data['vendors']->pluck('first_name','id');
+        }
+
         $data['latest_reference'] = Order_model::where('order_type_id',2)->orderBy('reference_id','DESC')->first()->reference_id ?? 2000;
         $data['currencies'] = Currency_model::pluck('sign','id');
         $data['order_statuses'] = Order_status_model::get();
@@ -66,6 +85,10 @@ class RMA extends Component
             })
             ->when(request('status') != '', function ($q) {
                 return $q->where('orders.status', request('status'));
+            })
+
+            ->when($admin_customer_ids != null, function ($q) use ($admin_customer_ids) {
+                return $q->whereIn('orders.customer_id', $admin_customer_ids);
             })
             // ->groupBy('orders.id', 'orders.reference_id', 'orders.customer_id', 'orders.currency', 'orders.created_at')
             ->orderBy('orders.reference_id', 'desc') // Secondary order by reference_id
