@@ -8,8 +8,6 @@ use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
-use App\Models\Listing_stock_comparison_model;
-use App\Models\ListingThirtyOrder;
 use App\Models\Order_item_model;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
@@ -38,9 +36,6 @@ class FunctionsThirty extends Command
 
     protected ?array $bmBenchmarkCountryIds = null;
 
-    /** @var \Illuminate\Log\LogManager|null Log channel for functions_thirty.log (set at start of handle) */
-    protected $ftLog = null;
-
     /**
      * Execute the console command.
      *
@@ -49,17 +44,10 @@ class FunctionsThirty extends Command
 
     public function handle()
     {
-        $this->ftLog = Log::channel('functions_thirty');
-
         $startTime = microtime(true);
         
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-
-        $this->ftLog->info('Functions:thirty command started', [
-            'started_at' => now()->toDateTimeString(),
-            'local_mode' => $syncDataInLocal,
-        ]);
         
         // Log command start
         SlackLogService::post(
@@ -86,11 +74,50 @@ class FunctionsThirty extends Command
             // );
         }
 
-        // refresh:new runs every 2 min on its own schedule – no need to call it here
+        // FIX 3: Run refresh:new first to ensure orders are processed and stock deducted before syncing stock from API
+        // This prevents race conditions where FunctionsThirty overwrites stock before RefreshNew deducts it
+        // $this->info("📦 Running refresh:new first to sync orders and deduct stock...");
+        // SlackLogService::post(
+        //     'listing_sync',
+        //     'info',
+        //     "📦 Functions:thirty: Running refresh:new first to ensure orders are processed before stock sync",
+        //     [
+        //         'command' => 'functions:thirty',
+        //         'step' => 'pre_sync_refresh_new'
+        //     ]
+        // );
+        
+        try {
+            $refreshNewStartTime = microtime(true);
+            $this->call('refresh:new');
+            $refreshNewDuration = round(microtime(true) - $refreshNewStartTime, 2);
+            
+            // $this->info("✅ refresh:new completed in {$refreshNewDuration}s");
+            // SlackLogService::post(
+            //     'listing_sync',
+            //     'info',
+            //     "✅ Functions:thirty: refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
+            //     [
+            //         'command' => 'functions:thirty',
+            //         'refresh_new_duration' => $refreshNewDuration
+            //     ]
+            // );
+        } catch (\Exception $e) {
+            $this->error("❌ refresh:new failed: " . $e->getMessage());
+            SlackLogService::post(
+                'listing_sync',
+                'error',
+                "❌ Functions:thirty: refresh:new failed - Continuing with stock sync anyway",
+                [
+                    'command' => 'functions:thirty',
+                    'error' => $e->getMessage()
+                ]
+            );
+            // Continue with stock sync even if refresh:new fails
+        }
 
         ini_set('max_execution_time', 1200);
-
-        try {
+        
         // Statistics tracking
         $overallStats = [
             'get_listings' => [
@@ -117,9 +144,6 @@ class FunctionsThirty extends Command
         
         // Run get_listingsBi
         $this->get_listingsBi($overallStats['get_listingsBi']);
-        
-        // Create stock comparison records
-        $comparisonStats = $this->createStockComparisons();
         
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
@@ -165,13 +189,6 @@ class FunctionsThirty extends Command
         $summaryText = !empty($summaryParts) 
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
-
-        $this->ftLog->info('Functions:thirty command completed', [
-            'summary' => $summaryText,
-            'duration_seconds' => $duration,
-            'statistics' => $overallStats,
-            'comparison_stats' => $comparisonStats,
-        ]);
         
         // Log command completion with statistics
         SlackLogService::post(
@@ -184,159 +201,13 @@ class FunctionsThirty extends Command
                 'duration_seconds' => $duration,
                 'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
                 'statistics' => $overallStats,
-                'comparison_stats' => $comparisonStats,
                 'total_duration' => $duration
             ]
         );
 
-        } catch (\Throwable $e) {
-            $this->ftLog->error('Functions:thirty command failed', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-                'duration_seconds' => isset($startTime) ? round(microtime(true) - $startTime, 2) : null,
-            ]);
-            throw $e;
-        }
-
         return 0;
     }
-    
-    /**
-     * Create stock comparison records for all listings
-     * Compares BackMarket API stock vs our stock and pending orders.
-     * Batches variation lookups and pending-order queries to reduce DB load.
-     */
-    private function createStockComparisons()
-    {
-        // Auto-truncate listing_stock_comparisons if oldest record is more than 3 hours old
-        $this->autoTruncateStockComparisons();
-        
-        $bm = new BackMarketAPIController();
-        $listings = $bm->getAllListings();
-        
-        $stats = [
-            'total_compared' => 0,
-            'perfect_matches' => 0,
-            'discrepancies' => 0,
-            'shortages' => 0,
-            'excesses' => 0,
-        ];
-        
-        // First pass: collect non-archived items and unique (reference_id, sku) pairs
-        $items = [];
-        $pairsByKey = [];
-        foreach ($listings as $countryCode => $lists) {
-            foreach ($lists as $list) {
-                if ($list->publication_state == 4) {
-                    continue;
-                }
-                $refId = trim($list->listing_id);
-                $sku = trim($list->sku);
-                $key = $refId . '|' . $sku;
-                $items[] = ['countryCode' => $countryCode, 'list' => $list, 'key' => $key];
-                $pairsByKey[$key] = ['reference_id' => $refId, 'sku' => $sku];
-            }
-        }
-        
-        if (empty($pairsByKey)) {
-            return $stats;
-        }
-        
-        // Batch load all variations for these pairs (one query)
-        $pairs = array_values($pairsByKey);
-        $variations = Variation_model::where(function ($q) use ($pairs) {
-            foreach ($pairs as $p) {
-                $q->orWhere(['reference_id' => $p['reference_id'], 'sku' => $p['sku']]);
-            }
-        })->get()->keyBy(function ($v) {
-            return $v->reference_id . '|' . $v->sku;
-        });
-        
-        $variationIds = $variations->pluck('id')->unique()->values()->all();
-        
-        // Batch load pending order items for all variation ids (one query), grouped by variation_id
-        $pendingByVariationId = collect();
-        if (!empty($variationIds)) {
-            $pendingItems = Order_item_model::whereIn('variation_id', $variationIds)
-                ->whereHas('order', function ($q) {
-                    $q->where('order_type_id', 3)->whereIn('status', [1, 2]);
-                })
-                ->get();
-            $pendingByVariationId = $pendingItems->groupBy('variation_id');
-        }
-        
-        // Second pass: compute and create comparison records
-        foreach ($items as $item) {
-            $variation = $variations->get($item['key']);
-            if (!$variation) {
-                continue;
-            }
-            $list = $item['list'];
-            $countryCode = $item['countryCode'];
-            
-            $apiStock = (int)($list->quantity ?? 0);
-            $ourStock = (int)($variation->listed_stock ?? 0);
-            
-            $pendingForVariation = $pendingByVariationId->get($variation->id, collect());
-            $pendingOrdersCount = $pendingForVariation->count();
-            $pendingOrdersQuantity = $pendingForVariation->sum('quantity');
-            
-            $stockDifference = $ourStock - $apiStock;
-            $availableAfterPending = $ourStock - $pendingOrdersQuantity;
-            $apiVsPendingDifference = $apiStock - $pendingOrdersQuantity;
-            
-            $isPerfect = ($ourStock == $apiStock);
-            $hasDiscrepancy = ($ourStock != $apiStock);
-            $hasShortage = ($ourStock < $apiStock);
-            $hasExcess = ($ourStock > $apiStock);
-            
-            Listing_stock_comparison_model::create([
-                'variation_id' => $variation->id,
-                'variation_sku' => $variation->sku,
-                'marketplace_id' => 1,
-                'country_code' => $countryCode,
-                'api_stock' => $apiStock,
-                'our_stock' => $ourStock,
-                'pending_orders_count' => $pendingOrdersCount,
-                'pending_orders_quantity' => $pendingOrdersQuantity,
-                'stock_difference' => $stockDifference,
-                'available_after_pending' => $availableAfterPending,
-                'api_vs_pending_difference' => $apiVsPendingDifference,
-                'is_perfect' => $isPerfect,
-                'has_discrepancy' => $hasDiscrepancy,
-                'has_shortage' => $hasShortage,
-                'has_excess' => $hasExcess,
-                'compared_at' => now(),
-            ]);
-            
-            $stats['total_compared']++;
-            if ($isPerfect) {
-                $stats['perfect_matches']++;
-            } else {
-                $stats['discrepancies']++;
-                if ($hasShortage) {
-                    $stats['shortages']++;
-                }
-                if ($hasExcess) {
-                    $stats['excesses']++;
-                }
-            }
-        }
-        
-        // Log comparison summary
-        SlackLogService::post(
-            'listing_sync',
-            'info',
-            "📊 Stock Comparison: {$stats['total_compared']} listings compared | Perfect: {$stats['perfect_matches']} | Discrepancies: {$stats['discrepancies']} (Shortages: {$stats['shortages']}, Excesses: {$stats['excesses']})",
-            [
-                'command' => 'functions:thirty',
-                'comparison_stats' => $stats,
-                'compared_at' => now()->toDateTimeString(),
-            ]
-        );
-        
-        return $stats;
-    }
+
     public function get_listings(&$stats = null){
         $bm = new BackMarketAPIController();
 
@@ -361,8 +232,6 @@ class FunctionsThirty extends Command
         $variationCache = [];
         // Accumulate publication_state per variation across all countries (so we can resolve "Online if any")
         $variationPublicationStates = [];
-        // Batch for listing_thirty_orders (insert in one go after loops to avoid slowing main operations)
-        $listingThirtyBatch = [];
 
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
@@ -459,40 +328,6 @@ class FunctionsThirty extends Command
                         $variation->reference_uuid = $list->id;
                         $variation->save();
                     }
-
-                    // Queue BM snapshot for batch insert into listing_thirty_orders (inserted after loop)
-                    $priceAmount = null;
-                    $priceCurrency = $curr ?? null;
-                    if (isset($list->price)) {
-                        if (is_object($list->price)) {
-                            $priceAmount = $list->price->amount ?? null;
-                            $priceCurrency = $list->price->currency ?? $priceCurrency;
-                        } elseif (is_numeric($list->price)) {
-                            $priceAmount = $list->price;
-                        }
-                    }
-                    $minPrice = isset($list->min_price) ? (is_object($list->min_price) ? ($list->min_price->amount ?? null) : (is_numeric($list->min_price) ? $list->min_price : null)) : null;
-                    $maxPrice = isset($list->max_price) ? (is_object($list->max_price) ? ($list->max_price->amount ?? null) : (is_numeric($list->max_price) ? $list->max_price : null)) : null;
-                    $now = now();
-                    $listingThirtyBatch[] = [
-                        'variation_id' => $variation->id,
-                        'country_code' => $country,
-                        'bm_listing_id' => trim($list->listing_id ?? ''),
-                        'bm_listing_uuid' => $list->id ?? null,
-                        'sku' => trim($list->sku ?? ''),
-                        'source' => 'get_listings',
-                        'quantity' => (int)($list->quantity ?? 0),
-                        'publication_state' => isset($list->publication_state) ? (int)$list->publication_state : null,
-                        'state' => isset($list->state) ? (int)$list->state : null,
-                        'title' => $list->title ?? null,
-                        'price_amount' => $priceAmount,
-                        'price_currency' => $priceCurrency,
-                        'min_price' => $minPrice,
-                        'max_price' => $maxPrice,
-                        'synced_at' => $now,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
                 }
             }
         }
@@ -509,15 +344,6 @@ class FunctionsThirty extends Command
                 $variation->save();
                 $stats['variations_updated']++;
                 echo $resolvedState . " ";
-            }
-        }
-
-        // Batch insert listing_thirty_orders (chunked) so main loop is not slowed by per-row writes
-        foreach (array_chunk($listingThirtyBatch, 500) as $chunk) {
-            try {
-                ListingThirtyOrder::insert($chunk);
-            } catch (\Throwable $e) {
-                $this->ftLog->warning('FunctionsThirty get_listings: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
 
@@ -570,8 +396,6 @@ class FunctionsThirty extends Command
         // Cache currency id by code and variation by sku to avoid repeated DB queries
         $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
         $variationCacheBySku = [];
-        // Batch for listing_thirty_orders (insert in one go after loop to avoid slowing main operations)
-        $listingThirtyBatch = [];
 
         // Log::info("Result from getAllListingsBi: " . json_encode($listings));
 
@@ -621,48 +445,7 @@ class FunctionsThirty extends Command
                         $variation->save();
                         $stats['variations_updated']++;
                     }
-
-                    // Queue BM snapshot for batch insert into listing_thirty_orders (inserted after loop)
-                    $priceAmount = null;
-                    $priceCurrency = $list->currency ?? null;
-                    if (isset($list->price)) {
-                        if (is_object($list->price)) {
-                            $priceAmount = $list->price->amount ?? null;
-                            $priceCurrency = $list->price->currency ?? $priceCurrency;
-                        } elseif (is_numeric($list->price)) {
-                            $priceAmount = $list->price;
-                        }
-                    }
-                    $now = now();
-                    $listingThirtyBatch[] = [
-                        'variation_id' => $variation->id,
-                        'country_code' => $country,
-                        'bm_listing_id' => $variation->reference_id ?? trim($list->sku ?? '') ?: 'unknown',
-                        'bm_listing_uuid' => null,
-                        'sku' => trim($list->sku ?? ''),
-                        'source' => 'get_listingsBi',
-                        'quantity' => (int)($list->quantity ?? 0),
-                        'publication_state' => null,
-                        'state' => null,
-                        'title' => null,
-                        'price_amount' => $priceAmount,
-                        'price_currency' => $priceCurrency,
-                        'min_price' => null,
-                        'max_price' => null,
-                        'synced_at' => $now,
-                        'created_at' => $now,
-                        'updated_at' => $now,
-                    ];
                 }
-            }
-        }
-
-        // Batch insert listing_thirty_orders (chunked) so main loop is not slowed by per-row writes
-        foreach (array_chunk($listingThirtyBatch, 500) as $chunk) {
-            try {
-                ListingThirtyOrder::insert($chunk);
-            } catch (\Throwable $e) {
-                $this->ftLog->warning('FunctionsThirty get_listingsBi: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
         // $list = $bm->getOneListing($itemObj->listing_id);
@@ -878,7 +661,7 @@ class FunctionsThirty extends Command
                         }
 
                     } catch (\Exception $e) {
-                        $this->ftLog->error("Refurbed: Error processing offer", [
+                        Log::error("Refurbed: Error processing offer", [
                             'offer_id' => $offerId ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
@@ -1006,7 +789,7 @@ class FunctionsThirty extends Command
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
-            $this->ftLog->info("Refurbed: Completed listing sync", [
+            Log::info("Refurbed: Completed listing sync", [
                 'total_listings' => $processedListings,
                 'total_offers' => $totalOffers,
                 'countries_processed' => $countryCount,
@@ -1014,7 +797,7 @@ class FunctionsThirty extends Command
             echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
-            $this->ftLog->error("Refurbed: Fatal error in get_refurbed_listings", [
+            Log::error("Refurbed: Fatal error in get_refurbed_listings", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1372,7 +1155,7 @@ class FunctionsThirty extends Command
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            $this->ftLog->error('Refurbed: Failed to push price update', [
+            Log::error('Refurbed: Failed to push price update', [
                 'sku' => $sku,
                 'error' => $e->getMessage(),
             ]);
@@ -1386,27 +1169,5 @@ class FunctionsThirty extends Command
         }
 
         return Currency_model::where('code', $currencyCode)->value('id');
-    }
-
-    /**
-     * Auto-truncate listing_stock_comparisons table if oldest record is more than 3 hours old
-     */
-    private function autoTruncateStockComparisons()
-    {
-        $oldestRecord = DB::table('listing_stock_comparisons')
-            ->orderBy('compared_at', 'asc')
-            ->first();
-
-        if ($oldestRecord) {
-            $oldestDate = Carbon::parse($oldestRecord->compared_at);
-            $hoursAgo = now()->diffInHours($oldestDate);
-
-            if ($hoursAgo >= 3) {
-                $recordCount = DB::table('listing_stock_comparisons')->count();
-                DB::table('listing_stock_comparisons')->truncate();
-                
-                $this->info("🗑️  Auto-truncated listing_stock_comparisons table ({$recordCount} records removed - oldest record was {$hoursAgo} hours old)");
-            }
-        }
     }
 }

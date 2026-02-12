@@ -12,7 +12,6 @@ use App\Models\Country_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
-use App\Models\ListingThirtyOrderRef;
 use Carbon\Carbon;
 
 
@@ -95,26 +94,6 @@ class RefreshNew extends Command
                 $this->updateBMOrder($orderObj->order_id, $bm, $currency_codes, $country_codes, $order_model, $order_item_model, $orderObj);
                 $stats['new_orders_synced']++;
                 $stats['order_ids_synced'][] = $orderObj->order_id;
-            }
-
-            // Record new orders to listing_thirty_order_refs (independent sync record)
-            foreach ($stats['order_ids_synced'] as $bmOrderId) {
-                $order = Order_model::where('reference_id', $bmOrderId)
-                    ->where('order_type_id', 3)
-                    ->first();
-                if (!$order) {
-                    continue;
-                }
-                $firstItem = Order_item_model::where('order_id', $order->id)->first();
-                ListingThirtyOrderRef::firstOrCreate(
-                    ['order_id' => $order->id],
-                    [
-                        'variation_id' => $firstItem->variation_id ?? null,
-                        'bm_order_id' => $bmOrderId,
-                        'source_command' => 'refresh:new',
-                        'synced_at' => now(),
-                    ]
-                );
             }
 
             // 2) Validate orderlines after sync (so pending list is already visible)
@@ -414,27 +393,4 @@ class RefreshNew extends Command
 
         // Summary is now handled by postBatch() above, no need for separate summary log
     }
-
-    /**
-     * Auto-truncate stock_deduction_logs table if oldest record is more than 3 hours old
-     */
-    private function autoTruncateStockDeductionLogs()
-    {
-        $oldestRecord = DB::table('stock_deduction_logs')
-            ->orderBy('deduction_at', 'asc')
-            ->first();
-
-        if ($oldestRecord) {
-            $oldestDate = Carbon::parse($oldestRecord->deduction_at);
-            $hoursAgo = now()->diffInHours($oldestDate);
-
-            if ($hoursAgo >= 3) {
-                $recordCount = DB::table('stock_deduction_logs')->count();
-                DB::table('stock_deduction_logs')->truncate();
-
-                $this->info("🗑️  Auto-truncated stock_deduction_logs table ({$recordCount} records removed - oldest record was {$hoursAgo} hours old)");
-            }
-        }
-    }
-
 }
