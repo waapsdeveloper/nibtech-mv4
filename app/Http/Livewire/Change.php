@@ -43,7 +43,14 @@ class Change extends Component
                 $recipientEmail = $request->email;
                 $subject = 'Reset Your Password';
 
-                app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new ResetMail($mailData));
+                try {
+                    app(GoogleController::class)->sendEmailInvoice($recipientEmail, $subject, new ResetMail($mailData));
+                } catch (\Throwable $exception) {
+                    session()->forget('error');
+                    $request->session()->put('error', 'Failed to send email: ' . $exception->getMessage());
+                    return redirect('profile');
+                }
+
                 return redirect('OTP/password');
             }else{
                 session()->forget('error');

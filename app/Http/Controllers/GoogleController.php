@@ -140,7 +140,7 @@ class GoogleController extends Controller
         $googleToken = GoogleToken::first();
 
         if (! $googleToken) {
-            return redirect()->route('google.auth')->with('error', 'You need to authenticate with Google first.');
+            throw new \RuntimeException('Google account not connected. Please authenticate Gmail to send invoices.');
         }
 
         $client = new Google_Client();
@@ -189,15 +189,13 @@ class GoogleController extends Controller
         $message->setRaw($rawMessage);
 
         try {
-            $response = $service->users_messages->send('me', $message);
-
-            // Log::info('Send Email Request Body', [
-            //     'recipientEmail' => $recipientEmail,
-            //     'subject' => $subject,
-            // ]);
-            // Log::info('Send Email Response', ['response' => $response]);
+            $service->users_messages->send('me', $message);
         } catch (Exception $e) {
-            Log::error('Failed to send email', ['error' => $e->getMessage()]);
+            Log::error('Failed to send email via Gmail API', [
+                'recipient' => $recipientEmail,
+                'error' => $e->getMessage()
+            ]);
+            throw new \RuntimeException('Failed to send email via Gmail: ' . $e->getMessage(), 0, $e);
         }
     }
 
