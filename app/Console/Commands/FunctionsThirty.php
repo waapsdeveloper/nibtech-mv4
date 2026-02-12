@@ -38,6 +38,9 @@ class FunctionsThirty extends Command
 
     protected ?array $bmBenchmarkCountryIds = null;
 
+    /** @var \Illuminate\Log\LogManager|null Log channel for functions_thirty.log (set at start of handle) */
+    protected $ftLog = null;
+
     /**
      * Execute the console command.
      *
@@ -46,10 +49,17 @@ class FunctionsThirty extends Command
 
     public function handle()
     {
+        $this->ftLog = Log::channel('functions_thirty');
+
         $startTime = microtime(true);
         
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
+
+        $this->ftLog->info('Functions:thirty command started', [
+            'started_at' => now()->toDateTimeString(),
+            'local_mode' => $syncDataInLocal,
+        ]);
         
         // Log command start
         SlackLogService::post(
@@ -79,7 +89,8 @@ class FunctionsThirty extends Command
         // refresh:new runs every 2 min on its own schedule – no need to call it here
 
         ini_set('max_execution_time', 1200);
-        
+
+        try {
         // Statistics tracking
         $overallStats = [
             'get_listings' => [
@@ -154,6 +165,13 @@ class FunctionsThirty extends Command
         $summaryText = !empty($summaryParts) 
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
+
+        $this->ftLog->info('Functions:thirty command completed', [
+            'summary' => $summaryText,
+            'duration_seconds' => $duration,
+            'statistics' => $overallStats,
+            'comparison_stats' => $comparisonStats,
+        ]);
         
         // Log command completion with statistics
         SlackLogService::post(
@@ -170,6 +188,15 @@ class FunctionsThirty extends Command
                 'total_duration' => $duration
             ]
         );
+
+        } catch (\Throwable $e) {
+            $this->ftLog->error('Functions:thirty command failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'duration_seconds' => isset($startTime) ? round(microtime(true) - $startTime, 2) : null,
+            ]);
+            throw $e;
+        }
 
         return 0;
     }
@@ -490,7 +517,7 @@ class FunctionsThirty extends Command
             try {
                 ListingThirtyOrder::insert($chunk);
             } catch (\Throwable $e) {
-                Log::warning('FunctionsThirty get_listings: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
+                $this->ftLog->warning('FunctionsThirty get_listings: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
 
@@ -635,7 +662,7 @@ class FunctionsThirty extends Command
             try {
                 ListingThirtyOrder::insert($chunk);
             } catch (\Throwable $e) {
-                Log::warning('FunctionsThirty get_listingsBi: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
+                $this->ftLog->warning('FunctionsThirty get_listingsBi: batch insert listing_thirty_orders failed', ['error' => $e->getMessage(), 'chunk_size' => count($chunk)]);
             }
         }
         // $list = $bm->getOneListing($itemObj->listing_id);
@@ -851,7 +878,7 @@ class FunctionsThirty extends Command
                         }
 
                     } catch (\Exception $e) {
-                        Log::error("Refurbed: Error processing offer", [
+                        $this->ftLog->error("Refurbed: Error processing offer", [
                             'offer_id' => $offerId ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
@@ -979,7 +1006,7 @@ class FunctionsThirty extends Command
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
-            Log::info("Refurbed: Completed listing sync", [
+            $this->ftLog->info("Refurbed: Completed listing sync", [
                 'total_listings' => $processedListings,
                 'total_offers' => $totalOffers,
                 'countries_processed' => $countryCount,
@@ -987,7 +1014,7 @@ class FunctionsThirty extends Command
             echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
-            Log::error("Refurbed: Fatal error in get_refurbed_listings", [
+            $this->ftLog->error("Refurbed: Fatal error in get_refurbed_listings", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1345,7 +1372,7 @@ class FunctionsThirty extends Command
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to push price update', [
+            $this->ftLog->error('Refurbed: Failed to push price update', [
                 'sku' => $sku,
                 'error' => $e->getMessage(),
             ]);
