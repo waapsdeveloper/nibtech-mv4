@@ -164,18 +164,6 @@ class RefreshOrders extends Command
             echo 'No orders have been modified in 3 months!';
         }
 
-        // Backfill processed_at so orders don't appear in "missing processed_at" when they are already shipped.
-        $backfilled = Order_model::where('order_type_id', 3)
-            ->whereIn('status', [3, 6])
-            ->whereNull('processed_at')
-            ->where(function ($q) {
-                $q->whereNotNull('tracking_number')->orWhereNotNull('label_url');
-            })
-            ->update(['processed_at' => DB::raw('updated_at')]);
-        if ($backfilled > 0) {
-            $this->info("Backfilled processed_at for {$backfilled} order(s) so they no longer appear as missing invoice.");
-        }
-
         return 0;
     }
 
