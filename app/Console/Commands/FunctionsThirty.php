@@ -49,7 +49,12 @@ class FunctionsThirty extends Command
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
         
-        // Log command start
+        // Log command start (Slack + file)
+        Log::channel('functions_thirty')->info('Functions:thirty started', [
+            'command' => 'functions:thirty',
+            'started_at' => now()->toDateTimeString(),
+            'local_mode' => $syncDataInLocal,
+        ]);
         SlackLogService::post(
             'listing_sync',
             'info',
@@ -154,7 +159,14 @@ class FunctionsThirty extends Command
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
         
-        // Log command completion with statistics
+        // Log command completion with statistics (Slack + file)
+        Log::channel('functions_thirty')->info('Functions:thirty completed', [
+            'command' => 'functions:thirty',
+            'completed_at' => now()->toDateTimeString(),
+            'duration_seconds' => $duration,
+            'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+            'statistics' => $overallStats,
+        ]);
         SlackLogService::post(
             'listing_sync',
             'info',
