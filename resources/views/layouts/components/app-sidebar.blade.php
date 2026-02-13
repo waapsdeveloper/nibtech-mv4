@@ -68,11 +68,6 @@
                                                 <i class="angle fe fe-chevron-down"></i>
                                             </a>
                                             <ul class="collapse ps-3" id="v2ExtrasMenu">
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/listing-thirty')}}">
-                                                        Listing-30
-                                                    </a>
-                                                </li>
                                                 {{-- Stock Locks removed - Stock lock system removed --}}
                                                 {{-- <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/stock-locks')}}">
@@ -82,16 +77,6 @@
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/artisan-commands')}}">
                                                         Artisan Commands
-                                                    </a>
-                                                </li>
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/stock-deduction-logs')}}">
-                                                        Stock Deduction Logs
-                                                    </a>
-                                                </li>
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/listing-stock-comparisons')}}">
-                                                        Stock Comparisons
                                                     </a>
                                                 </li>
                                                 <li class="slide">
