@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Route;
 use App\Models\Admin_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
+use App\Models\PermissionRequest;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Log;
 
@@ -31,7 +32,7 @@ class AuthorizeMiddleware
             session()->put('user',$user);
         }
         // If the current route is the login route or sign-in route, bypass the middleware
-        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'admin.2fa' || $currentRoute == 'admin.2fa2' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error') {
+        if ($currentRoute == 'login' || $currentRoute == 'signin' || $currentRoute == 'admin.2fa' || $currentRoute == 'admin.2fa2' || $currentRoute == 'index' || $currentRoute == 'profile' || $currentRoute == 'error' || in_array($currentRoute, ['permission_requests.store', 'permission_requests.approve', 'permission_requests.deny'])) {
             // Redirect to the sign-in page if user ID is null
             if ($userId == null && $currentRoute == 'index') {
                 return redirect('signin');
@@ -51,9 +52,17 @@ class AuthorizeMiddleware
         session()->put('user',$user);
         // Check if the user has the required permission for the current page
         if (!$user->hasPermission($currentRoute)) {
-            // Log the unauthorized access attempt
             Log::info('Unauthorized access attempt by user '.$user->first_name.' with Role '.$user->role->name.' to '.$currentRoute);
-            abort(403, 'Quote of the day: '.Inspiring::quote());
+
+            $pending = PermissionRequest::where('admin_id', $userId)
+                ->where('permission', $currentRoute)
+                ->where('status', 'pending')
+                ->exists();
+
+            return response()->view('errors.permission-request', [
+                'permission' => $currentRoute,
+                'alreadyRequested' => $pending,
+            ], 403);
         }
         // Remove the 'page' session variable
         session()->forget('page');

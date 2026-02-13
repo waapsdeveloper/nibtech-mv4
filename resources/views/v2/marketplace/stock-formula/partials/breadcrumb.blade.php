@@ -5,7 +5,7 @@
     </div>
     <div class="justify-content-center mt-2">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboards') }}</a></li>
+            <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
             <li class="breadcrumb-item tx-15"><a href="{{url('v2/marketplace')}}">Marketplaces</a></li>
             <li class="breadcrumb-item active" aria-current="page">
                 Stock Formula{{ $activeTab === 'global' ? ' - Global Defaults' : '' }}

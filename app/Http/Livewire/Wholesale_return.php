@@ -249,8 +249,8 @@ class Wholesale_return extends Component
     }
     public function wholesale_return_detail($order_id){
 
-        if(str_contains(url()->previous(),url('wholesale_return')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('wholesale_return')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('wholesale_return_previous', url()->previous());
         }
         $data['title_page'] = "Return Detail";
         session()->put('page_title', $data['title_page']);

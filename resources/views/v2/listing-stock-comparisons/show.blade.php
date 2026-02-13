@@ -8,7 +8,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ route('v2.listing-stock-comparisons.index') }}">Stock Comparisons</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Details</li>
@@ -86,7 +86,7 @@
                                 </tr>
                             </table>
                         </div>
-                        
+
                         <div class="col-md-6">
                             <table class="table table-bordered">
                                 <tr>

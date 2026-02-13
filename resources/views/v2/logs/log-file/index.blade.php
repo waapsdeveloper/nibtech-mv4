@@ -60,7 +60,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/stock-sync') }}">Logs</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Log File</li>
@@ -112,7 +112,7 @@
                                         <input type="hidden" name="per_page" value="{{ $perPage }}">
                                     </form>
                                 </div>
-                                
+
                                 <div class="d-flex gap-2">
                                     <a href="{{ url('v2/logs/log-file/download-all') }}" class="btn btn-primary btn-sm" title="Download all log files as ZIP">
                                         <i class="fe fe-download"></i> Download All Logs
@@ -125,7 +125,7 @@
                                     </a>
                                 </div>
                             </div>
-                            
+
                             <div class="d-flex justify-content-between align-items-center flex-wrap gap-2">
                                 <div class="d-flex gap-2 align-items-center">
                                     <form method="GET" action="{{ url('v2/logs/log-file') }}" class="d-flex gap-2 align-items-center">
@@ -139,7 +139,7 @@
                                         <input type="hidden" name="page" value="{{ $page }}">
                                         <input type="hidden" name="file" value="{{ $selectedFile }}">
                                     </form>
-                                    
+
                                     <span class="text-muted small">
                                         Showing {{ number_format($lineCount) }} of {{ number_format($totalLines) }} lines
                                         @if($totalPages > 1)
@@ -172,7 +172,7 @@
                                 @php
                                     $lineClass = '';
                                     $level = '';
-                                    
+
                                     // Detect log level and apply styling
                                     if (preg_match('/\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2})\] local\.(ERROR|WARNING|INFO|DEBUG)/', $line, $matches)) {
                                         $level = strtolower($matches[2]);
@@ -188,7 +188,7 @@
                                 <div class="log-line {{ $lineClass }}">{{ $line }}</div>
                             @endforeach
                         </div>
-                        
+
                         <!-- Pagination -->
                         @if($totalPages > 1)
                         <div class="card-footer">
@@ -199,13 +199,13 @@
                                             <i class="fe fe-chevron-left"></i> Previous
                                         </a>
                                     </li>
-                                    
+
                                     @for($i = max(1, $page - 2); $i <= min($totalPages, $page + 2); $i++)
                                         <li class="page-item {{ $i == $page ? 'active' : '' }}">
                                             <a class="page-link" href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}&page={{ $i }}&per_page={{ $perPage }}">{{ $i }}</a>
                                         </li>
                                     @endfor
-                                    
+
                                     <li class="page-item {{ !$hasNextPage ? 'disabled' : '' }}">
                                         <a class="page-link" href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}&page={{ $page + 1 }}&per_page={{ $perPage }}" {{ !$hasNextPage ? 'tabindex="-1" aria-disabled="true"' : '' }}>
                                             Next <i class="fe fe-chevron-right"></i>
@@ -321,34 +321,34 @@
             <form id="logSettingForm">
                 <div class="modal-body">
                     <input type="hidden" id="log_setting_id" name="id">
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="name" class="form-label">Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="name" name="name" required placeholder="e.g., care_api_errors">
                             <small class="form-text text-muted">Unique identifier for this setting</small>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="channel_name" class="form-label">Slack Channel Name <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="channel_name" name="channel_name" required placeholder="e.g., care-api-logs">
                             <small class="form-text text-muted">Channel name without #</small>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="webhook_url" class="form-label">Webhook URL <span class="text-danger">*</span></label>
                         <input type="url" class="form-control" id="webhook_url" name="webhook_url" required placeholder="https://hooks.slack.com/services/...">
                         <small class="form-text text-muted">Slack webhook URL for this channel</small>
                     </div>
-                    
+
                     <div class="row">
                         <div class="col-md-6 mb-3">
                             <label for="log_type" class="form-label">Log Type <span class="text-danger">*</span></label>
                             <input type="text" class="form-control" id="log_type" name="log_type" required placeholder="e.g., care_api, order_sync, listing_api">
                             <small class="form-text text-muted">Category/type of logs (e.g., care_api, order_sync)</small>
                         </div>
-                        
+
                         <div class="col-md-6 mb-3">
                             <label for="log_level" class="form-label">Minimum Log Level <span class="text-danger">*</span></label>
                             <select class="form-select" id="log_level" name="log_level" required>
@@ -360,18 +360,18 @@
                             <small class="form-text text-muted">Minimum log level to post to Slack</small>
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="keywords" class="form-label">Keywords (Optional)</label>
                         <input type="text" class="form-control" id="keywords" name="keywords" placeholder="keyword1, keyword2, keyword3">
                         <small class="form-text text-muted">Comma-separated keywords to match in log messages (optional)</small>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label for="description" class="form-label">Description (Optional)</label>
                         <textarea class="form-control" id="description" name="description" rows="2" placeholder="Describe what logs this setting handles..."></textarea>
                     </div>
-                    
+
                     <div class="mb-3">
                         <div class="form-check">
                             <input class="form-check-input" type="checkbox" id="is_enabled" name="is_enabled" checked>
@@ -405,11 +405,11 @@ $(document).ready(function() {
 
 function clearLogFile() {
     const selectedFile = document.querySelector('select[name="file"]').value;
-    
+
     if (!confirm('Are you sure you want to clear the log file "' + selectedFile + '"? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/log-file") }}?file=' + encodeURIComponent(selectedFile), {
         method: 'DELETE',
         headers: {
@@ -440,11 +440,11 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     document.body.appendChild(alertDiv);
-    
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();
@@ -457,10 +457,10 @@ function openLogSettingModal(id = null) {
     const modal = new bootstrap.Modal(document.getElementById('logSettingModal'));
     const form = document.getElementById('logSettingForm');
     const modalTitle = document.getElementById('logSettingModalTitle');
-    
+
     form.reset();
     document.getElementById('log_setting_id').value = '';
-    
+
     if (id) {
         modalTitle.textContent = 'Edit Log Setting';
         // Load existing setting
@@ -492,7 +492,7 @@ function openLogSettingModal(id = null) {
     } else {
         modalTitle.textContent = 'Add Log Setting';
     }
-    
+
     modal.show();
 }
 
@@ -504,7 +504,7 @@ function deleteLogSetting(id) {
     if (!confirm('Are you sure you want to delete this log setting? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/log-settings") }}/' + id, {
         method: 'DELETE',
         headers: {
@@ -533,7 +533,7 @@ function duplicateLogSetting(id) {
     if (!confirm('Are you sure you want to duplicate this log setting? A copy will be created with the same settings but a different name.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/log-settings") }}/' + id + '/duplicate', {
         method: 'POST',
         headers: {
@@ -562,14 +562,14 @@ function duplicateLogSetting(id) {
 // Handle form submission
 document.getElementById('logSettingForm').addEventListener('submit', function(e) {
     e.preventDefault();
-    
+
     const formData = new FormData(this);
     const id = document.getElementById('log_setting_id').value;
-    const url = id 
+    const url = id
         ? '{{ url("v2/logs/log-settings") }}/' + id
         : '{{ url("v2/logs/log-settings") }}';
     const method = id ? 'PUT' : 'POST';
-    
+
     const data = {};
     formData.forEach((value, key) => {
         if (key === 'is_enabled') {
@@ -578,12 +578,12 @@ document.getElementById('logSettingForm').addEventListener('submit', function(e)
             data[key] = value;
         }
     });
-    
+
     // Remove id from data if creating new
     if (!id) {
         delete data.id;
     }
-    
+
     fetch(url, {
         method: method,
         headers: {
