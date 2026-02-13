@@ -16,7 +16,7 @@ module.exports = {
       name: 'sdpos-api-queue',
 
       script: 'artisan',
-      args: 'queue:work redis --queue=api-requests --sleep=1 --tries=3 --timeout=30 --max-jobs=500 --max-time=3600',
+      args: 'queue:work database --queue=api-requests --sleep=1 --tries=3 --timeout=30 --max-jobs=500 --max-time=3600',
 
       interpreter: 'php',
       cwd: basePath,
@@ -48,7 +48,7 @@ module.exports = {
       name: 'sdpos-default-queue',
 
       script: 'artisan',
-      args: 'queue:work redis --queue=default --sleep=3 --tries=3 --timeout=120 --max-jobs=100 --max-time=3600',
+      args: 'queue:work database --queue=default --sleep=3 --tries=3 --timeout=120 --max-jobs=100 --max-time=3600',
 
       interpreter: 'php',
       cwd: basePath,
@@ -81,7 +81,7 @@ module.exports = {
       name: 'sdpos-listings-sync',
 
       script: 'artisan',
-      args: 'queue:work redis --queue=listings-sync --sleep=5 --tries=1 --timeout=7200 --max-jobs=10 --max-time=3600',
+      args: 'queue:work database --queue=listings-sync --sleep=5 --tries=1 --timeout=7200 --max-jobs=10 --max-time=3600',
 
       interpreter: 'php',
       cwd: basePath,
