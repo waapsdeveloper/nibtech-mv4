@@ -49,7 +49,12 @@ class FunctionsThirty extends Command
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
         
-        // Log command start
+        // Log command start (Slack + file)
+        Log::channel('functions_thirty')->info('Functions:thirty started', [
+            'command' => 'functions:thirty',
+            'started_at' => now()->toDateTimeString(),
+            'local_mode' => $syncDataInLocal,
+        ]);
         SlackLogService::post(
             'listing_sync',
             'info',
@@ -74,47 +79,11 @@ class FunctionsThirty extends Command
             // );
         }
 
-        // FIX 3: Run refresh:new first to ensure orders are processed and stock deducted before syncing stock from API
-        // This prevents race conditions where FunctionsThirty overwrites stock before RefreshNew deducts it
-        // $this->info("📦 Running refresh:new first to sync orders and deduct stock...");
-        // SlackLogService::post(
-        //     'listing_sync',
-        //     'info',
-        //     "📦 Functions:thirty: Running refresh:new first to ensure orders are processed before stock sync",
-        //     [
-        //         'command' => 'functions:thirty',
-        //         'step' => 'pre_sync_refresh_new'
-        //     ]
-        // );
-        
-        try {
-            $refreshNewStartTime = microtime(true);
-            $this->call('refresh:new');
-            $refreshNewDuration = round(microtime(true) - $refreshNewStartTime, 2);
-            
-            // $this->info("✅ refresh:new completed in {$refreshNewDuration}s");
-            // SlackLogService::post(
-            //     'listing_sync',
-            //     'info',
-            //     "✅ Functions:thirty: refresh:new completed in {$refreshNewDuration}s - Proceeding with stock sync",
-            //     [
-            //         'command' => 'functions:thirty',
-            //         'refresh_new_duration' => $refreshNewDuration
-            //     ]
-            // );
-        } catch (\Exception $e) {
-            $this->error("❌ refresh:new failed: " . $e->getMessage());
-            SlackLogService::post(
-                'listing_sync',
-                'error',
-                "❌ Functions:thirty: refresh:new failed - Continuing with stock sync anyway",
-                [
-                    'command' => 'functions:thirty',
-                    'error' => $e->getMessage()
-                ]
-            );
-            // Continue with stock sync even if refresh:new fails
-        }
+        // refresh:new skipped (enable when needed to sync orders before stock sync)
+        Log::channel('functions_thirty')->info('Functions:thirty: refresh:new skipped', [
+            'command' => 'functions:thirty',
+            'skipped_at' => now()->toDateTimeString(),
+        ]);
 
         ini_set('max_execution_time', 1200);
         
@@ -190,7 +159,14 @@ class FunctionsThirty extends Command
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
         
-        // Log command completion with statistics
+        // Log command completion with statistics (Slack + file)
+        Log::channel('functions_thirty')->info('Functions:thirty completed', [
+            'command' => 'functions:thirty',
+            'completed_at' => now()->toDateTimeString(),
+            'duration_seconds' => $duration,
+            'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
+            'statistics' => $overallStats,
+        ]);
         SlackLogService::post(
             'listing_sync',
             'info',
@@ -661,7 +637,7 @@ class FunctionsThirty extends Command
                         }
 
                     } catch (\Exception $e) {
-                        Log::error("Refurbed: Error processing offer", [
+                        Log::channel('functions_thirty')->error("Refurbed: Error processing offer", [
                             'offer_id' => $offerId ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
@@ -789,7 +765,7 @@ class FunctionsThirty extends Command
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
-            Log::info("Refurbed: Completed listing sync", [
+            Log::channel('functions_thirty')->info("Refurbed: Completed listing sync", [
                 'total_listings' => $processedListings,
                 'total_offers' => $totalOffers,
                 'countries_processed' => $countryCount,
@@ -797,7 +773,7 @@ class FunctionsThirty extends Command
             echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
-            Log::error("Refurbed: Fatal error in get_refurbed_listings", [
+            Log::channel('functions_thirty')->error("Refurbed: Fatal error in get_refurbed_listings", [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1155,7 +1131,7 @@ class FunctionsThirty extends Command
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            Log::error('Refurbed: Failed to push price update', [
+            Log::channel('functions_thirty')->error('Refurbed: Failed to push price update', [
                 'sku' => $sku,
                 'error' => $e->getMessage(),
             ]);
