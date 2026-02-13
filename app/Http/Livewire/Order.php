@@ -809,8 +809,8 @@ class Order extends Component
     }
     public function purchase_detail($order_id, $deleted = null){
         // if previous url contains url('purchase') then set session previous to url()->previous()
-        if(str_contains(url()->previous(),url('purchase')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('purchase')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('purchase_previous', url()->previous());
         }
 
 
@@ -829,6 +829,14 @@ class Order extends Component
 
         if(request('summary') == 1){
             $sold_total = [
+                'total_cost' => 0,
+                'total_repair' => 0,
+                'total_price' => 0,
+                'total_charge' => 0,
+                'total_profit' => 0,
+                'total_quantity' => 0,
+            ];
+            $rma_total = [
                 'total_cost' => 0,
                 'total_repair' => 0,
                 'total_price' => 0,

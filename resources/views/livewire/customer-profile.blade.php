@@ -44,7 +44,7 @@
             <div class="justify-content-center mt-2 position-relative">
                 <ol class="breadcrumb">
                     <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                    <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Customers</a></li>
+                    <li class="breadcrumb-item tx-15"><a href="{{ session('customer_previous') ?? url('customer') }}">Customers</a></li>
                     <li class="breadcrumb-item active" aria-current="page">{{ $customer->company }}</li>
                 </ol>
                 <form method="GET" action="" id="search" class="form-inline align-self-center mt-2">

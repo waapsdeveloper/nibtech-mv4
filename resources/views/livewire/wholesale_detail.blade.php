@@ -136,7 +136,7 @@
                 <div class="text-end">
                     <ol class="breadcrumb justify-content-end">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BulkSale</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('wholesale_previous') ?? url('wholesale') }}">BulkSale</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BulkSale Detail</li>
                     </ol>
                     <br>

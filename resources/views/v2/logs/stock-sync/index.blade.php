@@ -23,7 +23,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/stock-sync') }}">Logs</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Stock Sync</li>
@@ -116,7 +116,7 @@
                     <h5 class="card-title mb-0">Stock Sync Logs</h5>
                 </div>
             </div>
-            
+
             @if($logs->count() > 0)
                 <div class="table-responsive">
                     <table class="table table-hover table-bordered">
@@ -167,7 +167,7 @@
                                         <a href="{{ url('v2/logs/stock-sync/' . $log->id) }}" class="btn btn-sm btn-primary" title="View Details">
                                             <i class="fe fe-eye"></i>
                                         </a>
-                                        
+
                                         <!-- Delete Button -->
                                         <button type="button" class="btn btn-sm btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
                                             <i class="fe fe-trash-2"></i>
@@ -179,7 +179,7 @@
                         </tbody>
                     </table>
                 </div>
-                
+
                 <!-- Pagination -->
                 <div class="mt-3">
                     {{ $logs->appends(request()->query())->links() }}
@@ -248,7 +248,7 @@ function openStatusModal(logId, currentStatus) {
     // Set current status badge
     let badgeClass = 'badge bg-secondary';
     let statusText = currentStatus.charAt(0).toUpperCase() + currentStatus.slice(1);
-    
+
     if (currentStatus === 'running') {
         badgeClass = 'badge bg-warning';
     } else if (currentStatus === 'completed') {
@@ -256,22 +256,22 @@ function openStatusModal(logId, currentStatus) {
     } else if (currentStatus === 'failed') {
         badgeClass = 'badge bg-danger';
     }
-    
+
     document.getElementById('currentStatusBadge').innerHTML = '<span class="' + badgeClass + '">' + statusText + '</span>';
     document.getElementById('selectedLogId').value = logId;
     document.getElementById('selectedStatus').value = '';
-    
+
     // Reset selection
     document.querySelectorAll('#statusChangeModal .list-group-item').forEach(item => {
         item.classList.remove('active');
     });
-    
+
     statusModal.show();
 }
 
 function selectStatus(status) {
     document.getElementById('selectedStatus').value = status;
-    
+
     // Update UI to show selection
     document.querySelectorAll('#statusChangeModal .list-group-item').forEach(item => {
         item.classList.remove('active');
@@ -284,12 +284,12 @@ function selectStatus(status) {
 function confirmStatusChange() {
     const logId = document.getElementById('selectedLogId').value;
     const newStatus = document.getElementById('selectedStatus').value;
-    
+
     if (!newStatus) {
         showAlert('warning', 'Please select a status');
         return;
     }
-    
+
     changeStatus(logId, newStatus);
     statusModal.hide();
 }
@@ -298,7 +298,7 @@ function deleteLog(logId) {
     if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/stock-sync") }}/' + logId, {
         method: 'DELETE',
         headers: {
@@ -312,7 +312,7 @@ function deleteLog(logId) {
         if (data.success) {
             // Show success message
             showAlert('success', data.message || 'Log entry deleted successfully');
-            
+
             // Remove the row from table
             const row = document.querySelector('tr[data-log-id="' + logId + '"]');
             if (row) {
@@ -349,7 +349,7 @@ function changeStatus(logId, newStatus) {
     .then(data => {
         if (data.success) {
             showAlert('success', data.message || 'Status updated successfully');
-            
+
             // Reload page to show updated status
             setTimeout(() => {
                 window.location.reload();
@@ -369,12 +369,12 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     // Add to page
     document.body.appendChild(alertDiv);
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {

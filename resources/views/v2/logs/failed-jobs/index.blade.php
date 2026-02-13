@@ -32,7 +32,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/failed-jobs') }}">Logs</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Failed Jobs</li>
@@ -48,7 +48,7 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
+
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -176,7 +176,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         <!-- Pagination -->
                         <div class="mt-3">
                             {{ $failedJobs->appends(request()->query())->links() }}
@@ -203,7 +203,7 @@ function retryJob(jobId) {
     if (!confirm('Are you sure you want to retry this job?')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId) + '/retry', {
         method: 'POST',
         headers: {
@@ -233,7 +233,7 @@ function deleteJob(jobId) {
     if (!confirm('Are you sure you want to delete this failed job? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId), {
         method: 'DELETE',
         headers: {
@@ -263,7 +263,7 @@ function clearAllFailedJobs() {
     if (!confirm('Are you sure you want to delete ALL failed jobs? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/failed-jobs") }}', {
         method: 'DELETE',
         headers: {
@@ -293,11 +293,11 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     document.body.appendChild(alertDiv);
-    
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();

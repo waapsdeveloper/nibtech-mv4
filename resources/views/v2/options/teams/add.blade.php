@@ -13,7 +13,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboards') }}</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{url('v2/options/teams')}}">{{ __('locale.Team') }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">{{ __('locale.Add Member') }}</li>
             </ol>

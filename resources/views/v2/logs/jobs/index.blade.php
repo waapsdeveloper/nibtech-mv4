@@ -19,7 +19,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/jobs') }}">Logs</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Jobs</li>
@@ -35,21 +35,21 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
+
             @if(session('success'))
             <div class="alert alert-success alert-dismissible fade show" role="alert">
                 {{ session('success') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
+
             @if(session('error'))
             <div class="alert alert-danger alert-dismissible fade show" role="alert">
                 {{ session('error') }}
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
             @endif
-            
+
             <!-- Statistics Cards -->
             <div class="row mb-4">
                 <div class="col-md-4">
@@ -190,7 +190,7 @@
                                 </tbody>
                             </table>
                         </div>
-                        
+
                         <!-- Pagination -->
                         <div class="mt-3">
                             {{ $jobs->appends(request()->query())->links() }}
@@ -217,12 +217,12 @@ function processJob(jobId) {
     if (!confirm('Are you sure you want to process this job now? This will execute it immediately.')) {
         return;
     }
-    
+
     const btn = event.target.closest('button');
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fe fe-loader fa-spin"></i>';
-    
+
     fetch('{{ url("v2/logs/jobs") }}/' + jobId + '/process', {
         method: 'POST',
         headers: {
@@ -256,7 +256,7 @@ function deleteJob(jobId) {
     if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/jobs") }}/' + jobId, {
         method: 'DELETE',
         headers: {
@@ -284,21 +284,21 @@ function deleteJob(jobId) {
 
 function processAllJobs() {
     const queuedCount = {{ $stats['queued'] ?? 0 }};
-    
+
     if (queuedCount === 0) {
         showAlert('info', 'No queued jobs to process');
         return;
     }
-    
+
     if (!confirm(`Are you sure you want to process all ${queuedCount} queued job(s)? This will execute them immediately.`)) {
         return;
     }
-    
+
     const btn = event.target.closest('button');
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fe fe-loader fa-spin me-1"></i>Processing...';
-    
+
     fetch('{{ route("v2.logs.jobs.process-all") }}', {
         method: 'POST',
         headers: {
@@ -332,7 +332,7 @@ function clearAllJobs() {
     if (!confirm('Are you sure you want to delete ALL jobs? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/jobs") }}', {
         method: 'DELETE',
         headers: {
@@ -362,11 +362,11 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     document.body.appendChild(alertDiv);
-    
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();

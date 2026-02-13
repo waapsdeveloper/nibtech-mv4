@@ -90,7 +90,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Topup</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('topup_previous') ?? url('topup') }}">Topup</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Topup Detail</li>
                     </ol>
                     @if ($process->status > 1 && $process_listed_quantity > $process_scanned_quantity)

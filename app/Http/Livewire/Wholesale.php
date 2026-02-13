@@ -239,8 +239,8 @@ class Wholesale extends Component
     }
     public function wholesale_detail($order_id){
 
-        if(str_contains(url()->previous(),url('wholesale')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('wholesale')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('wholesale_previous', url()->previous());
         }
         $data['title_page'] = "BulkSale Detail";
         session()->put('page_title', $data['title_page']);
