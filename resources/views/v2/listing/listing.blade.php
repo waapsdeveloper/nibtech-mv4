@@ -14,7 +14,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Listings V2</li>
             </ol>
         </div>
@@ -132,11 +132,11 @@
     // function showStockLocksModal(variationId, marketplaceId) {
     //     const modal = new bootstrap.Modal(document.getElementById('stockLocksModal'));
     //     const modalBody = document.getElementById('stockLocksModalBody');
-    //     
+    //
     //     // Show loading state
     //     modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock locks...</p></div>';
     //     modal.show();
-    //     
+    //
     //     // Load stock locks via API (returns rendered Blade template)
     //     $.ajax({
     //         url: '{{ url("v2/stock-locks/api") }}',
@@ -161,10 +161,10 @@
         const modal = new bootstrap.Modal(document.getElementById('stockFormulaModal'));
         const modalBody = document.getElementById('stockFormulaModalBody');
         const modalFooter = document.getElementById('stockFormulaModalFooter');
-        
+
         // Hide footer initially
         modalFooter.style.display = 'none';
-        
+
         // Build variation heading HTML
         const variationHeading = `
             <div class="mb-3 pb-2 border-bottom">
@@ -179,11 +179,11 @@
                 </div>
             </div>
         `;
-        
+
         // Show loading state with variation heading
         modalBody.innerHTML = variationHeading + '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock formulas...</p></div>';
         modal.show();
-        
+
         // Load stock formula modal content via API
         $.ajax({
             url: window.ListingConfig.urls.getStockFormulaModal + '/' + variationId + '/modal',
@@ -193,14 +193,14 @@
                 if (response.html) {
                     // Prepend variation heading to the loaded content
                     modalBody.innerHTML = variationHeading + response.html;
-                    
+
                     // Set global toggle
                     const isGlobal = response.is_global || false;
                     const globalToggle = $('#stockFormulaGlobalToggle');
                     globalToggle.prop('checked', isGlobal);
                     globalToggle.prop('disabled', false);
                     $('#stockFormulaGlobalLabel small').text(isGlobal ? 'Global' : 'Per-Variation');
-                    
+
                     // Show footer
                     modalFooter.style.display = 'flex';
                     // Setup save all button handler
@@ -223,20 +223,20 @@
             }
         });
     }
-    
+
     // Setup save all formulas button
     function setupSaveAllFormulas(variationId) {
         $('#saveAllFormulasBtn').off('click').on('click', function() {
             const btn = $(this);
             const originalText = btn.html();
             btn.prop('disabled', true).html('<span class="spinner-border spinner-border-sm"></span> Saving...');
-            
+
             // Collect all formula forms
             const forms = $('.formula-inline-form');
             let savedCount = 0;
             let errorCount = 0;
             const totalForms = forms.length;
-            
+
             // Count forms with values
             let formsWithValues = 0;
             forms.each(function() {
@@ -245,13 +245,13 @@
                     formsWithValues++;
                 }
             });
-            
+
             if (formsWithValues === 0) {
                 btn.prop('disabled', false).html(originalText);
                 // Don't show alert, just return silently
                 return;
             }
-            
+
             // Collect all form data first
             const formsToSave = [];
             forms.each(function() {
@@ -259,28 +259,28 @@
                 const marketplaceId = form.data('marketplace-id');
                 const valueInput = form.find(`#formula_value_${marketplaceId}`);
                 const value = valueInput.val().trim();
-                
+
                 // Skip if value is empty
                 if (!value || value === '') {
                     return;
                 }
-                
+
                 const numValue = parseFloat(value);
                 const type = form.find(`#formula_type_${marketplaceId}`).val();
                 const applyTo = form.find(`#formula_apply_to_${marketplaceId}`).val();
-                
+
                 if (isNaN(numValue) || numValue < 0) {
                     errorCount++;
                     return;
                 }
-                
+
                 const minThreshold = form.find(`#min_threshold_${marketplaceId}`).val();
                 const maxThreshold = form.find(`#max_threshold_${marketplaceId}`).val();
-                
-                const saveUrl = (window.StockFormulaConfig && window.StockFormulaConfig.urls && window.StockFormulaConfig.urls.saveFormula) 
+
+                const saveUrl = (window.StockFormulaConfig && window.StockFormulaConfig.urls && window.StockFormulaConfig.urls.saveFormula)
                     ? window.StockFormulaConfig.urls.saveFormula + variationId + '/formula/' + marketplaceId
                     : window.ListingConfig.urls.getStockFormulaModal + '/' + variationId + '/formula/' + marketplaceId;
-                
+
                 formsToSave.push({
                     url: saveUrl,
                     marketplaceId: marketplaceId,
@@ -294,20 +294,20 @@
                     }
                 });
             });
-            
+
             // Save forms sequentially using promises
             let savePromise = Promise.resolve();
             formsToSave.forEach(function(formData) {
                 savePromise = savePromise.then(function() {
                     return new Promise(function(resolve) {
                         // Get fresh CSRF token from meta tag or config
-                        const csrfToken = $('meta[name="csrf-token"]').attr('content') 
+                        const csrfToken = $('meta[name="csrf-token"]').attr('content')
                             || (window.StockFormulaConfig && window.StockFormulaConfig.csrfToken)
                             || window.ListingConfig.csrfToken;
-                        
+
                         // Update token in form data
                         formData.data._token = csrfToken;
-                        
+
                         $.ajax({
                             url: formData.url,
                             type: 'POST',
@@ -338,19 +338,19 @@
                     });
                 });
             });
-            
+
             // Wait for all saves to complete
             savePromise.then(function() {
                 // Show result
                 btn.prop('disabled', false).html(originalText);
-                
+
                 if (errorCount === 0) {
                     // Close the modal
                     const modal = bootstrap.Modal.getInstance(document.getElementById('stockFormulaModal'));
                     if (modal) {
                         modal.hide();
                     }
-                    
+
                     // Refresh the variation card to show updated thresholds
                     // Reload the page or refresh the specific variation card
                     location.reload();
@@ -359,12 +359,12 @@
                     alert(`Error: ${errorCount} of ${formsToSave.length} formulas failed to save. Please try again.`);
                 }
             });
-            
+
             return; // Exit early, promise will handle the result
-            
+
         });
     }
-    
+
     // Also expose on window for global access
     window.showStockFormulaModal = showStockFormulaModal;
 </script>

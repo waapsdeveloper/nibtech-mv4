@@ -9,6 +9,7 @@ return [
     |
     */
 
+    'Dashboard' => 'Dashboard',
     'Dashboards' => 'Dashboard',
     'Transactions' => 'Transactions',
     'Payouts' => 'Payouts',

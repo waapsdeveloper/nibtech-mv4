@@ -13,7 +13,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboards') }}</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{url('v2/options/teams')}}">Team</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Edit Member</li>
             </ol>
@@ -129,7 +129,7 @@
             </div>
         </div>
     </form>
-    
+
     @if (session('user')->hasPermission('change_permission') || session('user_id') == 1)
     <!-- User Permissions Section -->
     <div class="row mt-4">
@@ -137,7 +137,7 @@
             <div class="card">
                 <div class="card-header">
                     <h4 class="card-title mb-1">User Permissions</h4>
-                    <p class="mb-0">Manage individual permissions for {{ $member->first_name }} {{ $member->last_name }}. 
+                    <p class="mb-0">Manage individual permissions for {{ $member->first_name }} {{ $member->last_name }}.
                     <small class="text-muted">Note: Permissions from role are shown but cannot be changed here. Use Role Permissions to modify role-based permissions.</small></p>
                 </div>
                 <div class="card-body">
@@ -163,10 +163,10 @@
                 placeholder: 'Select Customer Restriction',
                 allowClear: true
             });
-            
+
             // Check if user has allow_unknown_ip permission on page load
             checkAllowUnknownIP({{ $member->id }});
-            
+
             // Load user permissions
             fetchUserPermissions({{ $member->id }});
         });
@@ -184,7 +184,7 @@
 
         function toggleAllowUnknownIP(userId, isChecked) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            
+
             fetch(`{{ url('v2/options/teams/toggle-allow-unknown-ip') }}/${userId}`, {
                 method: 'POST',
                 headers: {
@@ -206,7 +206,7 @@
                         <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
                     `;
                     document.querySelector('.card-body').insertBefore(alertDiv, document.querySelector('.card-body').firstChild);
-                    
+
                     // Auto-remove after 3 seconds
                     setTimeout(() => {
                         alertDiv.remove();
@@ -231,22 +231,22 @@
                 .then(data => {
                     var permissionsDiv = document.getElementById('user-permissions');
                     permissionsDiv.innerHTML = '';
-                    
+
                     @foreach ($permissions as $permission)
                         var hasRolePermission = data.role_permissions.includes('{{ $permission->name }}');
                         var hasUserPermission = data.user_permissions.includes('{{ $permission->name }}');
                         var canAssign = data.current_admin_permissions.includes('{{ $permission->name }}') || {{ session('user_id') == 1 ? 'true' : 'false' }};
-                        
+
                         var isChecked = hasUserPermission ? 'checked' : '';
                         var isDisabled = hasRolePermission ? 'disabled' : '';
                         var roleBadge = hasRolePermission ? '<span class="badge bg-info ms-2">From Role</span>' : '';
                         var disabledTitle = hasRolePermission ? ' title="This permission comes from the user\'s role. Change it in Role Permissions."' : '';
-                        
+
                         if (canAssign || hasRolePermission) {
                             permissionsDiv.innerHTML += `
                                 <div class="form-check form-switch ms-4 mb-2">
-                                    <input type="checkbox" value="{{ $permission->id }}" 
-                                           class="form-check-input" ${isChecked} ${isDisabled} 
+                                    <input type="checkbox" value="{{ $permission->id }}"
+                                           class="form-check-input" ${isChecked} ${isDisabled}
                                            ${disabledTitle}
                                            onchange="toggleUserPermission(${userId}, {{ $permission->id }}, this.checked)">
                                     <label class="form-check-label" for="permission">
@@ -258,14 +258,14 @@
                 })
                 .catch(error => {
                     console.error('Error fetching permissions:', error);
-                    document.getElementById('user-permissions').innerHTML = 
+                    document.getElementById('user-permissions').innerHTML =
                         '<div class="alert alert-danger">Error loading permissions. Please refresh the page.</div>';
                 });
         }
 
         function toggleUserPermission(userId, permissionId, isChecked) {
             const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-            
+
             fetch(`{{ url('v2/options/teams/toggle-user-permission') }}/${userId}/${permissionId}/${isChecked}`, {
                 method: 'POST',
                 headers: {

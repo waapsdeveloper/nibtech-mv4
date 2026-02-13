@@ -228,8 +228,8 @@ class Topup extends Component
         ini_set('max_execution_time', 300);
         ini_set('pdo_mysql.max_input_vars', '10000');
 
-        if(str_contains(url()->previous(),url('topup')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('topup')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('topup_previous', url()->previous());
         }
         $data['title_page'] = "Topup Detail";
         session()->put('page_title', $data['title_page']);

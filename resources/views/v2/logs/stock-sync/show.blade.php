@@ -8,7 +8,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/stock-sync') }}">Logs</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/stock-sync') }}">Stock Sync</a></li>
@@ -146,7 +146,7 @@
                         <a href="{{ url('v2/logs/stock-sync') }}" class="btn btn-secondary">
                             <i class="fe fe-arrow-left"></i> Back to Logs
                         </a>
-                        
+
                         <button type="button" class="btn btn-danger" onclick="deleteLog({{ $log->id }})" title="Delete Log">
                             <i class="fe fe-trash-2"></i> Delete Log
                         </button>
@@ -164,7 +164,7 @@ function deleteLog(logId) {
     if (!confirm('Are you sure you want to delete this log entry? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/stock-sync") }}/' + logId, {
         method: 'DELETE',
         headers: {
@@ -226,12 +226,12 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     // Add to page
     document.body.appendChild(alertDiv);
-    
+
     // Auto remove after 5 seconds
     setTimeout(() => {
         if (alertDiv.parentNode) {

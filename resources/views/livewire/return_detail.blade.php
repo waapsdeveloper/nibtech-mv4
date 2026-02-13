@@ -55,8 +55,8 @@
                 </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous') }}">Returns</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('return_previous') ?? url('return') }}">Returns</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Return Detail</li>
                     </ol>
                 </div>

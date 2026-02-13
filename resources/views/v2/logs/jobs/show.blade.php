@@ -8,7 +8,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/jobs') }}">Logs</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/jobs') }}">Jobs</a></li>
@@ -32,10 +32,10 @@
                             <strong>Queue:</strong> {{ $job->queue ?? 'default' }}
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
-                            <strong>Status:</strong> 
+                            <strong>Status:</strong>
                             <span class="badge bg-{{ $status === 'processing' ? 'warning' : 'info' }}">
                                 {{ $status === 'processing' ? 'Processing' : 'Queued' }}
                             </span>
@@ -44,7 +44,7 @@
                             <strong>Attempts:</strong> {{ $job->attempts ?? 0 }}
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-6">
                             <strong>Created At:</strong> {{ \Carbon\Carbon::parse($job->created_at)->format('Y-m-d H:i:s') }}
@@ -53,7 +53,7 @@
                             <strong>Available At:</strong> {{ \Carbon\Carbon::parse($job->available_at)->format('Y-m-d H:i:s') }}
                         </div>
                     </div>
-                    
+
                     @if($job->reserved_at)
                     <div class="row mb-3">
                         <div class="col-md-6">
@@ -61,12 +61,12 @@
                         </div>
                     </div>
                     @endif
-                    
+
                     <hr>
-                    
+
                     <h6 class="mb-3">Job Payload</h6>
                     <pre><code>{{ json_encode($payload, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE) }}</code></pre>
-                    
+
                     <div class="mt-4">
                         <a href="{{ url('v2/logs/jobs') }}" class="btn btn-secondary">Back to Jobs</a>
                         @if(!$job->reserved_at)
@@ -91,12 +91,12 @@ function processJob(jobId) {
     if (!confirm('Are you sure you want to process this job now? This will execute it immediately.')) {
         return;
     }
-    
+
     const btn = event.target.closest('button');
     const originalHtml = btn.innerHTML;
     btn.disabled = true;
     btn.innerHTML = '<i class="fe fe-loader fa-spin"></i> Processing...';
-    
+
     fetch('{{ url("v2/logs/jobs") }}/' + jobId + '/process', {
         method: 'POST',
         headers: {
@@ -128,7 +128,7 @@ function deleteJob(jobId) {
     if (!confirm('Are you sure you want to delete this job? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/jobs") }}/' + jobId, {
         method: 'DELETE',
         headers: {

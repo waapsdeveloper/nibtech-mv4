@@ -111,8 +111,8 @@ class Customer extends Component
     }
     public function profile($id)
     {
-        if(str_contains(url()->previous(),url('customer')) && !str_contains(url()->previous(),'profile')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('customer')) && !str_contains(url()->previous(), 'profile')){
+            session()->put('customer_previous', url()->previous());
         }
         $per_page = 50;
         if(request('per_page') != '' && is_numeric(request('per_page'))){
@@ -375,10 +375,10 @@ class Customer extends Component
         //     'password'=> Hash::make($password),
         // );
         $data = request('customer');
-        
+
         // Truncate string fields to prevent database errors
         $data = $this->truncateCustomerFields($data);
-        
+
         Customer_model::insert($data);
         session()->put('success',"Customer has been added successfully");
         return redirect('customer');
@@ -415,18 +415,18 @@ class Customer extends Component
     {
         $data = request('customer');
         $data['is_vendor'] = $data['type'];
-        
+
         // Truncate string fields to prevent database errors
         $data = $this->truncateCustomerFields($data);
-        
+
         Customer_model::where('id',$id)->update($data);
         session()->put('success',"Customer has been updated successfully");
         return redirect()->back();
     }
-    
+
     /**
      * Truncate customer fields to prevent database column length errors
-     * 
+     *
      * @param array $data
      * @return array
      */
@@ -446,13 +446,13 @@ class Customer extends Component
             'vat' => 50,
             'note' => 1000,
         ];
-        
+
         foreach ($fieldLimits as $field => $maxLength) {
             if (isset($data[$field]) && is_string($data[$field])) {
                 $data[$field] = mb_substr(trim($data[$field]), 0, $maxLength);
             }
         }
-        
+
         return $data;
     }
 

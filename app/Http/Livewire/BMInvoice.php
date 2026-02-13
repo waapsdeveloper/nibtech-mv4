@@ -87,7 +87,7 @@ class BMInvoice extends Component
         $listingUrl = url('bm_invoice');
 
         if (str_contains($previous, $listingUrl) && ! str_contains($previous, 'detail')) {
-            session()->put('previous', $previous);
+            session()->put('bm_invoice_previous', $previous);
         }
     }
 

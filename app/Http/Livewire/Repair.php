@@ -392,8 +392,8 @@ class Repair extends Component
 
     public function repair_detail($process_id){
 
-        if(str_contains(url()->previous(),url('repair')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('repair')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('repair_previous', url()->previous());
         }
         $data['title_page'] = "Repair Detail";
         session()->put('page_title', $data['title_page']);

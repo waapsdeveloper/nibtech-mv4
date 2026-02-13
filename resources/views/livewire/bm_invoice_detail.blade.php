@@ -25,8 +25,8 @@
 
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
-                        <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">BM Invoice</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('bm_invoice_previous') ?? url('bm_invoice') }}">BM Invoice</a></li>
                         <li class="breadcrumb-item active" aria-current="page">BM Invoice Detail</li>
                     </ol>
                     @if ($process->status > 1 && $process->listed_stocks_verification->sum('qty_change') > $process->process_stocks->count())

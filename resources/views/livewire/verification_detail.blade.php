@@ -84,7 +84,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">Inventory Verification</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('inventory_verification_previous') ?? url('inventory_verification') }}">Inventory Verification</a></li>
                         <li class="breadcrumb-item active" aria-current="page">Inventory Verification Detail</li>
                     </ol>
                 </div>

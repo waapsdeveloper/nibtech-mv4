@@ -36,6 +36,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GoogleController;
 use App\Http\Controllers\IndexController;
 use App\Http\Controllers\ListingController;
+use App\Http\Controllers\PermissionRequestController;
 use App\Http\Controllers\ReportController;
 use App\Http\Controllers\RefurbedDispatchCheckController;
 use App\Http\Controllers\RefurbedBulkLabelController;
@@ -74,6 +75,9 @@ Route::post('/admin/2fa', [Signin::class, 'verify2FA'])->name('admin.2fa');
 Route::get('signin', Signin::class)->name('login');
 Route::post('login', [Signin::class,'login'])->name('signin');
 Route::get('logout', Logout::class)->name('signin');
+Route::post('permission-requests', [PermissionRequestController::class, 'store'])->name('permission_requests.store');
+Route::post('permission-requests/{permissionRequest}/approve', [PermissionRequestController::class, 'approve'])->name('permission_requests.approve');
+Route::post('permission-requests/{permissionRequest}/deny', [PermissionRequestController::class, 'deny'])->name('permission_requests.deny');
 
 Route::get('error404', Error404::class)->name('error');
 Route::get('error500', Error500::class)->name('error');

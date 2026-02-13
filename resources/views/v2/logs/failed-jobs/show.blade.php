@@ -27,7 +27,7 @@
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
-                <li class="breadcrumb-item tx-15"><a href="/">Dashboard</a></li>
+                <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/failed-jobs') }}">Logs</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/logs/failed-jobs') }}">Failed Jobs</a></li>
@@ -137,7 +137,7 @@
                                     </tr>
                                     @endif
                                 </table>
-                                
+
                                 @if(isset($exception['trace']))
                                 <div class="mt-3">
                                     <h6>Stack Trace</h6>
@@ -169,7 +169,7 @@
                         <a href="{{ url('v2/logs/failed-jobs') }}" class="btn btn-secondary">
                             <i class="fe fe-arrow-left"></i> Back to Failed Jobs
                         </a>
-                        
+
                         <div>
                             <button type="button" class="btn btn-success me-2" onclick="retryJob('{{ $job->uuid ?? $job->id }}')">
                                 <i class="fe fe-refresh-cw"></i> Retry Job
@@ -192,7 +192,7 @@ function retryJob(jobId) {
     if (!confirm('Are you sure you want to retry this job?')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId) + '/retry', {
         method: 'POST',
         headers: {
@@ -223,7 +223,7 @@ function deleteJob(jobId) {
     if (!confirm('Are you sure you want to delete this failed job? This action cannot be undone.')) {
         return;
     }
-    
+
     fetch('{{ url("v2/logs/failed-jobs") }}/' + encodeURIComponent(jobId), {
         method: 'DELETE',
         headers: {
@@ -253,11 +253,11 @@ function showAlert(type, message) {
     const alertDiv = document.createElement('div');
     alertDiv.className = 'alert alert-' + type + ' alert-dismissible fade show position-fixed';
     alertDiv.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
-    alertDiv.innerHTML = message + 
+    alertDiv.innerHTML = message +
         '<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>';
-    
+
     document.body.appendChild(alertDiv);
-    
+
     setTimeout(() => {
         if (alertDiv.parentNode) {
             alertDiv.remove();

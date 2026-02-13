@@ -163,8 +163,8 @@ class SalesReturn extends Component
     }
     public function return_detail($order_id){
 
-        if(str_contains(url()->previous(),url('return')) && !str_contains(url()->previous(),'detail')){
-            session()->put('previous', url()->previous());
+        if(str_contains(url()->previous(), url('return')) && !str_contains(url()->previous(), 'detail')){
+            session()->put('return_previous', url()->previous());
         }
 
         $data['title_page'] = "Return Detail";

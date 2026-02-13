@@ -142,25 +142,15 @@
 </div>
 
 
-        <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
-                <div class="left-content">
-                {{-- <span class="main-content-title mg-b-0 mg-b-lg-1">Orders</span> --}}
-                @php
-                    $refreshMarketplaceParam = request()->has('marketplace') ? request('marketplace') : null;
-                    $refreshMarketplace = ($refreshMarketplaceParam === null || $refreshMarketplaceParam === '') ? 1 : $refreshMarketplaceParam;
-                @endphp
-                <a href="{{ url('refresh_order') }}?marketplace={{ $refreshMarketplace }}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
-                <a href="{{url('check_new')}}" class="mg-b-0 mg-b-lg-1 btn btn-primary">Check for New</a>
-                </div>
-                <div class="justify-content-center mt-2">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">Orders</li>
-                    </ol>
-                </div>
-            </div>
-        <!-- /breadcrumb -->
+        @php
+            $refreshMarketplaceParam = request()->has('marketplace') ? request('marketplace') : null;
+            $refreshMarketplace = ($refreshMarketplaceParam === null || $refreshMarketplaceParam === '') ? 1 : $refreshMarketplaceParam;
+        @endphp
+        
+        <x-breadcrumb :items="[['label' => 'Orders']]">
+            <a href="{{ url('refresh_order') }}?marketplace={{ $refreshMarketplace }}" target="_blank" class="mg-b-0 mg-b-lg-1 btn btn-primary">Recheck All</a>
+            <a href="{{url('check_new')}}" class="mg-b-0 mg-b-lg-1 btn btn-primary">Check for New</a>
+        </x-breadcrumb>
         <div class="row">
             <div class="col-md-12" style="border-bottom: 1px solid rgb(216, 212, 212);">
                 <center><h4>Search</h4></center>

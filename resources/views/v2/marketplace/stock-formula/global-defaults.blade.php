@@ -30,7 +30,7 @@
     </div>
     <div class="justify-content-center mt-2">
         <ol class="breadcrumb">
-            <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboards') }}</a></li>
+            <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
             <li class="breadcrumb-item tx-15"><a href="{{url('v2/marketplace')}}">Marketplaces</a></li>
             <li class="breadcrumb-item active" aria-current="page">Global Default Formulas</li>
         </ol>
@@ -69,14 +69,14 @@
                                             <span class="badge bg-secondary ms-2 formula-badge">No Default</span>
                                         @endif
                                     </h6>
-                                    
+
                                     @if($hasDefault)
                                         @php
                                             $formula = $default->formula;
                                         @endphp
                                         <div class="mb-2">
                                             <span class="badge bg-info formula-badge me-1">
-                                                {{ $formula['value'] ?? '' }}{{ ($formula['type'] ?? 'percentage') == 'percentage' ? '%' : '=' }} 
+                                                {{ $formula['value'] ?? '' }}{{ ($formula['type'] ?? 'percentage') == 'percentage' ? '%' : '=' }}
                                                 ({{ ($formula['apply_to'] ?? 'pushed') == 'pushed' ? 'Pushed' : 'Total' }})
                                             </span>
                                             @if($default->min_threshold !== null || $default->max_threshold !== null)
@@ -132,12 +132,12 @@
             <div class="modal-body">
                 <form id="globalDefaultForm">
                     <input type="hidden" id="globalDefaultMarketplaceId" name="marketplace_id">
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Marketplace</label>
                         <input type="text" class="form-control" id="globalDefaultMarketplaceName" readonly>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Value <span class="text-danger">*</span></label>
@@ -158,7 +158,7 @@
                             </select>
                         </div>
                     </div>
-                    
+
                     <div class="row mb-3">
                         <div class="col-md-4">
                             <label class="form-label">Min Threshold</label>
@@ -173,7 +173,7 @@
                             <input type="number" class="form-control" id="globalDefaultMinStockRequired" name="min_stock_required" min="0">
                         </div>
                     </div>
-                    
+
                     <div class="mb-3">
                         <label class="form-label">Notes</label>
                         <textarea class="form-control" id="globalDefaultNotes" name="notes" rows="2"></textarea>
@@ -203,13 +203,13 @@
         },
         csrfToken: "{{ csrf_token() }}"
     };
-    
+
     let currentMarketplaceId = null;
-    
+
     function editGlobalDefault(marketplaceId) {
         currentMarketplaceId = marketplaceId;
         const marketplaceName = $('#marketplace_card_' + marketplaceId).find('strong').text();
-        
+
         // Load existing default if available
         $.ajax({
             url: globalDefaultsConfig.urls.get,
@@ -217,10 +217,10 @@
             dataType: 'json',
             success: function(response) {
                 const defaultData = response.defaults[marketplaceId];
-                
+
                 $('#globalDefaultMarketplaceId').val(marketplaceId);
                 $('#globalDefaultMarketplaceName').val(marketplaceName);
-                
+
                 if (defaultData && defaultData.has_default) {
                     // Populate form with existing data
                     const formula = defaultData.formula;
@@ -236,7 +236,7 @@
                     $('#globalDefaultMarketplaceId').val(marketplaceId);
                     $('#globalDefaultMarketplaceName').val(marketplaceName);
                 }
-                
+
                 const modal = new bootstrap.Modal(document.getElementById('editGlobalDefaultModal'));
                 modal.show();
             },
@@ -246,14 +246,14 @@
             }
         });
     }
-    
+
     function saveGlobalDefault() {
         const marketplaceId = $('#globalDefaultMarketplaceId').val();
         if (!marketplaceId) {
             showAlert('Marketplace ID is required', 'danger');
             return;
         }
-        
+
         const formData = {
             value: $('#globalDefaultValue').val(),
             type: $('#globalDefaultType').val(),
@@ -264,18 +264,18 @@
             notes: $('#globalDefaultNotes').val() || null,
             _token: globalDefaultsConfig.csrfToken
         };
-        
+
         // Validate required fields
         if (!formData.value || !formData.type || !formData.apply_to) {
             showAlert('Please fill in all required fields', 'danger');
             return;
         }
-        
+
         const btn = $('#saveGlobalDefaultBtn');
         const spinner = $('#saveGlobalDefaultSpinner');
         btn.prop('disabled', true);
         spinner.removeClass('d-none');
-        
+
         $.ajax({
             url: globalDefaultsConfig.urls.save + '/' + marketplaceId,
             type: 'POST',
@@ -311,12 +311,12 @@
             }
         });
     }
-    
+
     function deleteGlobalDefault(marketplaceId) {
         if (!confirm('Are you sure you want to delete the global default formula for this marketplace?')) {
             return;
         }
-        
+
         $.ajax({
             url: globalDefaultsConfig.urls.delete + '/' + marketplaceId,
             type: 'DELETE',
@@ -347,7 +347,7 @@
             }
         });
     }
-    
+
     function showAlert(message, type) {
         const alertHtml = `
             <div class="alert alert-${type} alert-dismissible fade show" role="alert">
@@ -356,7 +356,7 @@
             </div>
         `;
         $('#alert-container').html(alertHtml);
-        
+
         // Auto-hide after 5 seconds
         setTimeout(function() {
             $('.alert').fadeOut(function() {
@@ -364,7 +364,7 @@
             });
         }, 5000);
     }
-    
+
     // Auto-hide alerts on close
     $(document).on('click', '.alert .btn-close', function() {
         $(this).closest('.alert').fadeOut(function() {

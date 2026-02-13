@@ -17,19 +17,7 @@
 <br>
     @section('content')
         <!-- breadcrumb -->
-            <div class="breadcrumb-header justify-content-between">
-                <div class="left-content">
-                <span class="main-content-title mg-b-0 mg-b-lg-1">Category</span>
-                </div>
-                <div class="justify-content-center mt-2">
-                    <ol class="breadcrumb">
-                        <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboards') }}</a></li>
-                        <li class="breadcrumb-item active" aria-current="page">
-                                Category
-                        </li>
-                    </ol>
-                </div>
-            </div>
+            <x-breadcrumb title="Category" :items="[['label' => 'Category']]" />
         <!-- /breadcrumb -->
         <hr style="border-bottom: 1px solid #000">
         <br>

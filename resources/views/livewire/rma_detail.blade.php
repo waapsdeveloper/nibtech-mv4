@@ -100,7 +100,7 @@
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item tx-15"><a href="/">Dashboards</a></li>
-                        <li class="breadcrumb-item tx-15"><a href="{{ session('previous')}}">RMA</a></li>
+                        <li class="breadcrumb-item tx-15"><a href="{{ session('rma_previous') ?? url('rma') }}">RMA</a></li>
                         <li class="breadcrumb-item active" aria-current="page">RMA Detail</li>
                     </ol>
                 </div>
