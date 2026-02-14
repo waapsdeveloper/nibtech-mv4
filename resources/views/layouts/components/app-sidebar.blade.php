@@ -36,6 +36,29 @@
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/listings')}}">V2 Listings</a>
                                         </li>
+                                        <li class="slide has-sub">
+                                            <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2PartsInventoryMenu" role="button" aria-expanded="false" aria-controls="v2PartsInventoryMenu">
+                                                Parts Inventory
+                                                <i class="angle fe fe-chevron-down"></i>
+                                            </a>
+                                            <ul class="collapse ps-3" id="v2PartsInventoryMenu">
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/dashboard')}}">Dashboard</a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/catalog')}}">Part Catalog</a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/inventory')}}">Inventory</a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/usage')}}">Usage History</a>
+                                                </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/items-to-repair')}}">Items to Repair</a>
+                                                </li>
+                                            </ul>
+                                        </li>
                                         @if ($isSuperAdmin && $user->hasPermission('view_marketplace'))
                                         <li class="slide">
                                             <a class="side-menu__item ps-0" href="{{url('v2/marketplace')}}">Marketplaces</a>

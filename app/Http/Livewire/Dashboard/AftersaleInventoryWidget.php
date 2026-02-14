@@ -4,6 +4,7 @@ namespace App\Http\Livewire\Dashboard;
 
 use Livewire\Component;
 use App\Models\Order_model;
+use App\Models\RepairPartUsage;
 use App\Models\Stock_model;
 use App\Models\Order_item_model;
 use Illuminate\Support\Facades\DB;
@@ -14,6 +15,8 @@ class AftersaleInventoryWidget extends Component
     public $returnsInProgress = 0;
     public $rma = 0;
     public $awaitingReplacement = 0;
+    /** @var int Parts used in repair jobs (process_type_id = 9), links to Parts Inventory usage */
+    public $partsUsedInRepairs = 0;
     public $readyToLoad = false;
 
     public function mount()
@@ -109,5 +112,10 @@ class AftersaleInventoryWidget extends Component
                       ->whereNotIn('reference_id', $replacementReferenceIds);
             })
             ->count();
+
+        // Parts inventory: usages linked to repair processes (process_type_id = 9)
+        $this->partsUsedInRepairs = RepairPartUsage::whereHas('process', function ($query) {
+            $query->where('process_type_id', 9);
+        })->count();
     }
 }

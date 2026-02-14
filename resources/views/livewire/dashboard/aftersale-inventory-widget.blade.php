@@ -13,7 +13,7 @@
             <span class="ms-2">Loading...</span>
         </div>
         <div wire:loading.remove wire:target="loadAftersaleMetrics,refreshAftersaleMetrics">
-            @if ($aftersaleInventory->isEmpty() && $returnsInProgress === 0 && $rma === 0 && $awaitingReplacement === 0)
+            @if ($aftersaleInventory->isEmpty() && $returnsInProgress === 0 && $rma === 0 && $awaitingReplacement === 0 && $partsUsedInRepairs === 0)
                 <p class="text-muted mb-0">No aftersale activity to display.</p>
             @else
                 <table class="w-100">
@@ -43,6 +43,12 @@
                         <td>Replacements:</td>
                         <td class="tx-right">
                             <a href="{{ url('inventory') }}?stock_status=1&amp;replacement=1">{{ $awaitingReplacement }}</a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td title="Parts used in repair jobs (Parts Inventory)">Parts used (repairs):</td>
+                        <td class="tx-right">
+                            <a href="{{ url('v2/parts-inventory/usage') }}" title="Parts Inventory usage history">{{ $partsUsedInRepairs }}</a>
                         </td>
                     </tr>
                 </table>

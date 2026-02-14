@@ -105,6 +105,74 @@
 
         @if (isset($stock))
 
+        {{-- Parts used for this repair --}}
+        @if (session('user')->hasPermission('internal_repair'))
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title mg-b-0">Parts used for this repair</h4>
+                            <div>
+                                <strong>Repair cost (parts):</strong> {{ number_format($repair_cost_parts ?? 0, 2) }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-bordered table-hover mb-3">
+                            <thead>
+                                <tr>
+                                    <th>Part</th>
+                                    <th>Batch</th>
+                                    <th>Qty</th>
+                                    <th>Unit cost</th>
+                                    <th>Total cost</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @forelse ($part_usages ?? [] as $u)
+                                    <tr>
+                                        <td>{{ $u->part->name ?? '–' }}</td>
+                                        <td>{{ $u->batch->batch_number ?? '–' }}</td>
+                                        <td>{{ $u->qty }}</td>
+                                        <td>{{ number_format($u->unit_cost, 2) }}</td>
+                                        <td>{{ number_format($u->total_cost, 2) }}</td>
+                                        <td>{{ $u->created_at->format('Y-m-d H:i') }}</td>
+                                    </tr>
+                                @empty
+                                    <tr><td colspan="6" class="text-muted">No parts used yet.</td></tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                        <form action="{{ url('repair/internal/add-part') }}" method="POST" class="form-inline flex-wrap align-items-end gap-2">
+                            @csrf
+                            <input type="hidden" name="stock_id" value="{{ $stock_id }}">
+                            <div class="form-floating mb-2">
+                                <select name="repair_part_id" class="form-control form-select" id="add_part_repair_part_id" required style="min-width: 200px;">
+                                    <option value="">Select part</option>
+                                    @foreach ($parts_for_dropdown ?? [] as $p)
+                                        <option value="{{ $p->id }}" data-unit-cost="{{ $p->unit_cost }}">{{ $p->name }} @if($p->sku)({{ $p->sku }})@endif – on hand: {{ $p->on_hand }}</option>
+                                    @endforeach
+                                </select>
+                                <label for="add_part_repair_part_id">Part</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="number" name="qty" class="form-control" value="1" min="1" required style="width: 80px;">
+                                <label for="">Qty</label>
+                            </div>
+                            <div class="form-floating mb-2">
+                                <input type="text" name="notes" class="form-control" placeholder="Notes" style="width: 150px;">
+                                <label for="">Notes</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary mb-2">Add part</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         <div class="row">
             <div class="col-xl-12">
                 <div class="card">

@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\V2\ListingController as V2ListingController;
 use App\Http\Controllers\V2\MarketplaceStockFormulaController;
+use App\Http\Controllers\V2\PartsInventoryController;
 use App\Http\Controllers\V2\TeamController;
 use App\Http\Livewire\V2\Marketplace;
 use Illuminate\Support\Facades\Route;
@@ -18,6 +19,33 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::prefix('v2')->group(function () {
+    // Parts Inventory
+    Route::get('parts-inventory/dashboard', [PartsInventoryController::class, 'dashboard'])->name('v2.parts-inventory.dashboard');
+    Route::get('parts-inventory/catalog', [PartsInventoryController::class, 'catalogIndex'])->name('v2.parts-inventory.catalog');
+    Route::get('parts-inventory/catalog/create', [PartsInventoryController::class, 'catalogCreate'])->name('v2.parts-inventory.catalog.create');
+    Route::post('parts-inventory/catalog', [PartsInventoryController::class, 'catalogStore'])->name('v2.parts-inventory.catalog.store');
+    Route::get('parts-inventory/catalog/{id}/edit', [PartsInventoryController::class, 'catalogEdit'])->name('v2.parts-inventory.catalog.edit');
+    Route::post('parts-inventory/catalog/{id}', [PartsInventoryController::class, 'catalogUpdate'])->name('v2.parts-inventory.catalog.update');
+    Route::get('parts-inventory/catalog/{id}/attach-imei', [PartsInventoryController::class, 'attachImei'])->name('v2.parts-inventory.catalog.attach-imei');
+    Route::post('parts-inventory/catalog/{id}/attach-imei', [PartsInventoryController::class, 'attachImeiStore'])->name('v2.parts-inventory.catalog.attach-imei.store');
+    Route::get('parts-inventory/batch-receive', [PartsInventoryController::class, 'batchReceive'])->name('v2.parts-inventory.batch-receive');
+    Route::post('parts-inventory/batch-receive', [PartsInventoryController::class, 'batchReceiveStore'])->name('v2.parts-inventory.batch-receive.store');
+    Route::get('parts-inventory/bulk-import', [PartsInventoryController::class, 'bulkImport'])->name('v2.parts-inventory.bulk-import');
+    Route::post('parts-inventory/bulk-import', [PartsInventoryController::class, 'bulkImportStore'])->name('v2.parts-inventory.bulk-import.store');
+    Route::get('parts-inventory/bulk-import/sample', [PartsInventoryController::class, 'bulkImportSample'])->name('v2.parts-inventory.bulk-import.sample');
+    Route::get('parts-inventory/bulk-import/parts-reference', [PartsInventoryController::class, 'bulkImportPartsReference'])->name('v2.parts-inventory.bulk-import.parts-reference');
+    Route::get('parts-inventory/inventory', [PartsInventoryController::class, 'inventory'])->name('v2.parts-inventory.inventory');
+    Route::get('parts-inventory/parts/{id}/batches', [PartsInventoryController::class, 'partBatches'])->name('v2.parts-inventory.part-batches');
+    Route::get('parts-inventory/items-to-repair', [PartsInventoryController::class, 'itemsToRepair'])->name('v2.parts-inventory.items-to-repair');
+    Route::get('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepair'])->name('v2.parts-inventory.items-to-repair.assign');
+    Route::post('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepairStore'])->name('v2.parts-inventory.items-to-repair.assign.store');
+    Route::post('parts-inventory/items-to-repair/mark-repaired/{id}', [PartsInventoryController::class, 'itemMarkRepaired'])->name('v2.parts-inventory.items-to-repair.mark-repaired');
+    Route::get('parts-inventory/usage', [PartsInventoryController::class, 'usage'])->name('v2.parts-inventory.usage');
+    Route::post('parts-inventory/usage', [PartsInventoryController::class, 'usageStore'])->name('v2.parts-inventory.usage.store');
+    Route::get('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageDetail'])->name('v2.parts-inventory.usage.detail');
+    Route::put('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageUpdate'])->name('v2.parts-inventory.usage.update');
+    Route::delete('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageDelete'])->name('v2.parts-inventory.usage.delete');
+
     Route::get('listings', [V2ListingController::class, 'index'])->name('v2.view_listing');
     Route::get('listings/get_variations', [V2ListingController::class, 'getVariations'])->name('v2.get_variations');
     Route::post('listings/render_listing_items', [V2ListingController::class, 'renderListingItems'])->name('v2.render_listing_items');
