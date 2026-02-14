@@ -7,30 +7,27 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        if (Schema::hasTable('repair_part_usages')) {
-            return;
-        }
-
         Schema::create('repair_part_usages', function (Blueprint $table) {
             $table->id();
-            $table->integer('process_id')->nullable();
-            $table->integer('process_stock_id')->nullable();
-            $table->integer('stock_id')->nullable();
+            $table->unsignedBigInteger('process_id')->nullable();
+            $table->unsignedBigInteger('process_stock_id')->nullable();
+            $table->unsignedBigInteger('stock_id')->nullable();
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
-            $table->integer('technician_id')->nullable();
+            $table->foreignId('batch_id')->nullable()->constrained('part_batches')->nullOnDelete();
+            $table->unsignedBigInteger('technician_id')->nullable();
             $table->integer('qty')->default(1);
             $table->decimal('unit_cost', 12, 2)->default(0);
             $table->decimal('total_cost', 12, 2)->default(0);
             $table->text('notes')->nullable();
             $table->timestamps();
             $table->softDeletes();
-            $table->index(['process_id', 'process_stock_id']);
-            $table->index(['stock_id', 'repair_part_id']);
 
             $table->foreign('process_id')->references('id')->on('process')->nullOnDelete();
             $table->foreign('process_stock_id')->references('id')->on('process_stock')->nullOnDelete();
             $table->foreign('stock_id')->references('id')->on('stock')->nullOnDelete();
             $table->foreign('technician_id')->references('id')->on('admin')->nullOnDelete();
+            $table->index(['process_id', 'process_stock_id']);
+            $table->index(['stock_id', 'repair_part_id']);
         });
     }
 

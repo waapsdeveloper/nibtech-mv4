@@ -17,6 +17,7 @@ class RepairPartUsage extends Model
         'process_stock_id',
         'stock_id',
         'repair_part_id',
+        'batch_id',
         'technician_id',
         'qty',
         'unit_cost',
@@ -27,6 +28,11 @@ class RepairPartUsage extends Model
     public function part()
     {
         return $this->belongsTo(RepairPart::class, 'repair_part_id');
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(PartBatch::class, 'batch_id');
     }
 
     public function process()

@@ -23,6 +23,9 @@ use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
+use App\Models\RepairPart;
+use App\Models\RepairPartUsage;
+use App\Services\Repair\RepairPartService;
 use Illuminate\Support\Facades\DB;
 
 class Repair extends Component
@@ -1442,6 +1445,9 @@ class Repair extends Component
                 $data['stocks'] = $stocks;
             }
 
+            $data['part_usages'] = RepairPartUsage::where('stock_id', $stock_id)->with(['part', 'batch'])->orderBy('id', 'desc')->get();
+            $data['repair_cost_parts'] = $data['part_usages']->sum('total_cost');
+            $data['parts_for_dropdown'] = RepairPart::active()->orderBy('name')->get();
         }
 
 
@@ -1504,5 +1510,44 @@ class Repair extends Component
 
         return redirect()->back();
 
+    }
+
+    /**
+     * Add a part to internal repair (consume from parts inventory, link to stock).
+     */
+    public function add_internal_repair_part()
+    {
+        $request = request();
+        $request->validate([
+            'stock_id' => 'required|exists:stock,id',
+            'repair_part_id' => 'required|exists:repair_parts,id',
+            'qty' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:500',
+            'batch_id' => 'nullable|exists:part_batches,id',
+        ]);
+
+        $stock_id = (int) $request->stock_id;
+        $part_id = (int) $request->repair_part_id;
+        $qty = (int) $request->qty;
+        $batch_id = $request->filled('batch_id') ? (int) $request->batch_id : null;
+
+        $attributes = [
+            'stock_id' => $stock_id,
+            'technician_id' => session('user_id'),
+            'notes' => $request->notes,
+        ];
+        if ($batch_id) {
+            $attributes['batch_id'] = $batch_id;
+        }
+
+        try {
+            $service = app(RepairPartService::class);
+            $service->consumePart($part_id, $qty, $attributes);
+            session()->put('success', 'Part added to repair. Repair cost updated.');
+        } catch (\InvalidArgumentException $e) {
+            session()->put('error', $e->getMessage());
+        }
+
+        return redirect()->back();
     }
 }

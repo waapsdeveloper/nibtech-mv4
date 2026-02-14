@@ -37,6 +37,17 @@ class RepairPart extends Model
         return $this->hasMany(RepairPartUsage::class);
     }
 
+    public function batches()
+    {
+        return $this->hasMany(PartBatch::class, 'repair_part_id');
+    }
+
+    /** Total on hand across all batches */
+    public function getOnHandFromBatchesAttribute(): int
+    {
+        return (int) $this->batches()->sum('quantity_remaining');
+    }
+
     public function scopeActive($query)
     {
         return $query->where('active', true);
