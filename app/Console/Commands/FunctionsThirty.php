@@ -203,110 +203,127 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListings();
 
-        // Cache currency id by code and variation by (reference_id|sku) to avoid repeated DB queries
+        // Preload: collect unique (reference_id, sku) pairs to batch-load variations (avoids N+1)
+        $variationKeys = [];
+        foreach ($listings as $country => $lists) {
+            foreach ($lists as $list) {
+                $variationKeys[trim($list->listing_id) . '|' . trim($list->sku)] = [trim($list->listing_id), trim($list->sku)];
+            }
+        }
+        $variationKeys = array_values($variationKeys);
+
+        // One query: all currencies (avoid any per-listing currency lookups)
         $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
-        $variationCache = [];
+
+        // Batch load variations by (reference_id, sku) in chunks to avoid N queries
+        $variationCache = $this->bulkLoadVariationsByReferenceAndSku($variationKeys);
+
+        // Preload existing listings for (country, variation_id, marketplace_id=1) in one query
+        $countryKeys = array_keys($listings);
+        $variationIdsForListings = array_unique(array_filter(array_map(function ($v) {
+            return $v ? $v->id : null;
+        }, $variationCache)));
+        $listingCache = [];
+        if (!empty($variationIdsForListings)) {
+            $existingListings = Listing_model::where('marketplace_id', 1)
+                ->whereIn('variation_id', $variationIdsForListings)
+                ->whereIn('country', $countryKeys)
+                ->get();
+            foreach ($existingListings as $l) {
+                $listingCache[$l->country . '|' . $l->variation_id] = $l;
+            }
+        }
+
         // Accumulate publication_state per variation across all countries (so we can resolve "Online if any")
         $variationPublicationStates = [];
 
-        foreach($listings as $country => $lists){
-            $stats['countries_processed']++;
-            
-            foreach($lists as $list){
-                $stats['listings_fetched']++;
+        DB::transaction(function () use ($listings, &$stats, &$variationCache, &$variationPublicationStates, $currencyIdsByCode, $countryKeys, &$listingCache) {
+            foreach ($listings as $country => $lists) {
+                $stats['countries_processed']++;
+                foreach ($lists as $list) {
+                    $stats['listings_fetched']++;
+                    $key = trim($list->listing_id) . '|' . trim($list->sku);
+                    $variation = $variationCache[$key] ?? null;
 
-                $key = trim($list->listing_id) . '|' . trim($list->sku);
-                if (!isset($variationCache[$key])) {
-                    $variationCache[$key] = Variation_model::where(['reference_id' => trim($list->listing_id), 'sku' => trim($list->sku)])->first();
-                }
-                $variation = $variationCache[$key];
-                if( $list->publication_state == 4) {
-                    // If the listing is archived, we skip it
-                    $stats['archived_skipped']++;
-                    continue;
-                }
+                    if ($list->publication_state == 4) {
+                        $stats['archived_skipped']++;
+                        continue;
+                    }
 
-                // Collect publication_state from every country so we resolve "Online if any listing is Online"
-                if (!isset($variationPublicationStates[$key])) {
-                    $variationPublicationStates[$key] = [];
-                }
-                $variationPublicationStates[$key][] = (int) $list->publication_state;
-                
-                $isNewVariation = false;
-                if($variation == null){
-                    // $list = $bm->getOneListing($list->listing_id);
-                    $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
-                    $variation->sku = trim($list->sku);
-                    $variation->grade = (int)$list->state + 1;
-                    if((int)$list->state == 9){
-                        $variation->grade = 1;
+                    if (!isset($variationPublicationStates[$key])) {
+                        $variationPublicationStates[$key] = [];
                     }
-                    $variation->status = 1;
-                    // ... other fields
-                    $isNewVariation = !$variation->exists;
-                    $variationCache[$key] = $variation;
-                    echo $list->listing_id." ";
-                }
-                
-                if($variation->name == null){
-                    $variation->name = $list->title;
-                }
-                if($variation->reference_uuid == null){
-                    $variation->reference_uuid = $list->id;
-                    echo $list->id." ";
-                }
-                // Do NOT set state here — resolved from all countries after the loop (so "Online" wins if any country is Online)
-                
-                // Check if variation needs to be saved
-                $variationIsDirty = $variation->isDirty();
-                if ($isNewVariation || $variationIsDirty) {
-                    $variation->save();
-                    if ($isNewVariation) {
-                        $stats['variations_created']++;
-                    } else if ($variationIsDirty) {
-                        $stats['variations_updated']++;
-                    }
-                }
+                    $variationPublicationStates[$key][] = (int) $list->publication_state;
 
-                $curr = $list->price->currency ?? $list->currency;
-                $currencyId = $currencyIdsByCode[$curr] ?? null;
-                if ($currencyId === null) {
-                    $currency = Currency_model::where('code', $curr)->first();
-                    if ($currency) {
-                        $currencyIdsByCode[$curr] = $currency->id;
-                        $currencyId = $currency->id;
+                    $isNewVariation = false;
+                    if ($variation === null) {
+                        $variation = Variation_model::firstOrNew(['reference_id' => trim($list->listing_id)]);
+                        $variation->sku = trim($list->sku);
+                        $variation->grade = (int) $list->state + 1;
+                        if ((int) $list->state == 9) {
+                            $variation->grade = 1;
+                        }
+                        $variation->status = 1;
+                        $isNewVariation = !$variation->exists;
+                        $variationCache[$key] = $variation;
+                        echo $list->listing_id . " ";
                     }
-                }
-                if($variation != null){
-                    $isNewListing = false;
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
-                    $isNewListing = !$listing->exists;
-                    
-                    $listing->max_price = $list->max_price;
-                    $listing->min_price = $list->min_price;
-                    $variation->listed_stock = $list->quantity;
-                    $listing->price = $list->price;
-                    $listing->currency_id = $currencyId;
-                    if($listing->name == null){
-                        $listing->name = $list->title;
+
+                    if ($variation->name == null) {
+                        $variation->name = $list->title;
                     }
-                    $listing->reference_uuid = $list->id;
-                    // ... other fields
-                    $listing->save();
-                    
-                    if ($isNewListing) {
-                        $stats['listings_created']++;
-                    } else if ($listing->wasChanged()) {
-                        $stats['listings_updated']++;
-                    }
-                    
-                    if($variation->reference_uuid == null){
+                    if ($variation->reference_uuid == null) {
                         $variation->reference_uuid = $list->id;
+                        echo $list->id . " ";
+                    }
+
+                    $variationIsDirty = $variation->isDirty();
+                    if ($isNewVariation || $variationIsDirty) {
                         $variation->save();
+                        if ($isNewVariation) {
+                            $stats['variations_created']++;
+                        } elseif ($variationIsDirty) {
+                            $stats['variations_updated']++;
+                        }
+                    }
+
+                    $curr = $list->price->currency ?? $list->currency;
+                    $currencyId = $currencyIdsByCode[$curr] ?? null;
+
+                    if ($variation !== null) {
+                        $listingKey = $country . '|' . $variation->id;
+                        $listing = $listingCache[$listingKey] ?? null;
+                        if ($listing === null) {
+                            $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
+                            $listingCache[$listingKey] = $listing;
+                        }
+                        $isNewListing = !$listing->exists;
+
+                        $listing->max_price = $list->max_price;
+                        $listing->min_price = $list->min_price;
+                        $variation->listed_stock = $list->quantity;
+                        $listing->price = $list->price;
+                        $listing->currency_id = $currencyId;
+                        if ($listing->name == null) {
+                            $listing->name = $list->title;
+                        }
+                        $listing->reference_uuid = $list->id;
+                        $listing->save();
+
+                        if ($isNewListing) {
+                            $stats['listings_created']++;
+                        } elseif ($listing->wasChanged()) {
+                            $stats['listings_updated']++;
+                        }
+
+                        if ($variation->reference_uuid == null) {
+                            $variation->reference_uuid = $list->id;
+                            $variation->save();
+                        }
                     }
                 }
             }
-        }
+        });
 
         // Resolve variation state across all countries: "Online" if any listing is Online (2)
         foreach ($variationPublicationStates as $key => $states) {
@@ -322,8 +339,61 @@ class FunctionsThirty extends Command
                 echo $resolvedState . " ";
             }
         }
+    }
 
-        // $list = $bm->getOneListing($itemObj->listing_id);
+    /**
+     * Load variations by (reference_id, sku) pairs in batch to avoid N+1 queries.
+     *
+     * @param array<int, array{0: string, 1: string}> $pairs List of [reference_id, sku]
+     * @return array<string, Variation_model|null> Map of "reference_id|sku" => model or null
+     */
+    private function bulkLoadVariationsByReferenceAndSku(array $pairs): array
+    {
+        $cache = [];
+        $chunkSize = 500;
+        foreach (array_chunk($pairs, $chunkSize) as $chunk) {
+            $query = Variation_model::query();
+            foreach ($chunk as $p) {
+                $query->orWhere(function ($q) use ($p) {
+                    $q->where('reference_id', $p[0])->where('sku', $p[1]);
+                });
+            }
+            $variations = $query->get();
+            foreach ($variations as $v) {
+                $cache[trim($v->reference_id) . '|' . trim($v->sku)] = $v;
+            }
+            foreach ($chunk as $p) {
+                $key = $p[0] . '|' . $p[1];
+                if (!array_key_exists($key, $cache)) {
+                    $cache[$key] = null;
+                }
+            }
+        }
+        return $cache;
+    }
+
+    /**
+     * Load variations by SKU in batch.
+     *
+     * @param string[] $skus
+     * @return array<string, Variation_model|null> Map of sku => model or null
+     */
+    private function bulkLoadVariationsBySku(array $skus): array
+    {
+        $cache = [];
+        $skus = array_unique(array_map('trim', $skus));
+        foreach (array_chunk($skus, 500) as $chunk) {
+            $variations = Variation_model::whereIn('sku', $chunk)->get();
+            foreach ($variations as $v) {
+                $cache[$v->sku] = $v;
+            }
+            foreach ($chunk as $sku) {
+                if (!array_key_exists($sku, $cache)) {
+                    $cache[$sku] = null;
+                }
+            }
+        }
+        return $cache;
     }
 
     /**
@@ -369,54 +439,68 @@ class FunctionsThirty extends Command
         // print_r($bm->getAllListingsBi(['min_quantity'=>0]));
         $listings = $bm->getAllListingsBi();
 
-        // Cache currency id by code and variation by sku to avoid repeated DB queries
+        // Preload: collect unique SKUs to batch-load variations (avoids N+1)
+        $skus = [];
+        foreach ($listings as $lists) {
+            foreach ($lists as $list) {
+                $skus[] = trim($list->sku);
+            }
+        }
+        $skus = array_unique(array_filter($skus));
+
         $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
-        $variationCacheBySku = [];
+        $variationCacheBySku = $this->bulkLoadVariationsBySku($skus);
 
-        // Log::info("Result from getAllListingsBi: " . json_encode($listings));
+        // Preload existing listings for (country, variation_id, marketplace_id=1)
+        $countryKeys = array_keys($listings);
+        $variationIdsForListings = array_unique(array_filter(array_map(function ($v) {
+            return $v ? $v->id : null;
+        }, $variationCacheBySku)));
+        $listingCache = [];
+        if (!empty($variationIdsForListings)) {
+            $existingListings = Listing_model::where('marketplace_id', 1)
+                ->whereIn('variation_id', $variationIdsForListings)
+                ->whereIn('country', $countryKeys)
+                ->get();
+            foreach ($existingListings as $l) {
+                $listingCache[$l->country . '|' . $l->variation_id] = $l;
+            }
+        }
 
-        foreach($listings as $country => $lists){
+        foreach ($listings as $country => $lists) {
             $stats['countries_processed']++;
-            
-            foreach($lists as $list){
+            foreach ($lists as $list) {
                 $stats['listings_fetched']++;
-                
-                if (!isset($variationCacheBySku[$list->sku])) {
-                    $variationCacheBySku[$list->sku] = Variation_model::where('sku', $list->sku)->first();
-                }
-                $variation = $variationCacheBySku[$list->sku];
+                $variation = $variationCacheBySku[$list->sku] ?? null;
                 $currencyId = $currencyIdsByCode[$list->currency] ?? null;
-                if ($currencyId === null) {
-                    $currency = Currency_model::where('code', $list->currency)->first();
-                    if ($currency) {
-                        $currencyIdsByCode[$list->currency] = $currency->id;
-                        $currencyId = $currency->id;
-                    }
-                }
-                if($variation == null){
+
+                if ($variation === null) {
                     $stats['variations_not_found']++;
-                    echo $list->sku." ";
-                }else{
-                    $isNewListing = false;
-                    $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
+                    echo $list->sku . " ";
+                } else {
+                    $listingKey = $country . '|' . $variation->id;
+                    $listing = $listingCache[$listingKey] ?? null;
+                    if ($listing === null) {
+                        $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
+                        $listingCache[$listingKey] = $listing;
+                    }
                     $isNewListing = !$listing->exists;
-                    
+
                     $variation->listed_stock = $list->quantity;
                     $variationIsDirty = $variation->isDirty();
-                    
+
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
                     $listing->currency_id = $currencyId;
-                    // ... other fields
                     $listing->save();
-                    
+
                     if ($isNewListing) {
                         $stats['listings_created']++;
-                    } else if ($listing->wasChanged()) {
+                    } elseif ($listing->wasChanged()) {
                         $stats['listings_updated']++;
                     }
-                    
+
                     if ($variationIsDirty) {
                         $variation->save();
                         $stats['variations_updated']++;
@@ -424,7 +508,6 @@ class FunctionsThirty extends Command
                 }
             }
         }
-        // $list = $bm->getOneListing($itemObj->listing_id);
     }
 
     public function get_refurbed_listings(){
@@ -455,10 +538,26 @@ class FunctionsThirty extends Command
 
             $countryMap = Country_model::pluck('id', 'code')->toArray();
             if (empty($countryMap)) {
-                // Log::warning("Refurbed: No countries configured for listings");
                 echo "No countries configured for Refurbed listings\n";
                 return;
             }
+
+            // Preload: all SKUs from offers to avoid N+1 variation lookups
+            $refurbedSkus = [];
+            foreach ($offers as $offer) {
+                $sku = $offer['sku'] ?? $offer['merchant_sku'] ?? null;
+                if (!empty($sku)) {
+                    if (ctype_digit($sku) && strlen($sku) < 4) {
+                        $sku = "00" . $sku;
+                    }
+                    $refurbedSkus[] = trim($sku);
+                }
+            }
+            $refurbedSkus = array_unique(array_filter($refurbedSkus));
+
+            $variationBySku = $this->bulkLoadVariationsBySku($refurbedSkus);
+            $currencyIdsByCode = Currency_model::pluck('id', 'code')->toArray();
+            $currencyCodeById = array_flip($currencyIdsByCode);
 
             $offersByCountry = [];
             $processedListings = 0;
@@ -466,83 +565,33 @@ class FunctionsThirty extends Command
 
             foreach ($offers as $offer) {
                     try {
-                        // Extract offer details (adjust field names based on actual API response)
                         $offerId = $offer['id'] ?? $offer['offer_id'] ?? null;
                         $sku = $offer['sku'] ?? $offer['merchant_sku'] ?? null;
                         $productId = $offer['product_id'] ?? null;
                         $state = $offer['state'] ?? 'ACTIVE';
 
-                        // Price information (Refurbed uses price object similar to BackMarket)
                         $priceAmount = $offer['price']['amount'] ?? $offer['price'] ?? null;
                         $priceCurrency = $offer['price']['currency'] ?? $offer['currency'] ?? 'EUR';
 
-                        // Stock information
                         $quantity = $offer['quantity'] ?? $offer['stock'] ?? 0;
-
-                        // Product details
                         $title = $offer['title'] ?? $offer['product_title'] ?? null;
-                        // $condition = $offer['condition'] ?? $offer['grade'] ?? null;
 
-                        // Country/region (Refurbed might not have country-specific listings like BackMarket)
-                        // Defaulting to a general country code, adjust as needed
-                        $countryCode = $offer['country'] ?? $offer['region'] ?? 'DE'; // Germany as default for Refurbed
+                        $countryCode = $offer['country'] ?? $offer['region'] ?? 'DE';
 
                         if (empty($sku)) {
-                            // Log::warning("Refurbed: Offer missing SKU", ['offer_id' => $offerId]);
                             continue;
                         }
-                        if(ctype_digit($sku) && strlen($sku) < 4){
-                            $sku = "00".$sku;
+                        if (ctype_digit($sku) && strlen($sku) < 4) {
+                            $sku = "00" . $sku;
                         }
-                        // Find or create variation based on SKU
-                        $variation = Variation_model::where(['sku' => trim($sku)])->first();
+                        $variation = $variationBySku[trim($sku)] ?? null;
 
                         if ($variation == null) {
-                            // Log::warning("Refurbed: Variation not found for SKU", ['sku' => $sku, 'offer_id' => $offerId]);
                             continue;
                         }
 
-                        // Update variation fields
-                        // if ($variation->name == null && $title) {
-                        //     $variation->name = $title;
-                        // }
-                        // if ($variation->reference_uuid == null && $productId) {
-                        //     $variation->reference_uuid = $productId;
-                        // }
-
-                        // Map Refurbed condition to grade (adjust mapping as needed)
-                        // if ($condition) {
-                        //     $gradeMap = [
-                        //         'NEW' => 1,
-                        //         'EXCELLENT' => 2,
-                        //         'VERY_GOOD' => 3,
-                        //         'GOOD' => 4,
-                        //         'FAIR' => 5,
-                        //     ];
-                        //     $variation->grade = $gradeMap[strtoupper($condition)] ?? 3;
-                        // }
-
-                        // Set state based on offer state
-                        // Refurbed uses enum values like OFFER_STATE_ACTIVE, OFFER_STATE_INACTIVE, etc.
-                        // $stateMap = [
-                        //     'OFFER_STATE_ACTIVE' => 1,
-                        //     'ACTIVE' => 1,
-                        //     'OFFER_STATE_INACTIVE' => 2,
-                        //     'INACTIVE' => 2,
-                        //     'OFFER_STATE_PAUSED' => 2,
-                        //     'PAUSED' => 2,
-                        //     'OFFER_STATE_OUT_OF_STOCK' => 3,
-                        //     'OUT_OF_STOCK' => 3,
-                        // ];
-                        // $variation->state = $stateMap[$state] ?? 1;
-                        // $variation->listed_stock = $quantity;
-
-                        // $variation->save();
-
-                        // Get currency
-                        $currency = Currency_model::where('code', $priceCurrency)->first();
-                        if (!$currency) {
-                            // Log::warning("Refurbed: Currency not found", ['currency' => $priceCurrency, 'sku' => $sku]);
+                        $currencyId = $currencyIdsByCode[$priceCurrency] ?? null;
+                        if (!$currencyId) {
                             continue;
                         }
 
@@ -560,7 +609,7 @@ class FunctionsThirty extends Command
                             'max_price' => $offer['max_price'] ?? null,
                             'price_limit' => $offer['price_limit'] ?? $offer['maximum_price'] ?? null,
                             'min_price_limit' => $offer['min_price_limit'] ?? $offer['minimum_price'] ?? null,
-                            'currency_id' => $currency->id,
+                            'currency_id' => $currencyId,
                             'sku' => $sku,
                             'buybox_entries' => $this->extractRefurbedBuyboxEntries($offer),
                         ];
@@ -645,6 +694,28 @@ class FunctionsThirty extends Command
                     }
                 }
 
+            // Preload BM benchmarks for all variation_ids we will use (one query instead of N)
+            $refurbedVariationIds = [];
+            foreach ($offersByCountry as $entries) {
+                foreach ($entries as $entry) {
+                    $refurbedVariationIds[$entry['offer']['variation_id']] = true;
+                }
+            }
+            $refurbedVariationIds = array_keys($refurbedVariationIds);
+            $this->bmBenchmarkCache = array_merge($this->bmBenchmarkCache, $this->bulkLoadBackMarketBenchmarks($refurbedVariationIds));
+
+            // Preload existing Refurbed listings (marketplace_id=4) to avoid N firstOrNew SELECTs
+            $refurbedListingCache = [];
+            if (!empty($refurbedVariationIds)) {
+                $existingRefurbed = Listing_model::where('marketplace_id', $marketplaceId)
+                    ->whereIn('variation_id', $refurbedVariationIds)
+                    ->whereIn('country', array_values($countryMap))
+                    ->get();
+                foreach ($existingRefurbed as $l) {
+                    $refurbedListingCache[$l->country . '|' . $l->variation_id] = $l;
+                }
+            }
+
             foreach ($countryMap as $countryCode => $countryId) {
                 if (empty($offersByCountry[$countryCode])) {
                     continue;
@@ -659,15 +730,20 @@ class FunctionsThirty extends Command
                     $marketCode = $marketPriceData['market_code'] ?? $countryCode;
                     $sku = $offerMeta['sku'] ?? null;
 
-                    $listing = Listing_model::firstOrNew([
-                        'country' => $countryId,
-                        'variation_id' => $offerMeta['variation_id'],
-                        'marketplace_id' => $marketplaceId
-                    ]);
+                    $listingKey = $countryId . '|' . $offerMeta['variation_id'];
+                    $listing = $refurbedListingCache[$listingKey] ?? null;
+                    if ($listing === null) {
+                        $listing = Listing_model::firstOrNew([
+                            'country' => $countryId,
+                            'variation_id' => $offerMeta['variation_id'],
+                            'marketplace_id' => $marketplaceId
+                        ]);
+                        $refurbedListingCache[$listingKey] = $listing;
+                    }
 
                     $currencyId = $offerMeta['currency_id'];
                     if (!empty($marketPriceData['currency'])) {
-                        $currencyId = $this->resolveCurrencyIdByCode($marketPriceData['currency']) ?? $currencyId;
+                        $currencyId = $currencyIdsByCode[$marketPriceData['currency']] ?? $currencyId;
                     }
                     if ($currencyId) {
                         $listing->currency_id = $currencyId;
@@ -725,7 +801,7 @@ class FunctionsThirty extends Command
                         }
 
                         if (empty($currencyId) && !empty($resolvedBuybox['currency'])) {
-                            $currencyId = $this->resolveCurrencyIdByCode($resolvedBuybox['currency']);
+                            $currencyId = $currencyIdsByCode[$resolvedBuybox['currency']] ?? null;
                             if ($currencyId) {
                                 $listing->currency_id = $currencyId;
                             }
@@ -745,7 +821,7 @@ class FunctionsThirty extends Command
                     $processedListings++;
 
                     if ($sku && $marketCode) {
-                        $currencyCode = $marketPriceData['currency'] ?? ($marketPriceData['price']['currency'] ?? $this->resolveCurrencyCodeById($listing->currency_id));
+                        $currencyCode = $marketPriceData['currency'] ?? ($marketPriceData['price']['currency'] ?? ($currencyCodeById[$listing->currency_id] ?? null));
                         if ($currencyCode && $this->shouldPushRefurbedMarketPrice($marketPriceData, $listing, $offerMeta)) {
                             $payload = $this->buildRefurbedMarketPricePayload($marketCode, $currencyCode, $listing);
                             if ($payload) {
@@ -818,6 +894,56 @@ class FunctionsThirty extends Command
             'max_price' => $maxPrice,
             'max_min_price' => $maxMinPrice ?? $maxPrice,
         ];
+    }
+
+    /**
+     * Load BackMarket benchmark (max price, max min_price) for many variations in one query.
+     *
+     * @param int[] $variationIds
+     * @return array<int, array{max_price: ?float, max_min_price: ?float}>
+     */
+    private function bulkLoadBackMarketBenchmarks(array $variationIds): array
+    {
+        $result = [];
+        foreach ($variationIds as $vid) {
+            $result[$vid] = ['max_price' => null, 'max_min_price' => null];
+        }
+
+        $countryIds = $this->getBenchmarkCountryIds();
+        if (empty($countryIds) || empty($variationIds)) {
+            return $result;
+        }
+
+        $listings = Listing_model::where('marketplace_id', 1)
+            ->whereIn('variation_id', $variationIds)
+            ->whereIn('country', $countryIds)
+            ->get(['variation_id', 'price', 'min_price']);
+
+        foreach ($listings as $listing) {
+            $vid = $listing->variation_id;
+            if (!isset($result[$vid])) {
+                continue;
+            }
+            if ($listing->price !== null) {
+                $result[$vid]['max_price'] = $result[$vid]['max_price'] === null
+                    ? $listing->price
+                    : max($result[$vid]['max_price'], $listing->price);
+            }
+            $minValue = $listing->min_price ?? $listing->price;
+            if ($minValue !== null) {
+                $result[$vid]['max_min_price'] = $result[$vid]['max_min_price'] === null
+                    ? $minValue
+                    : max($result[$vid]['max_min_price'], $minValue);
+            }
+        }
+
+        foreach ($result as $vid => $data) {
+            if ($result[$vid]['max_min_price'] === null && $result[$vid]['max_price'] !== null) {
+                $result[$vid]['max_min_price'] = $result[$vid]['max_price'];
+            }
+        }
+
+        return $result;
     }
 
     protected function getBenchmarkCountryIds(): array
