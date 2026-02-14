@@ -853,8 +853,14 @@ class ListingController extends Controller
                 $listing->buybox = $list->is_winning;
                 $listing->buybox_price = $list->price_to_win->amount;
                 $listing->buybox_winner_price = $list->winner_price->amount;
-                $listing->currency_id = $currency->id;
-                $listing->save();
+                if(isset($currency)){
+                    $listing->currency_id = $currency->id;
+                }
+
+                $needsSave = !$listing->exists || $listing->isDirty();
+                if ($needsSave) {
+                    $listing->save();
+                }
             }
             if($no_check == 1){
                 return $responses;
