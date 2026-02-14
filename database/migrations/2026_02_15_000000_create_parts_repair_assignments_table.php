@@ -7,6 +7,7 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
+        // add something that is useful plese
         Schema::create('parts_repair_assignments', function (Blueprint $table) {
             $table->id();
             // Match stock.id type (often int unsigned on existing DBs)
