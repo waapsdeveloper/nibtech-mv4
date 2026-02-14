@@ -204,7 +204,7 @@ class Variation_model extends Model
     public function update_qty($bm)
     {
         $var = $bm->getOneListing($this->reference_id);
-        
+
         // Check if response is valid and has expected properties, use current values as fallback
         if ($var && is_object($var)) {
             $quantity = isset($var->quantity) ? $var->quantity : $this->listed_stock;
@@ -216,12 +216,15 @@ class Variation_model extends Model
             $sku = $this->sku;
             $state = $this->state;
         }
-        
-        Variation_model::where('id', $this->id)->update([
-            'listed_stock' => $quantity,
-            'sku' => $sku,
-            'state' => $state
-        ]);
+
+        // Avoid unnecessary writes that can trigger lock wait timeouts; only persist when data changes
+        $needsUpdate = ($this->listed_stock != $quantity) || ($this->sku != $sku) || ($this->state != $state);
+        if ($needsUpdate) {
+            $this->listed_stock = $quantity;
+            $this->sku = $sku;
+            $this->state = $state;
+            $this->save();
+        }
         return $quantity;
     }
     public function update_product($product_id)

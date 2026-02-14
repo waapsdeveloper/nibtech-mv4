@@ -45,12 +45,12 @@ class FunctionsThirty extends Command
     public function handle()
     {
         $startTime = microtime(true);
-        
+
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-        
+
         // Log command start (Slack + file)
-        Log::channel('functions_thirty')->info('Functions:thirty started', [
+        $this->safeLog('info', 'Functions:thirty started', [
             'command' => 'functions:thirty',
             'started_at' => now()->toDateTimeString(),
             'local_mode' => $syncDataInLocal,
@@ -65,7 +65,7 @@ class FunctionsThirty extends Command
                 'local_mode' => $syncDataInLocal
             ]
         );
-        
+
         if ($syncDataInLocal) {
             // $this->info("⚠️  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
             // SlackLogService::post(
@@ -80,13 +80,13 @@ class FunctionsThirty extends Command
         }
 
         // refresh:new skipped (enable when needed to sync orders before stock sync)
-        Log::channel('functions_thirty')->info('Functions:thirty: refresh:new skipped', [
+        $this->safeLog('info', 'Functions:thirty: refresh:new skipped', [
             'command' => 'functions:thirty',
             'skipped_at' => now()->toDateTimeString(),
         ]);
 
         ini_set('max_execution_time', 1200);
-        
+
         // Statistics tracking
         $overallStats = [
             'get_listings' => [
@@ -107,19 +107,19 @@ class FunctionsThirty extends Command
                 'variations_not_found' => 0,
             ]
         ];
-        
+
         // Run get_listings
         $this->get_listings($overallStats['get_listings']);
-        
+
         // Run get_listingsBi
         $this->get_listingsBi($overallStats['get_listingsBi']);
-        
+
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
-        
+
         // Prepare summary message
         $summaryParts = [];
-        
+
         // get_listings summary
         $glStats = $overallStats['get_listings'];
         if ($glStats['listings_fetched'] > 0 || $glStats['variations_updated'] > 0 || $glStats['listings_updated'] > 0) {
@@ -138,7 +138,7 @@ class FunctionsThirty extends Command
             }
             $summaryParts[] = "get_listings(" . implode(", ", $glParts) . ")";
         }
-        
+
         // get_listingsBi summary
         $glBiStats = $overallStats['get_listingsBi'];
         if ($glBiStats['listings_fetched'] > 0 || $glBiStats['variations_updated'] > 0 || $glBiStats['listings_updated'] > 0) {
@@ -154,13 +154,13 @@ class FunctionsThirty extends Command
             }
             $summaryParts[] = "get_listingsBi(" . implode(", ", $glBiParts) . ")";
         }
-        
-        $summaryText = !empty($summaryParts) 
+
+        $summaryText = !empty($summaryParts)
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
-        
+
         // Log command completion with statistics (Slack + file)
-        Log::channel('functions_thirty')->info('Functions:thirty completed', [
+        $this->safeLog('info', 'Functions:thirty completed', [
             'command' => 'functions:thirty',
             'completed_at' => now()->toDateTimeString(),
             'duration_seconds' => $duration,
@@ -211,7 +211,7 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
-            
+
             foreach($lists as $list){
                 $stats['listings_fetched']++;
 
@@ -231,7 +231,7 @@ class FunctionsThirty extends Command
                     $variationPublicationStates[$key] = [];
                 }
                 $variationPublicationStates[$key][] = (int) $list->publication_state;
-                
+
                 $isNewVariation = false;
                 if($variation == null){
                     // $list = $bm->getOneListing($list->listing_id);
@@ -247,7 +247,7 @@ class FunctionsThirty extends Command
                     $variationCache[$key] = $variation;
                     echo $list->listing_id." ";
                 }
-                
+
                 if($variation->name == null){
                     $variation->name = $list->title;
                 }
@@ -256,7 +256,7 @@ class FunctionsThirty extends Command
                     echo $list->id." ";
                 }
                 // Do NOT set state here — resolved from all countries after the loop (so "Online" wins if any country is Online)
-                
+
                 // Check if variation needs to be saved
                 $variationIsDirty = $variation->isDirty();
                 if ($isNewVariation || $variationIsDirty) {
@@ -281,7 +281,7 @@ class FunctionsThirty extends Command
                     $isNewListing = false;
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $isNewListing = !$listing->exists;
-                    
+
                     $listing->max_price = $list->max_price;
                     $listing->min_price = $list->min_price;
                     $variation->listed_stock = $list->quantity;
@@ -293,13 +293,13 @@ class FunctionsThirty extends Command
                     $listing->reference_uuid = $list->id;
                     // ... other fields
                     $listing->save();
-                    
+
                     if ($isNewListing) {
                         $stats['listings_created']++;
                     } else if ($listing->wasChanged()) {
                         $stats['listings_updated']++;
                     }
-                    
+
                     if($variation->reference_uuid == null){
                         $variation->reference_uuid = $list->id;
                         $variation->save();
@@ -377,10 +377,10 @@ class FunctionsThirty extends Command
 
         foreach($listings as $country => $lists){
             $stats['countries_processed']++;
-            
+
             foreach($lists as $list){
                 $stats['listings_fetched']++;
-                
+
                 if (!isset($variationCacheBySku[$list->sku])) {
                     $variationCacheBySku[$list->sku] = Variation_model::where('sku', $list->sku)->first();
                 }
@@ -400,23 +400,23 @@ class FunctionsThirty extends Command
                     $isNewListing = false;
                     $listing = Listing_model::firstOrNew(['country' => $country, 'variation_id' => $variation->id, 'marketplace_id' => 1]);
                     $isNewListing = !$listing->exists;
-                    
+
                     $variation->listed_stock = $list->quantity;
                     $variationIsDirty = $variation->isDirty();
-                    
+
                     $listing->price = $list->price;
                     $listing->buybox = $list->same_merchant_winner;
                     $listing->buybox_price = $list->price_for_buybox;
                     $listing->currency_id = $currencyId;
                     // ... other fields
                     $listing->save();
-                    
+
                     if ($isNewListing) {
                         $stats['listings_created']++;
                     } else if ($listing->wasChanged()) {
                         $stats['listings_updated']++;
                     }
-                    
+
                     if ($variationIsDirty) {
                         $variation->save();
                         $stats['variations_updated']++;
@@ -637,7 +637,7 @@ class FunctionsThirty extends Command
                         }
 
                     } catch (\Exception $e) {
-                        Log::channel('functions_thirty')->error("Refurbed: Error processing offer", [
+                        $this->safeLog('error', 'Refurbed: Error processing offer', [
                             'offer_id' => $offerId ?? 'unknown',
                             'error' => $e->getMessage()
                         ]);
@@ -765,7 +765,7 @@ class FunctionsThirty extends Command
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
-            Log::channel('functions_thirty')->info("Refurbed: Completed listing sync", [
+            $this->safeLog('info', 'Refurbed: Completed listing sync', [
                 'total_listings' => $processedListings,
                 'total_offers' => $totalOffers,
                 'countries_processed' => $countryCount,
@@ -773,7 +773,7 @@ class FunctionsThirty extends Command
             echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
-            Log::channel('functions_thirty')->error("Refurbed: Fatal error in get_refurbed_listings", [
+            $this->safeLog('error', 'Refurbed: Fatal error in get_refurbed_listings', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
@@ -1104,13 +1104,13 @@ class FunctionsThirty extends Command
 
         // Check if local sync mode is enabled - prevent live data updates to Refurbed
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-        
+
         if ($syncDataInLocal) {
             // Skip live API update when in local testing mode
             // Log through SlackLogService to named log file
             // SlackLogService::post(
-            //     'listing_sync', 
-            //     'info', 
+            //     'listing_sync',
+            //     'info',
             //     "FunctionsThirty: Skipping Refurbed price update API call (SYNC_DATA_IN_LOCAL=true) - SKU: {$sku}",
             //     [
             //         'sku' => $sku,
@@ -1131,7 +1131,7 @@ class FunctionsThirty extends Command
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            Log::channel('functions_thirty')->error('Refurbed: Failed to push price update', [
+            $this->safeLog('error', 'Refurbed: Failed to push price update', [
                 'sku' => $sku,
                 'error' => $e->getMessage(),
             ]);
@@ -1145,5 +1145,18 @@ class FunctionsThirty extends Command
         }
 
         return Currency_model::where('code', $currencyCode)->value('id');
+    }
+
+    private function safeLog(string $level, string $message, array $context = []): void
+    {
+        try {
+            Log::channel('functions_thirty')->{$level}($message, $context);
+        } catch (\Throwable $e) {
+            // Fallback to default log so jobs do not fail because the custom channel is unwritable
+            Log::{$level}($message, $context + [
+                'functions_thirty_fallback' => true,
+                'log_error' => $e->getMessage(),
+            ]);
+        }
     }
 }
