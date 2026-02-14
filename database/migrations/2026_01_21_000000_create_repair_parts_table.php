@@ -7,14 +7,9 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        if (Schema::hasTable('repair_parts')) {
-            return;
-        }
-
         Schema::create('repair_parts', function (Blueprint $table) {
             $table->id();
-            $table->unsignedInteger('product_id');
-            $table->foreign('product_id')->references('id')->on('products')->onUpdate('cascade')->onDelete('cascade');
+            $table->unsignedBigInteger('product_id')->nullable();
             $table->string('name');
             $table->string('sku')->nullable();
             $table->string('compatible_device')->nullable();
@@ -24,12 +19,9 @@ return new class extends Migration {
             $table->boolean('active')->default(true);
             $table->timestamps();
             $table->softDeletes();
+
+            $table->foreign('product_id')->references('id')->on('products')->cascadeOnUpdate()->cascadeOnDelete();
             $table->index(['product_id', 'active']);
-            $table->foreign('product_id')
-                ->references('id')
-                ->on('products')
-                ->cascadeOnUpdate()
-                ->cascadeOnDelete();
         });
     }
 

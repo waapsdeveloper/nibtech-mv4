@@ -202,6 +202,7 @@ Route::get('repair/revert_status/{id}', [Repair::class,'repair_revert_status'])-
 Route::get('export_repair_invoice/{id}/{invoice?}', [Repair::class,'export_repair_invoice'])->name('repair_detail');
 Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal_repair');
 Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
+Route::post('repair/internal/add-part', [Repair::class,'add_internal_repair_part'])->name('add_internal_repair_part');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');
