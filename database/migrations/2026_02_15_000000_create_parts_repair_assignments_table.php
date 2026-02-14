@@ -9,7 +9,8 @@ return new class extends Migration {
     {
         Schema::create('parts_repair_assignments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('stock_id')->constrained('stock')->cascadeOnUpdate()->cascadeOnDelete();
+            // Match stock.id type (often int unsigned on existing DBs)
+            $table->unsignedInteger('stock_id');
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamp('assigned_at')->useCurrent();
             $table->timestamp('repaired_at')->nullable();
@@ -17,6 +18,7 @@ return new class extends Migration {
             $table->unsignedBigInteger('admin_id')->nullable();
             $table->timestamps();
 
+            $table->foreign('stock_id')->references('id')->on('stock')->cascadeOnUpdate()->cascadeOnDelete();
             $table->index('stock_id');
             $table->index(['stock_id', 'repaired_at']);
         });
