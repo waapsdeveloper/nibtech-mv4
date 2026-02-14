@@ -118,7 +118,7 @@
                                         <i class="fe fe-download"></i> Download All Logs
                                     </a>
                                     <button type="button" class="btn btn-danger btn-sm" onclick="clearLogFile()">
-                                        <i class="fe fe-trash-2"></i> Clear Log File
+                                        <i class="fe fe-trash-2"></i> : > /var/www/sdpos/storage/logs/laravel.log
                                     </button>
                                     <a href="{{ url('v2/logs/log-file') }}?file={{ $selectedFile }}" class="btn btn-secondary btn-sm">
                                         <i class="fe fe-refresh-cw"></i> Refresh
