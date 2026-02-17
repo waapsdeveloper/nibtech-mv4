@@ -31,6 +31,12 @@
                                 <label class="form-check-label" for="low_stock">Low stock only</label>
                             </div>
                         </div>
+                        <div class="col-md-2">
+                            <div class="form-check mt-4">
+                                <input type="checkbox" name="recent_purchases_first" value="1" class="form-check-input" id="recent_purchases_first" {{ request('recent_purchases_first') === '1' ? 'checked' : '' }}>
+                                <label class="form-check-label" for="recent_purchases_first">Show recent purchase items on top</label>
+                            </div>
+                        </div>
                         <div class="col-md-2 d-flex align-items-end">
                             <button type="submit" class="btn btn-primary me-2">Filter</button>
                             <a href="{{ route('v2.parts-inventory.inventory') }}" class="btn btn-secondary">Reset</a>
@@ -96,7 +102,10 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title" id="batchesModalLabel">Batches (in stock)</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                <div class="d-flex align-items-center gap-2">
+                    <a href="#" id="batchesModalDetailsLink" class="btn btn-sm btn-outline-primary" target="_blank">Show details page</a>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
             </div>
             <div class="modal-body">
                 <p class="text-muted mb-2" id="batchesModalPartInfo"></p>
@@ -196,6 +205,8 @@ document.addEventListener('DOMContentLoaded', function () {
             var sku = this.getAttribute('data-part-sku');
             document.getElementById('batchesModalPartInfo').textContent = (name || 'Part') + (sku ? ' (' + sku + ')' : '');
             document.getElementById('batchesModalLabel').textContent = 'Batches (in stock)';
+            var detailsLink = document.getElementById('batchesModalDetailsLink');
+            detailsLink.href = '{{ url("v2/parts-inventory/parts") }}/' + partId + '/batches-page';
             modal.show();
             loadBatches(1);
         });

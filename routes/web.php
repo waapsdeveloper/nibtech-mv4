@@ -31,6 +31,7 @@ use App\Http\Livewire\SalesReturn;
 use App\Http\Livewire\Team;
 use App\Http\Livewire\Testing;
 use App\Http\Controllers\ExchangeRateController;
+use App\Http\Controllers\Repair\PartsPurchaseController;
 use Illuminate\Support\Facades\Route;
 
 use App\Http\Controllers\GoogleController;
@@ -203,6 +204,9 @@ Route::get('export_repair_invoice/{id}/{invoice?}', [Repair::class,'export_repai
 Route::get('repair/internal', [Repair::class,'internal_repair'])->name('internal_repair');
 Route::post('add_internal_repair_item', [Repair::class,'add_internal_repair_item'])->name('internal_repair');
 Route::post('repair/internal/add-part', [Repair::class,'add_internal_repair_part'])->name('add_internal_repair_part');
+Route::get('repair/internal/parts-purchases/{stock_id}', [PartsPurchaseController::class, 'index'])->name('repair.internal.parts_purchases');
+Route::post('repair/internal/parts-purchase', [PartsPurchaseController::class, 'store'])->name('repair.internal.parts_purchase.store');
+Route::post('repair/internal/parts-purchase/{id}/set-price', [PartsPurchaseController::class, 'setPrice'])->name('repair.internal.parts_purchase.set_price');
 
 Route::get('wholesale', Wholesale::class)->name('view_wholesale');
 Route::post('add_wholesale', [Wholesale::class,'add_wholesale'])->name('add_wholesale');

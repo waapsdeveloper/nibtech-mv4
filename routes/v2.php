@@ -3,6 +3,7 @@
 use App\Http\Controllers\V2\ListingController as V2ListingController;
 use App\Http\Controllers\V2\MarketplaceStockFormulaController;
 use App\Http\Controllers\V2\PartsInventoryController;
+use App\Http\Controllers\V2\PartsPurchaseController;
 use App\Http\Controllers\V2\TeamController;
 use App\Http\Livewire\V2\Marketplace;
 use Illuminate\Support\Facades\Route;
@@ -36,6 +37,10 @@ Route::prefix('v2')->group(function () {
     Route::get('parts-inventory/bulk-import/parts-reference', [PartsInventoryController::class, 'bulkImportPartsReference'])->name('v2.parts-inventory.bulk-import.parts-reference');
     Route::get('parts-inventory/inventory', [PartsInventoryController::class, 'inventory'])->name('v2.parts-inventory.inventory');
     Route::get('parts-inventory/parts/{id}/batches', [PartsInventoryController::class, 'partBatches'])->name('v2.parts-inventory.part-batches');
+    Route::get('parts-inventory/parts/{id}/batches-page', [PartsInventoryController::class, 'partBatchesPage'])->name('v2.parts-inventory.part-batches-page');
+    Route::get('parts-inventory/parts/{id}/broken', [PartsInventoryController::class, 'brokenHistory'])->name('v2.parts-inventory.part-broken.history');
+    Route::get('parts-inventory/parts/{id}/broken/add', [PartsInventoryController::class, 'brokenAdd'])->name('v2.parts-inventory.part-broken.add');
+    Route::post('parts-inventory/parts/{id}/broken', [PartsInventoryController::class, 'brokenStore'])->name('v2.parts-inventory.part-broken.store');
     Route::get('parts-inventory/items-to-repair', [PartsInventoryController::class, 'itemsToRepair'])->name('v2.parts-inventory.items-to-repair');
     Route::get('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepair'])->name('v2.parts-inventory.items-to-repair.assign');
     Route::post('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepairStore'])->name('v2.parts-inventory.items-to-repair.assign.store');
@@ -45,6 +50,12 @@ Route::prefix('v2')->group(function () {
     Route::get('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageDetail'])->name('v2.parts-inventory.usage.detail');
     Route::put('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageUpdate'])->name('v2.parts-inventory.usage.update');
     Route::delete('parts-inventory/usage/{id}', [PartsInventoryController::class, 'usageDelete'])->name('v2.parts-inventory.usage.delete');
+
+    // Parts purchase history and add purchase (dedicated views; internal repair menu redirects here)
+    Route::get('parts-inventory/purchase-history', [PartsPurchaseController::class, 'purchaseHistory'])->name('v2.parts-inventory.purchase-history');
+    Route::get('parts-inventory/purchases/add', [PartsPurchaseController::class, 'purchaseAdd'])->name('v2.parts-inventory.purchases.add');
+    Route::post('parts-inventory/purchases', [PartsPurchaseController::class, 'purchaseStore'])->name('v2.parts-inventory.purchases.store');
+    Route::post('parts-inventory/purchases/{id}/set-price', [PartsPurchaseController::class, 'purchaseSetPrice'])->name('v2.parts-inventory.purchases.set-price');
 
     Route::get('listings', [V2ListingController::class, 'index'])->name('v2.view_listing');
     Route::get('listings/get_variations', [V2ListingController::class, 'getVariations'])->name('v2.get_variations');

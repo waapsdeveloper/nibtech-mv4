@@ -324,6 +324,70 @@
 
         @endif
 
+        @if (isset($stock))
+        <div class="row">
+            <div class="col-xl-12">
+                <div class="card">
+                    <div class="card-header pb-0">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <h4 class="card-title mg-b-0">Purchase history of this IMEI</h4>
+                            <a href="{{ route('v2.parts-inventory.purchases.add', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}" class="btn btn-primary btn-sm">Add purchase</a>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover mb-0 text-md-nowrap">
+                                <thead>
+                                    <tr>
+                                        <th><small><b>Date</b></small></th>
+                                        <th><small><b>Part</b></small></th>
+                                        <th><small><b>Qty</b></small></th>
+                                        <th><small><b>Unit price</b></small></th>
+                                        <th><small><b>Total</b></small></th>
+                                        <th><small><b>Lease</b></small></th>
+                                        <th><small><b>Notes</b></small></th>
+                                        <th><small><b>Recorded by</b></small></th>
+                                        <th><small><b>Actions</b></small></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @forelse ($parts_purchases ?? [] as $pp)
+                                        <tr>
+                                            <td>{{ $pp->created_at->format('Y-m-d H:i') }}</td>
+                                            <td>{{ $pp->repairPart->name ?? '–' }} @if($pp->repairPart && $pp->repairPart->sku)<small class="text-muted">({{ $pp->repairPart->sku }})</small>@endif</td>
+                                            <td>{{ $pp->quantity }}</td>
+                                            <td>
+                                                @if ($pp->unit_price !== null)
+                                                    {{ number_format($pp->unit_price, 2) }}
+                                                @else
+                                                    <span class="text-muted">–</span>
+                                                    @if ($pp->is_lease)
+                                                        <form action="{{ route('v2.parts-inventory.purchases.set-price', $pp->id) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            <input type="number" name="unit_price" step="0.01" min="0" class="form-control form-control-sm d-inline-block" style="width:80px" placeholder="Set">
+                                                            <button type="submit" class="btn btn-sm btn-outline-secondary">Set</button>
+                                                        </form>
+                                                    @endif
+                                                @endif
+                                            </td>
+                                            <td>{{ $pp->unit_price !== null ? number_format($pp->total_price, 2) : '–' }}</td>
+                                            <td>{{ $pp->is_lease ? 'Yes' : 'No' }}</td>
+                                            <td>{{ $pp->notes ?? '–' }}</td>
+                                            <td>{{ $pp->admin ? trim(($pp->admin->first_name ?? '') . ' ' . ($pp->admin->last_name ?? '')) : '–' }}</td>
+                                            <td><a href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}" class="btn btn-sm btn-link">View all</a></td>
+                                        </tr>
+                                    @empty
+                                        <tr><td colspan="9" class="text-muted text-center">No parts purchases for this IMEI yet.</td></tr>
+                                    @endforelse
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+
         @if (isset($process_stocks) && $process_stocks->count() > 0)
 
         <div class="row">

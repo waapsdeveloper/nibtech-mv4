@@ -362,6 +362,7 @@
                                     <th><small><b>IMEI</b></small></th>
                                     <th><small><b>Reason</b></small></th>
                                     <th><small><b>Creation Date</b></small></th>
+                                    <th><small><b>Action</b></small></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -383,6 +384,15 @@
                                             <td><a href="{{url('repair/internal').'?imei='.$stock->imei.$stock->serial_number}}">{{$stock->imei.$stock->serial_number }}</a></td>
                                             <td>{{$r_stock->description ?? null }}</td>
                                             <td style="width:180px">{{ $r_stock->created_at."  ".$r_stock->updated_at }}</td>
+                                            <td class="text-end">
+                                                <div class="dropdown">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-list me-2"></i>List purchases</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchases.add', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-plus me-2"></i>Add purchase</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
                                         </tr>
                                     @php
                                         $i ++;
@@ -428,6 +438,7 @@
                                     <th><small><b>Vendor</b></small></th>
                                     <th><small><b>Reason</b></small></th>
                                     <th><small><b>Creation Date</b></small></th>
+                                    <th><small><b>Action</b></small></th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -453,6 +464,15 @@
                                             </td>
                                             <td>{{$stock->latest_operation->description ?? "Missing Movement" }}</td>
                                             <td style="width:180px">{{ $stock->latest_operation->created_at ?? null}} {{$stock->latest_operation->updated_at ?? null }}</td>
+                                            <td class="text-end">
+                                                <div class="dropdown">
+                                                    <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
+                                                    <ul class="dropdown-menu dropdown-menu-end">
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-list me-2"></i>List purchases</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchases.add', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-plus me-2"></i>Add purchase</a></li>
+                                                    </ul>
+                                                </div>
+                                            </td>
                                         </tr>
                                         {{-- @php
                                             $j++;
