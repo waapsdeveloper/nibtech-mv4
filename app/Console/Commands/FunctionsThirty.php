@@ -58,7 +58,7 @@ class FunctionsThirty extends Command
         SlackLogService::post(
             'listing_sync',
             'info',
-            "­ƒöä Functions:thirty command started (BackMarket listings sync)",
+            "ï¿½ï¿½ï¿½ï¿½ Functions:thirty command started (BackMarket listings sync)",
             [
                 'command' => 'functions:thirty',
                 'started_at' => now()->toDateTimeString(),
@@ -67,11 +67,11 @@ class FunctionsThirty extends Command
         );
         
         if ($syncDataInLocal) {
-            // $this->info("ÔÜá´©Å  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
+            // $this->info("ï¿½ï¿½á´©ï¿½  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
             // SlackLogService::post(
             //     'listing_sync',
             //     'info',
-            //     "ÔÜá´©Å  Functions:thirty running in LOCAL MODE - Only fetching data, no API modifications",
+            //     "ï¿½ï¿½á´©ï¿½  Functions:thirty running in LOCAL MODE - Only fetching data, no API modifications",
             //     [
             //         'command' => 'functions:thirty',
             //         'local_mode' => true
@@ -170,7 +170,7 @@ class FunctionsThirty extends Command
         SlackLogService::post(
             'listing_sync',
             'info',
-            "Ô£à Functions:thirty command completed{$summaryText} | Duration: {$duration}s",
+            "Ô£ï¿½ Functions:thirty command completed{$summaryText} | Duration: {$duration}s",
             [
                 'command' => 'functions:thirty',
                 'completed_at' => now()->toDateTimeString(),
@@ -407,7 +407,7 @@ class FunctionsThirty extends Command
     {
         $states = array_map('intval', $states);
         if (in_array(2, $states, true)) {
-            return 2; // Online ÔÇö ad is running in at least one country
+            return 2; // Online ï¿½ï¿½ï¿½ ad is running in at least one country
         }
         if (in_array(3, $states, true)) {
             return 3; // Offline
@@ -1246,7 +1246,7 @@ class FunctionsThirty extends Command
             //         'local_mode' => true
             //     ]
             // );
-            // $this->info("ÔÜá´©Å  Local Mode: Skipping Refurbed price update for SKU {$sku}");
+            // $this->info("ï¿½ï¿½á´©ï¿½  Local Mode: Skipping Refurbed price update for SKU {$sku}");
             return;
         }
 
