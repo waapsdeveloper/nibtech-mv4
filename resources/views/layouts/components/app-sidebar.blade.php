@@ -57,6 +57,9 @@
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/items-to-repair')}}">Items to Repair</a>
                                                 </li>
+                                                <li class="slide">
+                                                    <a class="side-menu__item ps-0" href="{{ route('v2.parts-inventory.purchase-history') }}">Purchase History</a>
+                                                </li>
                                             </ul>
                                         </li>
                                         @if ($isSuperAdmin && $user->hasPermission('view_marketplace'))

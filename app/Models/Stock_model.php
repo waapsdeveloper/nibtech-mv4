@@ -149,6 +149,10 @@ class Stock_model extends Model
     {
         return $this->hasMany(Stock_operations_model::class, 'stock_id', 'id');
     }
+    public function partsPurchases()
+    {
+        return $this->hasMany(PartsPurchase::class, 'stock_id', 'id');
+    }
     public function latest_operation()
     {
         return $this->hasOne(Stock_operations_model::class, 'stock_id', 'id')

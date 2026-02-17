@@ -42,6 +42,16 @@ class RepairPart extends Model
         return $this->hasMany(PartBatch::class, 'repair_part_id');
     }
 
+    public function partsPurchases()
+    {
+        return $this->hasMany(PartsPurchase::class, 'repair_part_id');
+    }
+
+    public function brokenRecords()
+    {
+        return $this->hasMany(PartBrokenRecord::class, 'repair_part_id');
+    }
+
     /** Total on hand across all batches */
     public function getOnHandFromBatchesAttribute(): int
     {

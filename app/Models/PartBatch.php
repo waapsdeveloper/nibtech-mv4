@@ -44,6 +44,11 @@ class PartBatch extends Model
         return $this->hasMany(RepairPartUsage::class, 'batch_id');
     }
 
+    public function brokenRecords()
+    {
+        return $this->hasMany(PartBrokenRecord::class, 'part_batch_id');
+    }
+
     /** Parts with stock (quantity_remaining > 0) */
     public function scopeInStock($query)
     {

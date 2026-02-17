@@ -5,6 +5,7 @@ namespace App\Http\Controllers\V2;
 use App\Http\Controllers\Controller;
 use App\Models\Admin_model;
 use App\Models\PartBatch;
+use App\Models\PartBrokenRecord;
 use App\Models\Process_model;
 use App\Models\Products_model;
 use App\Models\RepairPart;
@@ -253,7 +254,15 @@ class PartsInventoryController extends Controller
             $query->whereColumn('on_hand', '<=', 'reorder_level');
         }
 
-        $parts = $query->orderBy('name')->paginate(20)->withQueryString();
+        if ($request->filled('recent_purchases_first') && $request->recent_purchases_first === '1') {
+            $query->withMax('partsPurchases', 'created_at')
+                ->orderByDesc('parts_purchases_max_created_at')
+                ->orderBy('name');
+        } else {
+            $query->orderBy('name');
+        }
+
+        $parts = $query->paginate(20)->withQueryString();
 
         return view('v2.parts-inventory.inventory', compact('parts'))->with($data);
     }
@@ -293,6 +302,114 @@ class PartsInventoryController extends Controller
                 'total' => $batches->total(),
             ],
         ]);
+    }
+
+    /**
+     * Full-page batches list for a part with filters.
+     */
+    public function partBatchesPage(Request $request, $id)
+    {
+        $part = RepairPart::with('product')->findOrFail($id);
+        $data['title_page'] = 'Batches – ' . $part->name;
+        session()->put('page_title', $data['title_page']);
+
+        $query = PartBatch::where('repair_part_id', $part->id);
+
+        if ($request->filled('in_stock') && $request->in_stock === '1') {
+            $query->inStock();
+        }
+        if ($request->filled('batch_number')) {
+            $q = $request->batch_number;
+            $query->where('batch_number', 'like', '%' . $q . '%');
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('received_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('received_at', '<=', $request->date_to);
+        }
+
+        $batches = $query->orderBy('received_at', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
+
+        return view('v2.parts-inventory.part-batches', compact('part', 'batches'))->with($data);
+    }
+
+    /**
+     * Broken parts history for a part.
+     */
+    public function brokenHistory(Request $request, $id)
+    {
+        $part = RepairPart::with('product')->findOrFail($id);
+        $data['title_page'] = 'Broken parts history – ' . $part->name;
+        session()->put('page_title', $data['title_page']);
+
+        $query = PartBrokenRecord::where('repair_part_id', $part->id)
+            ->with(['partBatch', 'admin']);
+
+        if ($request->filled('batch_id')) {
+            $query->where('part_batch_id', $request->batch_id);
+        }
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        $records = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
+
+        return view('v2.parts-inventory.part-broken-history', compact('part', 'records'))->with($data);
+    }
+
+    /**
+     * Show form to add broken parts for a part (optional: pre-select batch).
+     */
+    public function brokenAdd(Request $request, $id)
+    {
+        $part = RepairPart::with('product')->findOrFail($id);
+        $batch = null;
+        if ($request->filled('batch_id')) {
+            $batch = PartBatch::where('repair_part_id', $part->id)->find($request->batch_id);
+        }
+        $batchesForDropdown = $part->batches()->orderBy('received_at', 'desc')->orderBy('id', 'desc')->get(['id', 'batch_number', 'quantity_remaining', 'received_at']);
+        $data['title_page'] = 'Add broken parts – ' . $part->name;
+        session()->put('page_title', $data['title_page']);
+        return view('v2.parts-inventory.part-broken-add', compact('part', 'batch', 'batchesForDropdown'))->with($data);
+    }
+
+    /**
+     * Store broken parts record. If batch_id provided, decrement batch quantity_remaining.
+     */
+    public function brokenStore(Request $request, $id)
+    {
+        $part = RepairPart::findOrFail($id);
+        $request->validate([
+            'quantity' => 'required|integer|min:1',
+            'notes' => 'nullable|string|max:1000',
+            'responsible_person' => 'nullable|string|max:255',
+            'part_batch_id' => 'nullable|exists:part_batches,id',
+        ]);
+        $batchId = $request->part_batch_id ? (int) $request->part_batch_id : null;
+        if ($batchId) {
+            $batch = PartBatch::where('repair_part_id', $part->id)->find($batchId);
+            if (!$batch) {
+                return redirect()->back()->withInput()->with('error', 'Invalid batch for this part.');
+            }
+        }
+        $quantity = (int) $request->quantity;
+        PartBrokenRecord::create([
+            'repair_part_id' => $part->id,
+            'part_batch_id' => $batchId,
+            'quantity' => $quantity,
+            'notes' => $request->notes,
+            'responsible_person' => $request->filled('responsible_person') ? $request->responsible_person : null,
+            'admin_id' => auth()->id(),
+        ]);
+        if ($batchId && isset($batch)) {
+            $batch->decrement('quantity_remaining', min($quantity, $batch->quantity_remaining));
+        }
+        $backUrl = route('v2.parts-inventory.part-batches-page', $part->id);
+        return redirect($backUrl)->with('success', 'Broken parts recorded.');
     }
 
     /**

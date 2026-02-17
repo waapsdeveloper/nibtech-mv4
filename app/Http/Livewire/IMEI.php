@@ -11,6 +11,7 @@ use App\Models\Stock_model;
 use App\Models\Order_item_model;
 use App\Models\Grade_model;
 use App\Models\Order_model;
+use App\Models\PartsPurchase;
 use App\Models\Process_model;
 use App\Models\Process_stock_model;
 use App\Models\Products_model;
@@ -215,6 +216,7 @@ class IMEI extends Component
             $orders = Order_item_model::where('stock_id', $stock_id)->with(['order', 'order.order_type', 'order.customer', 'variation', 'stock'])->orderBy('id','desc')->get();
             $data['stock'] = $stock;
             $data['orders'] = $orders;
+            $data['parts_purchases'] = PartsPurchase::where('stock_id', $stock_id)->with(['repairPart', 'admin'])->orderBy('created_at', 'desc')->get();
             // dd($orders);
 
 
