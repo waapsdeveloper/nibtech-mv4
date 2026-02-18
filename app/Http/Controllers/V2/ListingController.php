@@ -208,7 +208,6 @@ class ListingController extends Controller
             'listings.marketplace',
             'product',
             'available_stocks',
-            'all_available_stocks', // For AV/Difference matching inventory page (no buffer)
             'available_listed_stocks',
             'pending_orders',
             'pending_bm_orders',
@@ -784,22 +783,30 @@ class ListingController extends Controller
             ->get();
 
         $now = now();
-        $listed_stock_verifications->each(function ($verification, $index) use ($id, $listed_stock_verifications, $now) {
-            $process = Process_model::find($verification->process_id);
+        // Pre-load process created_at for all verifications so we have reliable period boundaries (never use $now for older rows)
+        $processIds = $listed_stock_verifications->pluck('process_id')->unique()->filter();
+        $processes = Process_model::whereIn('id', $processIds)->get()->keyBy('id');
+
+        $listed_stock_verifications->each(function ($verification, $index) use ($id, $listed_stock_verifications, $now, $processes) {
+            $process = $processes->get($verification->process_id) ?? Process_model::find($verification->process_id);
             $verification->process_ref = $process->reference_id ?? null;
             $verification->admin = Admin_model::find($verification->admin_id)->first_name ?? null;
 
-            // Period: from this verification to the next (or to now for the most recent)
+            // Period: (periodStart, periodEnd] = orders that arrived between this verification and the next (difference, not cumulative)
             $periodStart = $verification->created_at ?? $process->created_at ?? $now;
             if ($index === 0) {
                 $periodEnd = $now;
             } else {
                 $prev = $listed_stock_verifications[$index - 1];
-                $prevProcess = Process_model::find($prev->process_id);
-                $periodEnd = $prev->created_at ?? $prevProcess->created_at ?? $now;
+                $prevProcess = $processes->get($prev->process_id) ?? Process_model::find($prev->process_id);
+                $periodEnd = $prev->created_at ?? $prevProcess->created_at ?? null;
+                // If previous has no date, use same as periodStart so period is empty → 0 orders (never use $now or we get cumulative)
+                if ($periodEnd === null) {
+                    $periodEnd = $periodStart;
+                }
             }
 
-            // Count sales orders (order_type_id 3) that arrived in this period for this variation
+            // Count sales orders (order_type_id 3) created in this period only (difference between periods)
             $verification->orders_arrived_between = (int) (Order_item_model::where('variation_id', $id)
                 ->whereHas('order', function ($q) use ($periodStart, $periodEnd) {
                     $q->where('order_type_id', 3)
