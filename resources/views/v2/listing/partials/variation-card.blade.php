@@ -91,10 +91,12 @@
 
     // Use physical inventory count for display (matching V1)
     $availableCount = $physicalAvailableCount;
-    $difference = $availableCount - $pendingCount;
 
     // Available listed stocks = available (status 1) stocks with closed listing/topup
     $availableListedStocksCount = ($variation->available_listed_stocks ?? collect())->count();
+
+    // Difference = simple card calculation: Available (AV) − Pending Orders (PO), not from backend
+    $difference = $availableListedStocksCount - $pendingCount;
 
     // Calculate average cost from available stocks
     $averageCost = 0;
