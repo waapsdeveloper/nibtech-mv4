@@ -208,6 +208,7 @@ class ListingController extends Controller
             'listings.marketplace',
             'product',
             'available_stocks',
+            'all_available_stocks', // For AV/Difference matching inventory page (no buffer)
             'available_listed_stocks',
             'pending_orders',
             'pending_bm_orders',
