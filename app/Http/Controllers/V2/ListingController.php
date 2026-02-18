@@ -774,6 +774,7 @@ class ListingController extends Controller
 
     /**
      * Get variation history (duplicated from original ListingController for consistency)
+     * Includes "orders arrived" between each verification period (sales orders created in that interval).
      */
     public function get_variation_history($id)
     {
@@ -782,9 +783,31 @@ class ListingController extends Controller
             ->limit(20)
             ->get();
 
-        $listed_stock_verifications->each(function($verification) {
-            $verification->process_ref = Process_model::find($verification->process_id)->reference_id ?? null;
+        $now = now();
+        $listed_stock_verifications->each(function ($verification, $index) use ($id, $listed_stock_verifications, $now) {
+            $process = Process_model::find($verification->process_id);
+            $verification->process_ref = $process->reference_id ?? null;
             $verification->admin = Admin_model::find($verification->admin_id)->first_name ?? null;
+
+            // Period: from this verification to the next (or to now for the most recent)
+            $periodStart = $verification->created_at ?? $process->created_at ?? $now;
+            if ($index === 0) {
+                $periodEnd = $now;
+            } else {
+                $prev = $listed_stock_verifications[$index - 1];
+                $prevProcess = Process_model::find($prev->process_id);
+                $periodEnd = $prev->created_at ?? $prevProcess->created_at ?? $now;
+            }
+
+            // Count sales orders (order_type_id 3) that arrived in this period for this variation
+            $verification->orders_arrived_between = (int) (Order_item_model::where('variation_id', $id)
+                ->whereHas('order', function ($q) use ($periodStart, $periodEnd) {
+                    $q->where('order_type_id', 3)
+                        ->where('created_at', '>', $periodStart)
+                        ->where('created_at', '<=', $periodEnd);
+                })
+                ->selectRaw('count(distinct order_id) as c')
+                ->value('c') ?? 0);
         });
 
         return response()->json(['listed_stock_verifications' => $listed_stock_verifications]);
