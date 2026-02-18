@@ -81,25 +81,26 @@
     // Available stock should logically never exceed total stock, but we cap it just in case
     $totalAvailableStock = min($totalAvailableStock, $totalStock);
 
-    // Use physical stock count (matching V1 behavior)
-    $availableStocks = $variation->available_stocks ?? collect();
+    // Use all physical available stock (status=1) so AV and Difference match inventory page
+    // (inventory?product=&storage=&color=&grade[]=) - no buffer or extra filters
+    $allAvailableStocks = $variation->all_available_stocks ?? collect();
     $pendingOrders = $variation->pending_orders ?? collect();
     $pendingBmOrders = $variation->pending_bm_orders ?? collect();
-    $physicalAvailableCount = $availableStocks->count(); // Physical stock items count
+    $physicalAvailableCount = $allAvailableStocks->count(); // Same count as inventory page
     $pendingCount = $pendingOrders->sum('quantity'); // Sum of quantities (matching V1 behavior)
     $pendingBmCount = $pendingBmOrders->count();
 
-    // Use physical inventory count for display (matching V1)
+    // Available and Difference aligned with inventory page (no buffer / no extra filters)
     $availableCount = $physicalAvailableCount;
     $difference = $availableCount - $pendingCount;
 
-    // Available listed stocks = available (status 1) stocks with closed listing/topup
-    $availableListedStocksCount = ($variation->available_listed_stocks ?? collect())->count();
+    // AV display = same as inventory page count (all status=1 for this variation)
+    $availableListedStocksCount = $physicalAvailableCount;
 
-    // Calculate average cost from available stocks
+    // Calculate average cost from available stocks (same pool as inventory)
     $averageCost = 0;
-    if($availableStocks->count() > 0) {
-        $stockIds = $availableStocks->pluck('id');
+    if($allAvailableStocks->count() > 0) {
+        $stockIds = $allAvailableStocks->pluck('id');
         $stockCosts = \App\Models\Order_item_model::whereHas('order', function($q){
             $q->where('order_type_id', 1);
         })->whereIn('stock_id', $stockIds)->pluck('price');

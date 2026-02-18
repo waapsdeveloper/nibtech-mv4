@@ -27,6 +27,7 @@ class ListingQueryService
             'listings.marketplace',
             'product',
             'available_stocks',
+            'all_available_stocks', // For AV/Difference matching inventory page (no buffer)
             'pending_orders',
             'pending_bm_orders',
             'storage_id',
