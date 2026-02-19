@@ -27,6 +27,7 @@ Route::prefix('v2')->group(function () {
     Route::post('parts-inventory/catalog', [PartsInventoryController::class, 'catalogStore'])->name('v2.parts-inventory.catalog.store');
     Route::get('parts-inventory/catalog/{id}/edit', [PartsInventoryController::class, 'catalogEdit'])->name('v2.parts-inventory.catalog.edit');
     Route::post('parts-inventory/catalog/{id}', [PartsInventoryController::class, 'catalogUpdate'])->name('v2.parts-inventory.catalog.update');
+    Route::get('parts-inventory/catalog/next-barcode', [PartsInventoryController::class, 'nextBarcode'])->name('v2.parts-inventory.catalog.next-barcode');
     Route::get('parts-inventory/catalog/{id}/attach-imei', [PartsInventoryController::class, 'attachImei'])->name('v2.parts-inventory.catalog.attach-imei');
     Route::post('parts-inventory/catalog/{id}/attach-imei', [PartsInventoryController::class, 'attachImeiStore'])->name('v2.parts-inventory.catalog.attach-imei.store');
     Route::get('parts-inventory/batch-receive', [PartsInventoryController::class, 'batchReceive'])->name('v2.parts-inventory.batch-receive');
