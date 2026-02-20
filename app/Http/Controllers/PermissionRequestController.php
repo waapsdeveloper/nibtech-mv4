@@ -50,7 +50,19 @@ class PermissionRequestController extends Controller
 
         $actionUrl = $request->input('action_url');
         $actionMethod = $request->input('action_method');
-        $actionPayload = $request->input('action_payload');
+
+        $rawPayload = $request->input('action_payload');
+        $normalizedPayload = $rawPayload;
+        if ($rawPayload) {
+            $decodedPayload = json_decode($rawPayload, true);
+            if (json_last_error() !== JSON_ERROR_NONE) {
+                $decodedPayload = json_decode(html_entity_decode($rawPayload), true);
+            }
+            if (is_array($decodedPayload)) {
+                // Store normalized JSON to avoid HTML entity issues later
+                $normalizedPayload = json_encode($decodedPayload, JSON_UNESCAPED_SLASHES);
+            }
+        }
 
         PermissionRequest::create([
             'admin_id' => $adminId,
@@ -61,7 +73,7 @@ class PermissionRequestController extends Controller
             'note' => $note,
             'action_url' => $actionUrl,
             'action_method' => $actionMethod,
-            'action_payload' => $actionPayload,
+            'action_payload' => $normalizedPayload,
         ]);
 
         return back()->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
@@ -88,6 +100,9 @@ class PermissionRequestController extends Controller
             $payload = [];
             if ($permissionRequest->action_payload) {
                 $decoded = json_decode($permissionRequest->action_payload, true);
+                if (! is_array($decoded)) {
+                    $decoded = json_decode(html_entity_decode($permissionRequest->action_payload), true);
+                }
                 if (is_array($decoded)) {
                     $payload = $decoded;
                 }
