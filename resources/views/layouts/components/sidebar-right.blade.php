@@ -181,7 +181,15 @@
 															<strong>{{ $request->admin->first_name ?? 'User' }} {{ $request->admin->last_name ?? '' }}</strong>
 															<span class="text-muted">requested</span>
 														</div>
-														<span class="badge bg-secondary text-uppercase">{{ $request->request_type }}</span>
+														@php
+															$typeLabel = match($request->request_type) {
+																'delegate' => 'Delegate',
+																'temporary' => 'Temporary',
+																'permanent' => 'Permanent',
+																default => ucfirst($request->request_type ?? 'request'),
+															};
+														@endphp
+														<span class="badge bg-secondary text-uppercase">{{ $typeLabel }}</span>
 													</div>
 													<div class="small mb-1">Permission: <span class="fw-semibold">{{ $request->permission }}</span></div>
 													<div class="small text-muted">Requested at {{ $request->created_at->format('Y-m-d H:i') }}</div>

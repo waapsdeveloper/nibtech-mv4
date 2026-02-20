@@ -24,11 +24,15 @@
                                 <label class="form-label">Request type</label>
                                 <div class="d-flex gap-3">
                                     <label class="form-check">
+                                        <input class="form-check-input" type="radio" name="request_type" value="delegate" checked>
+                                        <span class="form-check-label">Delegate to admin</span>
+                                    </label>
+                                    <label class="form-check">
                                         <input class="form-check-input" type="radio" name="request_type" value="temporary">
                                         <span class="form-check-label">Temporary</span>
                                     </label>
                                     <label class="form-check">
-                                        <input class="form-check-input" type="radio" name="request_type" value="permanent" checked>
+                                        <input class="form-check-input" type="radio" name="request_type" value="permanent">
                                         <span class="form-check-label">Permanent</span>
                                     </label>
                                 </div>
@@ -45,14 +49,7 @@
                             </div>
 
                             <div class="alert alert-info py-2">
-                                An admin who already has this permission will perform the task for you; no new permission will be granted.
-                            </div>
-
-                            <div class="form-check mb-3">
-                                <input class="form-check-input" type="checkbox" id="delegate_on_behalf" name="delegate_on_behalf" value="1" checked>
-                                <label class="form-check-label" for="delegate_on_behalf">
-                                    Request an admin to do this on your behalf (no permission will be added to your account).
-                                </label>
+                                Default option delegates the action to an admin without granting you the permission. Choose temporary or permanent only if you need access yourself.
                             </div>
 
                             <button type="submit" class="btn btn-primary">Request Permission</button>
