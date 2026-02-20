@@ -110,6 +110,12 @@ class PermissionRequestController extends Controller
 
             // Normalize payload for known routes expecting nested arrays (e.g., update_product expects request('update'))
             if ($permissionRequest->permission === 'update_product' && (! isset($payload['update']) || ! is_array($payload['update']))) {
+                if (isset($payload['update']) && is_string($payload['update'])) {
+                    $decodedUpdate = json_decode($payload['update'], true);
+                    if (is_array($decodedUpdate)) {
+                        $payload['update'] = $decodedUpdate;
+                    }
+                }
                 // If the payload only contains flat fields, wrap them inside "update"
                 if (! empty($payload) && array_keys($payload) !== ['update']) {
                     $payload = ['update' => $payload];
