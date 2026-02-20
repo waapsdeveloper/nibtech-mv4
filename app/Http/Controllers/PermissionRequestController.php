@@ -108,58 +108,11 @@ class PermissionRequestController extends Controller
                 }
             }
 
-            // Normalize payload for known routes expecting nested arrays (e.g., update_product expects request('update'))
-            if ($permissionRequest->permission === 'update_product' && (! isset($payload['update']) || ! is_array($payload['update']))) {
-                if (isset($payload['update']) && is_string($payload['update'])) {
-                    $decodedUpdate = json_decode($payload['update'], true);
-                    if (is_array($decodedUpdate)) {
-                        $payload['update'] = $decodedUpdate;
-                    }
-                }
-                // If the payload only contains flat fields, wrap them inside "update"
-                if (! empty($payload) && array_keys($payload) !== ['update']) {
-                    $payload = ['update' => $payload];
-                }
-            }
-
-            // If required payload is missing for update_product, fail fast to avoid null update
-            if ($permissionRequest->permission === 'update_product' && (! isset($payload['update']) || ! is_array($payload['update']))) {
-                $replayError = 'Missing or invalid update payload.';
-                Log::warning('Delegate replay payload missing update key', [
-                    'request_id' => $permissionRequest->id,
-                    'raw_payload' => $permissionRequest->action_payload,
-                    'decoded_payload' => $payload,
-                ]);
-                return back()->with('error', 'Replay failed: '.$replayError.' Request remains pending.');
-            }
-
-            // Fast-path: directly perform product update to avoid payload loss through middleware
-            if ($permissionRequest->permission === 'update_product') {
-                $productId = null;
-                if ($permissionRequest->action_url && preg_match('/update_product\/(\d+)/', $permissionRequest->action_url, $m)) {
-                    $productId = (int) $m[1];
-                }
-                if (! $productId) {
-                    return back()->with('error', 'Replay failed: cannot determine product ID from action URL. Request remains pending.');
-                }
-
-                try {
-                    $updated = \App\Models\Products_model::where('id', $productId)->update($payload['update']);
-                    if ($updated === 0) {
-                        return back()->with('error', 'Replay failed: product not found or no changes applied. Request remains pending.');
-                    }
-                    $replayed = true;
-                    $permissionRequest->status = 'approved';
-                    $permissionRequest->save();
-                    return back()->with('success', 'Request approved and product updated as admin.');
-                } catch (\Throwable $e) {
-                    Log::error('Direct product update failed during delegate replay', [
-                        'request_id' => $permissionRequest->id,
-                        'product_id' => $productId,
-                        'payload' => $payload['update'] ?? null,
-                        'error' => $e->getMessage(),
-                    ]);
-                    return back()->with('error', 'Replay failed: '.$e->getMessage().'. Request remains pending.');
+            // Normalize JSON string payloads into arrays if possible
+            if (! is_array($payload) && is_string($payload)) {
+                $decodedGeneric = json_decode($payload, true);
+                if (is_array($decodedGeneric)) {
+                    $payload = $decodedGeneric;
                 }
             }
 
@@ -196,7 +149,10 @@ class PermissionRequestController extends Controller
                     $replayRequest->headers->set('X-CSRF-TOKEN', $payload['_token']);
                 }
                 $replayRequest->server->set('REMOTE_ADDR', $request->ip());
+                $originalRequestInstance = app('request');
+                app()->instance('request', $replayRequest);
                 $response = app('router')->dispatch($replayRequest);
+                app()->instance('request', $originalRequestInstance);
                 $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 0;
                 if ($status >= 400) {
                     $bodySnippet = method_exists($response, 'getContent') ? mb_substr($response->getContent(), 0, 500) : '';
