@@ -107,6 +107,8 @@ class PermissionRequestController extends Controller
                 }
 
                 $replayRequest = Request::create($permissionRequest->action_url, $method, $payload);
+                // Ensure payload is in the request bag (some routes rely on request('update'))
+                $replayRequest->request->replace($payload);
                 $replayRequest->setLaravelSession($request->session());
                 if (isset($payload['_token'])) {
                     $replayRequest->headers->set('X-CSRF-TOKEN', $payload['_token']);
