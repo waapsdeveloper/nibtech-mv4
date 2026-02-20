@@ -169,6 +169,22 @@
 											->orderByDesc('created_at')
 											->limit(10)
 											->get();
+
+										// Preload product records for update_product requests to show current values
+										$updateProductIds = [];
+										foreach ($permissionRequests as $req) {
+											if ($req->permission === 'update_product' && $req->action_url) {
+												if (preg_match('/update_product\/(\d+)/', $req->action_url, $m)) {
+													$updateProductIds[] = (int) $m[1];
+												}
+											}
+										}
+										$productsForPreview = collect();
+										if (! empty($updateProductIds)) {
+											$productsForPreview = \App\Models\Products_model::whereIn('id', $updateProductIds)
+												->get()
+												->keyBy('id');
+										}
 									@endphp
 									@if ($permissionRequests->isEmpty())
 										<div class="p-3 text-muted">No pending permission requests.</div>
@@ -212,12 +228,39 @@
 																$changePreview[] = ['field' => $field, 'value' => $normalized];
 															}
 														}
+
+														$currentProduct = null;
+														$productIdFromUrl = null;
+														if ($request->permission === 'update_product' && $request->action_url) {
+															if (preg_match('/update_product\/(\d+)/', $request->action_url, $m)) {
+																$productIdFromUrl = (int) $m[1];
+															}
+															if ($productIdFromUrl && $productsForPreview->has($productIdFromUrl)) {
+																$currentProduct = $productsForPreview->get($productIdFromUrl);
+															}
+														}
 													@endphp
 													@if (!empty($changePreview))
 														<div class="small text-muted">Requested changes:</div>
-														<ul class="small text-muted ps-3 mb-2">
+														<ul class="small text-muted ps-3 mb-1">
 															@foreach ($changePreview as $change)
 																<li class="text-break"><span class="fw-semibold">{{ $change['field'] }}</span>: {{ \Illuminate\Support\Str::limit($change['value'], 140) }}</li>
+															@endforeach
+														</ul>
+													@endif
+													@if ($currentProduct && !empty($changePreview))
+														<div class="small text-muted">Current values:</div>
+														<ul class="small text-muted ps-3 mb-2">
+															@foreach ($changePreview as $change)
+																@php
+																	$currentValue = $currentProduct->{$change['field']} ?? null;
+																	$currentNormalized = is_bool($currentValue)
+																		? ($currentValue ? 'true' : 'false')
+																		: (is_scalar($currentValue) || $currentValue === null
+																			? (string) ($currentValue === null ? 'null' : $currentValue)
+																			: json_encode($currentValue));
+																@endphp
+																<li class="text-break"><span class="fw-semibold">{{ $change['field'] }}</span>: {{ \Illuminate\Support\Str::limit($currentNormalized, 140) }}</li>
 															@endforeach
 														</ul>
 													@endif

@@ -26,7 +26,7 @@
                                 <input type="hidden" name="action_method" value="{{ $action_method }}">
                             @endif
                             @if(!empty($action_payload))
-                                <input type="hidden" name="action_payload" value='{{ $action_payload }}'>
+                                <input type="hidden" name="action_payload" value="{{ $action_payload }}">
                             @endif
 
                             <div class="mb-3">
