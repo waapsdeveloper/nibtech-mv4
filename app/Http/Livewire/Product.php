@@ -66,13 +66,38 @@ class Product extends Component
         return view('livewire.product')->with($data);
     }
     public function update_product($id){
+        $update = request('update');
+        if ($update === null) {
+            $json = request()->json()->all();
+            if (isset($json['update']) && is_array($json['update'])) {
+                $update = $json['update'];
+            }
+        }
+        if ($update === null && request()->headers->has('X-Delegate-Payload')) {
+            $headerPayload = json_decode(request()->headers->get('X-Delegate-Payload'), true);
+            if (isset($headerPayload['update']) && is_array($headerPayload['update'])) {
+                $update = $headerPayload['update'];
+            }
+        }
+
         \Log::info('update_product delegate replay', [
             'id' => $id,
-            'update' => request('update'),
+            'update' => $update,
             'all' => request()->all(),
+            'json' => request()->json()->all(),
+            'headers_payload' => request()->headers->get('X-Delegate-Payload'),
         ]);
 
-        Products_model::where('id', $id)->update(request('update'));
+        if (! is_array($update)) {
+            \Log::warning('update_product missing update array', [
+                'id' => $id,
+                'all' => request()->all(),
+                'json' => request()->json()->all(),
+            ]);
+            return redirect()->back()->with('error', 'Update payload missing; cannot update product.');
+        }
+
+        Products_model::where('id', $id)->update($update);
         return redirect()->back();
     }
 

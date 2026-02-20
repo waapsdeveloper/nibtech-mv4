@@ -150,6 +150,9 @@ class PermissionRequestController extends Controller
                 if (isset($payload['update'])) {
                     $replayRequest->request->set('update', $payload['update']);
                 }
+                // Provide JSON body and header for downstream fallbacks
+                $replayRequest->headers->set('X-Delegate-Payload', json_encode($payload));
+                $replayRequest->setJson(new \Symfony\Component\HttpFoundation\ParameterBag($payload));
 
                 Log::info('Delegate replay dispatch', [
                     'request_id' => $permissionRequest->id,
