@@ -66,6 +66,11 @@ class Product extends Component
         return view('livewire.product')->with($data);
     }
     public function update_product($id){
+        \Log::info('update_product delegate replay', [
+            'id' => $id,
+            'update' => request('update'),
+            'all' => request()->all(),
+        ]);
 
         Products_model::where('id', $id)->update(request('update'));
         return redirect()->back();
