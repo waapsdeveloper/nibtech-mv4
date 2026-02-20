@@ -108,6 +108,14 @@ class PermissionRequestController extends Controller
                 }
             }
 
+            // Normalize payload for known routes expecting nested arrays (e.g., update_product expects request('update'))
+            if ($permissionRequest->permission === 'update_product' && (! isset($payload['update']) || ! is_array($payload['update']))) {
+                // If the payload only contains flat fields, wrap them inside "update"
+                if (! empty($payload) && array_keys($payload) !== ['update']) {
+                    $payload = ['update' => $payload];
+                }
+            }
+
             // Impersonate approver for replay
             $previousUser = session('user');
             $previousUserId = session('user_id');
