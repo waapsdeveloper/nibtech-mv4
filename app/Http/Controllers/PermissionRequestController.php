@@ -167,14 +167,17 @@ class PermissionRequestController extends Controller
                 $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 0;
                 if ($status >= 400) {
                     $bodySnippet = method_exists($response, 'getContent') ? mb_substr($response->getContent(), 0, 500) : '';
+                    $payloadSnippet = json_encode($payload);
                     $replayError = 'Replay returned status '.$status.
-                        ($bodySnippet ? ' Body: '.preg_replace('/\s+/', ' ', $bodySnippet) : '');
+                        ($bodySnippet ? ' Body: '.preg_replace('/\s+/', ' ', $bodySnippet) : '') .
+                        ($payloadSnippet ? ' Payload: '.$payloadSnippet : '');
                     Log::warning('Delegate replay failed', [
                         'request_id' => $permissionRequest->id,
                         'url' => $permissionRequest->action_url,
                         'method' => $method,
                         'status' => $status,
                         'body' => $bodySnippet,
+                        'payload' => $payload,
                     ]);
                 } else {
                     $replayed = true;
