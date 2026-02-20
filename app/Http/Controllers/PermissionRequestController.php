@@ -101,8 +101,15 @@ class PermissionRequestController extends Controller
             session(['user_id' => $admin->id, 'user' => $admin]);
             try {
                 $replayRequest = Request::create($permissionRequest->action_url, $permissionRequest->action_method ?? 'GET', $payload);
-                app('router')->dispatch($replayRequest);
-                $replayed = true;
+                $replayRequest->setLaravelSession($request->session());
+                $replayRequest->server->set('REMOTE_ADDR', $request->ip());
+                $response = app('router')->dispatch($replayRequest);
+                $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 0;
+                if ($status >= 400) {
+                    $replayError = 'Replay returned status '.$status;
+                } else {
+                    $replayed = true;
+                }
             } catch (\Throwable $e) {
                 $replayError = $e->getMessage();
             } finally {
