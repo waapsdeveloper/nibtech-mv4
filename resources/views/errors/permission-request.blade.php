@@ -48,6 +48,13 @@
                                 An admin who already has this permission will perform the task for you; no new permission will be granted.
                             </div>
 
+                            <div class="form-check mb-3">
+                                <input class="form-check-input" type="checkbox" id="delegate_on_behalf" name="delegate_on_behalf" value="1" checked>
+                                <label class="form-check-label" for="delegate_on_behalf">
+                                    Request an admin to do this on your behalf (no permission will be added to your account).
+                                </label>
+                            </div>
+
                             <button type="submit" class="btn btn-primary">Request Permission</button>
                             <a href="{{ url('/') }}" class="btn btn-link">Back to dashboard</a>
                         </form>
