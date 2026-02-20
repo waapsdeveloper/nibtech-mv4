@@ -36,6 +36,16 @@
                                             </div>
                                         @endisset
 
+                                        <div class="alert alert-info" role="alert">
+                                            <p class="mb-2 fw-semibold">How to set up Google Authenticator</p>
+                                            <ol class="mb-2 ps-3">
+                                                <li>Install the app: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener">Android</a> or <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank" rel="noopener">iOS</a>.</li>
+                                                <li>Open the app and tap + to scan the QR code above (or enter the key manually).</li>
+                                                <li>Enter the 6-digit code from the app below to verify.</li>
+                                            </ol>
+                                            <p class="mb-0 small text-muted">Codes refresh every 30 seconds; use the latest code.</p>
+                                        </div>
+
                                         <div class="panel panel-primary">
                                         <div class="panel-body tabs-menu-body border-0 p-3">
                                             <div class="tab-content">
