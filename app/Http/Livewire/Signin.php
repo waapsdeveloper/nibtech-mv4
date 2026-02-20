@@ -50,6 +50,7 @@ class Signin extends Component
             $request->session()->put('fname', $login_detail->first_name);
             $request->session()->put('lname', $login_detail->last_name);
             $request->session()->put('our_id', 001);
+            $request->session()->forget('2fa_verified');
 
             // Check if 2FA is not enabled and set reminder flag
             if (!$login_detail->google2fa_secret || !$login_detail->is_2fa_enabled) {
@@ -70,7 +71,32 @@ class Signin extends Component
     }
     public function show2FAForm()
     {
-        return view('admin.2fa_verify');
+        $admin = Admin_model::find(session('user_id'));
+
+        if (!$admin) {
+            return redirect()->route('login');
+        }
+
+        $google2fa = new Google2FA();
+
+        // Provision a secret for any user missing one
+        if (!$admin->google2fa_secret) {
+            $admin->google2fa_secret = $google2fa->generateSecretKey();
+            $admin->is_2fa_enabled = 0;
+            $admin->two_factor_confirmed_at = null;
+            $admin->save();
+        }
+
+        $google2faUrl = $google2fa->getQRCodeInline(
+            config('app.name'),
+            $admin->email,
+            $admin->google2fa_secret
+        );
+
+        return view('admin.2fa_verify', [
+            'google2fa_url' => $google2faUrl,
+            'secret' => $admin->google2fa_secret,
+        ]);
     }
 
     public function verify2FA(Request $request)
