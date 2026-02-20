@@ -175,7 +175,7 @@
 									@else
 										<div class="list-group list-group-flush">
 											@foreach ($permissionRequests as $request)
-												<div class="list-group-item">
+												<div class="list-group-item" data-permission-request-id="{{ $request->id }}">
 													<div class="d-flex justify-content-between align-items-center mb-1">
 														<div>
 															<strong>{{ $request->admin->first_name ?? 'User' }}</strong>
@@ -184,6 +184,7 @@
 														<span class="badge bg-secondary text-uppercase">{{ $request->request_type }}</span>
 													</div>
 													<div class="small mb-1">Permission: <span class="fw-semibold">{{ $request->permission }}</span></div>
+													<div class="small text-muted">Requested at {{ $request->created_at->format('Y-m-d H:i') }}</div>
 													@if ($request->note)
 														<div class="small text-muted mb-2">“{{ $request->note }}”</div>
 													@endif
@@ -193,7 +194,10 @@
 															@if ($request->request_type === 'temporary')
 																<input type="hidden" name="expires_at" value="{{ optional($request->expires_at)->format('Y-m-d\TH:i') }}">
 															@endif
-															<button class="btn btn-success btn-sm" type="submit">Approve</button>
+															<button class="btn btn-success btn-sm position-relative" type="submit" onclick="playPermissionSound()">
+																Approve
+																<span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
+															</button>
 														</form>
 														<form method="POST" action="{{ route('permission_requests.deny', $request) }}" class="d-inline">
 															@csrf
@@ -446,6 +450,35 @@
 								</div>
 							</div>
 						</div>
+										<audio id="permission-sound" src="{{ asset('assets/audio/notification.mp3') }}" preload="auto"></audio>
+										<script>
+											function playPermissionSound() {
+												const audioEl = document.getElementById('permission-sound');
+												if (!audioEl) return;
+												// Some browsers block without user gesture; best-effort play
+												audioEl.currentTime = 0;
+												audioEl.play().catch(() => {});
+											}
+
+											document.addEventListener('DOMContentLoaded', function () {
+												const list = document.querySelector('.list-group');
+												if (!list) return;
+												const items = list.querySelectorAll('[data-permission-request-id]');
+												if (items.length) {
+													// Visual dot on tab when requests exist
+													const tab = document.querySelector('a[href="#side2"]');
+													if (tab) {
+														tab.classList.add('position-relative');
+														const dot = document.createElement('span');
+														dot.className = 'position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle';
+														dot.style.marginLeft = '4px';
+														tab.appendChild(dot);
+														// Play sound once when panel loads and has requests
+														playPermissionSound();
+													}
+												}
+											});
+										</script>
 					</div>
 				</div>
 			</div>
