@@ -44,27 +44,56 @@
         <div class="col-12">
             <div class="card">
                 <div class="card-body">
-                    <p class="text-muted small">Record a parts purchase attached to a device (IMEI/serial). Price can be set now or left as lease (decide later).</p>
+                    <p class="text-muted small">Record a parts purchase in a batch. Each batch has a system-generated barcode (same for all items in the batch). You can optionally enter a manufacturer barcode. Price can be set now or left as lease (decide later).</p>
                     <form action="{{ route('v2.parts-inventory.purchases.store') }}" method="POST">
                         @csrf
                         <input type="hidden" name="redirect_to" value="{{ route('v2.parts-inventory.purchase-history') }}">
-                        <div class="row g-3">
-                            <div class="col-md-6">
-                                <label class="form-label">IMEI / Serial <span class="text-danger">*</span></label>
-                                @if ($stock)
-                                    <input type="text" class="form-control" value="{{ ($stock->imei ?? '') . ($stock->serial_number ?? '') }}" readonly>
-                                    <input type="hidden" name="stock_id" value="{{ $stock->id }}">
-                                    <small class="text-muted">Resolved to stock ID: {{ $stock->id }}</small>
-                                @else
-                                    <input type="text" name="imei" class="form-control" value="{{ old('imei') }}" required placeholder="Device IMEI or serial from Inventory" maxlength="255">
-                                    <small class="text-muted">Enter IMEI/serial; stock will be resolved on submit.</small>
-                                @endif
-                            </div>
-                            @if (!$stock)
+
+                        {{-- Batch: existing or new --}}
+                        <div class="row g-3 mb-3">
                             <div class="col-12">
-                                <p class="text-muted small">Leave IMEI field as above and submit to resolve stock. If the device is not in Inventory, add it first.</p>
+                                <label class="form-label fw-medium">Batch</label>
                             </div>
+                            @if ($batch)
+                                <div class="col-md-12">
+                                    <p class="mb-0">
+                                        <span class="badge bg-primary">Existing batch</span>
+                                        <strong>{{ $batch->system_barcode }}</strong>
+                                        @if ($batch->manufacturer_barcode)
+                                            <span class="text-muted"> / {{ $batch->manufacturer_barcode }}</span>
+                                        @endif
+                                    </p>
+                                    <input type="hidden" name="batch_id" value="{{ $batch->id }}">
+                                    <a href="{{ route('v2.parts-inventory.purchases.add') }}" class="btn btn-sm btn-outline-secondary mt-1">Use a new batch instead</a>
+                                </div>
+                            @else
+                                <div class="col-md-6">
+                                    <div class="form-check">
+                                        <input type="hidden" name="new_batch" value="0">
+                                        <input type="checkbox" name="new_batch" value="1" id="new_batch" class="form-check-input" {{ old('new_batch', true) ? 'checked' : '' }}>
+                                        <label class="form-check-label" for="new_batch">Create new batch</label>
+                                    </div>
+                                    <p class="small text-muted mb-0 mt-1">System barcode will be auto-generated (e.g. <code>{{ $newBatchBarcode }}</code>).</p>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Or add to existing batch (system barcode)</label>
+                                    <input type="text" name="existing_system_barcode" class="form-control" value="{{ old('existing_system_barcode') }}" placeholder="e.g. PPB-20260218-0001" maxlength="64">
+                                    <small class="text-muted">Leave blank if creating new batch.</small>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Manufacturer barcode (optional, for new batch)</label>
+                                    <input type="text" name="manufacturer_barcode" class="form-control" value="{{ old('manufacturer_barcode') }}" placeholder="Supplier/manufacturer barcode" maxlength="255">
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label">Batch notes (optional, for new batch)</label>
+                                    <input type="text" name="batch_notes" class="form-control" value="{{ old('batch_notes') }}" placeholder="Optional notes for this batch" maxlength="500">
+                                </div>
                             @endif
+                        </div>
+
+                        <hr>
+
+                        <div class="row g-3">
                             <div class="col-md-6">
                                 <label class="form-label">Part <span class="text-danger">*</span></label>
                                 <select name="repair_part_id" class="form-control form-select" required>

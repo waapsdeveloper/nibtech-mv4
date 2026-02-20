@@ -56,6 +56,7 @@ Route::prefix('v2')->group(function () {
     Route::get('parts-inventory/purchases/add', [PartsPurchaseController::class, 'purchaseAdd'])->name('v2.parts-inventory.purchases.add');
     Route::post('parts-inventory/purchases', [PartsPurchaseController::class, 'purchaseStore'])->name('v2.parts-inventory.purchases.store');
     Route::post('parts-inventory/purchases/{id}/set-price', [PartsPurchaseController::class, 'purchaseSetPrice'])->name('v2.parts-inventory.purchases.set-price');
+    Route::delete('parts-inventory/purchases/{id}', [PartsPurchaseController::class, 'purchaseDestroy'])->name('v2.parts-inventory.purchases.destroy');
 
     Route::get('listings', [V2ListingController::class, 'index'])->name('v2.view_listing');
     Route::get('listings/get_variations', [V2ListingController::class, 'getVariations'])->name('v2.get_variations');

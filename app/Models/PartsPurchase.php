@@ -10,6 +10,7 @@ class PartsPurchase extends Model
 
     protected $fillable = [
         'stock_id',
+        'batch_id',
         'repair_part_id',
         'quantity',
         'unit_price',
@@ -29,6 +30,11 @@ class PartsPurchase extends Model
     public function stock()
     {
         return $this->belongsTo(Stock_model::class, 'stock_id');
+    }
+
+    public function batch()
+    {
+        return $this->belongsTo(PartsPurchaseBatch::class, 'batch_id');
     }
 
     public function repairPart()
