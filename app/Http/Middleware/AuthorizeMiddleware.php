@@ -9,6 +9,7 @@ use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use App\Models\PermissionRequest;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 
 class AuthorizeMiddleware
 {
@@ -61,6 +62,9 @@ class AuthorizeMiddleware
             return response()->view('errors.permission-request', [
                 'permission' => $currentRoute,
                 'alreadyRequested' => $pending,
+                'action_url' => $request->fullUrl(),
+                'action_method' => $request->method(),
+                'action_payload' => json_encode(Arr::except($request->all(), ['_token']), JSON_UNESCAPED_SLASHES),
             ], 403);
         }
         // Remove the 'page' session variable

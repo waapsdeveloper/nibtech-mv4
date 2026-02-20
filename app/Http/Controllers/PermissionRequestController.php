@@ -19,6 +19,9 @@ class PermissionRequestController extends Controller
             'note' => 'nullable|string',
             'expires_at' => 'nullable|date',
             'delegate_on_behalf' => 'nullable|boolean',
+            'action_url' => 'nullable|string',
+            'action_method' => 'nullable|string',
+            'action_payload' => 'nullable|string',
         ]);
 
         $adminId = session('user_id');
@@ -45,6 +48,10 @@ class PermissionRequestController extends Controller
             $note = trim(($note ? $note.' ' : '').'(Requested admin to perform this action on their behalf.)');
         }
 
+        $actionUrl = $request->input('action_url');
+        $actionMethod = $request->input('action_method');
+        $actionPayload = $request->input('action_payload');
+
         PermissionRequest::create([
             'admin_id' => $adminId,
             'permission' => $permission,
@@ -52,6 +59,9 @@ class PermissionRequestController extends Controller
             'request_type' => $requestType,
             'expires_at' => $requestType === 'temporary' ? $expiresAt : null,
             'note' => $note,
+            'action_url' => $actionUrl,
+            'action_method' => $actionMethod,
+            'action_payload' => $actionPayload,
         ]);
 
         return back()->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
@@ -69,11 +79,48 @@ class PermissionRequestController extends Controller
             return back()->with('success', 'Request already processed.');
         }
 
+        $replayed = false;
+        $replayError = null;
+
         $permissionRequest->status = 'approved';
         $permissionRequest->approved_by = $admin->id;
         $permissionRequest->save();
 
-        return back()->with('success', 'Request approved. Please complete the task on their behalf (permission not granted).');
+        if ($permissionRequest->request_type === 'delegate' && $permissionRequest->action_url) {
+            $payload = [];
+            if ($permissionRequest->action_payload) {
+                $decoded = json_decode($permissionRequest->action_payload, true);
+                if (is_array($decoded)) {
+                    $payload = $decoded;
+                }
+            }
+
+            // Impersonate approver for replay
+            $previousUser = session('user');
+            $previousUserId = session('user_id');
+            session(['user_id' => $admin->id, 'user' => $admin]);
+            try {
+                $replayRequest = Request::create($permissionRequest->action_url, $permissionRequest->action_method ?? 'GET', $payload);
+                app('router')->dispatch($replayRequest);
+                $replayed = true;
+            } catch (\Throwable $e) {
+                $replayError = $e->getMessage();
+            } finally {
+                session(['user_id' => $previousUserId, 'user' => $previousUser]);
+            }
+        }
+
+        $message = 'Request approved. ';
+        if ($permissionRequest->request_type === 'delegate') {
+            $message .= $replayed ? 'Action replayed as admin.' : 'Please perform the requested action on their behalf.';
+            if ($replayError) {
+                $message .= ' Replay failed: '.$replayError;
+            }
+        } else {
+            $message .= 'Please complete the task on their behalf (permission not granted).';
+        }
+
+        return back()->with('success', $message);
     }
 
     public function deny(PermissionRequest $permissionRequest): RedirectResponse

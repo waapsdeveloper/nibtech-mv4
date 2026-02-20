@@ -19,6 +19,15 @@
                         <form method="POST" action="{{ route('permission_requests.store') }}">
                             @csrf
                             <input type="hidden" name="permission" value="{{ $permission }}">
+                            @if(!empty($action_url))
+                                <input type="hidden" name="action_url" value="{{ $action_url }}">
+                            @endif
+                            @if(!empty($action_method))
+                                <input type="hidden" name="action_method" value="{{ $action_method }}">
+                            @endif
+                            @if(!empty($action_payload))
+                                <input type="hidden" name="action_payload" value='{{ $action_payload }}'>
+                            @endif
 
                             <div class="mb-3">
                                 <label class="form-label">Request type</label>
