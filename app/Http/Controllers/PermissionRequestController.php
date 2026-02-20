@@ -100,8 +100,17 @@ class PermissionRequestController extends Controller
             $previousUserId = session('user_id');
             session(['user_id' => $admin->id, 'user' => $admin]);
             try {
-                $replayRequest = Request::create($permissionRequest->action_url, $permissionRequest->action_method ?? 'GET', $payload);
+                // Add CSRF token for POST/PUT/PATCH/DELETE to avoid 419 during replay
+                $method = strtoupper($permissionRequest->action_method ?? 'GET');
+                if (in_array($method, ['POST', 'PUT', 'PATCH', 'DELETE'])) {
+                    $payload['_token'] = csrf_token();
+                }
+
+                $replayRequest = Request::create($permissionRequest->action_url, $method, $payload);
                 $replayRequest->setLaravelSession($request->session());
+                if (isset($payload['_token'])) {
+                    $replayRequest->headers->set('X-CSRF-TOKEN', $payload['_token']);
+                }
                 $replayRequest->server->set('REMOTE_ADDR', $request->ip());
                 $response = app('router')->dispatch($replayRequest);
                 $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 0;
