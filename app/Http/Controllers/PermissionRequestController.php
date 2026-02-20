@@ -15,7 +15,7 @@ class PermissionRequestController extends Controller
     {
         $request->validate([
             'permission' => 'required|string',
-            'request_type' => 'nullable|in:temporary,permanent',
+            'request_type' => 'nullable|in:delegate,temporary,permanent',
             'note' => 'nullable|string',
             'expires_at' => 'nullable|date',
             'delegate_on_behalf' => 'nullable|boolean',
@@ -27,7 +27,7 @@ class PermissionRequestController extends Controller
         }
 
         $permission = $request->input('permission');
-        $requestType = $request->input('request_type', 'permanent');
+        $requestType = $request->input('request_type', 'delegate');
         $expiresAt = $request->input('expires_at');
 
         $existing = PermissionRequest::where('admin_id', $adminId)
@@ -40,7 +40,8 @@ class PermissionRequestController extends Controller
         }
 
         $note = $request->input('note');
-        if ($request->boolean('delegate_on_behalf')) {
+        $delegateRequested = $requestType === 'delegate' || $request->boolean('delegate_on_behalf');
+        if ($delegateRequested) {
             $note = trim(($note ? $note.' ' : '').'(Requested admin to perform this action on their behalf.)');
         }
 
