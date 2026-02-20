@@ -1099,11 +1099,11 @@ class BackMarketAPIController extends Controller
                 // Memory management: log memory usage every 50 pages
                 if ($page % 50 == 0) {
                     $memoryUsage = round(memory_get_usage(true) / 1024 / 1024, 2);
-                    Log::debug("BackMarketAPIController::getAllListings: Memory usage", [
-                        'country_code' => $code,
-                        'page' => $page,
-                        'memory_mb' => $memoryUsage
-                    ]);
+                    // Log::debug("BackMarketAPIController::getAllListings: Memory usage", [
+                    //     'country_code' => $code,
+                    //     'page' => $page,
+                    //     'memory_mb' => $memoryUsage
+                    // ]);
                 }
             }
 
