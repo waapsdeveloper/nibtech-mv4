@@ -8,7 +8,6 @@ use App\Models\Admin_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use App\Models\PermissionRequest;
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Log;
 
 class AuthorizeMiddleware
@@ -26,7 +25,7 @@ class AuthorizeMiddleware
             if($user->status == 0){
                 // Log the unauthorized access attempt
                 Log::info('Unauthorized Login attempt by blocked user '.$user->first_name.' to '.$currentRoute);
-                abort(403, 'Account Blocked - Quote of the day: '.Inspiring::quote());
+                abort(403, 'Account blocked. Please contact support.');
             }
 
             session()->put('user',$user);
