@@ -178,7 +178,7 @@
 												<div class="list-group-item" data-permission-request-id="{{ $request->id }}">
 													<div class="d-flex justify-content-between align-items-center mb-1">
 														<div>
-															<strong>{{ $request->admin->first_name ?? 'User' }}</strong>
+															<strong>{{ $request->admin->first_name ?? 'User' }} {{ $request->admin->last_name ?? '' }}</strong>
 															<span class="text-muted">requested</span>
 														</div>
 														<span class="badge bg-secondary text-uppercase">{{ $request->request_type }}</span>
