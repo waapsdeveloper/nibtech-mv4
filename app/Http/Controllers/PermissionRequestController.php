@@ -122,6 +122,17 @@ class PermissionRequestController extends Controller
                 }
             }
 
+            // If required payload is missing for update_product, fail fast to avoid null update
+            if ($permissionRequest->permission === 'update_product' && (! isset($payload['update']) || ! is_array($payload['update']))) {
+                $replayError = 'Missing or invalid update payload.';
+                Log::warning('Delegate replay payload missing update key', [
+                    'request_id' => $permissionRequest->id,
+                    'raw_payload' => $permissionRequest->action_payload,
+                    'decoded_payload' => $payload,
+                ]);
+                return back()->with('error', 'Replay failed: '.$replayError.' Request remains pending.');
+            }
+
             // Impersonate approver for replay
             $previousUser = session('user');
             $previousUserId = session('user_id');
@@ -139,6 +150,14 @@ class PermissionRequestController extends Controller
                 if (isset($payload['update'])) {
                     $replayRequest->request->set('update', $payload['update']);
                 }
+
+                Log::info('Delegate replay dispatch', [
+                    'request_id' => $permissionRequest->id,
+                    'url' => $permissionRequest->action_url,
+                    'method' => $method,
+                    'payload' => $payload,
+                    'request_bag' => $replayRequest->request->all(),
+                ]);
                 $replayRequest->setLaravelSession($request->session());
                 if (isset($payload['_token'])) {
                     $replayRequest->headers->set('X-CSRF-TOKEN', $payload['_token']);
