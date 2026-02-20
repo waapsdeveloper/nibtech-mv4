@@ -82,9 +82,7 @@ class PermissionRequestController extends Controller
         $replayed = false;
         $replayError = null;
 
-        $permissionRequest->status = 'approved';
         $permissionRequest->approved_by = $admin->id;
-        $permissionRequest->save();
 
         if ($permissionRequest->request_type === 'delegate' && $permissionRequest->action_url) {
             $payload = [];
@@ -143,19 +141,23 @@ class PermissionRequestController extends Controller
             } finally {
                 session(['user_id' => $previousUserId, 'user' => $previousUser]);
             }
-        }
-
-        $message = 'Request approved. ';
-        if ($permissionRequest->request_type === 'delegate') {
-            $message .= $replayed ? 'Action replayed as admin.' : 'Please perform the requested action on their behalf.';
-            if ($replayError) {
-                $message .= ' Replay failed: '.$replayError;
+            if (! $replayed) {
+                // Do not approve if the action could not be performed
+                return back()->with('error', 'Replay failed: '.$replayError.'. Request remains pending.');
             }
-        } else {
-            $message .= 'Please complete the task on their behalf (permission not granted).';
+
+            $permissionRequest->status = 'approved';
+            $permissionRequest->save();
+
+            $message = 'Request approved. Action replayed as admin.';
+            return back()->with('success', $message);
         }
 
-        return back()->with('success', $message);
+        // Non-delegate flows: just approve
+        $permissionRequest->status = 'approved';
+        $permissionRequest->save();
+
+        return back()->with('success', 'Request approved. Please complete the task on their behalf (permission not granted).');
     }
 
     public function deny(PermissionRequest $permissionRequest): RedirectResponse

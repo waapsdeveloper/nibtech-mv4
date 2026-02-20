@@ -196,6 +196,31 @@
 													@if ($request->note)
 														<div class="small text-muted mb-2">“{{ $request->note }}”</div>
 													@endif
+													@php
+														$decodedPayload = $request->action_payload ? json_decode($request->action_payload, true) : null;
+														$changePreview = [];
+														if (is_array($decodedPayload)) {
+															foreach ($decodedPayload as $field => $value) {
+																if (count($changePreview) >= 5) {
+																	break;
+																}
+																$normalized = is_bool($value)
+																	? ($value ? 'true' : 'false')
+																	: (is_scalar($value) || $value === null
+																		? (string) ($value === null ? 'null' : $value)
+																		: json_encode($value));
+																$changePreview[] = ['field' => $field, 'value' => $normalized];
+															}
+														}
+													@endphp
+													@if (!empty($changePreview))
+														<div class="small text-muted">Requested changes:</div>
+														<ul class="small text-muted ps-3 mb-2">
+															@foreach ($changePreview as $change)
+																<li class="text-break"><span class="fw-semibold">{{ $change['field'] }}</span>: {{ \Illuminate\Support\Str::limit($change['value'], 140) }}</li>
+															@endforeach
+														</ul>
+													@endif
 													<div class="d-flex gap-2">
 														<form method="POST" action="{{ route('permission_requests.approve', $request) }}" class="d-inline">
 															@csrf
