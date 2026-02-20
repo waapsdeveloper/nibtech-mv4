@@ -18,6 +18,7 @@ class PermissionRequestController extends Controller
             'request_type' => 'nullable|in:temporary,permanent',
             'note' => 'nullable|string',
             'expires_at' => 'nullable|date',
+            'delegate_on_behalf' => 'nullable|boolean',
         ]);
 
         $adminId = session('user_id');
@@ -38,13 +39,18 @@ class PermissionRequestController extends Controller
             return back()->with('success', 'Permission request is already pending for this action.');
         }
 
+        $note = $request->input('note');
+        if ($request->boolean('delegate_on_behalf')) {
+            $note = trim(($note ? $note.' ' : '').'(Requested admin to perform this action on their behalf.)');
+        }
+
         PermissionRequest::create([
             'admin_id' => $adminId,
             'permission' => $permission,
             'status' => 'pending',
             'request_type' => $requestType,
             'expires_at' => $requestType === 'temporary' ? $expiresAt : null,
-            'note' => $request->input('note'),
+            'note' => $note,
         ]);
 
         return back()->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
