@@ -53,7 +53,8 @@ class PermissionRequestController extends Controller
     public function approve(Request $request, PermissionRequest $permissionRequest): RedirectResponse
     {
         $admin = session('user');
-        if (! $admin || $admin->role_id != 2) {
+            // Allow role_id 2 and higher-privileged (numerically lower) roles to approve
+            if (! $admin || $admin->role_id > 2) {
             abort(403, 'Unauthorized');
         }
 
@@ -83,7 +84,8 @@ class PermissionRequestController extends Controller
     public function deny(PermissionRequest $permissionRequest): RedirectResponse
     {
         $admin = session('user');
-        if (! $admin || $admin->role_id != 2) {
+        // Allow role_id 2 and higher-privileged (numerically lower) roles to deny
+        if (! $admin || $admin->role_id > 2) {
             abort(403, 'Unauthorized');
         }
 

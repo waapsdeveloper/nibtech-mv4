@@ -162,7 +162,7 @@
 								@php
 									$user = session('user');
 								@endphp
-								@if ($user && $user->role_id == 2)
+								@if ($user && $user->role_id <= 2)
 									@php
 										$permissionRequests = \App\Models\PermissionRequest::with('admin')
 											->where('status', 'pending')
