@@ -366,6 +366,10 @@ Route::get('inventory_verification/progress', [InventoryVerification::class,'ver
 
 Route::get('product', Product::class)->name('view_product');
 Route::post('add_product', [Product::class,'add_product'])->name('add_product');
+// Guard against accidental GET hits on update endpoint; only POST updates
+Route::get('product/update_product/{id}', function () {
+    return redirect()->back()->with('error', 'Update must be submitted from the form.');
+})->name('update_product.get');
 Route::post('product/update_product/{id}', [Product::class,'update_product'])->name('update_product');
 Route::get('product/import_product', [Product::class,'import_product'])->name('import_product');
 Route::get('product/get_colors/{id}', [Product::class,'get_colors'])->name('merge_product_colors');
