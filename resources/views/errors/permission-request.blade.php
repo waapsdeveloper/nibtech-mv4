@@ -44,6 +44,10 @@
                                 <textarea class="form-control" id="note" name="note" rows="3"></textarea>
                             </div>
 
+                            <div class="alert alert-info py-2">
+                                An admin who already has this permission will perform the task for you; no new permission will be granted.
+                            </div>
+
                             <button type="submit" class="btn btn-primary">Request Permission</button>
                             <a href="{{ url('/') }}" class="btn btn-link">Back to dashboard</a>
                         </form>

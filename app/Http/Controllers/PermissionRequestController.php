@@ -47,7 +47,7 @@ class PermissionRequestController extends Controller
             'note' => $request->input('note'),
         ]);
 
-        return back()->with('success', 'Request submitted to admin.');
+        return back()->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
     }
 
     public function approve(Request $request, PermissionRequest $permissionRequest): RedirectResponse
@@ -62,23 +62,11 @@ class PermissionRequestController extends Controller
             return back()->with('success', 'Request already processed.');
         }
 
-        $permissionName = $permissionRequest->permission;
-        $expiresAt = $request->input('expires_at');
-
-        $permission = Permission_model::firstOrCreate(['name' => $permissionName]);
-        Admin_permission_model::firstOrCreate([
-            'admin_id' => $permissionRequest->admin_id,
-            'permission_id' => $permission->id,
-        ]);
-
         $permissionRequest->status = 'approved';
         $permissionRequest->approved_by = $admin->id;
-        if ($permissionRequest->request_type === 'temporary') {
-            $permissionRequest->expires_at = $expiresAt ?: $permissionRequest->expires_at;
-        }
         $permissionRequest->save();
 
-        return back()->with('success', 'Permission approved and granted.');
+        return back()->with('success', 'Request approved. Please complete the task on their behalf (permission not granted).');
     }
 
     public function deny(PermissionRequest $permissionRequest): RedirectResponse
