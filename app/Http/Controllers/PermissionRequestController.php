@@ -76,7 +76,9 @@ class PermissionRequestController extends Controller
             'action_payload' => $normalizedPayload,
         ]);
 
-        return back()->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
+        // Redirect two steps back in history if possible; fallback to simple back
+        $intended = url()->previous(url()->previous());
+        return redirect()->to($intended)->with('success', 'Request submitted to admin. An authorized admin will complete this action for you.');
     }
 
     public function approve(Request $request, PermissionRequest $permissionRequest): RedirectResponse
