@@ -115,12 +115,29 @@ class PermissionRequestController extends Controller
                 $response = app('router')->dispatch($replayRequest);
                 $status = method_exists($response, 'getStatusCode') ? $response->getStatusCode() : 0;
                 if ($status >= 400) {
-                    $replayError = 'Replay returned status '.$status;
+                    $bodySnippet = method_exists($response, 'getContent') ? mb_substr($response->getContent(), 0, 500) : '';
+                    $replayError = 'Replay returned status '.$status.
+                        ($bodySnippet ? ' Body: '.preg_replace('/\s+/', ' ', $bodySnippet) : '');
+                    Log::warning('Delegate replay failed', [
+                        'request_id' => $permissionRequest->id,
+                        'url' => $permissionRequest->action_url,
+                        'method' => $method,
+                        'status' => $status,
+                        'body' => $bodySnippet,
+                    ]);
                 } else {
                     $replayed = true;
                 }
             } catch (\Throwable $e) {
                 $replayError = $e->getMessage();
+                Log::error('Delegate replay exception', [
+                    'request_id' => $permissionRequest->id,
+                    'url' => $permissionRequest->action_url,
+                    'method' => $method ?? null,
+                    'payload' => $payload,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
             } finally {
                 session(['user_id' => $previousUserId, 'user' => $previousUser]);
             }
