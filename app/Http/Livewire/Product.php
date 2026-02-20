@@ -80,20 +80,7 @@ class Product extends Component
             }
         }
 
-        \Log::info('update_product delegate replay', [
-            'id' => $id,
-            'update' => $update,
-            'all' => request()->all(),
-            'json' => request()->json()->all(),
-            'headers_payload' => request()->headers->get('X-Delegate-Payload'),
-        ]);
-
         if (! is_array($update)) {
-            \Log::warning('update_product missing update array', [
-                'id' => $id,
-                'all' => request()->all(),
-                'json' => request()->json()->all(),
-            ]);
             return redirect()->back()->with('error', 'Update payload missing; cannot update product.');
         }
 

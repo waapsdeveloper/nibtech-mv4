@@ -137,13 +137,6 @@ class PermissionRequestController extends Controller
                 $replayRequest->headers->set('X-Delegate-Payload', json_encode($payload));
                 $replayRequest->setJson(new \Symfony\Component\HttpFoundation\ParameterBag($payload));
 
-                Log::info('Delegate replay dispatch', [
-                    'request_id' => $permissionRequest->id,
-                    'url' => $permissionRequest->action_url,
-                    'method' => $method,
-                    'payload' => $payload,
-                    'request_bag' => $replayRequest->request->all(),
-                ]);
                 $replayRequest->setLaravelSession($request->session());
                 if (isset($payload['_token'])) {
                     $replayRequest->headers->set('X-CSRF-TOKEN', $payload['_token']);
