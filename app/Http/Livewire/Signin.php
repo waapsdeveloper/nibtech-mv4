@@ -87,11 +87,15 @@ class Signin extends Component
             $admin->save();
         }
 
-        $google2faUrl = $google2fa->getQRCodeInline(
+        // Build a QR code URL using the OTP URI; avoid inline helper not available in this version
+        $otpUri = $google2fa->getQRCodeUrl(
             config('app.name'),
             $admin->email,
             $admin->google2fa_secret
         );
+
+        // Use a public QR code API to render the OTP URI for scanning
+        $google2faUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . urlencode($otpUri);
 
         return view('admin.2fa_verify', [
             'google2fa_url' => $google2faUrl,
