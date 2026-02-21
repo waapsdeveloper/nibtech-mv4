@@ -19,16 +19,29 @@
                         <form method="POST" action="{{ route('permission_requests.store') }}">
                             @csrf
                             <input type="hidden" name="permission" value="{{ $permission }}">
+                            @if(!empty($action_url))
+                                <input type="hidden" name="action_url" value="{{ $action_url }}">
+                            @endif
+                            @if(!empty($action_method))
+                                <input type="hidden" name="action_method" value="{{ $action_method }}">
+                            @endif
+                            @if(!empty($action_payload))
+                                <input type="hidden" name="action_payload" value="{{ $action_payload }}">
+                            @endif
 
                             <div class="mb-3">
                                 <label class="form-label">Request type</label>
                                 <div class="d-flex gap-3">
                                     <label class="form-check">
+                                        <input class="form-check-input" type="radio" name="request_type" value="delegate" checked>
+                                        <span class="form-check-label">Delegate to admin</span>
+                                    </label>
+                                    <label class="form-check">
                                         <input class="form-check-input" type="radio" name="request_type" value="temporary">
                                         <span class="form-check-label">Temporary</span>
                                     </label>
                                     <label class="form-check">
-                                        <input class="form-check-input" type="radio" name="request_type" value="permanent" checked>
+                                        <input class="form-check-input" type="radio" name="request_type" value="permanent">
                                         <span class="form-check-label">Permanent</span>
                                     </label>
                                 </div>
@@ -42,6 +55,10 @@
                             <div class="mb-3">
                                 <label for="note" class="form-label">Message to admin (optional)</label>
                                 <textarea class="form-control" id="note" name="note" rows="3"></textarea>
+                            </div>
+
+                            <div class="alert alert-info py-2">
+                                Default option delegates the action to an admin without granting you the permission. Choose temporary or permanent only if you need access yourself.
                             </div>
 
                             <button type="submit" class="btn btn-primary">Request Permission</button>

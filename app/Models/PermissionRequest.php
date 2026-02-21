@@ -17,6 +17,9 @@ class PermissionRequest extends Model
         'expires_at',
         'approved_by',
         'note',
+        'action_url',
+        'action_method',
+        'action_payload',
     ];
 
     protected $casts = [

@@ -50,6 +50,7 @@ class Signin extends Component
             $request->session()->put('fname', $login_detail->first_name);
             $request->session()->put('lname', $login_detail->last_name);
             $request->session()->put('our_id', 001);
+            $request->session()->forget('2fa_verified');
 
             // Check if 2FA is not enabled and set reminder flag
             if (!$login_detail->google2fa_secret || !$login_detail->is_2fa_enabled) {
@@ -70,7 +71,36 @@ class Signin extends Component
     }
     public function show2FAForm()
     {
-        return view('admin.2fa_verify');
+        $admin = Admin_model::find(session('user_id'));
+
+        if (!$admin) {
+            return redirect()->route('login');
+        }
+
+        $google2fa = new Google2FA();
+
+        // Provision a secret for any user missing one
+        if (!$admin->google2fa_secret) {
+            $admin->google2fa_secret = $google2fa->generateSecretKey();
+            $admin->is_2fa_enabled = 0;
+            $admin->two_factor_confirmed_at = null;
+            $admin->save();
+        }
+
+        // Build a QR code URL using the OTP URI; avoid inline helper not available in this version
+        $otpUri = $google2fa->getQRCodeUrl(
+            config('app.name'),
+            $admin->email,
+            $admin->google2fa_secret
+        );
+
+        // Use a public QR code API to render the OTP URI for scanning
+        $google2faUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . urlencode($otpUri);
+
+        return view('admin.2fa_verify', [
+            'google2fa_url' => $google2faUrl,
+            'secret' => $admin->google2fa_secret,
+        ]);
     }
 
     public function verify2FA(Request $request)

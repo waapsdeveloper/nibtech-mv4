@@ -162,30 +162,107 @@
 								@php
 									$user = session('user');
 								@endphp
-								@if ($user && $user->role_id == 2)
+								@if ($user && $user->role_id <= 2)
 									@php
 										$permissionRequests = \App\Models\PermissionRequest::with('admin')
 											->where('status', 'pending')
 											->orderByDesc('created_at')
 											->limit(10)
 											->get();
+
+										// Preload product records for update_product requests to show current values
+										$updateProductIds = [];
+										foreach ($permissionRequests as $req) {
+											if ($req->permission === 'update_product' && $req->action_url) {
+												if (preg_match('/update_product\/(\d+)/', $req->action_url, $m)) {
+													$updateProductIds[] = (int) $m[1];
+												}
+											}
+										}
+										$productsForPreview = collect();
+										if (! empty($updateProductIds)) {
+											$productsForPreview = \App\Models\Products_model::whereIn('id', $updateProductIds)
+												->get()
+												->keyBy('id');
+										}
 									@endphp
 									@if ($permissionRequests->isEmpty())
 										<div class="p-3 text-muted">No pending permission requests.</div>
 									@else
 										<div class="list-group list-group-flush">
 											@foreach ($permissionRequests as $request)
-												<div class="list-group-item">
+												<div class="list-group-item" data-permission-request-id="{{ $request->id }}">
 													<div class="d-flex justify-content-between align-items-center mb-1">
 														<div>
-															<strong>{{ $request->admin->first_name ?? 'User' }}</strong>
+															<strong>{{ $request->admin->first_name ?? 'User' }} {{ $request->admin->last_name ?? '' }}</strong>
 															<span class="text-muted">requested</span>
 														</div>
-														<span class="badge bg-secondary text-uppercase">{{ $request->request_type }}</span>
+														@php
+															$typeLabel = match($request->request_type) {
+																'delegate' => 'Delegate',
+																'temporary' => 'Temporary',
+																'permanent' => 'Permanent',
+																default => ucfirst($request->request_type ?? 'request'),
+															};
+														@endphp
+														<span class="badge bg-secondary text-uppercase">{{ $typeLabel }}</span>
 													</div>
 													<div class="small mb-1">Permission: <span class="fw-semibold">{{ $request->permission }}</span></div>
+													<div class="small text-muted">Requested at {{ $request->created_at->format('Y-m-d H:i') }}</div>
 													@if ($request->note)
 														<div class="small text-muted mb-2">“{{ $request->note }}”</div>
+													@endif
+													@php
+														$decodedPayload = $request->action_payload ? json_decode($request->action_payload, true) : null;
+														$changePreview = [];
+														if (is_array($decodedPayload)) {
+															foreach ($decodedPayload as $field => $value) {
+																if (count($changePreview) >= 5) {
+																	break;
+																}
+																$normalized = is_bool($value)
+																	? ($value ? 'true' : 'false')
+																	: (is_scalar($value) || $value === null
+																		? (string) ($value === null ? 'null' : $value)
+																		: json_encode($value));
+																$changePreview[] = ['field' => $field, 'value' => $normalized];
+															}
+														}
+
+														$currentProduct = null;
+														$productIdFromUrl = null;
+														if ($request->permission === 'update_product' && $request->action_url) {
+															if (preg_match('/update_product\/(\d+)/', $request->action_url, $m)) {
+																$productIdFromUrl = (int) $m[1];
+															}
+															if ($productIdFromUrl && $productsForPreview->has($productIdFromUrl)) {
+																$currentProduct = $productsForPreview->get($productIdFromUrl);
+															}
+														}
+													@endphp
+													@if (!empty($changePreview))
+														<div class="small text-muted">Requested changes:</div>
+														<ul class="small text-muted ps-3 mb-1">
+															@foreach ($changePreview as $change)
+																<li class="text-break"><span class="fw-semibold">{{ $change['field'] }}</span>: {{ \Illuminate\Support\Str::limit($change['value'], 140) }}</li>
+															@endforeach
+														</ul>
+													@endif
+													@if ($currentProduct && !empty($changePreview))
+														<div class="small text-muted">Current values:</div>
+														<ul class="small text-muted ps-3 mb-2">
+															@foreach ($changePreview as $change)
+																@php
+																	$currentValue = $currentProduct->{$change['field']} ?? null;
+																	$currentNormalized = is_bool($currentValue)
+																		? ($currentValue ? 'true' : 'false')
+																		: (is_scalar($currentValue) || $currentValue === null
+																			? (string) ($currentValue === null ? 'null' : $currentValue)
+																			: json_encode($currentValue));
+																@endphp
+																<li class="text-break"><span class="fw-semibold">{{ $change['field'] }}</span>: {{ \Illuminate\Support\Str::limit($currentNormalized, 140) }}</li>
+															@endforeach
+														</ul>
 													@endif
 													<div class="d-flex gap-2">
 														<form method="POST" action="{{ route('permission_requests.approve', $request) }}" class="d-inline">
@@ -193,7 +270,10 @@
 															@if ($request->request_type === 'temporary')
 																<input type="hidden" name="expires_at" value="{{ optional($request->expires_at)->format('Y-m-d\TH:i') }}">
 															@endif
-															<button class="btn btn-success btn-sm" type="submit">Approve</button>
+															<button class="btn btn-success btn-sm position-relative" type="submit" onclick="playPermissionSound()">
+																Approve
+																<span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
+															</button>
 														</form>
 														<form method="POST" action="{{ route('permission_requests.deny', $request) }}" class="d-inline">
 															@csrf
@@ -446,6 +526,35 @@
 								</div>
 							</div>
 						</div>
+										<audio id="permission-sound" src="{{ asset('assets/audio/notification.mp3') }}" preload="auto"></audio>
+										<script>
+											function playPermissionSound() {
+												const audioEl = document.getElementById('permission-sound');
+												if (!audioEl) return;
+												// Some browsers block without user gesture; best-effort play
+												audioEl.currentTime = 0;
+												audioEl.play().catch(() => {});
+											}
+
+											document.addEventListener('DOMContentLoaded', function () {
+												const list = document.querySelector('.list-group');
+												if (!list) return;
+												const items = list.querySelectorAll('[data-permission-request-id]');
+												if (items.length) {
+													// Visual dot on tab when requests exist
+													const tab = document.querySelector('a[href="#side2"]');
+													if (tab) {
+														tab.classList.add('position-relative');
+														const dot = document.createElement('span');
+														dot.className = 'position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle';
+														dot.style.marginLeft = '4px';
+														tab.appendChild(dot);
+														// Play sound once when panel loads and has requests
+														playPermissionSound();
+													}
+												}
+											});
+										</script>
 					</div>
 				</div>
 			</div>
