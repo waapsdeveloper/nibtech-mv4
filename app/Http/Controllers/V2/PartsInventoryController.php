@@ -156,14 +156,45 @@ class PartsInventoryController extends Controller
             'product_id' => $productId,
             'name' => $request->name,
             'sku' => $request->sku,
-            'compatible_device' => $request->compatible_device,
+            'compatible_device' => $request->input('compatible_device', $part->compatible_device),
             'on_hand' => (int) ($request->on_hand ?? 0),
-            'reorder_level' => (int) ($request->reorder_level ?? 0),
+            'reorder_level' => (int) $request->input('reorder_level', $part->reorder_level ?? 0),
             'unit_cost' => (float) ($request->unit_cost ?? 0),
             'active' => $request->boolean('active', true),
         ]);
 
         return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Part updated successfully.');
+    }
+
+    /**
+     * Generate next unique barcode/SKU for parts catalog (system standard).
+     * Format: prefix + date + random suffix (e.g. PRT-20250219-A3F2).
+     */
+    public function nextBarcode()
+    {
+        $prefix = config('parts_inventory.barcode.prefix', 'PRT');
+        $dateFormat = config('parts_inventory.barcode.date_format', 'Ymd');
+        $sep = config('parts_inventory.barcode.separator', '-');
+        $suffixLen = (int) config('parts_inventory.barcode.suffix_length', 4);
+        $chars = config('parts_inventory.barcode.suffix_chars', 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789');
+
+        $maxAttempts = 20;
+        for ($i = 0; $i < $maxAttempts; $i++) {
+            $datePart = $dateFormat ? now()->format($dateFormat) : '';
+            $suffix = '';
+            $len = strlen($chars);
+            for ($j = 0; $j < $suffixLen; $j++) {
+                $suffix .= $chars[random_int(0, $len - 1)];
+            }
+            $segments = array_filter([$prefix, $datePart, $suffix]);
+            $barcode = implode($sep, $segments);
+
+            if (! RepairPart::withTrashed()->where('sku', $barcode)->exists()) {
+                return response()->json(['barcode' => $barcode]);
+            }
+        }
+
+        return response()->json(['error' => 'Could not generate unique barcode'], 409);
     }
 
     /**
