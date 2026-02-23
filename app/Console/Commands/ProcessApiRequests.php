@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Models\Api_request_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 
-class ProcessApiRequests extends Command
+class ProcessApiRequests extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -30,6 +30,6 @@ class ProcessApiRequests extends Command
 
         $this->info('api-request:process finished.');
 
-        return Command::SUCCESS;
+        return self::SUCCESS;
     }
 }

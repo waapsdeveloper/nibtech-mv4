@@ -8,10 +8,10 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\DB;
 
-class RefreshOrders extends Command
+class RefreshOrders extends BaseCommand
 {
     /**
      * The name and signature of the console command.

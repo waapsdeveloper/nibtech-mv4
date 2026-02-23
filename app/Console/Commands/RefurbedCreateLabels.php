@@ -5,10 +5,10 @@ namespace App\Console\Commands;
 use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Order_model;
 use App\Services\RefurbedShippingService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Collection;
 
-class RefurbedCreateLabels extends Command
+class RefurbedCreateLabels extends BaseCommand
 {
     protected $signature = 'refurbed:create-labels
         {--order_ids=* : Specific local order IDs to process}

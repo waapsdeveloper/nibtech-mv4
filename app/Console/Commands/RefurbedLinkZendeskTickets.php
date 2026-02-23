@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Services\RefurbedZendeskTicketLinkService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 
-class RefurbedLinkZendeskTickets extends Command
+class RefurbedLinkZendeskTickets extends BaseCommand
 {
     protected $signature = 'refurbed:link-tickets
         {--query= : Override the Gmail search query}

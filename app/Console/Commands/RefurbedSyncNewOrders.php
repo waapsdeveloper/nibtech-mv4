@@ -8,11 +8,11 @@ use App\Models\Currency_model;
 use App\Models\Order_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
-class RefurbedSyncNewOrders extends Command
+class RefurbedSyncNewOrders extends BaseCommand
 {
     private static bool $orderLineAcceptanceUnavailable = false;
     private ?string $debugOrderId = null;

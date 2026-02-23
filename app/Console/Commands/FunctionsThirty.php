@@ -9,14 +9,14 @@ use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
 use App\Models\Order_item_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
 use Carbon\Carbon;
 
-class FunctionsThirty extends Command
+class FunctionsThirty extends BaseCommand
 {
     /**
      * The name and signature of the console command.

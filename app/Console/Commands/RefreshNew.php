@@ -15,14 +15,14 @@ use App\Models\V2\MarketplaceStockModel;
 use Carbon\Carbon;
 
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
 
-class RefreshNew extends Command
+class RefreshNew extends BaseCommand
 {
     /**
      * The name and signature of the console command.

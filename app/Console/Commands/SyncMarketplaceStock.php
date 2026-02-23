@@ -1,7 +1,7 @@
 <?php
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Models\Marketplace_model;
 use App\Models\MarketplaceStockModel;
 use App\Models\Variation_model;
@@ -9,7 +9,7 @@ use App\Http\Controllers\BackMarketAPIController;
 use App\Http\Controllers\RefurbedAPIController;
 use Illuminate\Support\Facades\Log;
 
-class SyncMarketplaceStock extends Command
+class SyncMarketplaceStock extends BaseCommand
 {
     protected $signature = 'marketplace:sync-stock 
                             {--marketplace= : Specific marketplace ID to sync}

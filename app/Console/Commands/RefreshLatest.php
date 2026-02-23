@@ -4,9 +4,9 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Order_item_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 
-class RefreshLatest extends Command
+class RefreshLatest extends BaseCommand
 {
     /**
      * The name and signature of the console command.

@@ -2,11 +2,11 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Services\ExchangeRateService;
 use Illuminate\Support\Facades\Log;
 
-class FetchExchangeRates extends Command
+class FetchExchangeRates extends BaseCommand
 {
     protected $signature = 'fetch:exchange-rates';
     protected $description = 'Fetch and store exchange rates from the API';

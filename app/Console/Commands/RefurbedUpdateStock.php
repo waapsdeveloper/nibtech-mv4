@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\RefurbedListingsController;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Support\Facades\Log;
 
-class RefurbedUpdateStock extends Command
+class RefurbedUpdateStock extends BaseCommand
 {
     /**
      * The console command signature.

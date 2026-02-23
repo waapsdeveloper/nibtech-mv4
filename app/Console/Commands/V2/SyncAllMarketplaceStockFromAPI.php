@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\V2;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use App\Models\StockSyncLog;
@@ -19,7 +19,7 @@ use Carbon\Carbon;
  * in a specific marketplace and updates the marketplace_stock table.
  * Runs in queue for bulk operations.
  */
-class SyncAllMarketplaceStockFromAPI extends Command
+class SyncAllMarketplaceStockFromAPI extends BaseCommand
 {
     protected $signature = 'v2:sync-all-marketplace-stock-from-api 
                             {--marketplace=1 : The marketplace ID to sync (default: 1 for BackMarket)}';
