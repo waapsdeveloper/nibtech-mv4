@@ -191,11 +191,29 @@ class PermissionRequestController extends Controller
             return back()->with('success', $message);
         }
 
-        // Non-delegate flows: just approve
+        // Non-delegate flows: grant permission to the requester
         $permissionRequest->status = 'approved';
         $permissionRequest->save();
 
-        return back()->with('success', 'Request approved. Please complete the task on their behalf (permission not granted).');
+        $permissionRecord = Permission_model::firstOrCreate(['name' => $permissionRequest->permission]);
+
+        $alreadyLinked = Admin_permission_model::where('admin_id', $permissionRequest->admin_id)
+            ->where('permission_id', $permissionRecord->id)
+            ->exists();
+
+        if (! $alreadyLinked) {
+            Admin_permission_model::create([
+                'admin_id' => $permissionRequest->admin_id,
+                'permission_id' => $permissionRecord->id,
+            ]);
+        }
+
+        $message = match ($permissionRequest->request_type) {
+            'temporary' => 'Request approved. Temporary permission granted'.($permissionRequest->expires_at ? ' until '.$permissionRequest->expires_at->format('Y-m-d H:i') : '').'.',
+            default => 'Request approved. Permission granted.',
+        };
+
+        return back()->with('success', $message);
     }
 
     public function deny(PermissionRequest $permissionRequest): RedirectResponse
