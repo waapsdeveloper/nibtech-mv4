@@ -898,6 +898,7 @@ class SupportTickets extends Component
                 $itemStatus = (int) ($itm->status ?? 0);
                 $stockStatus = (int) (($itm->effective_status ?? optional($itm->stock)->status) ?? 0);
                 $stockId = $itm->stock_id;
+                $isReplacementFromAnotherOrder = ! empty($itm->care_id); // replacement items should not be treated as returns for this order
 
                 if ($hasExplicitReturns) {
                     return $itemStatus === 6
@@ -905,7 +906,8 @@ class SupportTickets extends Component
                         || ($stockId && in_array($stockId, $returnedStockIds, true));
                 }
 
-                return $itemStatus === 6 || $stockStatus === 1;
+                // Fallback: treat as returned only when item shows returned status or restocked stock AND is not a replacement from another order
+                return $itemStatus === 6 || ($stockStatus === 1 && ! $isReplacementFromAnotherOrder);
             })
             ->pluck('id')
             ->all();
