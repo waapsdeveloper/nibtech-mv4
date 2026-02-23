@@ -4,12 +4,12 @@ namespace App\Console\Commands;
 
 use App\Services\Support\BackMarketCareSyncService;
 use App\Services\Support\RefurbedMailboxSyncService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Log;
 use Throwable;
 
-class SupportSyncCommand extends Command
+class SupportSyncCommand extends BaseCommand
 {
     private BackMarketCareSyncService $backMarketCare;
     private Container $container;

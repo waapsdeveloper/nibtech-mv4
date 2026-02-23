@@ -3,11 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Services\RefurbedOrderLineStateService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Arr;
 use RuntimeException;
 
-class RefurbedShipLines extends Command
+class RefurbedShipLines extends BaseCommand
 {
     protected $signature = 'refurbed:ship-lines
         {order_id : Refurbed order reference/ID (as seen on the marketplace)}

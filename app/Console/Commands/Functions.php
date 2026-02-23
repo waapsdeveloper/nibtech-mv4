@@ -14,12 +14,12 @@ use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-class Functions extends Command
+class Functions extends BaseCommand
 {
     /**
      * The name and signature of the console command.

@@ -3,9 +3,9 @@
 namespace App\Console\Commands;
 
 use App\Services\BMPro\BMProOrderSyncService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 
-class BMProSyncOrders extends Command
+class BMProSyncOrders extends BaseCommand
 {
     /**
      * The name and signature of the console command.

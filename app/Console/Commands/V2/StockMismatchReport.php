@@ -6,11 +6,11 @@ use App\Models\Listed_stock_verification_model;
 use App\Models\Process_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
 
-class StockMismatchReport extends Command
+class StockMismatchReport extends BaseCommand
 {
     protected $signature = 'listing:stock-mismatch-report';
 

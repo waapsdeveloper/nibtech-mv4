@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\V2;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use App\Models\Country_model;
@@ -20,7 +20,7 @@ use Illuminate\Support\Facades\DB;
  *   php artisan v2:marketplace:sync-stock-bulk --marketplace=1
  *   php artisan v2:marketplace:sync-stock-bulk --marketplace=1 --force
  */
-class SyncMarketplaceStockBulk extends Command
+class SyncMarketplaceStockBulk extends BaseCommand
 {
     protected $signature = 'v2:marketplace:sync-stock-bulk 
                             {--marketplace=1 : Specific marketplace ID to sync (default: 1 for BackMarket)}

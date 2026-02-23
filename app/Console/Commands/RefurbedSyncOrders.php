@@ -6,11 +6,11 @@ use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Order_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\RequestException;
 
-class RefurbedSyncOrders extends Command
+class RefurbedSyncOrders extends BaseCommand
 {
     private static bool $orderLineAcceptanceUnavailable = false;
     /**

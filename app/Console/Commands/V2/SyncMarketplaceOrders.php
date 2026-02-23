@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands\V2;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Services\V2\MarketplaceOrderSyncService;
 use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Log;
  *   php artisan v2:sync-orders --type=all
  *   php artisan v2:sync-orders --marketplace=1
  */
-class SyncMarketplaceOrders extends Command
+class SyncMarketplaceOrders extends BaseCommand
 {
     /**
      * The name and signature of the console command.

@@ -3,12 +3,12 @@
 namespace App\Console\Commands;
 
 use App\Http\Controllers\GoogleController;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Mail;
 use Carbon\Carbon;
 
-class BackupAndEmail2 extends Command
+class BackupAndEmail2 extends BaseCommand
 {
     protected $signature = 'backup:email2';
     protected $description = 'Backup the database and email';
