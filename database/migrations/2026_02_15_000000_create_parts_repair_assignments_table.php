@@ -10,8 +10,8 @@ return new class extends Migration {
         // add something that is useful plese
         Schema::create('parts_repair_assignments', function (Blueprint $table) {
             $table->id();
-            // Match stock.id type (often int unsigned on existing DBs)
-            $table->unsignedInteger('stock_id');
+            // Match stock.id type (bigint unsigned in existing schema)
+            $table->unsignedBigInteger('stock_id');
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamp('assigned_at')->useCurrent();
             $table->timestamp('repaired_at')->nullable();
