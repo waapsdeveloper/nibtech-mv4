@@ -29,6 +29,21 @@
         'special' => request('special')
     ])
 
+    <div class="row mt-3">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body d-flex flex-wrap align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap">
+                        <label for="fetchReferenceId" class="mb-0">Fetch Back Market Listing</label>
+                        <input type="text" id="fetchReferenceId" class="form-control w-auto" placeholder="Enter reference_id">
+                        <button id="fetchListingBtn" class="btn btn-primary">Fetch One</button>
+                    </div>
+                    <div id="fetchListingStatus" class="text-muted small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if(isset($variations) && $variations->count() > 0)
         @foreach($variations as $variation)
             @include('v2.listing.partials.variation-card', [
@@ -127,6 +142,47 @@
             {{ (int)$mpId }}: {{ $loop->first ? 'true' : 'false' }}, // Marketplace 1 is visible by default
         @endforeach
     };
+
+    // Fetch a single Back Market listing and upsert its variation
+    document.addEventListener('DOMContentLoaded', function () {
+        const fetchBtn = document.getElementById('fetchListingBtn');
+        const fetchInput = document.getElementById('fetchReferenceId');
+        const fetchStatus = document.getElementById('fetchListingStatus');
+
+        if (!fetchBtn || !fetchInput || !fetchStatus) {
+            return;
+        }
+
+        fetchBtn.addEventListener('click', function () {
+            const referenceId = fetchInput.value.trim();
+            if (!referenceId) {
+                fetchStatus.textContent = 'Please enter a reference_id.';
+                return;
+            }
+
+            fetchStatus.textContent = 'Fetching...';
+
+            fetch("{{ url('v2/listings/fetch_one') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ reference_id: referenceId }),
+            })
+                .then((res) => res.json().then((data) => ({ status: res.status, data })))
+                .then(({ status, data }) => {
+                    if (status >= 200 && status < 300 && data.success) {
+                        fetchStatus.textContent = data.message + ` (variation_id: ${data.variation_id})`;
+                    } else {
+                        fetchStatus.textContent = data.message || 'Fetch failed.';
+                    }
+                })
+                .catch((err) => {
+                    fetchStatus.textContent = 'Request failed: ' + err.message;
+                });
+        });
+    });
 
     // Function to show stock locks modal - REMOVED (Stock lock system removed)
     // function showStockLocksModal(variationId, marketplaceId) {
