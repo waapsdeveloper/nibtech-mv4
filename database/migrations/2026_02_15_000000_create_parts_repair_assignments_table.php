@@ -7,7 +7,10 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // add something that is useful plese
+        if (Schema::hasTable('parts_repair_assignments')) {
+            return;
+        }
+
         Schema::create('parts_repair_assignments', function (Blueprint $table) {
             $table->id();
             // Match stock.id type (bigint unsigned in existing schema)
