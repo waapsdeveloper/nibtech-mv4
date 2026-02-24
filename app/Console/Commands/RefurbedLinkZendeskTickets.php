@@ -78,7 +78,7 @@ class RefurbedLinkZendeskTickets extends BaseCommand
             }
         }
 
-        return Command::SUCCESS;
+        return self::SUCCESS;
     }
 
     protected function labelsOption(): ?array
