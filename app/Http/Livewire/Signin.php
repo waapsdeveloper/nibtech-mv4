@@ -78,28 +78,34 @@ class Signin extends Component
         }
 
         $google2fa = new Google2FA();
+        $shouldShowQr = ! $admin->is_2fa_enabled || ! $admin->google2fa_secret;
 
-        // Provision a secret for any user missing one
-        if (!$admin->google2fa_secret) {
+        // Provision a secret only when the user has not enabled 2FA yet
+        if ($shouldShowQr && ! $admin->google2fa_secret) {
             $admin->google2fa_secret = $google2fa->generateSecretKey();
             $admin->is_2fa_enabled = 0;
             $admin->two_factor_confirmed_at = null;
             $admin->save();
         }
 
-        // Build a QR code URL using the OTP URI; avoid inline helper not available in this version
-        $otpUri = $google2fa->getQRCodeUrl(
-            config('app.name'),
-            $admin->email,
-            $admin->google2fa_secret
-        );
+        $google2faUrl = null;
+        if ($shouldShowQr) {
+            // Build a QR code URL using the OTP URI; avoid inline helper not available in this version
+            $otpUri = $google2fa->getQRCodeUrl(
+                config('app.name'),
+                $admin->email,
+                $admin->google2fa_secret
+            );
 
-        // Use a public QR code API to render the OTP URI for scanning
-        $google2faUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . urlencode($otpUri);
+            // Use a public QR code API to render the OTP URI for scanning
+            $google2faUrl = 'https://api.qrserver.com/v1/create-qr-code/?size=220x220&data=' . urlencode($otpUri);
+        }
 
         return view('admin.2fa_verify', [
             'google2fa_url' => $google2faUrl,
-            'secret' => $admin->google2fa_secret,
+            'secret' => $shouldShowQr ? $admin->google2fa_secret : null,
+            'showQr' => $shouldShowQr,
+            'alreadyEnabled' => $admin->is_2fa_enabled && $admin->google2fa_secret,
         ]);
     }
 

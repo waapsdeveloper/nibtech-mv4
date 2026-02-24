@@ -27,14 +27,19 @@
                                         <h2>Two-Factor Authentication</h2>
                                         <p>Please set up and verify two-factor authentication to continue.</p>
 
-                                        @isset($google2fa_url)
+                                        @if(!empty($showQr) && !empty($google2fa_url))
                                             <div class="mb-3 text-center">
                                                 <p class="fw-semibold mb-2">Scan this QR code with your authenticator app</p>
                                                 <img src="{{ $google2fa_url }}" alt="2FA QR Code" class="img-fluid" style="max-width: 220px;" />
                                                 <p class="small text-muted mt-2">If you cannot scan, enter this key manually:</p>
                                                 <div class="alert alert-secondary py-2"><strong>{{ $secret }}</strong></div>
                                             </div>
-                                        @endisset
+                                        @elseif(!empty($alreadyEnabled))
+                                            <div class="alert alert-success" role="alert">
+                                                <p class="mb-1 fw-semibold">Two-factor authentication is already enabled.</p>
+                                                <p class="mb-0 small text-muted">Enter your current 6-digit code to verify this login.</p>
+                                            </div>
+                                        @endif
 
                                         <div class="alert alert-info" role="alert">
                                             <p class="mb-2 fw-semibold">How to set up Google Authenticator</p>
