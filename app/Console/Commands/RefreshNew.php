@@ -51,18 +51,18 @@ class RefreshNew extends BaseCommand
         // Stock deduction entries are now written to storage/logs/stock_deduction.log (no DB writes here)
 
         // Log command start to named log file only (no Slack)
-        SlackLogService::post(
-            'order_sync',
-            'info',
-            "🔄 refresh:new command started",
-            [
-                'command' => 'refresh:new',
-                'started_at' => now()->toDateTimeString(),
-                'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
-            ],
-            false,
-            true
-        );
+        // SlackLogService::post(
+        //     'order_sync',
+        //     'info',
+        //     "🔄 refresh:new command started",
+        //     [
+        //         'command' => 'refresh:new',
+        //         'started_at' => now()->toDateTimeString(),
+        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
+        //     ],
+        //     false,
+        //     true
+        // );
 
         $bm = new BackMarketAPIController();
         $order_model = new Order_model();
