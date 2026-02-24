@@ -105,7 +105,7 @@ class SlackLogService
 
             // DEBUG: Log setting lookup result
             if (!$setting) {
-                Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
+                // Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
             } else {
                 Log::debug("SlackLogService: Found setting", [
                     'setting_name' => $setting->name,

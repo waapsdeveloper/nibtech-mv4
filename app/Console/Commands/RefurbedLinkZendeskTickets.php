@@ -78,7 +78,7 @@ class RefurbedLinkZendeskTickets extends BaseCommand
             }
         }
 
-        return self::SUCCESS;
+        return \Symfony\Component\Console\Command\Command::SUCCESS;
     }
 
     protected function labelsOption(): ?array
