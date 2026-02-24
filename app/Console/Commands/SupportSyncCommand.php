@@ -81,7 +81,8 @@ SIG;
 
         $this->info("Support sync completed. Messages processed: {$synced}");
 
-        return Command::SUCCESS;
+        // Use inherited Symfony Command status constant
+        return self::SUCCESS;
     }
 
     protected function runSync(callable $callback, string $label): int
