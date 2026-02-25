@@ -928,6 +928,8 @@ class Order extends Component
                 $rma_price = 0;
                 $rma_charge = 0;
                 $rma_quantity = 0;
+                $rma_repair = 0;
+                $rma_stock_ids = [];
 
                 foreach($sold_stock['stock_ids'] as $stock_id){
                     $stock = Stock_model::find($stock_id);
@@ -943,6 +945,7 @@ class Order extends Component
                             $rma_charge += $last_item->order->charges;
                         }
                         $rma_quantity++;
+                        $rma_stock_ids[] = $stock_id;
                     } elseif(in_array($last_order->order_type_id,[3,5])){
                         if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
                             $currency = Currency_model::find($last_item->currency);
@@ -969,12 +972,22 @@ class Order extends Component
                     if($process_stocks != null){
                         foreach($process_stocks as $process_stock){
                             if($process_stock->process->process_type_id == 9 && $process_stock->status == 2){
-                                $total_repair += $process_stock->price;
+                                if(in_array($stock_id, $rma_stock_ids)){
+                                    $rma_repair += $process_stock->price;
+                                } else {
+                                    $total_repair += $process_stock->price;
+                                }
                             }
                         }
                     }
 
                 }
+
+                // Purchase cost for only RMA stocks (from order_items on the original purchase order)
+                $rma_cost = !empty($rma_stock_ids)
+                    ? Order_item_model::whereIn('stock_id', $rma_stock_ids)->where('order_id', $order_id)->sum('price')
+                    : 0;
+
                 // $average_cost = $total_cost/$total_quantity;
                 if($total_quantity == 0){
                     $average_price = "Issue";
@@ -1000,7 +1013,10 @@ class Order extends Component
                 $sold_stocks_2[$key]['rma_price'] = $rma_price;
                 $sold_stocks_2[$key]['rma_charge'] = $rma_charge;
                 $sold_stocks_2[$key]['rma_quantity'] = $rma_quantity;
-                $sold_stocks_2[$key]['rma_profit'] = $rma_price - $rma_charge;
+                $sold_stocks_2[$key]['rma_cost'] = $rma_cost;
+                $sold_stocks_2[$key]['rma_repair'] = $rma_repair;
+                $sold_stocks_2[$key]['rma_stock_ids'] = $rma_stock_ids;
+                $sold_stocks_2[$key]['rma_profit'] = $rma_price - $rma_cost - $rma_charge - $rma_repair;
 
                 $sold_total['total_cost'] += $total_cost;
                 $sold_total['total_repair'] += $total_repair;
@@ -1010,8 +1026,10 @@ class Order extends Component
                 $sold_total['total_quantity'] += $total_quantity;
 
                 $rma_total['total_price'] += $rma_price;
+                $rma_total['total_cost'] += $rma_cost;
+                $rma_total['total_repair'] += $rma_repair;
                 $rma_total['total_charge'] += $rma_charge;
-                $rma_total['total_profit'] += $rma_price - $rma_charge;
+                $rma_total['total_profit'] += $rma_price - $rma_cost - $rma_charge - $rma_repair;
                 $rma_total['total_quantity'] += $rma_quantity;
             }
 
@@ -1019,24 +1037,30 @@ class Order extends Component
             $rma_stocks_2 = [];
             foreach ($sold_stocks_2 as $row) {
                 if (($row['rma_quantity'] ?? 0) > 0) {
-                    $rma_row = [
-                        'pss_id'          => $row['pss_id'],
-                        'product_id'      => $row['product_id'],
-                        'storage'         => $row['storage'],
-                        'quantity'        => $row['rma_quantity'],
-                        'stock_ids'       => $row['stock_ids'],
-                        'average_cost'    => $row['average_cost'],
-                        'total_cost'      => $row['total_cost'],
-                        'total_price'     => $row['rma_price'],
-                        'total_charge'    => $row['rma_charge'],
-                        'total_repair'    => 0,
-                        'sold_quantity'   => $row['rma_quantity'],
-                        'profit'          => $row['rma_profit'],
-                        'average_price'   => $row['rma_quantity'] > 0 ? $row['rma_price'] / $row['rma_quantity'] : 'Issue',
-                        'average_charge'  => $row['rma_quantity'] > 0 ? $row['rma_charge'] / $row['rma_quantity'] : 'Issue',
-                        'average_profit'  => $row['rma_quantity'] > 0 ? $row['rma_profit'] / $row['rma_quantity'] : 'Issue',
+                    $rma_qty     = $row['rma_quantity'];
+                    $rma_cost    = $row['rma_cost'];
+                    $rma_repair  = $row['rma_repair'];
+                    $rma_price   = $row['rma_price'];
+                    $rma_charge  = $row['rma_charge'];
+                    $rma_profit  = $rma_price - $rma_cost - $rma_charge - $rma_repair;
+
+                    $rma_stocks_2[] = [
+                        'pss_id'         => $row['pss_id'],
+                        'product_id'     => $row['product_id'],
+                        'storage'        => $row['storage'],
+                        'quantity'       => $rma_qty,
+                        'stock_ids'      => $row['rma_stock_ids'],
+                        'total_cost'     => $rma_cost,
+                        'average_cost'   => $rma_qty > 0 ? $rma_cost / $rma_qty : 0,
+                        'total_repair'   => $rma_repair,
+                        'total_price'    => $rma_price,
+                        'total_charge'   => $rma_charge,
+                        'sold_quantity'  => $rma_qty,
+                        'profit'         => $rma_profit,
+                        'average_price'  => $rma_qty > 0 ? $rma_price / $rma_qty : 'Issue',
+                        'average_charge' => $rma_qty > 0 ? $rma_charge / $rma_qty : 'Issue',
+                        'average_profit' => $rma_qty > 0 ? $rma_profit / $rma_qty : 'Issue',
                     ];
-                    $rma_stocks_2[] = $rma_row;
                 }
             }
 
