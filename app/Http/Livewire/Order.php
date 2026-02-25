@@ -988,6 +988,10 @@ class Order extends Component
                     ? Order_item_model::whereIn('stock_id', $rma_stock_ids)->where('order_id', $order_id)->sum('price')
                     : 0;
 
+                // Deduct RMA cost from sold cost (total_cost was queried across all stock_ids including RMA)
+                $total_cost = $total_cost - $rma_cost;
+                $average_cost = $total_quantity > 0 ? $total_cost / $total_quantity : 0;
+
                 // $average_cost = $total_cost/$total_quantity;
                 if($total_quantity == 0){
                     $average_price = "Issue";
