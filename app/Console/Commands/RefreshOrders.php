@@ -8,6 +8,7 @@ use App\Models\Order_model;
 use App\Models\Order_item_model;
 use App\Models\Currency_model;
 use App\Models\Country_model;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\DB;
 
@@ -35,6 +36,8 @@ class RefreshOrders extends BaseCommand
 
     public function handle()
     {
+        CommandRunLog::recordStart('refresh-orders');
+
         $bm = new BackMarketAPIController();
         $order_model = new Order_model();
         $order_item_model = new Order_item_model();
@@ -43,7 +46,11 @@ class RefreshOrders extends BaseCommand
         $country_codes = Country_model::pluck('id','code')->toArray();
 
         $resArray1 = $bm->getNewOrders(['page-size'=>50]);
+        $newCount = 0;
+        $statusCorrected = 0;
+        $shippedSyncDispatched = 0;
         if ($resArray1 !== null) {
+            $newCount = count($resArray1);
             foreach ($resArray1 as $orderObj) {
                 if (!empty($orderObj)) {
                     foreach($orderObj->orderlines as $orderline){
@@ -60,8 +67,7 @@ class RefreshOrders extends BaseCommand
                 }
             }
 
-            // Align our status with Back Market for pending orders: if BM says pending (state=1) but we have status != 2,
-            // set our status to 2 (pending) — but only when no IMEI is attached (order not yet processed).
+            // Align our status with Back Market for pending orders...
             $statusCorrected = 0;
             foreach ($resArray1 as $orderObj) {
                 if (empty($orderObj) || empty($orderObj->order_id)) {
@@ -90,7 +96,7 @@ class RefreshOrders extends BaseCommand
                 $this->info("Status corrected to pending (2): {$statusCorrected} order(s) to match Back Market.");
             }
 
-            // We shipped (IMEI + invoice) but BM still shows pending: post to Back Market in a job to update their status.
+            // We shipped (IMEI + invoice) but BM still shows pending: post to Back Market in a job...
             $shippedSyncDispatched = 0;
             foreach ($resArray1 as $orderObj) {
                 if (empty($orderObj) || empty($orderObj->order_id)) {
@@ -126,9 +132,11 @@ class RefreshOrders extends BaseCommand
             }
         }
 
-            $modification = false;
+        $modification = false;
         $resArray = $bm->getAllOrders(1, ['page-size'=>50], $modification);
+        $modifiedCount = 0;
         if ($resArray !== null) {
+            $modifiedCount = count($resArray);
             foreach ($resArray as $orderObj) {
                 if (!empty($orderObj)) {
                 $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
@@ -138,6 +146,12 @@ class RefreshOrders extends BaseCommand
         } else {
             echo 'No orders have been modified in 3 months!';
         }
+
+        $totalProcessed = $newCount + $modifiedCount;
+        $note = "New: {$newCount}, Modified: {$modifiedCount}";
+        if ($statusCorrected > 0) $note .= "; status corrected: {$statusCorrected}";
+        if ($shippedSyncDispatched > 0) $note .= "; shipped sync jobs: {$shippedSyncDispatched}";
+        CommandRunLog::recordEnd('refresh-orders', $totalProcessed, $totalProcessed, 0, $note, 'completed');
 
         return 0;
     }

@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\RefurbedZendeskTicketLinkService;
 use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use Symfony\Component\Console\Command\Command;
 
 class RefurbedLinkZendeskTickets extends BaseCommand
@@ -25,6 +26,7 @@ class RefurbedLinkZendeskTickets extends BaseCommand
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('refurbed-link-tickets');
         $options = array_filter([
             'query' => $this->option('query') ?: null,
             'labelIds' => $this->labelsOption(),
@@ -79,7 +81,9 @@ class RefurbedLinkZendeskTickets extends BaseCommand
             }
         }
 
-        return self::SUCCESS;
+        $note = sprintf('emails=%d linked=%d skipped=%d ignored=%d', $stats['processed'], $stats['linked'], $stats['skipped'], $stats['ignored'] ?? 0);
+        CommandRunLog::recordEnd('refurbed-link-tickets', $stats['processed'], $stats['linked'], 0, $note, 'completed');
+        return Command::SUCCESS;
     }
 
     protected function labelsOption(): ?array

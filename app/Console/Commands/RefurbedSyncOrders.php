@@ -7,6 +7,7 @@ use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Order_model;
 use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\RequestException;
 
@@ -33,6 +34,7 @@ class RefurbedSyncOrders extends BaseCommand
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('refurbed-orders');
         $refurbed = new RefurbedAPIController();
         $orderModel = new Order_model();
 
@@ -56,7 +58,7 @@ class RefurbedSyncOrders extends BaseCommand
             ]);
 
             $this->error('Refurbed order sync failed: ' . $e->getMessage());
-
+            CommandRunLog::recordEnd('refurbed-orders', 0, 0, 1, 'Failed: ' . $e->getMessage(), 'failed');
             return self::FAILURE;
         }
         $orders = $response['orders'] ?? [];
@@ -109,6 +111,8 @@ class RefurbedSyncOrders extends BaseCommand
 
         $this->info(sprintf('Refurbed orders synced. processed=%d skipped=%d failed=%d', $processed, $skipped, $failed));
 
+        $note = sprintf('processed=%d skipped=%d failed=%d', $processed, $skipped, $failed);
+        CommandRunLog::recordEnd('refurbed-orders', $processed + $skipped + $failed, $processed, $failed, $note, 'completed');
         return self::SUCCESS;
     }
 

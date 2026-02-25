@@ -3,6 +3,7 @@
 namespace App\Console\Commands\V2;
 
 use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use App\Services\V2\MarketplaceOrderSyncService;
 use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
@@ -57,6 +58,10 @@ class SyncMarketplaceOrders extends BaseCommand
      */
     public function handle()
     {
+        $type = $this->option('type');
+        $slug = 'v2-sync-orders-' . $type;
+        CommandRunLog::recordStart($slug);
+
         // CRITICAL: Log immediately when handle() is called to verify execution
         Log::info("=== SyncMarketplaceOrders::handle() CALLED ===", [
             'timestamp' => now()->toDateTimeString(),
@@ -64,7 +69,6 @@ class SyncMarketplaceOrders extends BaseCommand
             'options_received' => $this->options()
         ]);
 
-        $type = $this->option('type');
         $marketplaceId = $this->option('marketplace') ? (int) $this->option('marketplace') : null;
         $pageSize = (int) $this->option('page-size');
         $daysBack = (int) $this->option('days-back');
@@ -165,6 +169,7 @@ class SyncMarketplaceOrders extends BaseCommand
                 default:
                     $this->error("Invalid sync type: {$type}");
                     $this->info("Valid types: new, modified, care, incomplete, all");
+                    CommandRunLog::recordEnd($slug, 0, 0, 1, "Invalid type: {$type}", 'failed');
                     return 1;
             }
 
@@ -172,6 +177,17 @@ class SyncMarketplaceOrders extends BaseCommand
             $duration = round($endTime - $startTime, 2);
 
             $this->displayResults($results, $duration);
+
+            $totalSynced = 0;
+            $totalErrors = 0;
+            foreach ($results as $result) {
+                if (isset($result['synced'])) {
+                    $totalSynced += $result['synced'];
+                    $totalErrors += $result['errors'] ?? 0;
+                }
+            }
+            $note = sprintf('synced=%d errors=%d duration=%ss', $totalSynced, $totalErrors, $duration);
+            CommandRunLog::recordEnd($slug, $totalSynced + $totalErrors, $totalSynced, $totalErrors, $note, 'completed');
 
             return 0;
 
@@ -194,6 +210,7 @@ class SyncMarketplaceOrders extends BaseCommand
                 'line' => $e->getLine()
             ], true);
 
+            CommandRunLog::recordEnd($slug, 0, 0, 1, $e->getMessage(), 'failed');
             return 1;
         }
     }

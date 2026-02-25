@@ -14,6 +14,7 @@ use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
@@ -45,6 +46,7 @@ class Functions extends BaseCommand
     {
 
         ini_set('max_execution_time', 1200);
+        CommandRunLog::recordStart('functions-ten');
         echo 1;
         $this->refund_currency();
         echo " 2";
@@ -57,6 +59,7 @@ class Functions extends BaseCommand
         $this->merge_order_transactions();
         echo " 6";
         // $this->push_testing_api();
+        CommandRunLog::recordEnd('functions-ten', 0, 0, 0, 'refund_currency, check_linked_orders, duplicate_orders, misc, merge_order_transactions', 'completed');
         return 0;
     }
     private function refund_currency(){

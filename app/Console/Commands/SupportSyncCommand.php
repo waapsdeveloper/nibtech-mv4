@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\Support\BackMarketCareSyncService;
 use App\Services\Support\RefurbedMailboxSyncService;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 use Illuminate\Contracts\Container\Container;
 use Illuminate\Support\Facades\Log;
@@ -50,6 +51,7 @@ SIG;
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('support-sync');
         $sources = $this->option('source') ?: ['backmarket', 'refurbed'];
         $since = $this->option('since');
         $careParams = $this->buildCareParams();
@@ -80,8 +82,7 @@ SIG;
         }
 
         $this->info("Support sync completed. Messages processed: {$synced}");
-
-        // Use inherited Symfony Command status constant
+        CommandRunLog::recordEnd('support-sync', $synced, $synced, 0, "Messages processed: {$synced}", 'completed');
         return self::SUCCESS;
     }
 

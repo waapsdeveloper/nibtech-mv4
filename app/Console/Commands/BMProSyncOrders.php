@@ -3,6 +3,7 @@
 namespace App\Console\Commands;
 
 use App\Services\BMPro\BMProOrderSyncService;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 
 class BMProSyncOrders extends BaseCommand
@@ -36,6 +37,7 @@ class BMProSyncOrders extends BaseCommand
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('bmpro-orders');
         $pageSize = max(1, (int) $this->option('page-size'));
         $page = $this->option('page');
 
@@ -77,6 +79,11 @@ class BMProSyncOrders extends BaseCommand
         }
 
         $hasFailures = collect($summary)->contains(fn ($row) => ($row['failed'] ?? 0) > 0 || ! ($row['success'] ?? true));
+
+        $totalProcessed = collect($summary)->sum(fn ($row) => $row['processed'] ?? 0);
+        $totalFailed = collect($summary)->sum(fn ($row) => $row['failed'] ?? 0);
+        $note = collect($summary)->map(fn ($r) => sprintf('mp=%s cur=%s ok=%d fail=%d', $r['marketplace_id'] ?? 'n/a', $r['currency'] ?? 'EUR', $r['processed'] ?? 0, $r['failed'] ?? 0))->implode('; ');
+        CommandRunLog::recordEnd('bmpro-orders', (int) $totalProcessed, (int) ($totalProcessed - $totalFailed), (int) $totalFailed, $note, $hasFailures ? 'failed' : 'completed');
 
         if ($hasFailures) {
             $this->error('BMPRO order sync completed with errors.');

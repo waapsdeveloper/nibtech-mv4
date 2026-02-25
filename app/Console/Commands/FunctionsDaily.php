@@ -11,6 +11,7 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Stock_operations_model;
 use App\Models\Variation_model;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -39,12 +40,13 @@ class FunctionsDaily extends BaseCommand
 
     public function handle()
     {
-
+        CommandRunLog::recordStart('functions-daily');
         ini_set('max_execution_time', 1200);
         // $this->remove_extra_variations();
         $this->check_stock_status();
         $this->add_order_charge();
         $this->daily_closing();
+        CommandRunLog::recordEnd('functions-daily', 0, 0, 0, 'check_stock_status, add_order_charge, daily_closing', 'completed');
     }
 
     private function check_stock_status(){

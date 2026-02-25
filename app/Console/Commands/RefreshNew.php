@@ -12,6 +12,7 @@ use App\Models\Country_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
+use App\Models\CommandRunLog;
 use Carbon\Carbon;
 
 
@@ -47,6 +48,7 @@ class RefreshNew extends BaseCommand
     public function handle()
     {
         $startTime = microtime(true);
+        CommandRunLog::recordStart('refresh-new');
 
         // Stock deduction entries are now written to storage/logs/stock_deduction.log (no DB writes here)
 
@@ -146,6 +148,16 @@ class RefreshNew extends BaseCommand
         $summaryText = !empty($summaryParts)
             ? " | " . implode(", ", $summaryParts)
             : " | No orders processed";
+
+        $totalSynced = count($stats['order_ids_synced']);
+        CommandRunLog::recordEnd(
+            'refresh-new',
+            $stats['new_orders_found'] + $stats['incomplete_orders_found'],
+            $totalSynced,
+            0,
+            $summaryText,
+            'completed'
+        );
 
         // Limit order IDs in log context (max 20 to avoid huge logs)
         $orderIdsForLog = array_slice($stats['order_ids_synced'], 0, 20);

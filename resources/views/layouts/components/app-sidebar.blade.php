@@ -96,7 +96,7 @@
                                             <ul class="collapse ps-3" id="v2LogsMenu">
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/logs/stock-sync')}}">
-                                                        Stock Sync
+                                                        Command runs
                                                     </a>
                                                 </li>
                                                 <li class="slide">

@@ -9,6 +9,7 @@ use App\Models\Order_model;
 use App\Models\Variation_model;
 use Carbon\Carbon;
 use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
@@ -38,6 +39,7 @@ class RefurbedSyncNewOrders extends BaseCommand
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('refurbed-new');
         $states = $this->normalizeList($this->option('state'));
         if (empty($states)) {
             $states = ['NEW'];
@@ -96,6 +98,9 @@ class RefurbedSyncNewOrders extends BaseCommand
             $refreshed
         ));
 
+        $total = $syncStats['processed'] + $syncStats['skipped'] + $refreshed;
+        $note = sprintf('processed=%d skipped=%d failed=%d refreshed=%d', $syncStats['processed'], $syncStats['skipped'], $syncStats['failed'], $refreshed);
+        CommandRunLog::recordEnd('refurbed-new', $total, $syncStats['processed'] + $refreshed, $syncStats['failed'], $note, 'completed');
         return self::SUCCESS;
     }
 

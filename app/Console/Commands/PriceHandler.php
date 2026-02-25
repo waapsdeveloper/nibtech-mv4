@@ -14,6 +14,7 @@ use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
+use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
@@ -45,6 +46,7 @@ class PriceHandler extends BaseCommand
     public function handle()
     {
         ini_set('max_execution_time', 1200);
+        CommandRunLog::recordStart('price-handler');
 
         $this->recheck_inactive_handlers();
 
@@ -298,6 +300,11 @@ class PriceHandler extends BaseCommand
                 'response_errors_sample' => array_slice($responseErrors, 0, 3),
             ]);
         }
+        $totalRefs = $totalListings ?? 0;
+        $note = "Processed {$processed} references; total listings: {$totalRefs}";
+        if (count($missingResponseRefs) > 0) $note .= "; missing response: " . count($missingResponseRefs);
+        if (count($responseErrors) > 0) $note .= "; response errors: " . count($responseErrors);
+        CommandRunLog::recordEnd('price-handler', $totalRefs, $processed, count($responseErrors), $note, 'completed');
         return 0;
 
     }

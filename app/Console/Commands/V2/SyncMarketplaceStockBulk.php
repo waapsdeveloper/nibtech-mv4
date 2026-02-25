@@ -3,6 +3,7 @@
 namespace App\Console\Commands\V2;
 
 use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use App\Models\Country_model;
@@ -35,7 +36,9 @@ class SyncMarketplaceStockBulk extends BaseCommand
     {
         $marketplaceId = (int) $this->option('marketplace') ?? 1;
         $force = $this->option('force');
-        
+        $slug = 'v2-marketplace-sync-stock-bulk-' . $marketplaceId;
+        CommandRunLog::recordStart($slug);
+
         $this->info('========================================');
         $this->info('V2 BULK MARKETPLACE STOCK SYNC');
         $this->info('========================================');
@@ -53,17 +56,23 @@ class SyncMarketplaceStockBulk extends BaseCommand
         if ($marketplaceId !== 1) {
             $this->error("Bulk sync currently only supports BackMarket (marketplace ID 1)");
             $this->warn("For other marketplaces, use: v2:marketplace:sync-stock");
+            CommandRunLog::recordEnd($slug, 0, 0, 1, 'Bulk sync only supports BackMarket (ID 1)', 'failed');
             return 1;
         }
         
         try {
             $this->syncMarketplaceBulk($marketplaceId, $force);
-            
+
             // Display summary
             $this->displaySummary();
-            
+
+            $s = $this->syncSummary;
+            $total = ($s['updated'] ?? 0) + ($s['skipped'] ?? 0) + ($s['not_found'] ?? 0) + ($s['errors'] ?? 0);
+            $note = sprintf('updated=%d skipped=%d not_found=%d errors=%d duration=%ss', $s['updated'] ?? 0, $s['skipped'] ?? 0, $s['not_found'] ?? 0, $s['errors'] ?? 0, $s['duration_seconds'] ?? 0);
+            CommandRunLog::recordEnd($slug, (int) $total, (int) ($s['updated'] ?? 0), (int) ($s['errors'] ?? 0), $note, 'completed');
+
             return 0;
-            
+
         } catch (\Exception $e) {
             $this->error("Error during bulk sync: " . $e->getMessage());
             Log::error('V2 SyncMarketplaceStockBulk: Command failed', [
@@ -71,6 +80,7 @@ class SyncMarketplaceStockBulk extends BaseCommand
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
+            CommandRunLog::recordEnd($slug, 0, 0, 1, $e->getMessage(), 'failed');
             return 1;
         }
     }
