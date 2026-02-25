@@ -71,14 +71,6 @@
         $availableStock = $availableStocks->count(); // Physical stock count from inventory
     }
     
-    // Stock lock system removed - no longer tracking locked stock
-    // $activeLocks = \App\Models\V2\MarketplaceStockLock::where('variation_id', $variationId)
-    //     ->where('marketplace_id', $marketplaceIdInt)
-    //     ->where('lock_status', 'locked')
-    //     ->get();
-    $totalLocked = 0;
-    $lockedStockCount = 0;
-    
     // Calculate pending orders for this specific marketplace
     // For Backmarket (marketplace_id = 1), include orders with marketplace_id = 1 or null
     // For other marketplaces, only include orders with that specific marketplace_id
@@ -162,16 +154,6 @@
                         <span>Loading...</span>
                     </span>
                 @endif
-                {{-- Commented out: Locked stock badge - functionality preserved but hidden from UI --}}
-                {{-- @if($totalLocked > 0)
-                    <span class="badge bg-warning text-dark cursor-pointer" 
-                          title="{{ $lockedStockCount }} active lock(s) - {{ $totalLocked }} units locked" 
-                          data-bs-toggle="tooltip"
-                          onclick="showStockLocksModal({{ $variationId }}, {{ $marketplaceIdInt }})"
-                          style="cursor: pointer;">
-                        <i class="fe fe-lock me-1"></i>{{ $totalLocked }} Locked
-                    </span>
-                @endif --}}
                 {{-- Buybox flags - will wrap to next line on small screens only --}}
                 <div class="d-flex align-items-center flex-wrap buybox-flags-container" style="gap: 0.25rem;">
                     {!! $buyboxFlags !!}

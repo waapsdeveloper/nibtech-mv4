@@ -74,23 +74,6 @@ class MarketplaceStockModel extends Model
     }
     
     /**
-     * Get all locks for this marketplace stock
-     */
-    public function locks()
-    {
-        return $this->hasMany(MarketplaceStockLock::class, 'marketplace_stock_id')
-            ->where('lock_status', 'locked');
-    }
-    
-    /**
-     * Get all locks (including released/consumed)
-     */
-    public function allLocks()
-    {
-        return $this->hasMany(MarketplaceStockLock::class, 'marketplace_stock_id');
-    }
-    
-    /**
      * Get history for this marketplace stock
      */
     public function history()

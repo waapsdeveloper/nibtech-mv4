@@ -828,30 +828,30 @@ class ListingController extends Controller
     {
         $error = "";
         $variation = Variation_model::with('listings')->find($variationId);
-        
+
         if (!$variation) {
             return response()->json(['error' => 'Variation not found'], 404);
         }
-        
+
         // Get reference_uuid for Backmarket (marketplace_id = 1)
         $backmarketListing = $variation->listings->where('marketplace_id', 1)->whereNotNull('reference_uuid')->first();
-        
+
         if (!$backmarketListing || !$backmarketListing->reference_uuid) {
             return response()->json(['error' => 'No Backmarket reference UUID found'], 400);
         }
-        
+
         $reference = $backmarketListing->reference_uuid;
-        
+
         // Call BackMarket API to get competitors
         $bm = new \App\Http\Controllers\BackMarketAPIController();
         $responses = $bm->getListingCompetitors($reference);
-        
+
         if (is_string($responses) || is_int($responses) || is_null($responses)) {
             $error = $responses;
             $error .= " - " . $variation->reference_id;
             return response()->json(['error' => $error]);
         }
-        
+
         // Update listings with fresh API data
         foreach ($responses as $list) {
             if (is_string($list) || is_int($list)) {
@@ -862,17 +862,17 @@ class ListingController extends Controller
                 $error .= json_encode($list);
                 continue;
             }
-            
+
             $country = \App\Models\Country_model::where('code', $list->market)->first();
             if (!$country) {
                 continue;
             }
-            
+
             $listings = Listing_model::where('variation_id', $variationId)
                 ->where('country', $country->id)
                 ->where('marketplace_id', 1)
                 ->get();
-            
+
             // If multiple listings exist, keep only the first one
             if ($listings->count() > 1) {
                 $listings->each(function($listing, $key) {
@@ -881,17 +881,17 @@ class ListingController extends Controller
                     }
                 });
             }
-            
+
             $listing = Listing_model::firstOrNew([
                 'variation_id' => $variationId,
                 'country' => $country->id,
                 'marketplace_id' => 1
             ]);
-            
+
             if (isset($list->product_id)) {
                 $listing->reference_uuid_2 = $list->product_id;
             }
-            
+
             if ($list->price != null) {
                 $listing->price = $list->price->amount;
                 $currency = \App\Models\Currency_model::where('code', $list->price->currency)->first();
@@ -902,11 +902,11 @@ class ListingController extends Controller
                     $currency = \App\Models\Currency_model::where('code', $list->min_price->currency)->first();
                 }
             }
-            
+
             if (isset($currency)) {
                 $listing->currency_id = $currency->id;
             }
-            
+
             $listing->buybox = $list->is_winning ?? 0;
             if (isset($list->price_to_win) && isset($list->price_to_win->amount)) {
                 $listing->buybox_price = $list->price_to_win->amount;
@@ -914,19 +914,19 @@ class ListingController extends Controller
             if (isset($list->winner_price) && isset($list->winner_price->amount)) {
                 $listing->buybox_winner_price = $list->winner_price->amount;
             }
-            
+
             $listing->save();
         }
-        
+
         if ($no_check == 1) {
             return response()->json(['responses' => $responses, 'error' => $error]);
         }
-        
+
         // Return updated listings
         $listings = Listing_model::with('marketplace')
             ->where('variation_id', $variationId)
             ->get();
-        
+
         return response()->json(['listings' => $listings, 'error' => $error]);
     }
 
@@ -945,6 +945,85 @@ class ListingController extends Controller
         $listings = $query->get();
 
         return response()->json(['listings' => $listings]);
+    }
+
+    /**
+     * Fetch a single BackMarket listing and upsert its variation.
+     */
+    public function fetchOneListing(Request $request)
+    {
+        $validated = $request->validate([
+            'reference_id' => 'required|string',
+        ]);
+
+        $referenceId = trim($validated['reference_id']);
+
+        try {
+            $bm = new BackMarketAPIController();
+            $response = $bm->getOneListing($referenceId);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Back Market request failed: '.$e->getMessage(),
+            ], 500);
+        }
+
+        if (! $response) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Listing not found or empty response.',
+            ], 404);
+        }
+
+        $list = is_array($response) ? (object) $response : $response;
+
+        $listingId = trim((string) (property_exists($list, 'listing_id') ? $list->listing_id : ($list->id ?? $referenceId)));
+        $sku = trim((string) ($list->sku ?? ''));
+        $title = trim((string) ($list->title ?? ''));
+        $state = (int) ($list->state ?? 0);
+
+        if ($listingId === '') {
+            return response()->json([
+                'success' => false,
+                'message' => 'Listing ID missing in API response.',
+            ], 422);
+        }
+
+        $variation = Variation_model::firstOrNew(['reference_id' => $listingId]);
+        $isNewVariation = ! $variation->exists;
+
+        if ($sku !== '') {
+            $variation->sku = $sku;
+        }
+
+        if (! $variation->grade) {
+            $variation->grade = $state + 1;
+            if ($state === 9) {
+                $variation->grade = 1;
+            }
+        }
+
+        $variation->status = $variation->status ?? 1;
+
+        if (empty($variation->name) && $title !== '') {
+            $variation->name = $title;
+        }
+
+        if (empty($variation->reference_uuid) && ! empty($list->id)) {
+            $variation->reference_uuid = $list->id;
+        }
+
+        $variation->save();
+
+        return response()->json([
+            'success' => true,
+            'message' => ($isNewVariation ? 'Created' : 'Updated').' variation from listing.',
+            'variation_id' => $variation->id,
+            'reference_id' => $variation->reference_id,
+            'reference_uuid' => $variation->reference_uuid,
+            'sku' => $variation->sku,
+            'grade' => $variation->grade,
+        ]);
     }
 
     /**
@@ -1151,7 +1230,7 @@ class ListingController extends Controller
         if($stock == 'no'){
             $stock = request('stock');
         }
-        
+
         // Cast stock to integer to preserve negative values
         // This ensures -1 stays as -1, not converted to 1
         $stock = (int)$stock;
@@ -1169,7 +1248,7 @@ class ListingController extends Controller
             }
         }
         $variation = Variation_model::with('available_stocks')->find($id);
-        
+
         // FIX: Calculate current total stock from marketplace stocks (includes manual_adjustment)
         // Total = sum of all marketplace listed_stock + sum of all marketplace manual_adjustment
         // This ensures we use the actual current total that the user sees, not just variation.listed_stock
@@ -1178,12 +1257,12 @@ class ListingController extends Controller
         $currentTotalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
             ->sum('manual_adjustment');
         $current_listed_stock = (int)$currentTotalListedStock + (int)$currentTotalManualAdjustment;
-        
+
         // Fallback to variation.listed_stock if no marketplace stocks exist
         if($current_listed_stock == 0 && $currentTotalListedStock == 0 && $currentTotalManualAdjustment == 0) {
             $current_listed_stock = (int)($variation->listed_stock ?? 0);
         }
-        
+
         $bm = new BackMarketAPIController();
         $previous_qty = $variation->update_qty($bm);
 
@@ -1218,15 +1297,15 @@ class ListingController extends Controller
         }
 
         $stockChange = (int)$stock; // The pushed value (e.g., +1 or -1)
-        
+
         // EDGE CASE: Prevent total stock from going below zero
         if($stockChange < 0) {
             $maxAllowedSubtraction = -$current_listed_stock;
             $stockChange = max($stockChange, $maxAllowedSubtraction);
         }
-        
+
         $backmarketApiQuantity = null; // For badge update (only set when we push to API)
-        
+
         // Get or create marketplace stock for BackMarket (marketplace_id = 1)
         $marketplace1Stock = MarketplaceStockModel::firstOrCreate(
             [
@@ -1240,14 +1319,14 @@ class ListingController extends Controller
                 'admin_id' => session('user_id') ?? 1
             ]
         );
-        
+
         if($stockChange != 0){
             // Push to Backmarket API when variation has reference_id (like V1)
             if($variation->reference_id) {
                 $bmCurrent = (int)($marketplace1Stock->listed_stock ?? 0) + (int)($marketplace1Stock->manual_adjustment ?? 0);
                 $quantityToPushToApi = $bmCurrent + $stockChange;
                 $quantityToPushToApi = max(0, $quantityToPushToApi);
-                
+
                 Log::info("V2 add_quantity: Calling Backmarket API updateOneListing", [
                     'variation_id' => $id,
                     'reference_id' => $variation->reference_id,
@@ -1260,14 +1339,14 @@ class ListingController extends Controller
                     'response_type' => is_object($response) ? 'object' : gettype($response),
                     'has_quantity' => is_object($response) && isset($response->quantity)
                 ]);
-                
+
                 if(is_string($response) || is_int($response) || is_null($response)){
                     Log::error("V2 add_quantity: Backmarket API error for variation ID $id", ['response' => $response]);
                     return response()->json([
                         'error' => 'Failed to update Backmarket: ' . (is_string($response) ? $response : 'API error')
                     ], 500);
                 }
-                
+
                 $responseQuantity = null;
                 $quantityFromResponse = is_object($response) ? ($response->quantity ?? null) : (is_array($response) ? ($response['quantity'] ?? null) : null);
                 if($quantityFromResponse !== null){
@@ -1277,16 +1356,16 @@ class ListingController extends Controller
                     $responseQuantity = (int)($variation->update_qty($bm) ?? $quantityToPushToApi);
                     Log::warning("V2 add_quantity: API response missing quantity, fetched: $responseQuantity");
                 }
-                
+
                 $backmarketApiQuantity = $responseQuantity;
-                
+
                 $listedStockBefore = (int)($marketplace1Stock->listed_stock ?? 0);
                 // Sync DB: listed_stock = API response, clear manual_adjustment for Backmarket
                 $marketplace1Stock->listed_stock = $responseQuantity;
                 $marketplace1Stock->manual_adjustment = 0;
                 $marketplace1Stock->admin_id = session('user_id') ?? 1;
                 $marketplace1Stock->save();
-                
+
                 \App\Models\V2\MarketplaceStockHistory::create([
                     'marketplace_stock_id' => $marketplace1Stock->id,
                     'variation_id' => $variation->id,
@@ -1309,7 +1388,7 @@ class ListingController extends Controller
                 $marketplace1Stock->manual_adjustment = $newManualAdjustment;
                 $marketplace1Stock->admin_id = session('user_id') ?? 1;
                 $marketplace1Stock->save();
-                
+
                 \App\Models\V2\MarketplaceStockHistory::create([
                     'marketplace_stock_id' => $marketplace1Stock->id,
                     'variation_id' => $variation->id,
@@ -1337,7 +1416,7 @@ class ListingController extends Controller
                 $total = (int)($stock->listed_stock ?? 0) + (int)($stock->manual_adjustment ?? 0);
                 return [$stock->marketplace_id => $total];
             });
-        
+
         // Create distribution preview from actual updated stocks (for consistency)
         // This ensures preview matches the actual saved values
         $distributionPreview = [];
@@ -1362,11 +1441,11 @@ class ListingController extends Controller
         $totalManualAdjustment = MarketplaceStockModel::where('variation_id', $variation->id)
             ->sum('manual_adjustment');
         $calculatedTotalStock = (int)$totalListedStock + (int)$totalManualAdjustment;
-        
+
         // EDGE CASE: Ensure total stock never goes below zero (safety check)
         // This is a final safeguard in case of any edge cases
         $calculatedTotalStock = max(0, $calculatedTotalStock);
-        
+
         // Update variation.listed_stock to match calculated total (for backward compatibility)
         $variation->listed_stock = $calculatedTotalStock;
         $variation->save();
@@ -1742,7 +1821,7 @@ class ListingController extends Controller
         if (!empty($updateData)) {
             // Capture snapshot BEFORE updating the listing
             $rowSnapshot = $this->captureListingSnapshot($listing);
-            
+
             $listing->fill($updateData);
             $listing->save();
 
@@ -1848,7 +1927,7 @@ class ListingController extends Controller
             if ($fieldName === 'price' || $fieldName === 'price_handler') {
                 $apiPayload['price'] = $oldValue;
             }
-            
+
             if (!empty($apiPayload)) {
                 $apiPayload['currency'] = $currencyCode;
                 $bm->updateOneListing($listing->variation->reference_id, json_encode($apiPayload), $marketCode);
@@ -1944,7 +2023,7 @@ class ListingController extends Controller
         if (!empty($updateData)) {
             // Capture snapshot BEFORE updating the listing
             $rowSnapshot = $this->captureListingSnapshot($listing);
-            
+
             $listing->fill($updateData);
             $listing->save();
 
@@ -1981,7 +2060,7 @@ class ListingController extends Controller
 
         // Get the listing to retrieve actual values for first-time changes
         $listing = Listing_model::find($listingId);
-        
+
         // If snapshot not provided, capture it now (before any updates)
         if ($rowSnapshot === null) {
             $rowSnapshot = $this->captureListingSnapshot($listing);
@@ -2289,7 +2368,7 @@ class ListingController extends Controller
     /**
      * Get updated stock quantity from Backmarket API (V2 endpoint)
      * Uses ListingDataService for service layer architecture
-     * 
+     *
      * @param int $variationId
      * @return \Illuminate\Http\JsonResponse
      */
@@ -2297,7 +2376,7 @@ class ListingController extends Controller
     {
         try {
             $result = $this->dataService->getBackmarketStockQuantity($variationId);
-            
+
             return response()->json([
                 'success' => $result['updated'],
                 'quantity' => $result['quantity'],
@@ -2311,7 +2390,7 @@ class ListingController extends Controller
                 'variation_id' => $variationId,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'quantity' => 0,
@@ -2322,7 +2401,7 @@ class ListingController extends Controller
 
     /**
      * Get all marketplace stock data for comparison (for stock difference modal)
-     * 
+     *
      * @param int $variationId
      * @return \Illuminate\Http\JsonResponse
      */
@@ -2343,7 +2422,7 @@ class ListingController extends Controller
 
             // Get all marketplaces
             $marketplaces = Marketplace_model::all()->keyBy('id');
-            
+
             // Get all marketplace stocks for this variation
             $marketplaceStocks = MarketplaceStockModel::where('variation_id', $variationId)
                 ->with('marketplace')
@@ -2370,7 +2449,7 @@ class ListingController extends Controller
             foreach ($marketplaces as $marketplaceId => $marketplace) {
                 $marketplaceIdInt = (int) $marketplaceId;
                 $marketplaceStock = $marketplaceStocks->get($marketplaceIdInt);
-                
+
                 $listedStock = $marketplaceStock ? (int) ($marketplaceStock->listed_stock ?? 0) : 0;
                 // Available stock comes from inventory (variation-level), same as variation card – do NOT use marketplace_stock.available_stock
                 $availableStock = $variationAvailableCount;
@@ -2441,7 +2520,7 @@ class ListingController extends Controller
                 'variation_id' => $variationId,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'error' => 'Error fetching stock comparison data'
@@ -2452,7 +2531,7 @@ class ListingController extends Controller
     /**
      * Fix stock mismatches for a variation
      * Syncs marketplace stocks with API and parent stock
-     * 
+     *
      * @param int $variationId
      * @return \Illuminate\Http\JsonResponse
      */
@@ -2460,7 +2539,7 @@ class ListingController extends Controller
     {
         try {
             DB::beginTransaction();
-            
+
             $variation = Variation_model::find($variationId);
             if (!$variation) {
                 return response()->json([
@@ -2515,7 +2594,7 @@ class ListingController extends Controller
                 // It should be the SAME for all marketplaces and should not be changed by sync operations
                 // The marketplace_stock.available_stock field may exist for internal tracking,
                 // but for DISPLAY purposes, we use variation->available_stocks count (from inventory)
-                
+
                 // Update if needed (only listed_stock, NOT available_stock)
                 if ($needsFix) {
                     $ms->listed_stock = $newListedStock;
@@ -2533,7 +2612,7 @@ class ListingController extends Controller
             if ($sumListedStock != $oldParentStock) {
                 $variation->listed_stock = $sumListedStock;
                 $variation->save();
-                
+
                 $fixes[] = [
                     'marketplace_id' => null,
                     'field' => 'variation.listed_stock',
@@ -2559,12 +2638,12 @@ class ListingController extends Controller
             ]);
         } catch (\Exception $e) {
             DB::rollBack();
-            
+
             Log::error("V2 fixStockMismatch error: " . $e->getMessage(), [
                 'variation_id' => $variationId,
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'error' => 'Error fixing stock mismatch: ' . $e->getMessage()

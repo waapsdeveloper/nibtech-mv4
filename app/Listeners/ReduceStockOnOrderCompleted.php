@@ -3,7 +3,6 @@ namespace App\Listeners;
 
 use App\Events\V2\OrderStatusChanged;
 use App\Models\MarketplaceStockModel;
-use App\Models\MarketplaceStockLock;
 use App\Models\MarketplaceStockHistory;
 use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Support\Facades\Log;
@@ -56,32 +55,17 @@ class ReduceStockOnOrderCompleted
                 continue;
             }
             
-            // Find and consume locks for this order
-            $locks = MarketplaceStockLock::where([
-                'order_id' => $order->id,
-                'order_item_id' => $orderItem->id,
-                'lock_status' => 'locked'
-            ])->get();
-            
-            $totalLocked = $locks->sum('quantity_locked');
-            
             // Record before values
             $listedStockBefore = $marketplaceStock->listed_stock;
             $lockedStockBefore = $marketplaceStock->locked_stock;
             $availableStockBefore = $marketplaceStock->available_stock;
             
-            // Reduce listed stock and unlock
+            // Reduce listed stock; release locked amount for this quantity (stock lock table removed)
+            $toRelease = min($quantity, (int) $marketplaceStock->locked_stock);
             $marketplaceStock->listed_stock = max(0, $marketplaceStock->listed_stock - $quantity);
-            $marketplaceStock->locked_stock = max(0, $marketplaceStock->locked_stock - $totalLocked);
+            $marketplaceStock->locked_stock = max(0, $marketplaceStock->locked_stock - $toRelease);
             $marketplaceStock->available_stock = max(0, $marketplaceStock->listed_stock - $marketplaceStock->locked_stock);
             $marketplaceStock->save();
-            
-            // Mark locks as consumed
-            foreach ($locks as $lock) {
-                $lock->lock_status = 'consumed';
-                $lock->consumed_at = now();
-                $lock->save();
-            }
             
             // Log to history
             MarketplaceStockHistory::create([
