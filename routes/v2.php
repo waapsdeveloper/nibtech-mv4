@@ -161,11 +161,6 @@ Route::prefix('v2')->group(function () {
         Route::get('check-allow-unknown-ip/{userId}', [TeamController::class, 'check_allow_unknown_ip'])->name('v2.options.teams.check-allow-unknown-ip');
     });
 
-    // Marketplace Sync Failures (Extras)
-    Route::prefix('marketplace-sync-failures')->group(function () {
-        Route::get('/', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'index'])->name('v2.marketplace-sync-failures.index');
-        Route::post('truncate', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'truncate'])->name('v2.marketplace-sync-failures.truncate');
-        Route::delete('{id}', [\App\Http\Controllers\V2\MarketplaceSyncFailureController::class, 'destroy'])->name('v2.marketplace-sync-failures.destroy');
-    });
+    // Marketplace Sync Failures (Extras) - removed (feature not used)
 });
 

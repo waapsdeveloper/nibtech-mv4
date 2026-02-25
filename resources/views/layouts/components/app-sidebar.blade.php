@@ -89,21 +89,6 @@
                                         @endif
                                         @if ($isSuperAdmin)
                                         <li class="slide has-sub">
-                                            <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2ExtrasMenu" role="button" aria-expanded="false" aria-controls="v2ExtrasMenu">
-                                                Extras
-                                                <i class="angle fe fe-chevron-down"></i>
-                                            </a>
-                                            <ul class="collapse ps-3" id="v2ExtrasMenu">
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/marketplace-sync-failures')}}">
-                                                        Sync Failures
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        @endif
-                                        @if ($isSuperAdmin)
-                                        <li class="slide has-sub">
                                             <a class="side-menu__item ps-0" data-bs-toggle="collapse" href="#v2LogsMenu" role="button" aria-expanded="false" aria-controls="v2LogsMenu">
                                                 Logs
                                                 <i class="angle fe fe-chevron-down"></i>
