@@ -112,25 +112,6 @@ Route::prefix('v2')->group(function () {
     Route::post('listings/update_marketplace_prices/{variationId}/{marketplaceId}', [V2ListingController::class, 'update_marketplace_prices'])->name('v2.listing.update_marketplace_prices');
     Route::post('listings/restore_history/{id}', [V2ListingController::class, 'restore_history'])->name('v2.listing.restore_history');
 
-    // Stock Locks Dashboard - REMOVED (Stock lock system removed)
-    // Route::get('stock-locks', [\App\Http\Livewire\V2\StockLocks::class, 'index'])->name('v2.stock-locks');
-    // Route::get('stock-locks/api', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocks'])->name('v2.stock-locks.api');
-    // Route::get('stock-locks/api/json', [\App\Http\Controllers\V2\StockLocksController::class, 'getLocksJson'])->name('v2.stock-locks.api.json');
-    // Route::post('stock-locks/{lockId}/release', [\App\Http\Controllers\V2\StockLocksController::class, 'releaseLock'])->name('v2.stock-locks.release');
-
-    // Artisan Commands Guide
-    Route::get('artisan-commands', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'index'])->name('v2.artisan-commands');
-    Route::post('artisan-commands/execute', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'execute'])->name('v2.artisan-commands.execute');
-    Route::post('artisan-commands/run-migrations', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'runMigrations'])->name('v2.artisan-commands.run-migrations');
-    Route::get('artisan-commands/migration-details', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getMigrationDetails'])->name('v2.artisan-commands.migration-details');
-    Route::post('artisan-commands/record-migration', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'recordMigration'])->name('v2.artisan-commands.record-migration');
-    Route::post('artisan-commands/run-single-migration', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'runSingleMigration'])->name('v2.artisan-commands.run-single-migration');
-    Route::get('artisan-commands/check-command-status', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'checkCommandStatus'])->name('v2.artisan-commands.check-command-status');
-    Route::post('artisan-commands/kill', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'killCommand'])->name('v2.artisan-commands.kill');
-    Route::post('artisan-commands/restart', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'restartCommand'])->name('v2.artisan-commands.restart');
-    Route::get('artisan-commands/documentation', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getDocumentation'])->name('v2.artisan-commands.documentation');
-    Route::get('artisan-commands/pm2-logs', [\App\Http\Controllers\V2\ArtisanCommandsController::class, 'getPm2Logs'])->name('v2.artisan-commands.pm2-logs');
-
     // Stock Sync Logs
     Route::get('logs/stock-sync', [\App\Http\Controllers\V2\StockSyncLogController::class, 'index'])->name('v2.logs.stock-sync');
     Route::get('logs/stock-sync/{id}', [\App\Http\Controllers\V2\StockSyncLogController::class, 'show'])->name('v2.logs.stock-sync.show');
