@@ -924,12 +924,26 @@ class Order extends Component
                 $total_charge = 0;
                 $total_quantity = 0;
 
+                // RMA (order_type_id = 2 — sold back to purchaser) tracked separately
+                $rma_price = 0;
+                $rma_charge = 0;
+                $rma_quantity = 0;
+
                 foreach($sold_stock['stock_ids'] as $stock_id){
                     $stock = Stock_model::find($stock_id);
                     // $total_cost += $stock->purchase_item->price;
                     $last_item = $stock->last_item();
                     $last_order = $last_item->order;
-                    if(in_array($last_order->order_type_id,[2,3,5])){
+
+                    if($last_order->order_type_id == 2){
+                        // RMA — sold back to purchaser
+                        $rma_price += $last_item->price;
+                        if(!in_array($last_item->order_id,$s_orders)){
+                            $s_orders[] = $last_item->order_id;
+                            $rma_charge += $last_item->order->charges;
+                        }
+                        $rma_quantity++;
+                    } elseif(in_array($last_order->order_type_id,[3,5])){
                         if($last_order->order_type_id == 3 && $last_item->currency != 4 && $last_item->currency != null){
                             $currency = Currency_model::find($last_item->currency);
                             $exchange_rate = ExchangeRate::where('target_currency',$currency->code)->first();
@@ -982,17 +996,29 @@ class Order extends Component
                 $sold_stocks_2[$key]['profit'] = $total_price - $total_cost - $total_charge - $total_repair;
                 $sold_stocks_2[$key]['average_profit'] = $average_profit;
 
+                // RMA per-row data
+                $sold_stocks_2[$key]['rma_price'] = $rma_price;
+                $sold_stocks_2[$key]['rma_charge'] = $rma_charge;
+                $sold_stocks_2[$key]['rma_quantity'] = $rma_quantity;
+                $sold_stocks_2[$key]['rma_profit'] = $rma_price - $rma_charge;
+
                 $sold_total['total_cost'] += $total_cost;
                 $sold_total['total_repair'] += $total_repair;
                 $sold_total['total_price'] += $total_price;
                 $sold_total['total_charge'] += $total_charge;
                 $sold_total['total_profit'] += $total_price - $total_cost - $total_charge - $total_repair;
                 $sold_total['total_quantity'] += $total_quantity;
+
+                $rma_total['total_price'] += $rma_price;
+                $rma_total['total_charge'] += $rma_charge;
+                $rma_total['total_profit'] += $rma_price - $rma_charge;
+                $rma_total['total_quantity'] += $rma_quantity;
             }
 
             // dd($sold_stocks_2);
             $data['sold_stock_summary'] = $sold_stocks_2;
             $data['sold_total'] = $sold_total;
+            $data['rma_total'] = $rma_total;
 
 
 

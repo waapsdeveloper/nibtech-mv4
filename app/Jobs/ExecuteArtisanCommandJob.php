@@ -21,7 +21,7 @@ class ExecuteArtisanCommandJob implements ShouldQueue
 
     public $command;
     public $options;
-    public $tries = 1;
+    public $tries = 2;
     public $timeout = 7200; // 2 hours timeout (increased for bulk operations)
 
     /**
