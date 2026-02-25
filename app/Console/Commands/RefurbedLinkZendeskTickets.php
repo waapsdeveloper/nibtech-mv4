@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Services\RefurbedZendeskTicketLinkService;
 use App\Console\Commands\BaseCommand;
+use Symfony\Component\Console\Command\Command;
 
 class RefurbedLinkZendeskTickets extends BaseCommand
 {
