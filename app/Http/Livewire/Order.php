@@ -1015,8 +1015,34 @@ class Order extends Component
                 $rma_total['total_quantity'] += $rma_quantity;
             }
 
+            // Build separate RMA summary from rows that have at least one RMA unit
+            $rma_stocks_2 = [];
+            foreach ($sold_stocks_2 as $row) {
+                if (($row['rma_quantity'] ?? 0) > 0) {
+                    $rma_row = [
+                        'pss_id'          => $row['pss_id'],
+                        'product_id'      => $row['product_id'],
+                        'storage'         => $row['storage'],
+                        'quantity'        => $row['rma_quantity'],
+                        'stock_ids'       => $row['stock_ids'],
+                        'average_cost'    => $row['average_cost'],
+                        'total_cost'      => $row['total_cost'],
+                        'total_price'     => $row['rma_price'],
+                        'total_charge'    => $row['rma_charge'],
+                        'total_repair'    => 0,
+                        'sold_quantity'   => $row['rma_quantity'],
+                        'profit'          => $row['rma_profit'],
+                        'average_price'   => $row['rma_quantity'] > 0 ? $row['rma_price'] / $row['rma_quantity'] : 'Issue',
+                        'average_charge'  => $row['rma_quantity'] > 0 ? $row['rma_charge'] / $row['rma_quantity'] : 'Issue',
+                        'average_profit'  => $row['rma_quantity'] > 0 ? $row['rma_profit'] / $row['rma_quantity'] : 'Issue',
+                    ];
+                    $rma_stocks_2[] = $rma_row;
+                }
+            }
+
             // dd($sold_stocks_2);
             $data['sold_stock_summary'] = $sold_stocks_2;
+            $data['rma_stock_summary'] = $rma_stocks_2;
             $data['sold_total'] = $sold_total;
             $data['rma_total'] = $rma_total;
 
