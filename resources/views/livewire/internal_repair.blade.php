@@ -105,7 +105,7 @@
 
         @if (isset($stock))
 
-        {{-- Parts used for this repair --}}
+        {{-- Parts used for this repair (from v2 parts-inventory repair records) --}}
         @if (session('user')->hasPermission('internal_repair'))
         <div class="row">
             <div class="col-xl-12">
@@ -119,54 +119,42 @@
                         </div>
                     </div>
                     <div class="card-body">
-                        <table class="table table-bordered table-hover mb-3">
+                        <table class="table table-bordered table-hover mb-0">
                             <thead>
                                 <tr>
                                     <th>Part</th>
                                     <th>Batch</th>
-                                    <th>Qty</th>
                                     <th>Unit cost</th>
-                                    <th>Total cost</th>
-                                    <th>Date</th>
+                                    <th>Reference ID</th>
+                                    <th>Repairer</th>
+                                    <th>Status</th>
+                                    <th>Assigned at</th>
+                                    <th>Repaired at</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @forelse ($part_usages ?? [] as $u)
+                                @forelse ($repair_assignments ?? [] as $a)
                                     <tr>
-                                        <td>{{ $u->part->name ?? '–' }}</td>
-                                        <td>{{ $u->batch->batch_number ?? '–' }}</td>
-                                        <td>{{ $u->qty }}</td>
-                                        <td>{{ number_format($u->unit_cost, 2) }}</td>
-                                        <td>{{ number_format($u->total_cost, 2) }}</td>
-                                        <td>{{ $u->created_at->format('Y-m-d H:i') }}</td>
+                                        <td>{{ $a->repairPart->name ?? '–' }}</td>
+                                        <td>{{ $a->partBatch ? $a->partBatch->batch_number : '–' }}</td>
+                                        <td>{{ $a->unit_cost !== null ? number_format($a->unit_cost, 2) : '–' }}</td>
+                                        <td>{{ $a->reference_id ?? '–' }}</td>
+                                        <td>{{ $a->customer ? ($a->customer->company ?: trim(($a->customer->first_name ?? '') . ' ' . ($a->customer->last_name ?? '')) ?: '–') : '–' }}</td>
+                                        <td>
+                                            @if ($a->repaired_at)
+                                                <span class="badge bg-secondary">Repaired</span>
+                                            @else
+                                                <span class="badge bg-success">Assigned</span>
+                                            @endif
+                                        </td>
+                                        <td>{{ $a->assigned_at ? $a->assigned_at->format('Y-m-d H:i') : '–' }}</td>
+                                        <td>{{ $a->repaired_at ? $a->repaired_at->format('Y-m-d H:i') : '–' }}</td>
                                     </tr>
                                 @empty
-                                    <tr><td colspan="6" class="text-muted">No parts used yet.</td></tr>
+                                    <tr><td colspan="8" class="text-muted">No repair parts recorded yet. Use <a href="{{ route('v2.parts-inventory.repair', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}">Submit repair</a> from Parts Inventory.</td></tr>
                                 @endforelse
                             </tbody>
                         </table>
-                        <form action="{{ url('repair/internal/add-part') }}" method="POST" class="form-inline flex-wrap align-items-end gap-2">
-                            @csrf
-                            <input type="hidden" name="stock_id" value="{{ $stock_id }}">
-                            <div class="form-floating mb-2">
-                                <select name="repair_part_id" class="form-control form-select" id="add_part_repair_part_id" required style="min-width: 200px;">
-                                    <option value="">Select part</option>
-                                    @foreach ($parts_for_dropdown ?? [] as $p)
-                                        <option value="{{ $p->id }}" data-unit-cost="{{ $p->unit_cost }}">{{ $p->name }} @if($p->sku)({{ $p->sku }})@endif – on hand: {{ $p->on_hand }}</option>
-                                    @endforeach
-                                </select>
-                                <label for="add_part_repair_part_id">Part</label>
-                            </div>
-                            <div class="form-floating mb-2">
-                                <input type="number" name="qty" class="form-control" value="1" min="1" required style="width: 80px;">
-                                <label for="">Qty</label>
-                            </div>
-                            <div class="form-floating mb-2">
-                                <input type="text" name="notes" class="form-control" placeholder="Notes" style="width: 150px;">
-                                <label for="">Notes</label>
-                            </div>
-                            <button type="submit" class="btn btn-primary mb-2">Add part</button>
-                        </form>
                     </div>
                 </div>
             </div>
@@ -388,8 +376,8 @@
                                                 <div class="dropdown">
                                                     <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end">
-                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-list me-2"></i>List purchases</a></li>
-                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchases.add', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-plus me-2"></i>Add purchase</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.repair-status', $stock->id) }}"><i class="fe fe-info me-2"></i>Repair status</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.repair', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-tool me-2"></i>Repair</a></li>
                                                     </ul>
                                                 </div>
                                             </td>
@@ -468,8 +456,8 @@
                                                 <div class="dropdown">
                                                     <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
                                                     <ul class="dropdown-menu dropdown-menu-end">
-                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-list me-2"></i>List purchases</a></li>
-                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchases.add', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-plus me-2"></i>Add purchase</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.repair-status', $stock->id) }}"><i class="fe fe-info me-2"></i>Repair status</a></li>
+                                                        <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.repair', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}"><i class="fe fe-tool me-2"></i>Repair</a></li>
                                                     </ul>
                                                 </div>
                                             </td>

@@ -11,8 +11,7 @@
                 <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/parts-inventory/dashboard') }}">Parts Inventory</a></li>
-                <li class="breadcrumb-item tx-15"><a href="{{ route('v2.parts-inventory.inventory') }}">Inventory</a></li>
-                <li class="breadcrumb-item tx-15"><a href="{{ route('v2.parts-inventory.part-batches-page', $part->id) }}">{{ $part->name }}</a></li>
+                <li class="breadcrumb-item tx-15"><a href="{{ route('v2.parts-inventory.inventory') }}">Batches</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Broken parts history</li>
             </ol>
         </div>
@@ -25,8 +24,7 @@
                     <div>
                         <p class="mb-0"><strong>Part:</strong> {{ $part->name }} @if($part->sku)<span class="text-muted">({{ $part->sku }})</span>@endif</p>
                         <p class="mb-0 mt-1">
-                            <a href="{{ route('v2.parts-inventory.part-batches-page', $part->id) }}" class="btn btn-sm btn-outline-secondary">← Back to Batches</a>
-                            <a href="{{ route('v2.parts-inventory.part-broken.add', $part->id) }}" class="btn btn-sm btn-primary ms-2">Add broken parts</a>
+                            <a href="{{ route('v2.parts-inventory.inventory') }}" class="btn btn-sm btn-outline-secondary">← Back to Batches</a>
                         </p>
                     </div>
                 </div>

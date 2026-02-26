@@ -47,7 +47,7 @@
                 <div class="card-body">
                     <h6 class="card-title text-muted mb-1">Total units on hand</h6>
                     <h3 class="mb-0 text-info">{{ number_format($totalOnHand ?? 0) }}</h3>
-                    <a href="{{ route('v2.parts-inventory.inventory') }}" class="btn btn-sm btn-outline-primary mt-2">Inventory</a>
+                    <a href="{{ route('v2.parts-inventory.inventory') }}" class="btn btn-sm btn-outline-primary mt-2">Batches</a>
                 </div>
             </div>
         </div>
@@ -67,7 +67,6 @@
             <div class="card">
                 <div class="card-header pb-0 d-flex justify-content-between align-items-center">
                     <h5 class="card-title mb-0">Recent part usage</h5>
-                    <a href="{{ route('v2.parts-inventory.usage') }}" class="btn btn-sm btn-secondary">All usage</a>
                 </div>
                 <div class="card-body">
                     @if (isset($recentUsages) && $recentUsages->count() > 0)

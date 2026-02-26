@@ -63,14 +63,14 @@
                 <div class="card-body">
                     <h5 class="card-title">Bulk import guide</h5>
 
-                    <p class="text-muted mb-3">Upload a CSV to create many batches in one go. Each row = one batch. Parts are identified by <strong>SKU</strong>: existing SKU → add batch to that part; new SKU → create the part then add the batch (no duplicate parts for the same SKU).</p>
+                    <p class="text-muted mb-3">Upload a CSV to create many batches in one go. Each row = one batch. <strong>Batch ref is system-generated</strong> (e.g. BR-YYYYMMDD-0001). Parts are identified by <strong>SKU</strong>: existing SKU → add batch to that part; new SKU → create the part (name required) then add the batch.</p>
 
                     <h6 class="mb-2">How it works</h6>
                     <ol class="small mb-3">
                         <li>First row of your CSV must be the header with the column names below.</li>
-                        <li>For each data row, the importer looks up a part by <code>sku</code>. If a part with that SKU exists in Part Catalog, that part is used. If not, a new part is created: <code>name</code> is required; <code>imei</code> is optional (if provided and found in <a href="{{ url('/inventory') }}" target="_blank">Inventory</a>, product is linked; if invalid or blank, the part is still created and a note is added to the batch — use <strong>Attach IMEI</strong> from the catalog list later if needed).</li>
-                        <li>Then a batch is created for that part with <code>batch_number</code>, <code>quantity_received</code>, <code>unit_cost</code>, and optional date/supplier/notes.</li>
-                        <li>Same SKU in multiple rows = same part, multiple batches (no duplicate part).</li>
+                        <li>For each data row, the importer looks up a part by <code>sku</code>. If a part with that SKU exists, that part is used. If not, a new part is created and <code>name</code> is required.</li>
+                        <li>A batch is created with a <strong>system-generated batch ref</strong>, plus quantity_received, unit_cost, and optional dates/supplier/notes.</li>
+                        <li>Same SKU in multiple rows = same part, multiple batches.</li>
                     </ol>
 
                     <h6 class="mb-2">CSV format (exact header names)</h6>
@@ -84,10 +84,8 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr><td><code>sku</code></td><td>Yes</td><td>Part SKU. Existing SKU = use that part; new SKU = create part (then name and imei required).</td></tr>
+                                <tr><td><code>sku</code></td><td>Yes</td><td>Part SKU. Existing SKU = use that part; new SKU = create part (then name required).</td></tr>
                                 <tr><td><code>name</code></td><td>When new part</td><td>Part name. Required only when SKU is not found (new part).</td></tr>
-                                <tr><td><code>imei</code></td><td>No (for new part: optional)</td><td>IMEI from your <a href="{{ url('/inventory') }}" target="_blank">Inventory</a>. When creating a new part, use to link product (device model); leave blank to attach IMEI later from Part Catalog → Actions → Attach IMEI.</td></tr>
-                                <tr><td><code>batch_number</code></td><td>Yes</td><td>Batch reference (e.g. BATCH-001).</td></tr>
                                 <tr><td><code>quantity_received</code></td><td>Yes</td><td>Quantity received in this batch.</td></tr>
                                 <tr><td><code>unit_cost</code></td><td>Yes</td><td>Cost per unit for this batch.</td></tr>
                                 <tr><td><code>received_at</code></td><td>No</td><td>Date received (Y-m-d or M/d/Y). Default: today.</td></tr>
@@ -100,11 +98,11 @@
 
                     <p class="mb-2"><strong>Downloads</strong></p>
                     <ul class="list-unstyled mb-2">
-                        <li><a href="{{ route('v2.parts-inventory.bulk-import.sample') }}" class="btn btn-outline-secondary btn-sm me-2 mb-1"><i class="fe fe-download"></i> Sample CSV</a> — Template with correct header and example rows (uses IMEI from inventory).</li>
-                        <li><a href="{{ route('v2.parts-inventory.bulk-import.parts-reference') }}" class="btn btn-outline-primary btn-sm me-2 mb-1"><i class="fe fe-download"></i> Parts reference (SKUs + example IMEI)</a> — Lists current parts and an example IMEI per product. Use an existing SKU to add batches, or a new SKU + name + imei to create a part.</li>
+                        <li><a href="{{ route('v2.parts-inventory.bulk-import.sample') }}" class="btn btn-outline-secondary btn-sm me-2 mb-1"><i class="fe fe-download"></i> Sample CSV</a> — Template with correct header and example rows.</li>
+                        <li><a href="{{ route('v2.parts-inventory.bulk-import.parts-reference') }}" class="btn btn-outline-primary btn-sm me-2 mb-1"><i class="fe fe-download"></i> Parts reference (SKUs)</a> — Lists current parts. Use an existing SKU to add batches, or a new SKU + name to create a part.</li>
                     </ul>
 
-                    <p class="mb-0"><a href="{{ url('/inventory') }}" class="btn btn-outline-secondary btn-sm me-1" target="_blank">Open Inventory</a> — IMEIs are taken from here. <a href="{{ route('v2.parts-inventory.catalog') }}" class="btn btn-primary btn-sm" target="_blank">Part Catalog</a></p>
+                    <p class="mb-0"><a href="{{ route('v2.parts-inventory.catalog') }}" class="btn btn-primary btn-sm" target="_blank">Part Catalog</a></p>
                 </div>
             </div>
         </div>

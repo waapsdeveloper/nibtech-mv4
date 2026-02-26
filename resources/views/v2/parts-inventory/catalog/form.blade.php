@@ -37,18 +37,7 @@
                         <div class="row g-3">
                             @if ($part->exists)
                                 <div class="col-md-12">
-                                    <p class="text-muted mb-1">Current product: <strong>{{ $part->product->model ?? '–' }}</strong></p>
-                                </div>
-                                <div class="col-md-6">
-                                    <label class="form-label">Change product (IMEI from inventory)</label>
-                                    <input type="text" name="imei" class="form-control" value="{{ old('imei') }}" placeholder="Enter IMEI to link to a different device model" maxlength="255">
-                                    <small class="form-text text-muted">Leave blank to keep current product. IMEI must exist in <a href="{{ url('/inventory') }}" target="_blank">Inventory</a>.</small>
-                                </div>
-                            @else
-                                <div class="col-md-6">
-                                    <label class="form-label">IMEI (from inventory)</label>
-                                    <input type="text" name="imei" class="form-control" value="{{ old('imei') }}" placeholder="e.g. from Inventory" maxlength="255">
-                                    <small class="form-text text-muted">Optional. Enter an IMEI from <a href="{{ url('/inventory') }}" target="_blank">Inventory</a> to link this part to a device model, or leave blank and use <strong>Attach IMEI</strong> from the catalog list later.</small>
+                                    <p class="text-muted mb-1">Current product: <strong>{{ $part->product->model ?? '–' }}</strong>. Use <strong>Attach IMEI</strong> from catalog Actions to change.</p>
                                 </div>
                             @endif
                             <div class="col-md-6">

@@ -132,6 +132,7 @@ class RepairPartService
             $batch = PartBatch::create([
                 'repair_part_id' => $partId,
                 'batch_number' => $batchNumber,
+                'name_label' => $attributes['name_label'] ?? null,
                 'quantity_received' => $quantityReceived,
                 'quantity_remaining' => $quantityReceived,
                 'quantity_purchased' => $quantityReceived,

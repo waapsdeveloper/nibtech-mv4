@@ -25,6 +25,7 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\RepairPart;
 use App\Models\RepairPartUsage;
+use App\Models\PartsRepairAssignment;
 use App\Services\Repair\RepairPartService;
 use Illuminate\Support\Facades\DB;
 
@@ -1445,9 +1446,12 @@ class Repair extends Component
                 $data['stocks'] = $stocks;
             }
 
-            $data['part_usages'] = RepairPartUsage::where('stock_id', $stock_id)->with(['part', 'batch'])->orderBy('id', 'desc')->get();
-            $data['repair_cost_parts'] = $data['part_usages']->sum('total_cost');
-            $data['parts_for_dropdown'] = RepairPart::active()->orderBy('name')->get();
+            // Repair records from v2 parts-inventory (Parts used for this repair)
+            $data['repair_assignments'] = PartsRepairAssignment::where('stock_id', $stock_id)
+                ->with(['repairPart', 'partBatch', 'customer'])
+                ->orderBy('assigned_at', 'desc')
+                ->get();
+            $data['repair_cost_parts'] = $data['repair_assignments']->sum('unit_cost');
         }
 
 
@@ -1456,6 +1460,7 @@ class Repair extends Component
         return view('livewire.internal_repair')->with($data);
 
     }
+
     public function add_internal_repair_item(){
         $repair = request('repair');
         $description = $repair['description'];

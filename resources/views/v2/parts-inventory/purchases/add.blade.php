@@ -11,7 +11,7 @@
                 <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/parts-inventory/dashboard') }}">Parts Inventory</a></li>
-                <li class="breadcrumb-item tx-15"><a href="{{ route('v2.parts-inventory.purchase-history') }}">Purchase History</a></li>
+                <li class="breadcrumb-item tx-15"><a href="{{ route('v2.parts-inventory.dashboard') }}">Parts Inventory</a></li>
                 <li class="breadcrumb-item active" aria-current="page">Add Purchase</li>
             </ol>
         </div>
@@ -47,7 +47,7 @@
                     <p class="text-muted small">Record a parts purchase in a batch. Each batch has a system-generated barcode (same for all items in the batch). You can optionally enter a manufacturer barcode. Price can be set now or left as lease (decide later).</p>
                     <form action="{{ route('v2.parts-inventory.purchases.store') }}" method="POST">
                         @csrf
-                        <input type="hidden" name="redirect_to" value="{{ route('v2.parts-inventory.purchase-history') }}">
+                        <input type="hidden" name="redirect_to" value="{{ route('v2.parts-inventory.dashboard') }}">
 
                         {{-- Batch: existing or new --}}
                         <div class="row g-3 mb-3">
@@ -124,7 +124,7 @@
                             </div>
                             <div class="col-12">
                                 <button type="submit" class="btn btn-primary">Save purchase</button>
-                                <a href="{{ route('v2.parts-inventory.purchase-history') }}" class="btn btn-secondary">Back to Purchase History</a>
+                                <a href="{{ route('v2.parts-inventory.dashboard') }}" class="btn btn-secondary">Back to Parts Inventory</a>
                             </div>
                         </div>
                     </form>

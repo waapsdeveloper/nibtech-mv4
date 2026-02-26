@@ -47,9 +47,7 @@
                     </tr>
                     <tr>
                         <td title="Parts used in repair jobs (Parts Inventory)">Parts used (repairs):</td>
-                        <td class="tx-right">
-                            <a href="{{ url('v2/parts-inventory/usage') }}" title="Parts Inventory usage history">{{ $partsUsedInRepairs }}</a>
-                        </td>
+                        <td class="tx-right">{{ $partsUsedInRepairs }}</td>
                     </tr>
                 </table>
             @endif

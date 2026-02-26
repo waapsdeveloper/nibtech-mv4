@@ -6,55 +6,10 @@ use App\Http\Controllers\Controller;
 use App\Models\PartsPurchase;
 use App\Models\PartsPurchaseBatch;
 use App\Models\RepairPart;
-use App\Models\Stock_model;
 use Illuminate\Http\Request;
 
 class PartsPurchaseController extends Controller
 {
-    /**
-     * Purchase history list with search. Filter by batch (system barcode / manufacturer barcode), part, date.
-     * Legacy: still supports stock_id filter for old IMEI-attached records.
-     */
-    public function purchaseHistory(Request $request)
-    {
-        $data['title_page'] = 'Parts Inventory – Purchase History';
-        session()->put('page_title', $data['title_page']);
-
-        $query = PartsPurchase::with(['repairPart', 'stock', 'batch', 'admin']);
-
-        if ($request->filled('system_barcode')) {
-            $barcode = trim($request->system_barcode);
-            $query->whereHas('batch', function ($q) use ($barcode) {
-                $q->where('system_barcode', 'like', '%' . $barcode . '%');
-            });
-        }
-        if ($request->filled('manufacturer_barcode')) {
-            $barcode = trim($request->manufacturer_barcode);
-            $query->whereHas('batch', function ($q) use ($barcode) {
-                $q->where('manufacturer_barcode', 'like', '%' . $barcode . '%');
-            });
-        }
-        if ($request->filled('stock_id')) {
-            $query->where('stock_id', $request->stock_id);
-        }
-        if ($request->filled('part_id')) {
-            $query->where('repair_part_id', $request->part_id);
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $purchases = $query->orderBy('created_at', 'desc')->paginate(25)->withQueryString();
-        $partsForFilter = RepairPart::active()->orderBy('name')->pluck('name', 'id');
-        $user = session('user');
-        $isAdmin = $user && (int) ($user->role_id ?? 0) === 1;
-
-        return view('v2.parts-inventory.purchase-history', compact('purchases', 'partsForFilter', 'isAdmin'))->with($data);
-    }
-
     /**
      * Add purchase form. Batch-based: new batch (system barcode auto, optional manufacturer barcode)
      * or add to existing batch by system barcode. Optional legacy: stock_id/imei for old flow.
@@ -133,7 +88,7 @@ class PartsPurchaseController extends Controller
             'admin_id' => session('user_id'),
         ]);
 
-        $redirectTo = $request->get('redirect_to', route('v2.parts-inventory.purchase-history'));
+        $redirectTo = $request->get('redirect_to', route('v2.parts-inventory.dashboard'));
         return redirect($redirectTo)->with('success', 'Parts purchase recorded.');
     }
 
@@ -161,14 +116,14 @@ class PartsPurchaseController extends Controller
     {
         $user = session('user');
         if (! $user || (int) ($user->role_id ?? 0) !== 1) {
-            return redirect()->route('v2.parts-inventory.purchase-history')
+            return redirect()->route('v2.parts-inventory.dashboard')
                 ->with('error', 'Only admins can delete purchase history.');
         }
 
         $purchase = PartsPurchase::findOrFail($id);
         $purchase->delete();
 
-        return redirect()->route('v2.parts-inventory.purchase-history')
+        return redirect()->route('v2.parts-inventory.dashboard')
             ->with('success', 'Purchase record deleted.');
     }
 }

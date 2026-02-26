@@ -62,4 +62,24 @@ class RepairPart extends Model
     {
         return $query->where('active', true);
     }
+
+    /**
+     * Generate a suggested system SKU for new parts (e.g. PART-20260219-0001).
+     * Used on batch-receive page when no barcode is scanned.
+     */
+    public static function generateSuggestedSku(): string
+    {
+        $prefix = 'PART-' . date('Ymd') . '-';
+        $last = static::withTrashed()
+            ->where('sku', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $seq = 1;
+        if ($last && preg_match('/' . preg_quote($prefix, '/') . '(\d+)$/', $last->sku, $m)) {
+            $seq = (int) $m[1] + 1;
+        }
+
+        return $prefix . str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
+    }
 }

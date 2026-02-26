@@ -15,6 +15,7 @@ class PartBatch extends Model
     protected $fillable = [
         'repair_part_id',
         'batch_number',
+        'name_label',
         'quantity_received',
         'quantity_remaining',
         'quantity_purchased',
@@ -53,5 +54,20 @@ class PartBatch extends Model
     public function scopeInStock($query)
     {
         return $query->where('quantity_remaining', '>', 0);
+    }
+
+    /**
+     * Generate a unique system batch reference. Format: BR-YYYYMMDD-NNNN (e.g. BR-20260219-0001).
+     */
+    public static function generateBatchNumber(): string
+    {
+        $prefix = 'BR-' . date('Ymd') . '-';
+        $last = static::where('batch_number', 'like', $prefix . '%')
+            ->orderBy('id', 'desc')
+            ->first();
+
+        $seq = $last ? (int) substr($last->batch_number, strlen($prefix)) + 1 : 1;
+
+        return $prefix . str_pad((string) $seq, 4, '0', STR_PAD_LEFT);
     }
 }

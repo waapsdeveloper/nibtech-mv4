@@ -4,17 +4,20 @@ namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
 use App\Models\Admin_model;
+use App\Models\Customer_model;
 use App\Models\PartBatch;
 use App\Models\PartBrokenRecord;
+use App\Models\PartsPurchase;
+use App\Models\PartsRepairAssignment;
 use App\Models\Process_model;
 use App\Models\Products_model;
 use App\Models\RepairPart;
-use App\Models\PartsRepairAssignment;
 use App\Models\RepairPartUsage;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
 use App\Services\Repair\RepairPartService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class PartsInventoryController extends Controller
 {
@@ -37,28 +40,162 @@ class PartsInventoryController extends Controller
         $data['title_page'] = 'Parts Inventory – Part Catalog';
         session()->put('page_title', $data['title_page']);
 
-        $query = RepairPart::with('product')->withCount('batches');
+        $query = RepairPart::withCount('batches');
 
         if ($request->filled('search')) {
             $q = $request->search;
             $query->where(function ($qry) use ($q) {
                 $qry->where('name', 'like', "%{$q}%")
-                    ->orWhere('sku', 'like', "%{$q}%")
-                    ->orWhere('compatible_device', 'like', "%{$q}%")
-                    ->orWhereHas('product', fn ($p) => $p->where('model', 'like', "%{$q}%"));
+                    ->orWhere('sku', 'like', "%{$q}%");
             });
         }
-        if ($request->filled('active')) {
-            if ($request->active === '1') {
-                $query->where('active', true);
-            } elseif ($request->active === '0') {
-                $query->where('active', false);
-            }
-        }
 
-        $parts = $query->orderBy('name')->paginate(20)->withQueryString();
+        // Order by latest batch received first (part with most recent batch on top); parts with no batches last
+        $query->orderByRaw('(SELECT MAX(COALESCE(received_at, created_at)) FROM part_batches WHERE part_batches.repair_part_id = repair_parts.id AND part_batches.deleted_at IS NULL) IS NULL ASC')
+            ->orderByRaw('(SELECT MAX(COALESCE(received_at, created_at)) FROM part_batches WHERE part_batches.repair_part_id = repair_parts.id AND part_batches.deleted_at IS NULL) DESC')
+            ->orderBy('name');
+
+        $parts = $query->paginate(20)->withQueryString();
 
         return view('v2.parts-inventory.catalog.index', compact('parts'))->with($data);
+    }
+
+    /**
+     * Delete a part (catalog line item) and all its parts-inventory related records:
+     * repair part usages, broken records, batches, parts purchases, parts repair assignments, then the part.
+     */
+    public function catalogDestroy($id)
+    {
+        $part = RepairPart::findOrFail($id);
+
+        DB::transaction(function () use ($part) {
+            // Usages (reference repair_part_id and batch_id)
+            RepairPartUsage::where('repair_part_id', $part->id)->forceDelete();
+            // Broken records (reference repair_part_id and part_batch_id)
+            PartBrokenRecord::where('repair_part_id', $part->id)->delete();
+            // Batches (reference repair_part_id) – force delete to remove from DB
+            PartBatch::where('repair_part_id', $part->id)->forceDelete();
+            // Parts purchases (reference repair_part_id)
+            PartsPurchase::where('repair_part_id', $part->id)->delete();
+            // Parts repair assignments (reference repair_part_id)
+            PartsRepairAssignment::where('repair_part_id', $part->id)->delete();
+            // Part itself (soft-delete model – force delete)
+            $part->forceDelete();
+        });
+
+        return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Part and all associated records deleted.');
+    }
+
+    /**
+     * Repair page (parts-inventory): show line item for stock identified by ?imei= (imei+serial concatenated).
+     * Linked from internal repair actions as "Repair".
+     */
+    public function repair(Request $request)
+    {
+        $data['title_page'] = 'Parts Inventory – Repair';
+        session()->put('page_title', $data['title_page']);
+
+        $imeiParam = $request->query('imei', '');
+        $stock = null;
+
+        if ($imeiParam !== '') {
+            $stock = Stock_model::with([
+                'variation.product',
+                'variation.storage_id',
+                'variation.color_id',
+                'variation.grade_id',
+                'order.customer',
+                'latest_operation',
+            ])->whereRaw('CONCAT(COALESCE(imei,""), COALESCE(serial_number,"")) = ?', [$imeiParam])->first();
+        }
+
+        $data['stock'] = $stock;
+        $data['imei_param'] = $imeiParam;
+        $data['parts'] = RepairPart::orderBy('name')->get(['id', 'name', 'sku']);
+
+        // Same as main Repair "Add Repair": next reference ID and repairers list (full list, no admin filter)
+        $data['latest_reference'] = Process_model::where('process_type_id', 9)->orderBy('reference_id', 'DESC')->first()->reference_id ?? 5998;
+        $data['next_reference'] = $data['latest_reference'] + 1;
+        $data['repairers'] = Customer_model::whereNotNull('is_vendor')->orderBy('company')->pluck('company', 'id');
+
+        return view('v2.parts-inventory.repair', $data);
+    }
+
+    /**
+     * Submit repair from v2/parts-inventory/repair form: creates/updates PartsRepairAssignment
+     * and redirects to items-to-repair.
+     */
+    public function repairSubmit(Request $request)
+    {
+        $request->validate([
+            'imei' => 'required|string|max:255',
+            'reference_id' => 'required|string|max:64',
+            'repairer_id' => 'required|exists:customer,id',
+            'repair_part_id' => 'required|exists:repair_parts,id',
+            'batch_id' => 'nullable|exists:part_batches,id',
+            'unit_cost' => 'nullable|numeric|min:0',
+        ]);
+
+        $imeiParam = trim($request->imei);
+        $stock = Stock_model::whereRaw('CONCAT(COALESCE(imei,""), COALESCE(serial_number,"")) = ?', [$imeiParam])->first();
+
+        if (! $stock) {
+            return redirect()->route('v2.parts-inventory.repair', ['imei' => $imeiParam])
+                ->withInput()
+                ->withErrors(['imei' => 'Stock not found for this IMEI.']);
+        }
+
+        $assignment = PartsRepairAssignment::where('stock_id', $stock->id)->whereNull('repaired_at')->first();
+
+        $data = [
+            'stock_id' => $stock->id,
+            'repair_part_id' => $request->repair_part_id,
+            'part_batch_id' => $request->filled('batch_id') ? $request->batch_id : null,
+            'unit_cost' => $request->filled('unit_cost') ? $request->unit_cost : null,
+            'reference_id' => $request->reference_id,
+            'customer_id' => $request->repairer_id,
+            'admin_id' => session('user_id'),
+        ];
+
+        if ($assignment) {
+            $assignment->update($data);
+        } else {
+            $data['assigned_at'] = now();
+            PartsRepairAssignment::create($data);
+        }
+
+        return redirect()->route('v2.parts-inventory.items-to-repair')
+            ->with('success', 'Repair submitted. Item recorded in Items to Repair.');
+    }
+
+    /**
+     * Show repair status for one stock (linked from Internal Repair line item action "Repair status").
+     */
+    public function repairStatus($id)
+    {
+        $stock = Stock_model::with(['variation.product', 'variation.grade_id', 'sale_order'])->findOrFail($id);
+        $assignments = PartsRepairAssignment::where('stock_id', $stock->id)
+            ->with(['repairPart', 'partBatch', 'customer'])
+            ->orderByDesc('assigned_at')
+            ->get();
+        $imei = ($stock->imei ?? '') . ($stock->serial_number ?? '');
+        $data['title_page'] = 'Repair status – ' . ($imei ?: 'Stock #' . $stock->id);
+        session()->put('page_title', $data['title_page']);
+        return view('v2.parts-inventory.repair-status', compact('stock', 'assignments', 'imei'))->with($data);
+    }
+
+    /**
+     * Batches for a part as JSON (for repair page batch dropdown).
+     */
+    public function partBatchesJson($id)
+    {
+        $part = RepairPart::findOrFail($id);
+        $batches = PartBatch::where('repair_part_id', $part->id)
+            ->orderBy('received_at', 'desc')
+            ->orderBy('id', 'desc')
+            ->get(['id', 'batch_number', 'unit_cost', 'quantity_remaining', 'received_at']);
+
+        return response()->json($batches);
     }
 
     /**
@@ -75,50 +212,6 @@ class PartsInventoryController extends Controller
         return $stock && $stock->variation ? (int) $stock->variation->product_id : null;
     }
 
-    public function catalogCreate()
-    {
-        $data['title_page'] = 'Parts Inventory – Add Part';
-        session()->put('page_title', $data['title_page']);
-        $part = new RepairPart;
-
-        return view('v2.parts-inventory.catalog.form', compact('part'))->with($data);
-    }
-
-    public function catalogStore(Request $request)
-    {
-        $request->validate([
-            'imei' => 'nullable|string|max:255',
-            'name' => 'required|string|max:255',
-            'sku' => 'nullable|string|max:255',
-            'compatible_device' => 'nullable|string|max:255',
-            'on_hand' => 'nullable|integer|min:0',
-            'reorder_level' => 'nullable|integer|min:0',
-            'unit_cost' => 'nullable|numeric|min:0',
-            'active' => 'nullable|boolean',
-        ]);
-
-        $productId = null;
-        if ($request->filled('imei')) {
-            $productId = $this->productIdFromImei($request->imei);
-            if (! $productId) {
-                return redirect()->back()->withInput()->withErrors(['imei' => 'IMEI not found in inventory. Use an IMEI from your stock (e.g. Inventory).']);
-            }
-        }
-
-        RepairPart::create([
-            'product_id' => $productId,
-            'name' => $request->name,
-            'sku' => $request->sku,
-            'compatible_device' => $request->compatible_device,
-            'on_hand' => (int) ($request->on_hand ?? 0),
-            'reorder_level' => (int) ($request->reorder_level ?? 0),
-            'unit_cost' => (float) ($request->unit_cost ?? 0),
-            'active' => $request->boolean('active', true),
-        ]);
-
-        return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Part added successfully.');
-    }
-
     public function catalogEdit($id)
     {
         $part = RepairPart::findOrFail($id);
@@ -133,7 +226,6 @@ class PartsInventoryController extends Controller
         $part = RepairPart::findOrFail($id);
 
         $request->validate([
-            'imei' => 'nullable|string|max:255',
             'name' => 'required|string|max:255',
             'sku' => 'nullable|string|max:255',
             'compatible_device' => 'nullable|string|max:255',
@@ -143,17 +235,7 @@ class PartsInventoryController extends Controller
             'active' => 'nullable|boolean',
         ]);
 
-        $productId = $part->product_id;
-        if ($request->filled('imei')) {
-            $resolved = $this->productIdFromImei($request->imei);
-            if (! $resolved) {
-                return redirect()->back()->withInput()->withErrors(['imei' => 'IMEI not found in inventory.']);
-            }
-            $productId = $resolved;
-        }
-
         $part->update([
-            'product_id' => $productId,
             'name' => $request->name,
             'sku' => $request->sku,
             'compatible_device' => $request->compatible_device,
@@ -202,69 +284,129 @@ class PartsInventoryController extends Controller
     {
         $data['title_page'] = 'Parts Inventory – Batch Receive';
         session()->put('page_title', $data['title_page']);
-        $parts = RepairPart::active()->orderBy('name')->get();
+        $suggestedSku = RepairPart::generateSuggestedSku();
 
-        return view('v2.parts-inventory.batch-receive', compact('parts'))->with($data);
+        return view('v2.parts-inventory.batch-receive', compact('suggestedSku'))->with($data);
     }
 
     public function batchReceiveStore(Request $request)
     {
         $request->validate([
-            'repair_part_id' => 'required|exists:repair_parts,id',
-            'batch_number' => 'required|string|max:255',
+            'sku' => 'required|string|max:255',
+            'name' => 'nullable|string|max:255',
             'quantity_received' => 'required|integer|min:1',
             'unit_cost' => 'required|numeric|min:0',
             'received_at' => 'nullable|date',
+            'purchase_date' => 'nullable|date',
             'supplier' => 'nullable|string|max:255',
-            'notes' => 'nullable|string',
+            'notes' => 'nullable|string|max:500',
         ]);
+
+        $sku = trim($request->sku);
+        $name = trim($request->name ?? '');
+        $part = RepairPart::where('sku', $sku)->first();
+
+        if (! $part) {
+            if ($name === '') {
+                return redirect()->back()->withInput()->withErrors(['name' => 'Part with this SKU not found. For new parts, name is required.']);
+            }
+            $part = RepairPart::create([
+                'sku' => $sku,
+                'name' => $name,
+                'product_id' => null,
+                'on_hand' => 0,
+                'reorder_level' => 0,
+                'unit_cost' => (float) $request->unit_cost,
+                'active' => true,
+            ]);
+        }
+
+        $batchNumber = PartBatch::generateBatchNumber();
+        $receivedAt = $request->received_at ?: now()->format('Y-m-d');
+        $purchaseDate = $request->purchase_date ?: $receivedAt;
 
         $service = app(RepairPartService::class);
         $service->receiveBatch(
-            (int) $request->repair_part_id,
-            $request->batch_number,
+            (int) $part->id,
+            $batchNumber,
             (int) $request->quantity_received,
             (float) $request->unit_cost,
             [
-                'received_at' => $request->received_at ?: now()->format('Y-m-d'),
-                'supplier' => $request->supplier,
-                'notes' => $request->notes,
+                'name_label' => $name !== '' ? $name : null,
+                'received_at' => $receivedAt,
+                'purchase_date' => $purchaseDate,
+                'supplier' => $request->filled('supplier') ? $request->supplier : null,
+                'notes' => $request->filled('notes') ? $request->notes : null,
             ]
         );
 
-        return redirect()->route('v2.parts-inventory.batch-receive')->with('success', 'Batch received successfully.');
+        return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Batch ' . $batchNumber . ' received successfully.');
     }
 
     public function inventory(Request $request)
     {
-        $data['title_page'] = 'Parts Inventory – Inventory';
+        $data['title_page'] = 'Parts Inventory – Batches';
         session()->put('page_title', $data['title_page']);
 
-        $query = RepairPart::with('product');
+        $query = PartBatch::with(['repairPart.product'])
+            ->inStock();
 
         if ($request->filled('search')) {
-            $q = $request->search;
+            $q = trim($request->search);
             $query->where(function ($qry) use ($q) {
-                $qry->where('name', 'like', "%{$q}%")
-                    ->orWhere('sku', 'like', "%{$q}%")
-                    ->orWhereHas('product', fn ($p) => $p->where('model', 'like', "%{$q}%"));
+                $qry->where('batch_number', 'like', "%{$q}%")
+                    ->orWhereHas('repairPart', function ($p) use ($q) {
+                        $p->where('name', 'like', "%{$q}%")
+                            ->orWhere('sku', 'like', "%{$q}%")
+                            ->orWhereHas('product', fn ($pr) => $pr->where('model', 'like', "%{$q}%"));
+                    });
             });
         }
         if ($request->filled('low_stock') && $request->low_stock === '1') {
-            $query->whereColumn('on_hand', '<=', 'reorder_level');
+            $query->whereExists(function ($q) {
+                $q->select(\Illuminate\Support\Facades\DB::raw(1))
+                    ->from('repair_parts')
+                    ->whereColumn('repair_parts.id', 'part_batches.repair_part_id')
+                    ->whereColumn('part_batches.quantity_remaining', '<=', 'repair_parts.reorder_level');
+            });
         }
 
-        if ($request->filled('recent_purchases_first') && $request->recent_purchases_first === '1') {
-            $query->withMax('partsPurchases', 'created_at')
-                ->orderByDesc('parts_purchases_max_created_at')
-                ->orderBy('name');
-        } else {
-            $query->orderBy('name');
-        }
+        $batches = $query->orderByDesc('received_at')->orderByDesc('id')->paginate(25)->withQueryString();
 
-        $parts = $query->paginate(20)->withQueryString();
+        return view('v2.parts-inventory.inventory', compact('batches'))->with($data);
+    }
 
-        return view('v2.parts-inventory.inventory', compact('parts'))->with($data);
+    /**
+     * Edit a batch (batch number, quantity remaining, unit cost, received at, notes).
+     */
+    public function batchEdit($id)
+    {
+        $batch = PartBatch::with('repairPart.product')->findOrFail($id);
+        $data['title_page'] = 'Edit batch – ' . ($batch->batch_number ?? '#' . $batch->id);
+        session()->put('page_title', $data['title_page']);
+        return view('v2.parts-inventory.batch-edit', compact('batch'))->with($data);
+    }
+
+    /**
+     * Update batch record.
+     */
+    public function batchUpdate(Request $request, $id)
+    {
+        $batch = PartBatch::findOrFail($id);
+        $request->validate([
+            'batch_number' => 'required|string|max:64',
+            'quantity_remaining' => 'required|integer|min:0',
+            'unit_cost' => 'nullable|numeric|min:0',
+            'received_at' => 'nullable|date',
+            'notes' => 'nullable|string|max:1000',
+        ]);
+        $batch->batch_number = $request->batch_number;
+        $batch->quantity_remaining = (int) $request->quantity_remaining;
+        $batch->unit_cost = $request->filled('unit_cost') ? (float) $request->unit_cost : null;
+        $batch->received_at = $request->filled('received_at') ? $request->received_at : $batch->received_at;
+        $batch->notes = $request->filled('notes') ? $request->notes : null;
+        $batch->save();
+        return redirect()->route('v2.parts-inventory.inventory')->with('success', 'Batch updated.');
     }
 
     /**
@@ -305,36 +447,6 @@ class PartsInventoryController extends Controller
     }
 
     /**
-     * Full-page batches list for a part with filters.
-     */
-    public function partBatchesPage(Request $request, $id)
-    {
-        $part = RepairPart::with('product')->findOrFail($id);
-        $data['title_page'] = 'Batches – ' . $part->name;
-        session()->put('page_title', $data['title_page']);
-
-        $query = PartBatch::where('repair_part_id', $part->id);
-
-        if ($request->filled('in_stock') && $request->in_stock === '1') {
-            $query->inStock();
-        }
-        if ($request->filled('batch_number')) {
-            $q = $request->batch_number;
-            $query->where('batch_number', 'like', '%' . $q . '%');
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('received_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('received_at', '<=', $request->date_to);
-        }
-
-        $batches = $query->orderBy('received_at', 'desc')->orderBy('id', 'desc')->paginate(25)->withQueryString();
-
-        return view('v2.parts-inventory.part-batches', compact('part', 'batches'))->with($data);
-    }
-
-    /**
      * Broken parts history for a part.
      */
     public function brokenHistory(Request $request, $id)
@@ -362,106 +474,48 @@ class PartsInventoryController extends Controller
     }
 
     /**
-     * Show form to add broken parts for a part (optional: pre-select batch).
-     */
-    public function brokenAdd(Request $request, $id)
-    {
-        $part = RepairPart::with('product')->findOrFail($id);
-        $batch = null;
-        if ($request->filled('batch_id')) {
-            $batch = PartBatch::where('repair_part_id', $part->id)->find($request->batch_id);
-        }
-        $batchesForDropdown = $part->batches()->orderBy('received_at', 'desc')->orderBy('id', 'desc')->get(['id', 'batch_number', 'quantity_remaining', 'received_at']);
-        $data['title_page'] = 'Add broken parts – ' . $part->name;
-        session()->put('page_title', $data['title_page']);
-        return view('v2.parts-inventory.part-broken-add', compact('part', 'batch', 'batchesForDropdown'))->with($data);
-    }
-
-    /**
-     * Store broken parts record. If batch_id provided, decrement batch quantity_remaining.
-     */
-    public function brokenStore(Request $request, $id)
-    {
-        $part = RepairPart::findOrFail($id);
-        $request->validate([
-            'quantity' => 'required|integer|min:1',
-            'notes' => 'nullable|string|max:1000',
-            'responsible_person' => 'nullable|string|max:255',
-            'part_batch_id' => 'nullable|exists:part_batches,id',
-        ]);
-        $batchId = $request->part_batch_id ? (int) $request->part_batch_id : null;
-        if ($batchId) {
-            $batch = PartBatch::where('repair_part_id', $part->id)->find($batchId);
-            if (!$batch) {
-                return redirect()->back()->withInput()->with('error', 'Invalid batch for this part.');
-            }
-        }
-        $quantity = (int) $request->quantity;
-        PartBrokenRecord::create([
-            'repair_part_id' => $part->id,
-            'part_batch_id' => $batchId,
-            'quantity' => $quantity,
-            'notes' => $request->notes,
-            'responsible_person' => $request->filled('responsible_person') ? $request->responsible_person : null,
-            'admin_id' => auth()->id(),
-        ]);
-        if ($batchId && isset($batch)) {
-            $batch->decrement('quantity_remaining', min($quantity, $batch->quantity_remaining));
-        }
-        $backUrl = route('v2.parts-inventory.part-batches-page', $part->id);
-        return redirect($backUrl)->with('success', 'Broken parts recorded.');
-    }
-
-    /**
-     * List stock/items that are "to be repaired" (aftersale status 2, grade Repair/Hold etc.).
-     * Same pool as dashboard Aftersale Inventory – Repair/Hold grades.
+     * List only repair records submitted via v2/parts-inventory/repair (one row per parts_repair_assignment).
+     * Relation: each record links to stock (the internal repair line item). Not a duplicate of internal repair stock list.
      */
     public function itemsToRepair(Request $request)
     {
         $data['title_page'] = 'Parts Inventory – Items to Repair';
         session()->put('page_title', $data['title_page']);
 
-        $query = Stock_model::with(['variation.product', 'sale_order'])
-            ->where('stock.status', 2)
-            ->whereDoesntHave('sale_order', function ($q) {
-                $q->where('customer_id', 3955);
-            })
-            ->whereHas('sale_order', function ($q) {
-                $q->where('order_type_id', 3)->orWhere('reference_id', 999);
-            })
-            ->whereHas('variation');
+        $query = PartsRepairAssignment::with([
+            'stock.variation.product',
+            'stock.sale_order',
+            'repairPart',
+            'partBatch',
+            'customer',
+        ])->orderByDesc('assigned_at');
 
-        $grades = [8, 12, 17]; // 8 = Repair, 12 = Hold, 17 = other aftersale
-        if ($request->filled('grade')) {
-            $grades = array_map('intval', (array) $request->grade);
-            $query->whereHas('variation', fn ($q) => $q->whereIn('grade', $grades));
-        } else {
-            $query->whereHas('variation', fn ($q) => $q->whereIn('grade', $grades));
+        if ($request->filled('status')) {
+            if ($request->status === 'assigned') {
+                $query->whereNull('repaired_at');
+            } elseif ($request->status === 'repaired') {
+                $query->whereNotNull('repaired_at');
+            }
         }
-
         if ($request->filled('imei')) {
             $imei = trim($request->imei);
-            $query->where(function ($q) use ($imei) {
+            $query->whereHas('stock', function ($q) use ($imei) {
                 $q->where('imei', 'like', '%' . $imei . '%')
                     ->orWhere('serial_number', 'like', '%' . $imei . '%');
             });
         }
+        if ($request->filled('reference_id')) {
+            $query->where('reference_id', 'like', '%' . trim($request->reference_id) . '%');
+        }
 
-        $items = $query->orderBy('stock.id', 'desc')->paginate(25)->withQueryString();
+        $assignments = $query->paginate(25)->withQueryString();
 
         $gradeNames = \Illuminate\Support\Facades\DB::table('grade')->whereIn('id', [8, 12, 17])->pluck('name', 'id')->toArray();
         if (empty($gradeNames)) {
             $gradeNames = [8 => 'Repair', 12 => 'Hold', 17 => 'Other'];
         }
 
-        $stockIds = $items->pluck('id')->toArray();
-        $assignmentsByStock = PartsRepairAssignment::whereIn('stock_id', $stockIds)
-            ->whereNull('repaired_at')
-            ->with('repairPart')
-            ->get()
-            ->keyBy('stock_id');
-
-        return view('v2.parts-inventory.items-to-repair', compact('items', 'gradeNames', 'assignmentsByStock'))->with($data);
+        return view('v2.parts-inventory.items-to-repair', compact('assignments', 'gradeNames'))->with($data);
     }
 
     /**
@@ -520,153 +574,6 @@ class PartsInventoryController extends Controller
         return redirect()->back()->with('success', 'Item marked as repaired (moved to available).');
     }
 
-    public function usage(Request $request)
-    {
-        $data['title_page'] = 'Parts Inventory – Usage History';
-        session()->put('page_title', $data['title_page']);
-
-        $query = RepairPartUsage::with(['part.product', 'batch', 'stock.variation.product', 'process', 'technician']);
-
-        if ($request->filled('part_id')) {
-            $query->where('repair_part_id', $request->part_id);
-        }
-        if ($request->filled('imei')) {
-            $imei = trim($request->imei);
-            $query->whereHas('stock', function ($q) use ($imei) {
-                $q->where('imei', 'like', '%' . $imei . '%')
-                    ->orWhere('serial_number', 'like', '%' . $imei . '%');
-            });
-        }
-        if ($request->filled('date_from')) {
-            $query->whereDate('created_at', '>=', $request->date_from);
-        }
-        if ($request->filled('date_to')) {
-            $query->whereDate('created_at', '<=', $request->date_to);
-        }
-
-        $usages = $query->latest()->paginate(25)->withQueryString();
-        $partsForFilter = RepairPart::active()->orderBy('name')->pluck('name', 'id');
-        $partsForRecord = RepairPart::active()->orderBy('name')->get();
-        $processes = Process_model::orderBy('id', 'desc')->limit(300)->pluck('reference_id', 'id');
-        $technicians = Admin_model::orderBy('first_name')->get()->mapWithKeys(function ($a) {
-            $name = trim(($a->first_name ?? '') . ' ' . ($a->last_name ?? '')) ?: ('ID ' . $a->id);
-            return [$a->id => $name];
-        });
-
-        return view('v2.parts-inventory.usage', compact('usages', 'partsForFilter', 'partsForRecord', 'processes', 'technicians'))->with($data);
-    }
-
-    /**
-     * Get one usage record (JSON) for detail modal.
-     */
-    public function usageDetail($id)
-    {
-        $u = RepairPartUsage::with(['part.product', 'batch', 'stock', 'process', 'technician'])->findOrFail($id);
-        $imei = $u->stock ? ($u->stock->imei ?? $u->stock->serial_number ?? '') : '';
-        return response()->json([
-            'id' => $u->id,
-            'created_at' => $u->created_at->format('Y-m-d H:i'),
-            'part' => $u->part ? $u->part->name : '–',
-            'part_sku' => $u->part->sku ?? '',
-            'batch' => $u->batch ? $u->batch->batch_number : '–',
-            'qty' => $u->qty,
-            'unit_cost' => $u->unit_cost,
-            'total_cost' => $u->total_cost,
-            'imei' => $imei,
-            'notes' => $u->notes ?? '',
-            'process_id' => $u->process_id,
-            'process' => $u->process ? ($u->process->reference_id ?? '#' . $u->process_id) : '–',
-            'technician_id' => $u->technician_id,
-            'technician' => $u->technician ? trim(($u->technician->first_name ?? '') . ' ' . ($u->technician->last_name ?? '')) : '–',
-        ]);
-    }
-
-    /**
-     * Update usage record (IMEI/stock, process, technician, notes).
-     */
-    public function usageUpdate(Request $request, $id)
-    {
-        $usage = RepairPartUsage::findOrFail($id);
-        $request->validate([
-            'imei' => 'nullable|string|max:255',
-            'process_id' => 'nullable|exists:process,id',
-            'technician_id' => 'nullable|exists:admin,id',
-            'notes' => 'nullable|string|max:500',
-        ]);
-
-        if ($request->filled('imei')) {
-            $imei = trim($request->imei);
-            $stock = Stock_model::where('imei', $imei)->orWhere('serial_number', $imei)->first();
-            if (! $stock) {
-                return redirect()->route('v2.parts-inventory.usage')
-                    ->with('error', 'Stock not found for IMEI/serial: ' . e($imei));
-            }
-            $usage->stock_id = $stock->id;
-        }
-        $usage->process_id = $request->filled('process_id') ? $request->process_id : null;
-        $usage->technician_id = $request->filled('technician_id') ? $request->technician_id : null;
-        $usage->notes = $request->filled('notes') ? $request->notes : null;
-        $usage->save();
-
-        return redirect()->route('v2.parts-inventory.usage')->with('success', 'Usage record updated.');
-    }
-
-    /**
-     * Delete (soft delete) a usage record.
-     */
-    public function usageDelete($id)
-    {
-        $usage = RepairPartUsage::findOrFail($id);
-        $usage->delete();
-        return redirect()->route('v2.parts-inventory.usage')->with('success', 'Usage record deleted.');
-    }
-
-    /**
-     * Record part usage: part used to fix a stock item (e.g. faulty battery on a phone).
-     */
-    public function usageStore(Request $request)
-    {
-        $request->validate([
-            'imei' => 'required|string|max:255',
-            'repair_part_id' => 'required|exists:repair_parts,id',
-            'qty' => 'required|integer|min:1',
-            'notes' => 'nullable|string|max:500',
-        ]);
-
-        $imei = trim($request->imei);
-        $stock = Stock_model::where('imei', $imei)
-            ->orWhere('serial_number', $imei)
-            ->first();
-
-        if (! $stock) {
-            return redirect()->route('v2.parts-inventory.usage')
-                ->with('error', 'Stock item not found for IMEI/serial: ' . e($imei) . '. Use an IMEI or serial from your Inventory.')
-                ->with('open_record_usage_modal', true)
-                ->withInput();
-        }
-
-        $service = app(RepairPartService::class);
-        try {
-            $service->consumePart(
-                (int) $request->repair_part_id,
-                (int) $request->qty,
-                [
-                    'stock_id' => $stock->id,
-                    'technician_id' => auth()->id(),
-                    'notes' => $request->filled('notes') ? $request->notes : null,
-                ]
-            );
-        } catch (\InvalidArgumentException $e) {
-            return redirect()->route('v2.parts-inventory.usage')
-                ->with('error', $e->getMessage())
-                ->with('open_record_usage_modal', true)
-                ->withInput();
-        }
-
-        return redirect()->route('v2.parts-inventory.usage')
-            ->with('success', 'Part usage recorded. Stock item (IMEI ' . e($imei) . ') linked to this part.');
-    }
-
     /**
      * Show bulk import form (CSV upload for multiple batches).
      */
@@ -701,7 +608,7 @@ class PartsInventoryController extends Controller
         $header = array_map(function ($c) {
             return trim(strtolower($c));
         }, $header);
-        $expected = ['sku', 'name', 'imei', 'batch_number', 'quantity_received', 'unit_cost', 'received_at', 'purchase_date', 'supplier', 'notes'];
+        $expected = ['sku', 'name', 'quantity_received', 'unit_cost', 'received_at', 'purchase_date', 'supplier', 'notes'];
         $colIndex = [];
         foreach ($expected as $i => $col) {
             $idx = array_search($col, $header);
@@ -719,8 +626,6 @@ class PartsInventoryController extends Controller
             }
             $sku = trim($row[$colIndex['sku']] ?? '');
             $name = trim($row[$colIndex['name']] ?? '');
-            $imei = trim($row[$colIndex['imei']] ?? '');
-            $batchNumber = trim($row[$colIndex['batch_number']] ?? '');
             $qty = (int) ($row[$colIndex['quantity_received']] ?? 0);
             $unitCost = (float) ($row[$colIndex['unit_cost']] ?? 0);
             $receivedAt = trim($row[$colIndex['received_at']] ?? '');
@@ -732,29 +637,21 @@ class PartsInventoryController extends Controller
                 $errors[] = "Row {$rowNum}: sku is required.";
                 continue;
             }
-            if (! $batchNumber || $qty < 1) {
-                $errors[] = "Row {$rowNum}: batch_number and quantity_received required.";
+            if ($qty < 1) {
+                $errors[] = "Row {$rowNum}: quantity_received required (min 1).";
                 continue;
             }
 
-            $invalidImeiNote = '';
             $part = RepairPart::where('sku', $sku)->first();
             if (! $part) {
                 if ($name === '') {
-                    $errors[] = "Row {$rowNum}: part with sku \"{$sku}\" not found. For new parts, name is required (imei optional; attach later from catalog).";
+                    $errors[] = "Row {$rowNum}: part with sku \"{$sku}\" not found. For new parts, name is required.";
                     continue;
-                }
-                $productId = null;
-                if ($imei !== '') {
-                    $productId = $this->productIdFromImei($imei);
-                    if (! $productId) {
-                        $invalidImeiNote = ' [IMEI ' . $imei . ' not found in inventory; attach from catalog if needed.]';
-                    }
                 }
                 $part = RepairPart::create([
                     'sku' => $sku,
                     'name' => $name,
-                    'product_id' => $productId,
+                    'product_id' => null,
                     'on_hand' => 0,
                     'reorder_level' => 0,
                     'unit_cost' => $unitCost ?: 0,
@@ -762,18 +659,16 @@ class PartsInventoryController extends Controller
                 ]);
             }
 
-            $batchNotes = $notes;
-            if ($invalidImeiNote !== '') {
-                $batchNotes = trim($batchNotes . $invalidImeiNote);
-            }
+            $batchNumber = PartBatch::generateBatchNumber();
             $receivedAtValue = $receivedAt ?: now()->format('Y-m-d');
             $purchaseDateValue = $purchaseDate ?: $receivedAtValue;
             try {
                 $service->receiveBatch($part->id, $batchNumber, $qty, $unitCost ?: 0, [
+                    'name_label' => $name !== '' ? $name : null,
                     'received_at' => $receivedAtValue,
                     'purchase_date' => $purchaseDateValue,
                     'supplier' => $supplier ?: null,
-                    'notes' => $batchNotes ?: null,
+                    'notes' => $notes ?: null,
                 ]);
                 $created++;
             } catch (\Throwable $e) {
@@ -797,39 +692,16 @@ class PartsInventoryController extends Controller
     }
 
     /**
-     * Download sample CSV for bulk import. Uses imei (from inventory); product is resolved from stock by IMEI.
+     * Download sample CSV for bulk import. Batch ref is system-generated on import (not in CSV).
      */
     public function bulkImportSample()
     {
         $today = date('Y-m-d');
-        $stocksWithImei = Stock_model::with('variation')
-            ->whereNotNull('imei')
-            ->where('imei', '!=', '')
-            ->limit(3)
-            ->get();
-        $exampleImeis = $stocksWithImei->pluck('imei')->filter()->values()->all();
-        $imei1 = $exampleImeis[0] ?? 'REPLACE_WITH_IMEI_FROM_INVENTORY';
-        $imei2 = $exampleImeis[1] ?? $imei1;
-        $imei3 = $exampleImeis[2] ?? $imei1;
 
-        $csv = "sku,name,imei,batch_number,quantity_received,unit_cost,received_at,purchase_date,supplier,notes\n";
-        $csv .= sprintf(
-            "SCR-001,Screen Assembly XYZ,%s,BATCH-001,100,5.50,%s,%s,Supplier A,First batch\n",
-            $imei1,
-            $today,
-            $today
-        );
-        $csv .= sprintf(
-            "BATT-002,Battery 3000mAh,%s,BATCH-002,50,12.00,%s,,Supplier B,Leave purchase_date blank = use received_at\n",
-            $imei2,
-            $today
-        );
-        $csv .= sprintf(
-            "SCR-001,Screen Assembly XYZ,%s,BATCH-003,25,5.25,%s,%s,Supplier A,Same SKU = same part\n",
-            $imei3,
-            $today,
-            $today
-        );
+        $csv = "sku,name,quantity_received,unit_cost,received_at,purchase_date,supplier,notes\n";
+        $csv .= "SCR-001,Screen Assembly XYZ,100,5.50,{$today},{$today},Supplier A,First batch\n";
+        $csv .= "BATT-002,Battery 3000mAh,50,12.00,{$today},,Supplier B,Leave purchase_date blank = use received_at\n";
+        $csv .= "SCR-001,Screen Assembly XYZ,25,5.25,{$today},{$today},Supplier A,Same SKU = same part\n";
 
         return response()->streamDownload(function () use ($csv) {
             echo $csv;
@@ -839,26 +711,19 @@ class PartsInventoryController extends Controller
     }
 
     /**
-     * Download CSV listing parts with SKU and example IMEI (from inventory) for that product.
+     * Download CSV listing parts with SKU for reference when building import file.
      */
     public function bulkImportPartsReference()
     {
         $parts = RepairPart::with('product')->orderBy('id')->get();
-        $imeiByProductId = Stock_model::with('variation')
-            ->whereNotNull('imei')
-            ->get()
-            ->filter(fn ($s) => $s->variation)
-            ->groupBy(fn ($s) => $s->variation->product_id)
-            ->map(fn ($stocks) => $stocks->first()->imei ?? '');
 
-        $csv = "sku,name,product_id,product,example_imei,compatible_device\n";
+        $csv = "sku,name,product_id,product,compatible_device\n";
         foreach ($parts as $p) {
             $name = str_replace(["\r", "\n", '"'], [' ', ' ', '""'], $p->name);
             $sku = str_replace(["\r", "\n", '"'], [' ', ' ', '""'], $p->sku ?? '');
             $product = $p->product ? str_replace(["\r", "\n", '"'], [' ', ' ', '""'], $p->product->model ?? '') : '';
             $compat = str_replace(["\r", "\n", '"'], [' ', ' ', '""'], $p->compatible_device ?? '');
-            $exampleImei = str_replace(["\r", "\n", '"'], [' ', ' ', '""'], $imeiByProductId->get($p->product_id, ''));
-            $csv .= '"' . $sku . '","' . $name . '",' . $p->product_id . ',"' . $product . '","' . $exampleImei . '","' . $compat . "\"\n";
+            $csv .= '"' . $sku . '","' . $name . '",' . $p->product_id . ',"' . $product . '","' . $compat . "\"\n";
         }
 
         return response()->streamDownload(function () use ($csv) {

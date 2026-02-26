@@ -374,7 +374,7 @@
                                             <td>{{ $pp->is_lease ? 'Yes' : 'No' }}</td>
                                             <td>{{ $pp->notes ?? '–' }}</td>
                                             <td>{{ $pp->admin ? trim(($pp->admin->first_name ?? '') . ' ' . ($pp->admin->last_name ?? '')) : '–' }}</td>
-                                            <td><a href="{{ route('v2.parts-inventory.purchase-history', ['imei' => ($stock->imei ?? '') . ($stock->serial_number ?? '')]) }}" class="btn btn-sm btn-link">View all</a></td>
+                                            <td><a href="{{ url('v2/parts-inventory/dashboard') }}" class="btn btn-sm btn-link">Parts Inventory</a></td>
                                         </tr>
                                     @empty
                                         <tr><td colspan="9" class="text-muted text-center">No parts purchases for this IMEI yet.</td></tr>

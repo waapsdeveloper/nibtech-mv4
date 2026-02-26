@@ -49,16 +49,10 @@
                                                     <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/catalog')}}">Part Catalog</a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/inventory')}}">Inventory</a>
-                                                </li>
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/usage')}}">Usage History</a>
+                                                    <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/inventory')}}">Batches</a>
                                                 </li>
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{url('v2/parts-inventory/items-to-repair')}}">Items to Repair</a>
-                                                </li>
-                                                <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{ route('v2.parts-inventory.purchase-history') }}">Purchase History</a>
                                                 </li>
                                             </ul>
                                         </li>
