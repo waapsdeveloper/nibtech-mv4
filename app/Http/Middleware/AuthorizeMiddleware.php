@@ -8,8 +8,8 @@ use App\Models\Admin_model;
 use App\Models\Grade_model;
 use App\Models\Ip_address_model;
 use App\Models\PermissionRequest;
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Arr;
 
 class AuthorizeMiddleware
 {
@@ -26,7 +26,7 @@ class AuthorizeMiddleware
             if($user->status == 0){
                 // Log the unauthorized access attempt
                 Log::info('Unauthorized Login attempt by blocked user '.$user->first_name.' to '.$currentRoute);
-                abort(403, 'Account Blocked - Quote of the day: '.Inspiring::quote());
+                abort(403, 'Account blocked. Please contact support.');
             }
 
             session()->put('user',$user);
@@ -62,6 +62,9 @@ class AuthorizeMiddleware
             return response()->view('errors.permission-request', [
                 'permission' => $currentRoute,
                 'alreadyRequested' => $pending,
+                'action_url' => $request->fullUrl(),
+                'action_method' => $request->method(),
+                'action_payload' => json_encode(Arr::except($request->all(), ['_token']), JSON_UNESCAPED_SLASHES),
             ], 403);
         }
         // Remove the 'page' session variable

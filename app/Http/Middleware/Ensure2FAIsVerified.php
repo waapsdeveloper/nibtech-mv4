@@ -11,17 +11,30 @@ class Ensure2FAIsVerified
 {
     public function handle($request, Closure $next)
     {
-
         $admin = session('user');
 
-        if ($admin->is_2fa_enabled && !$request->session()->has('2fa_verified')) {
+        if (!$admin) {
+            return redirect('signin');
+        }
+
+        // Skip 2FA when disabled (is_2fa_enabled = 0)
+        if (!$admin->is_2fa_enabled) {
+            return $next($request);
+        }
+
+        // Require 2FA when enabled: must have secret and be verified
+        if (!$admin->google2fa_secret) {
+            return redirect()->route('admin.2fa');
+        }
+
+        if (!$request->session()->has('2fa_verified')) {
             $ip = $request->ip();
-            $ip_address = Ip_address_model::where('ip',$ip)->where('status',1)->first();
-            if($ip_address == null || $admin->two_factor_confirmed_at < now()->startOfDay()){
+            $ip_address = Ip_address_model::where('ip', $ip)->where('status', 1)->first();
+            if ($ip_address == null || !$admin->two_factor_confirmed_at || $admin->two_factor_confirmed_at < now()->startOfDay()) {
                 return redirect()->route('admin.2fa');
-            }else{
-                $request->session()->put('2fa_verified', true);
             }
+
+            $request->session()->put('2fa_verified', true);
         }
 
         return $next($request);

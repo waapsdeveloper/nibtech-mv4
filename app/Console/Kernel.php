@@ -4,6 +4,7 @@ namespace App\Console;
 
 use App\Console\Commands\BMProSyncOrders;
 use App\Console\Commands\SupportSyncCommand;
+use App\Models\Marketplace_model;
 use App\Jobs\ExecuteArtisanCommandJob;
 use Illuminate\Console\Scheduling\Schedule;
 use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
@@ -60,22 +61,24 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refurbed:new')
-            ->cron('4,9,14,19,24,29,34,39,44,49,54,59 * * * *') // every 5 min at :04, :09, …
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        if ($this->hasRefurbedMarketplace()) {
+            $schedule->command('refurbed:new')
+                ->cron('4,9,14,19,24,29,34,39,44,49,54,59 * * * *') // every 5 min at :04, :09, …
+                ->withoutOverlapping()
+                ->onOneServer()
+                ->runInBackground();
 
-        $schedule->command('refurbed:orders')
-            ->hourly()
-            ->withoutOverlapping()
-            ->onOneServer();
+            $schedule->command('refurbed:orders')
+                ->hourly()
+                ->withoutOverlapping()
+                ->onOneServer();
 
-        $schedule->command('refurbed:link-tickets')
-            ->cron('5,15,25,35,45,55 * * * *') // ~every 10 min at :05, :15, …
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+            $schedule->command('refurbed:link-tickets')
+                ->cron('5,15,25,35,45,55 * * * *') // ~every 10 min at :05, :15, …
+                ->withoutOverlapping()
+                ->onOneServer()
+                ->runInBackground();
+        }
         // $schedule->command('refurbed:update-stock')
         //     ->everyThirtyMinutes()
         //     ->withoutOverlapping()
@@ -150,12 +153,14 @@ class Kernel extends ConsoleKernel
         //     ->onOneServer()
         //     ->runInBackground();
 
-        $schedule->command('v2:marketplace:sync-stock --marketplace=4')
-            ->everySixHours()
-            ->at('03:00') // Refurbed at 3 AM (staggered)
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        if ($this->hasRefurbedMarketplace()) {
+            $schedule->command('v2:marketplace:sync-stock --marketplace=4')
+                ->everySixHours()
+                ->at('03:00') // Refurbed at 3 AM (staggered)
+                ->withoutOverlapping()
+                ->onOneServer()
+                ->runInBackground();
+        }
 
         // Sync all other marketplaces every 6 hours starting at 6 AM
         $schedule->command('v2:marketplace:sync-stock')
@@ -211,5 +216,12 @@ class Kernel extends ConsoleKernel
         $this->load(__DIR__.'/Commands');
 
         require base_path('routes/console.php');
+    }
+
+    private function hasRefurbedMarketplace(): bool
+    {
+        return Marketplace_model::where('id', 4)
+            ->orWhere('name', 'like', '%refurbed%')
+            ->exists();
     }
 }

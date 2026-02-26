@@ -4,9 +4,10 @@ namespace App\Console\Commands;
 
 use App\Http\Controllers\BackMarketAPIController;
 use App\Models\Order_item_model;
-use Illuminate\Console\Command;
+use App\Models\CommandRunLog;
+use App\Console\Commands\BaseCommand;
 
-class RefreshLatest extends Command
+class RefreshLatest extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -30,12 +31,14 @@ class RefreshLatest extends Command
 
     public function handle()
     {
+        CommandRunLog::recordStart('refresh-latest');
         $bm = new BackMarketAPIController();
         $order_item_model = new Order_item_model();
 
 
         $order_item_model->get_latest_care($bm);
 
+        CommandRunLog::recordEnd('refresh-latest', 0, 0, 0, 'get_latest_care', 'completed');
     }
 
 }

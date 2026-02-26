@@ -6,11 +6,12 @@ use App\Http\Controllers\RefurbedAPIController;
 use App\Models\Country_model;
 use App\Models\Currency_model;
 use App\Models\Order_model;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Http\Client\RequestException;
 
-class RefurbedSyncOrders extends Command
+class RefurbedSyncOrders extends BaseCommand
 {
     private static bool $orderLineAcceptanceUnavailable = false;
     /**
@@ -33,6 +34,7 @@ class RefurbedSyncOrders extends Command
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('refurbed-orders');
         $refurbed = new RefurbedAPIController();
         $orderModel = new Order_model();
 
@@ -56,7 +58,7 @@ class RefurbedSyncOrders extends Command
             ]);
 
             $this->error('Refurbed order sync failed: ' . $e->getMessage());
-
+            CommandRunLog::recordEnd('refurbed-orders', 0, 0, 1, 'Failed: ' . $e->getMessage(), 'failed');
             return self::FAILURE;
         }
         $orders = $response['orders'] ?? [];
@@ -109,6 +111,8 @@ class RefurbedSyncOrders extends Command
 
         $this->info(sprintf('Refurbed orders synced. processed=%d skipped=%d failed=%d', $processed, $skipped, $failed));
 
+        $note = sprintf('processed=%d skipped=%d failed=%d', $processed, $skipped, $failed);
+        CommandRunLog::recordEnd('refurbed-orders', $processed + $skipped + $failed, $processed, $failed, $note, 'completed');
         return self::SUCCESS;
     }
 

@@ -1,11 +1,10 @@
 <?php
 namespace App\Console\Commands\V2;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Models\Marketplace_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Services\V2\MarketplaceAPIService;
-use App\Services\V2\MarketplaceSyncFailureService;
 use Illuminate\Http\Client\RequestException;
 use Illuminate\Support\Facades\Log;
 
@@ -13,7 +12,7 @@ use Illuminate\Support\Facades\Log;
  * V2 Version of SyncMarketplaceStock Command
  * Uses generic MarketplaceAPIService instead of marketplace-specific controllers
  */
-class SyncMarketplaceStock extends Command
+class SyncMarketplaceStock extends BaseCommand
 {
     protected $signature = 'v2:marketplace:sync-stock
                             {--marketplace= : Specific marketplace ID to sync}
@@ -347,7 +346,6 @@ class SyncMarketplaceStock extends Command
         }
 
         $marketplaceId = 4; // Refurbed marketplace ID
-        $failureService = app(MarketplaceSyncFailureService::class);
 
         // Quick fix: Skip SKUs with invalid characters that Refurbed API doesn't accept
         // Refurbed's OfferSKUFilter rejects SKUs containing: . ( ) and other special chars
@@ -360,15 +358,6 @@ class SyncMarketplaceStock extends Command
                 'sku' => $variation->sku,
                 'reason' => $errorReason
             ]);
-            
-            // Log failure via service (only if feature is enabled)
-            $failureService->logFailure(
-                $variation->id,
-                $variation->sku,
-                $marketplaceId,
-                $errorReason,
-                $errorMessage
-            );
             
             return null;
         }
@@ -384,11 +373,6 @@ class SyncMarketplaceStock extends Command
 
             $offer = $offers['offers'][0];
             $stock = (int)($offer['stock'] ?? $offer['quantity'] ?? 0);
-            
-            // If sync succeeds, clear any previous failures
-            if ($stock !== null) {
-                $failureService->clearFailure($variation->sku, $marketplaceId);
-            }
             
             return $stock;
         } catch (\Illuminate\Http\Client\RequestException $e) {
@@ -412,15 +396,6 @@ class SyncMarketplaceStock extends Command
                     'reason' => $errorReason
                 ]);
                 
-                // Log failure via service (only if feature is enabled)
-                $failureService->logFailure(
-                    $variation->id,
-                    $variation->sku,
-                    $marketplaceId,
-                    $errorReason,
-                    $errorMessage
-                );
-                
                 return null; // Skip gracefully
             }
             
@@ -435,15 +410,6 @@ class SyncMarketplaceStock extends Command
                 'error' => $errorMessage
             ]);
             
-            // Log failure via service (only if feature is enabled)
-            $failureService->logFailure(
-                $variation->id,
-                $variation->sku,
-                $marketplaceId,
-                $errorReason,
-                $errorMessage
-            );
-            
             // Return null but this will be treated as an error in syncStockRecord
             return null;
         } catch (\Exception $e) {
@@ -456,15 +422,6 @@ class SyncMarketplaceStock extends Command
                 'sku' => $variation->sku,
                 'error' => $errorMessage
             ]);
-            
-            // Log failure via service (only if feature is enabled)
-            $failureService->logFailure(
-                $variation->id,
-                $variation->sku,
-                $marketplaceId,
-                $errorReason,
-                $errorMessage
-            );
             
             return null;
         }

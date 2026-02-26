@@ -14,13 +14,14 @@ use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
-use Illuminate\Console\Command;
+use App\Models\CommandRunLog;
+use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
-class PriceHandler extends Command
+class PriceHandler extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -45,11 +46,16 @@ class PriceHandler extends Command
     public function handle()
     {
         ini_set('max_execution_time', 1200);
+        CommandRunLog::recordStart('price-handler');
 
         $this->recheck_inactive_handlers();
 
-        $error = '';
         $bm = new BackMarketAPIController();
+
+        $missingResponseRefs = [];
+        $countryMissing = [];
+        $variationMissing = [];
+        $responseErrors = [];
 
         // Get total count for progress tracking
         $totalListings = Listing_model::whereIn('handler_status', [1,3])
@@ -76,7 +82,7 @@ class PriceHandler extends Command
             ->whereColumn('min_price_limit', '<=', 'buybox_price')
             ->whereColumn('min_price_limit', '<=', 'min_price')
             ->with(['variation', 'country_id']) // Eager load relationships
-            ->chunk($chunkSize, function ($listings) use ($bm, &$error, &$processed, $countries) {
+            ->chunk($chunkSize, function ($listings) use ($bm, &$processed, $countries, &$missingResponseRefs, &$countryMissing, &$variationMissing, &$responseErrors) {
                 $variation_ids = $listings->pluck('variation_id')->filter();
                 $variations = Variation_model::whereIn('id', $variation_ids)
                     ->where('listed_stock', '>', 0)
@@ -96,7 +102,7 @@ class PriceHandler extends Command
                     usleep(500000); // 0.5 second delay instead of 1 second (reduces wait time by 50%)
 
                     if ($responses == null) {
-                        $error .= "No response for variation: " . $reference . "\n";
+                        $missingResponseRefs[] = $reference;
                         continue;
                     }
                     if (is_object($responses) && $responses->type == 'unknown-competitor') {
@@ -113,7 +119,10 @@ class PriceHandler extends Command
                         if(is_string($list) || is_int($list)){
                             print_r($responses);
                             echo "\n\n";
-                            $error .= $list;
+                            $responseErrors[] = [
+                                'reference' => $reference,
+                                'payload' => $list,
+                            ];
                             continue;
                         }
                         if(is_array($list)){
@@ -122,15 +131,17 @@ class PriceHandler extends Command
                                 if ($code === 'unknown-competitor') {
                                     continue;
                                 }
-                                $error .= json_encode($list) . "\n";
-                                $error .= "Error in response for variation: {$reference}\n";
+                                $responseErrors[] = [
+                                    'reference' => $reference,
+                                    'payload' => $list,
+                                ];
                                 continue;
                             }
                         }
                         // Use pre-loaded country cache instead of querying database
                         $country = $countries->get($list->market);
                         if($country == null){
-                            $error .= "No country found for market: " . $list->market . " for variation: " . $reference . "\n";
+                            $countryMissing[] = $list->market . '|' . $reference;
                             continue;
                         }
                         $listing = Listing_model::firstOrNew(['reference_uuid' => $reference, 'country' => $country->id, 'marketplace_id' => 1]);
@@ -143,7 +154,7 @@ class PriceHandler extends Command
                                 // Log::warning('Price handler unable to resolve variation for reference', [
                                 //     'reference_uuid' => $reference,
                                 // ]);
-                                $error .= "No variation found for reference: " . $reference . "\n";
+                                $variationMissing[] = $reference;
                                 continue;
                             }
 
@@ -278,9 +289,22 @@ class PriceHandler extends Command
 
         //     }
         // }
-        if($error != ''){
-            Log::info($error);
+        if ($missingResponseRefs || $countryMissing || $variationMissing || $responseErrors) {
+            Log::warning('PriceHandler summary', [
+                'missing_response_refs_count' => count($missingResponseRefs),
+                'missing_response_refs_sample' => array_slice(array_values(array_unique($missingResponseRefs)), 0, 5),
+                'missing_countries_count' => count($countryMissing),
+                'missing_countries_sample' => array_slice(array_values(array_unique($countryMissing)), 0, 5),
+                'variation_lookup_fail_count' => count($variationMissing),
+                'variation_lookup_sample' => array_slice(array_values(array_unique($variationMissing)), 0, 5),
+                'response_errors_sample' => array_slice($responseErrors, 0, 3),
+            ]);
         }
+        $totalRefs = $totalListings ?? 0;
+        $note = "Processed {$processed} references; total listings: {$totalRefs}";
+        if (count($missingResponseRefs) > 0) $note .= "; missing response: " . count($missingResponseRefs);
+        if (count($responseErrors) > 0) $note .= "; response errors: " . count($responseErrors);
+        CommandRunLog::recordEnd('price-handler', $totalRefs, $processed, count($responseErrors), $note, 'completed');
         return 0;
 
     }

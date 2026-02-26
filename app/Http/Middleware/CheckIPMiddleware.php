@@ -5,7 +5,6 @@ namespace App\Http\Middleware;
 use Closure;
 use Illuminate\Support\Facades\Route;
 use App\Models\Ip_address_model;
-use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Log;
 
 class CheckIPMiddleware
@@ -40,7 +39,7 @@ class CheckIPMiddleware
                     $ip_address->save();
                 }
                 Log::info('New IP detected  for user '.$user->first_name.' with IP '.$ip);
-                abort(403, 'Quote of the day: '.Inspiring::just_quote());
+                abort(403, 'Access denied from unrecognized IP address. Please contact an administrator.');
             }
             if($ip_address != null && $ip_address->updated_at->diffInDays(now()) > 2){
                 $ip_address->status = 1;

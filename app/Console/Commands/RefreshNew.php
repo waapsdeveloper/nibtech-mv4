@@ -12,17 +12,18 @@ use App\Models\Country_model;
 use App\Models\Variation_model;
 use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
+use App\Models\CommandRunLog;
 use Carbon\Carbon;
 
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
 
-class RefreshNew extends Command
+class RefreshNew extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -47,22 +48,23 @@ class RefreshNew extends Command
     public function handle()
     {
         $startTime = microtime(true);
+        CommandRunLog::recordStart('refresh-new');
 
         // Stock deduction entries are now written to storage/logs/stock_deduction.log (no DB writes here)
 
         // Log command start to named log file only (no Slack)
-        SlackLogService::post(
-            'order_sync',
-            'info',
-            "🔄 refresh:new command started",
-            [
-                'command' => 'refresh:new',
-                'started_at' => now()->toDateTimeString(),
-                'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
-            ],
-            false,
-            true
-        );
+        // SlackLogService::post(
+        //     'order_sync',
+        //     'info',
+        //     "🔄 refresh:new command started",
+        //     [
+        //         'command' => 'refresh:new',
+        //         'started_at' => now()->toDateTimeString(),
+        //         'local_mode' => env('SYNC_DATA_IN_LOCAL', false)
+        //     ],
+        //     false,
+        //     true
+        // );
 
         $bm = new BackMarketAPIController();
         $order_model = new Order_model();
@@ -146,6 +148,16 @@ class RefreshNew extends Command
         $summaryText = !empty($summaryParts)
             ? " | " . implode(", ", $summaryParts)
             : " | No orders processed";
+
+        $totalSynced = count($stats['order_ids_synced']);
+        CommandRunLog::recordEnd(
+            'refresh-new',
+            $stats['new_orders_found'] + $stats['incomplete_orders_found'],
+            $totalSynced,
+            0,
+            $summaryText,
+            'completed'
+        );
 
         // Limit order IDs in log context (max 20 to avoid huge logs)
         $orderIdsForLog = array_slice($stats['order_ids_synced'], 0, 20);

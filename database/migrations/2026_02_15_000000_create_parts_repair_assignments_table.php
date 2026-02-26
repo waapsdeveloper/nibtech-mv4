@@ -7,11 +7,14 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        // add something that is useful plese
+        if (Schema::hasTable('parts_repair_assignments')) {
+            return;
+        }
+
         Schema::create('parts_repair_assignments', function (Blueprint $table) {
             $table->id();
-            // Match stock.id type (often int unsigned on existing DBs)
-            $table->unsignedInteger('stock_id');
+            // Match stock.id type (bigint unsigned in existing schema)
+            $table->unsignedBigInteger('stock_id');
             $table->foreignId('repair_part_id')->constrained('repair_parts')->cascadeOnUpdate()->cascadeOnDelete();
             $table->timestamp('assigned_at')->useCurrent();
             $table->timestamp('repaired_at')->nullable();

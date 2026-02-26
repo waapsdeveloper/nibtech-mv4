@@ -9,14 +9,15 @@ use App\Models\Currency_model;
 use App\Models\Listing_model;
 use App\Models\Variation_model;
 use App\Models\Order_item_model;
-use Illuminate\Console\Command;
+use App\Models\CommandRunLog;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\V2\SlackLogService;
 use Carbon\Carbon;
 
-class FunctionsThirty extends Command
+class FunctionsThirty extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -45,7 +46,8 @@ class FunctionsThirty extends Command
     public function handle()
     {
         $startTime = microtime(true);
-        
+        CommandRunLog::recordStart('functions-thirty');
+
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
         
@@ -108,6 +110,7 @@ class FunctionsThirty extends Command
             ]
         ];
         
+        try {
         // Run get_listings
         $this->get_listings($overallStats['get_listings']);
         
@@ -159,6 +162,10 @@ class FunctionsThirty extends Command
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
         
+        $totalProcessed = $glStats['listings_fetched'] + $glBiStats['listings_fetched'];
+        $processedOk = $glStats['listings_updated'] + $glStats['variations_updated'] + $glBiStats['listings_updated'] + $glBiStats['variations_updated'];
+        CommandRunLog::recordEnd('functions-thirty', (int) $totalProcessed, (int) $processedOk, 0, $summaryText, 'completed');
+        
         // Log command completion with statistics (Slack + file)
         Log::channel('functions_thirty')->info('Functions:thirty completed', [
             'command' => 'functions:thirty',
@@ -182,6 +189,15 @@ class FunctionsThirty extends Command
         );
 
         return 0;
+        } catch (\Throwable $e) {
+            CommandRunLog::recordEnd('functions-thirty', 0, 0, 1, 'Failed: ' . $e->getMessage(), 'failed');
+            Log::channel('functions_thirty')->error('Functions:thirty failed', [
+                'command' => 'functions:thirty',
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+            ]);
+            throw $e;
+        }
     }
 
     public function get_listings(&$stats = null){

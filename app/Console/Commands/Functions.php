@@ -14,12 +14,13 @@ use App\Models\Order_item_model;
 use App\Models\Product_storage_sort_model;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
-use Illuminate\Console\Command;
+use App\Models\CommandRunLog;
+use App\Console\Commands\BaseCommand;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
 
-class Functions extends Command
+class Functions extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -45,6 +46,7 @@ class Functions extends Command
     {
 
         ini_set('max_execution_time', 1200);
+        CommandRunLog::recordStart('functions-ten');
         echo 1;
         $this->refund_currency();
         echo " 2";
@@ -57,6 +59,7 @@ class Functions extends Command
         $this->merge_order_transactions();
         echo " 6";
         // $this->push_testing_api();
+        CommandRunLog::recordEnd('functions-ten', 0, 0, 0, 'refund_currency, check_linked_orders, duplicate_orders, misc, merge_order_transactions', 'completed');
         return 0;
     }
     private function refund_currency(){
@@ -173,10 +176,13 @@ class Functions extends Command
                                 $amount = $amount * -1;
                             }
                             $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'refunds'])->first();
-                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
-                            $order_charge->transaction_id = $transaction->id;
-                            $order_charge->amount = $amount;
-                            $order_charge->save();
+                            $chargeValueId = optional($charge?->current_value)->id;
+                            if ($chargeValueId) {
+                                $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$chargeValueId]);
+                                $order_charge->transaction_id = $transaction->id;
+                                $order_charge->amount = $amount;
+                                $order_charge->save();
+                            }
                         }elseif($description == 'refunds' && -$transaction->amount == $order->price){
                             $transaction->reference_id = $latestRef+1;
                             $transaction->status = 1;
@@ -188,19 +194,25 @@ class Functions extends Command
                                 $amount = $amount * -1;
                             }
                             $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'credit_requests'])->first();
-                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
-                            $order_charge->transaction_id = $transaction->id;
-                            $order_charge->amount = $amount;
-                            $order_charge->save();
+                            $chargeValueId = optional($charge?->current_value)->id;
+                            if ($chargeValueId) {
+                                $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$chargeValueId]);
+                                $order_charge->transaction_id = $transaction->id;
+                                $order_charge->amount = $amount;
+                                $order_charge->save();
+                            }
                         }elseif($description == 'avoir_sales_fees'){
                             $amount = $transaction->amount;
                             $amount = $amount * -1;
 
                             $charge = Charge_model::where(['order_type_id'=>3,'status'=>1, 'name'=>'avoir_sales_fees'])->first();
-                            $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$charge->current_value->id]);
-                            $order_charge->transaction_id = $transaction->id;
-                            $order_charge->amount = $amount;
-                            $order_charge->save();
+                            $chargeValueId = optional($charge?->current_value)->id;
+                            if ($chargeValueId) {
+                                $order_charge = Order_charge_model::firstOrNew(['order_id'=>$order->id,'charge_value_id'=>$chargeValueId]);
+                                $order_charge->transaction_id = $transaction->id;
+                                $order_charge->amount = $amount;
+                                $order_charge->save();
+                            }
                         }
                         continue;
                     }

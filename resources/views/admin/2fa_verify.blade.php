@@ -25,7 +25,31 @@
                                         {{-- <h2>Welcome back!</h2>
                                         <h6 class="font-weight-semibold mb-4">Please sign in to continue.</h6> --}}
                                         <h2>Two-Factor Authentication</h2>
-                                        <p>Please enter the code from your authenticator app to verify your login.</p>
+                                        <p>Please set up and verify two-factor authentication to continue.</p>
+
+                                        @if(!empty($showQr) && !empty($google2fa_url))
+                                            <div class="mb-3 text-center">
+                                                <p class="fw-semibold mb-2">Scan this QR code with your authenticator app</p>
+                                                <img src="{{ $google2fa_url }}" alt="2FA QR Code" class="img-fluid" style="max-width: 220px;" />
+                                                <p class="small text-muted mt-2">If you cannot scan, enter this key manually:</p>
+                                                <div class="alert alert-secondary py-2"><strong>{{ $secret }}</strong></div>
+                                            </div>
+                                        @elseif(!empty($alreadyEnabled))
+                                            <div class="alert alert-success" role="alert">
+                                                <p class="mb-1 fw-semibold">Two-factor authentication is already enabled.</p>
+                                                <p class="mb-0 small text-muted">Enter your current 6-digit code to verify this login.</p>
+                                            </div>
+                                        @endif
+
+                                        <div class="alert alert-info" role="alert">
+                                            <p class="mb-2 fw-semibold">How to set up Google Authenticator</p>
+                                            <ol class="mb-2 ps-3">
+                                                <li>Install the app: <a href="https://play.google.com/store/apps/details?id=com.google.android.apps.authenticator2" target="_blank" rel="noopener">Android</a> or <a href="https://apps.apple.com/app/google-authenticator/id388497605" target="_blank" rel="noopener">iOS</a>.</li>
+                                                <li>Open the app and tap + to scan the QR code above (or enter the key manually).</li>
+                                                <li>Enter the 6-digit code from the app below to verify.</li>
+                                            </ol>
+                                            <p class="mb-0 small text-muted">Codes refresh every 30 seconds; use the latest code.</p>
+                                        </div>
 
                                         <div class="panel panel-primary">
                                         <div class="panel-body tabs-menu-body border-0 p-3">

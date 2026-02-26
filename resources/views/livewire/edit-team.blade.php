@@ -24,8 +24,8 @@
 					<!-- /breadcrumb -->
                     <hr style="border-bottom: 1px solid #000">
 					<!-- row -->
-                    {{-- <div class="row"> --}}
-                        {{-- <div class="col-lg-9 col-md-9"> --}}
+                    <div class="row">
+                        <div class="col-lg-9 col-md-9">
                             <form action="{{url('update-member')}}/{{$member->id}}" method="POST">
                                 @csrf
                                 <div class="card">
@@ -122,7 +122,7 @@
 
 
     <livewire:payroll-page :adminId="$member->id" :viewMode="'manager'" />
-                        {{-- </div>
+                        </div>
                         <div class="col-md-3">
                             <div class="card">
                                 <div class="card-header">
@@ -188,8 +188,8 @@
 
                                 </div>
                             </div>
-                        </div> --}}
-                    {{-- </div> --}}
+                        </div>
+                    </div>
 					<!-- /row -->
 
                     @endsection

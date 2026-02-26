@@ -51,7 +51,20 @@ class BMProOrderSyncService
                 'currency' => $target['currency'],
             ];
 
-            $response = $this->bmpro->getOrders($filters, $environment, $autoPaginate, $requestOptions);
+            try {
+                $response = $this->bmpro->getOrders($filters, $environment, $autoPaginate, $requestOptions);
+            } catch (\Throwable $exception) {
+                $summaries[] = [
+                    'currency' => $target['currency'],
+                    'marketplace_id' => $target['marketplace_id'],
+                    'processed' => 0,
+                    'failed' => 0,
+                    'success' => false,
+                    'message' => $exception->getMessage() ?: 'BMPRO API error.',
+                ];
+
+                continue;
+            }
 
             if (! ($response['success'] ?? false)) {
                 $summaries[] = [

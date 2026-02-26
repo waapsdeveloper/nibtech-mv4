@@ -29,6 +29,21 @@
         'special' => request('special')
     ])
 
+    <div class="row mt-3">
+        <div class="col-lg-12">
+            <div class="card">
+                <div class="card-body d-flex flex-wrap align-items-center gap-2">
+                    <div class="d-flex align-items-center gap-2 flex-grow-1 flex-wrap">
+                        <label for="fetchReferenceId" class="mb-0">Fetch Back Market Listing</label>
+                        <input type="text" id="fetchReferenceId" class="form-control w-auto" placeholder="Enter reference_id">
+                        <button id="fetchListingBtn" class="btn btn-primary">Fetch One</button>
+                    </div>
+                    <div id="fetchListingStatus" class="text-muted small"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     @if(isset($variations) && $variations->count() > 0)
         @foreach($variations as $variation)
             @include('v2.listing.partials.variation-card', [
@@ -61,9 +76,6 @@
     {{-- Bulk Update Modal --}}
     @include('v2.listing.partials.bulk-update-modal')
     {{-- /Bulk Update Modal --}}
-
-    {{-- Stock Locks Modal - REMOVED (Stock lock system removed) --}}
-    {{-- @include('v2.listing.partials.stock-locks-modal') --}}
 
     {{-- Stock Comparison Modal --}}
     @include('v2.listing.partials.stock-comparison-modal')
@@ -110,7 +122,6 @@
             getTargetVariations: "{{ url('listing/get_target_variations') }}",
             updateTarget: "{{ url('listing/update_target') }}",
             imei: "{{ url('imei') }}",
-            // getStockLocks: "{{ url('v2/stock-locks/api') }}", // Stock lock system removed
             getMarketplaceStockComparison: "{{ url('v2/listings/get_marketplace_stock_comparison') }}",
             fixStockMismatch: "{{ url('v2/listings/fix_stock_mismatch') }}",
             restoreListingHistory: "{{ url('v2/listings/restore_history') }}",
@@ -128,33 +139,46 @@
         @endforeach
     };
 
-    // Function to show stock locks modal - REMOVED (Stock lock system removed)
-    // function showStockLocksModal(variationId, marketplaceId) {
-    //     const modal = new bootstrap.Modal(document.getElementById('stockLocksModal'));
-    //     const modalBody = document.getElementById('stockLocksModalBody');
-    //
-    //     // Show loading state
-    //     modalBody.innerHTML = '<div class="text-center p-4"><div class="spinner-border text-primary" role="status"><span class="visually-hidden">Loading...</span></div><p class="mt-2 text-muted">Loading stock locks...</p></div>';
-    //     modal.show();
-    //
-    //     // Load stock locks via API (returns rendered Blade template)
-    //     $.ajax({
-    //         url: '{{ url("v2/stock-locks/api") }}',
-    //         type: 'GET',
-    //         data: {
-    //             variation_id: variationId,
-    //             marketplace_id: marketplaceId,
-    //             show_all: false
-    //         },
-    //         success: function(html) {
-    //             modalBody.innerHTML = html;
-    //         },
-    //         error: function(xhr, status, error) {
-    //             console.error('Error loading stock locks:', error);
-    //             modalBody.innerHTML = '<div class="alert alert-danger">Error loading stock locks: ' + error + '</div>';
-    //         }
-    //     });
-    // }
+    // Fetch a single Back Market listing and upsert its variation
+    document.addEventListener('DOMContentLoaded', function () {
+        const fetchBtn = document.getElementById('fetchListingBtn');
+        const fetchInput = document.getElementById('fetchReferenceId');
+        const fetchStatus = document.getElementById('fetchListingStatus');
+
+        if (!fetchBtn || !fetchInput || !fetchStatus) {
+            return;
+        }
+
+        fetchBtn.addEventListener('click', function () {
+            const referenceId = fetchInput.value.trim();
+            if (!referenceId) {
+                fetchStatus.textContent = 'Please enter a reference_id.';
+                return;
+            }
+
+            fetchStatus.textContent = 'Fetching...';
+
+            fetch("{{ url('v2/listings/fetch_one') }}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                },
+                body: JSON.stringify({ reference_id: referenceId }),
+            })
+                .then((res) => res.json().then((data) => ({ status: res.status, data })))
+                .then(({ status, data }) => {
+                    if (status >= 200 && status < 300 && data.success) {
+                        fetchStatus.textContent = data.message + ` (variation_id: ${data.variation_id})`;
+                    } else {
+                        fetchStatus.textContent = data.message || 'Fetch failed.';
+                    }
+                })
+                .catch((err) => {
+                    fetchStatus.textContent = 'Request failed: ' + err.message;
+                });
+        });
+    });
 
     // Function to show stock formula modal
     function showStockFormulaModal(variationId, sku, productModel, storageName, colorName, gradeName, colorCode) {

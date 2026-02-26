@@ -71,10 +71,10 @@ class SlackLogService
 
         // Check if Slack logging is disabled via environment variable
         if (env('DISABLE_SLACK_LOGS', false)) {
-            Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - logging to file only", [
-                'log_type' => $logType,
-                'level' => $level,
-            ]);
+            // Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - logging to file only", [
+            //     'log_type' => $logType,
+            //     'level' => $level,
+            // ]);
             // Still log to file (use logType as default, will be determined later if setting exists)
             $logFileName = $logType;
             try {
@@ -105,7 +105,7 @@ class SlackLogService
 
             // DEBUG: Log setting lookup result
             if (!$setting) {
-                Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
+                // Log::debug("SlackLogService: No setting found for type '{$logType}' and level '{$level}'");
             } else {
                 Log::debug("SlackLogService: Found setting", [
                     'setting_name' => $setting->name,
@@ -368,9 +368,9 @@ class SlackLogService
 
         // Check if Slack logging is disabled via environment variable
         if (env('DISABLE_SLACK_LOGS', false)) {
-            Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - skipping batch post, clearing buffer", [
-                'batch_count' => count(self::$buffer)
-            ]);
+            // Log::debug("SlackLogService: Slack logging disabled via DISABLE_SLACK_LOGS env variable - skipping batch post, clearing buffer", [
+            //     'batch_count' => count(self::$buffer)
+            // ]);
             // Clear buffer and return (logs were already written to files during collectBatch)
             self::$buffer = [];
             self::$batchMode = false;

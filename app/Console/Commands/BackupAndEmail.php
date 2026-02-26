@@ -2,7 +2,7 @@
 
 namespace App\Console\Commands;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use Illuminate\Support\Facades\DB;
 use App\Http\Controllers\GoogleController;
 use Carbon\Carbon;
@@ -10,7 +10,7 @@ use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\Mail;
 use ZipArchive;
 
-class BackupAndEmail extends Command
+class BackupAndEmail extends BaseCommand
 {
     protected $signature = 'backup:email';
     protected $description = 'Backup the database in chunks and email';

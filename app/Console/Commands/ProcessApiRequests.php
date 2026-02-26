@@ -3,9 +3,10 @@
 namespace App\Console\Commands;
 
 use App\Models\Api_request_model;
-use Illuminate\Console\Command;
+use App\Models\CommandRunLog;
+use App\Console\Commands\BaseCommand;
 
-class ProcessApiRequests extends Command
+class ProcessApiRequests extends BaseCommand
 {
     /**
      * The name and signature of the console command.
@@ -22,6 +23,7 @@ class ProcessApiRequests extends Command
      */
     public function handle(): int
     {
+        CommandRunLog::recordStart('api-request-process');
         $chunkSize = (int) $this->option('chunk');
         $chunkSize = max(1, $chunkSize);
 
@@ -29,7 +31,7 @@ class ProcessApiRequests extends Command
         $model->push_testing($chunkSize);
 
         $this->info('api-request:process finished.');
-
-        return Command::SUCCESS;
+        CommandRunLog::recordEnd('api-request-process', $chunkSize, 0, 0, 'Processed chunk: ' . $chunkSize, 'completed');
+        return self::SUCCESS;
     }
 }

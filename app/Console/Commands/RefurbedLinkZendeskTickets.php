@@ -3,9 +3,11 @@
 namespace App\Console\Commands;
 
 use App\Services\RefurbedZendeskTicketLinkService;
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
+use App\Models\CommandRunLog;
+use Symfony\Component\Console\Command\Command;
 
-class RefurbedLinkZendeskTickets extends Command
+class RefurbedLinkZendeskTickets extends BaseCommand
 {
     protected $signature = 'refurbed:link-tickets
         {--query= : Override the Gmail search query}
@@ -24,6 +26,7 @@ class RefurbedLinkZendeskTickets extends Command
 
     public function handle(): int
     {
+        CommandRunLog::recordStart('refurbed-link-tickets');
         $options = array_filter([
             'query' => $this->option('query') ?: null,
             'labelIds' => $this->labelsOption(),
@@ -78,6 +81,8 @@ class RefurbedLinkZendeskTickets extends Command
             }
         }
 
+        $note = sprintf('emails=%d linked=%d skipped=%d ignored=%d', $stats['processed'], $stats['linked'], $stats['skipped'], $stats['ignored'] ?? 0);
+        CommandRunLog::recordEnd('refurbed-link-tickets', $stats['processed'], $stats['linked'], 0, $note, 'completed');
         return Command::SUCCESS;
     }
 

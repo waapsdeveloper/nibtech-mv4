@@ -2,10 +2,10 @@
 
 namespace App\Console\Commands\V2;
 
-use Illuminate\Console\Command;
+use App\Console\Commands\BaseCommand;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
-use App\Models\StockSyncLog;
+use App\Models\CommandRunLog;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Services\V2\SlackLogService;
 use Illuminate\Support\Facades\Log;
@@ -19,7 +19,7 @@ use Carbon\Carbon;
  * in a specific marketplace and updates the marketplace_stock table.
  * Runs in queue for bulk operations.
  */
-class SyncAllMarketplaceStockFromAPI extends Command
+class SyncAllMarketplaceStockFromAPI extends BaseCommand
 {
     protected $signature = 'v2:sync-all-marketplace-stock-from-api 
                             {--marketplace=1 : The marketplace ID to sync (default: 1 for BackMarket)}';
@@ -29,102 +29,65 @@ class SyncAllMarketplaceStockFromAPI extends Command
     public function handle()
     {
         $marketplaceId = (int) $this->option('marketplace');
-        
-        // Check if command was run within last 30 minutes
-        $lastRun = StockSyncLog::where('marketplace_id', $marketplaceId)
-            ->whereIn('status', ['running', 'completed'])
-            ->orderBy('started_at', 'desc')
-            ->first();
-        
-        if ($lastRun && $lastRun->started_at) {
-            $minutesSinceLastRun = Carbon::now()->diffInMinutes($lastRun->started_at);
-            
+        $slug = 'marketplace-stock-sync-' . $marketplaceId;
+
+        // Cooldown: check last run via CommandRunLog
+        $lastRun = CommandRunLog::where('slug', $slug)->first();
+        if ($lastRun && $lastRun->last_started_at) {
+            $minutesSinceLastRun = Carbon::now()->diffInMinutes($lastRun->last_started_at);
             if ($minutesSinceLastRun < 30) {
                 $remainingMinutes = 30 - $minutesSinceLastRun;
                 $errorMessage = "COMMAND CANNOT RUN YET - Cooldown period active. Last sync was run {$minutesSinceLastRun} minute(s) ago. Please wait {$remainingMinutes} more minute(s).";
-                
                 $this->error("==========================================");
                 $this->error("COMMAND CANNOT RUN YET");
                 $this->error("==========================================");
                 $this->error("Last sync was run {$minutesSinceLastRun} minute(s) ago.");
                 $this->error("Please wait {$remainingMinutes} more minute(s) before running again.");
-                $this->error("Last run: {$lastRun->started_at->format('Y-m-d H:i:s')}");
+                $this->error("Last run: {$lastRun->last_started_at->format('Y-m-d H:i:s')}");
                 $this->error("Status: {$lastRun->status}");
                 $this->error("==========================================");
-                
-                // Create a log entry for cooldown to track the attempt
-                StockSyncLog::create([
-                    'marketplace_id' => $marketplaceId,
-                    'status' => 'cancelled',
-                    'summary' => $errorMessage,
-                    'started_at' => now(),
-                    'completed_at' => now(),
-                    'duration_seconds' => 0,
-                    'admin_id' => auth()->id() ?? null
-                ]);
-                
+                CommandRunLog::recordEnd($slug, 0, 0, 0, $errorMessage, 'cancelled');
                 Log::warning('SyncAllMarketplaceStockFromAPI: Command blocked by cooldown', [
                     'marketplace_id' => $marketplaceId,
                     'minutes_since_last_run' => $minutesSinceLastRun,
                     'remaining_minutes' => $remainingMinutes,
-                    'last_run_id' => $lastRun->id
                 ]);
-                
                 return 1;
             }
         }
-        
-        // Create log entry
-        $logEntry = StockSyncLog::create([
-            'marketplace_id' => $marketplaceId,
-            'status' => 'running',
-            'started_at' => now(),
-            'admin_id' => auth()->id() ?? null
-        ]);
-        
+
+        CommandRunLog::recordStart($slug);
         $startTime = microtime(true);
         
         $this->info('========================================');
         $this->info('SYNC ALL MARKETPLACE STOCK FROM API');
         $this->info('========================================');
         $this->info("Marketplace ID: {$marketplaceId}");
-        $this->info("Log ID: {$logEntry->id}");
+        $this->info("Slug: {$slug}");
         $this->info('========================================');
         
         try {
-            // Only BackMarket (ID 1) supports bulk fetch currently
             if ($marketplaceId === 1) {
-                // Use bulk fetch for BackMarket (much more efficient)
-                return $this->syncBulk($marketplaceId, $logEntry);
+                return $this->syncBulk($marketplaceId, $slug, $startTime);
             } else {
-                // Use individual calls for other marketplaces
-                return $this->syncIndividual($marketplaceId, $logEntry);
+                return $this->syncIndividual($marketplaceId, $slug, $startTime);
             }
         } catch (\Exception $e) {
             $endTime = microtime(true);
             $duration = (int) ($endTime - $startTime);
-            
-            // Update log entry with error
-            $logEntry->update([
-                'status' => 'failed',
-                'error_details' => [['error' => $e->getMessage()]],
-                'summary' => 'Command failed: ' . $e->getMessage(),
-                'completed_at' => now(),
-                'duration_seconds' => $duration
-            ]);
+            CommandRunLog::recordEnd($slug, 0, 0, 1, 'Command failed: ' . $e->getMessage(), 'failed');
             
             $this->error('Error during sync: ' . $e->getMessage());
             Log::error('SyncAllMarketplaceStockFromAPI: Command failed', [
-                'log_id' => $logEntry->id,
                 'marketplace_id' => $marketplaceId,
+                'slug' => $slug,
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            // Send error to Slack
             SlackLogService::post('stock_sync', 'error', "V2 Stock Sync Command Failed: {$e->getMessage()}", [
                 'command' => 'v2:sync-all-marketplace-stock-from-api',
-                'log_id' => $logEntry->id,
+                'slug' => $slug,
                 'marketplace_id' => $marketplaceId,
                 'error' => $e->getMessage(),
                 'file' => $e->getFile(),
@@ -138,7 +101,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
     /**
      * Sync using bulk fetch (optimized for BackMarket)
      */
-    private function syncBulk($marketplaceId, $logEntry)
+    private function syncBulk($marketplaceId, $slug, $startTime)
     {
         $startTime = microtime(true);
         
@@ -152,7 +115,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
         
         if (empty($allListings)) {
             $this->warn("No listings returned from API");
-            return $this->completeLogEntry($logEntry, $startTime, 0, 0, 0, 0, []);
+            return $this->completeLogEntry($slug, $marketplaceId, $startTime, 0, 0, 0, 0, []);
         }
         
         $totalListingsFromAPI = 0;
@@ -182,7 +145,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
         
         if ($totalRecords === 0) {
             $this->warn("No marketplace stock records found for marketplace ID {$marketplaceId} with reference_id.");
-            return $this->completeLogEntry($logEntry, $startTime, $totalRecords, 0, 0, 0, []);
+            return $this->completeLogEntry($slug, $marketplaceId, $startTime, $totalRecords, 0, 0, 0, []);
         }
         
         $this->info("Found {$totalRecords} marketplace stock records to sync");
@@ -283,13 +246,13 @@ class SyncAllMarketplaceStockFromAPI extends Command
         $bar->finish();
         $this->newLine(2);
         
-        return $this->completeLogEntry($logEntry, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors);
+        return $this->completeLogEntry($slug, $marketplaceId, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors);
     }
     
     /**
      * Sync using individual API calls (for non-BackMarket marketplaces)
      */
-    private function syncIndividual($marketplaceId, $logEntry)
+    private function syncIndividual($marketplaceId, $slug, $startTime)
     {
         $startTime = microtime(true);
         
@@ -308,7 +271,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
         
         if ($totalRecords === 0) {
             $this->warn("No marketplace stock records found for marketplace ID {$marketplaceId} with reference_id.");
-            return $this->completeLogEntry($logEntry, $startTime, $totalRecords, 0, 0, 0, []);
+            return $this->completeLogEntry($slug, $marketplaceId, $startTime, $totalRecords, 0, 0, 0, []);
         }
         
         $this->info("Found {$totalRecords} marketplace stock records to sync");
@@ -408,7 +371,7 @@ class SyncAllMarketplaceStockFromAPI extends Command
         $bar->finish();
         $this->newLine(2);
         
-        return $this->completeLogEntry($logEntry, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors);
+        return $this->completeLogEntry($slug, $marketplaceId, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors);
     }
     
     /**
@@ -453,17 +416,24 @@ class SyncAllMarketplaceStockFromAPI extends Command
     }
     
     /**
-     * Complete log entry and return exit code
+     * Complete log entry (CommandRunLog) and return exit code
      */
-    private function completeLogEntry($logEntry, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors)
+    private function completeLogEntry($slug, $marketplaceId, $startTime, $totalRecords, $syncedCount, $skippedCount, $errorCount, $errors)
     {
         $endTime = microtime(true);
         $duration = (int) ($endTime - $startTime);
         
-        // Update log entry with results
         $summary = "Total: {$totalRecords}, Synced: {$syncedCount}, Skipped: {$skippedCount}, Errors: {$errorCount}";
         
-        // Capture command output for logging
+        CommandRunLog::recordEnd(
+            $slug,
+            $totalRecords,
+            $syncedCount,
+            $errorCount,
+            $summary,
+            $errorCount > 0 ? 'completed' : 'completed'
+        );
+        
         $commandOutput = "SYNC ALL MARKETPLACE STOCK FROM API\n";
         $commandOutput .= "Total records: {$totalRecords}\n";
         $commandOutput .= "Successfully synced: {$syncedCount}\n";
@@ -474,30 +444,17 @@ class SyncAllMarketplaceStockFromAPI extends Command
         if ($errorCount > 0 && count($errors) > 0) {
             $commandOutput .= "\nErrors:\n";
             foreach (array_slice($errors, 0, 10) as $error) {
-                $commandOutput .= "  Variation ID {$error['variation_id']}: {$error['error']}\n";
+                $commandOutput .= "  Variation ID " . ($error['variation_id'] ?? 'N/A') . ": " . ($error['error'] ?? '') . "\n";
             }
         }
         
-        $logEntry->update([
-            'status' => 'completed',
-            'total_records' => $totalRecords,
-            'synced_count' => $syncedCount,
-            'skipped_count' => $skippedCount,
-            'error_count' => $errorCount,
-            'error_details' => $errorCount > 0 ? array_slice($errors, 0, 50) : null,
-            'summary' => $summary,
-            'completed_at' => now(),
-            'duration_seconds' => $duration
-        ]);
-        
-        // Log the output for debugging
         Log::info('SyncAllMarketplaceStockFromAPI: Command output', [
-            'log_id' => $logEntry->id,
+            'slug' => $slug,
             'output' => $commandOutput
         ]);
         
         Log::info('SyncAllMarketplaceStockFromAPI: Completed', [
-            'log_id' => $logEntry->id,
+            'slug' => $slug,
             'total_records' => $totalRecords,
             'synced_count' => $syncedCount,
             'skipped_count' => $skippedCount,
@@ -505,7 +462,6 @@ class SyncAllMarketplaceStockFromAPI extends Command
             'duration_seconds' => $duration
         ]);
         
-        // Display summary
         $this->info('========================================');
         $this->info('SYNC SUMMARY');
         $this->info('========================================');
@@ -520,14 +476,13 @@ class SyncAllMarketplaceStockFromAPI extends Command
             $this->warn("Errors occurred during sync. Check logs for details.");
             if (count($errors) <= 10) {
                 foreach ($errors as $error) {
-                    $this->error("  Variation ID {$error['variation_id']}: {$error['error']}");
+                    $this->error("  Variation ID " . ($error['variation_id'] ?? 'N/A') . ": " . ($error['error'] ?? ''));
                 }
             }
             
-            // Send error summary to Slack
             SlackLogService::post('stock_sync', 'warning', "V2 Stock Sync: {$errorCount} error(s) occurred", [
                 'command' => 'v2:sync-all-marketplace-stock-from-api',
-                'log_id' => $logEntry->id,
+                'slug' => $slug,
                 'marketplace_id' => $marketplaceId,
                 'total_records' => $totalRecords,
                 'synced_count' => $syncedCount,

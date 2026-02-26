@@ -81,7 +81,7 @@ module.exports = {
       name: 'sdpos-listings-sync',
 
       script: 'artisan',
-      args: 'queue:work database --queue=listings-sync --sleep=5 --tries=1 --timeout=7200 --max-jobs=10 --max-time=3600',
+      args: 'queue:work database --queue=listings-sync --sleep=5 --tries=2 --timeout=7200 --max-jobs=10',
 
       interpreter: 'php',
       cwd: basePath,
