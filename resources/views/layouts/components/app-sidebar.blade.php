@@ -301,6 +301,9 @@
                                             <a class="side-menu__item ps-0" href="{{url('charge')}}">Charges</a>
                                         </li>
                                         @endif
+                                        <li class="slide">
+                                            <a class="side-menu__item ps-0" href="{{url('daily-closing')}}">Daily Closing</a>
+                                        </li>
                                     </ul>
                                 </li>
                                 @endif

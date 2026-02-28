@@ -46,6 +46,7 @@ use App\Http\Livewire\BMInvoice;
 use App\Http\Livewire\Brand;
 use App\Http\Livewire\Category;
 use App\Http\Livewire\Color;
+use App\Http\Livewire\DailyClosing;
 use App\Http\Livewire\InventoryVerification;
 use App\Http\Livewire\ListedStockVerification;
 use App\Http\Livewire\Role;
@@ -460,6 +461,7 @@ Route::post('update-grade/{id}', [Grade::class,'update_grade'])->name('edit_grad
 
 Route::get('storage', Storage::class)->name('view_storage');
 Route::get('add-storage', [Storage::class,'add_storage'])->name('add_storage');
+Route::get('daily-closing', DailyClosing::class)->name('view_daily_closing');
 Route::post('insert-storage', [Storage::class,'insert_storage'])->name('add_storage');
 Route::get('edit-storage/{id}', [Storage::class,'edit_storage'])->name('edit_storage');
 Route::post('update-storage/{id}', [Storage::class,'update_storage'])->name('edit_storage');
