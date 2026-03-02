@@ -686,15 +686,24 @@ class PartsInventoryController extends Controller
                 $query->whereNotNull('repaired_at');
             }
         }
-        if ($request->filled('imei')) {
-            $imei = trim($request->imei);
-            $query->whereHas('stock', function ($q) use ($imei) {
-                $q->where('imei', 'like', '%' . $imei . '%')
-                    ->orWhere('serial_number', 'like', '%' . $imei . '%');
-            });
-        }
-        if ($request->filled('reference_id')) {
-            $query->where('reference_id', 'like', '%' . trim($request->reference_id) . '%');
+        // Barcode / IMEI / Ref: if value is repair barcode (RPR-{id}-...) find by assignment id
+        $barcodeOrImei = trim($request->imei ?? '');
+        $refInput = trim($request->reference_id ?? '');
+        if ($barcodeOrImei !== '' && preg_match('/^RPR-(\d+)/', $barcodeOrImei, $m)) {
+            $query->where('parts_repair_assignments.id', (int) $m[1]);
+        } elseif ($refInput !== '' && preg_match('/^RPR-(\d+)/', $refInput, $m)) {
+            $query->where('parts_repair_assignments.id', (int) $m[1]);
+        } else {
+            if ($request->filled('imei')) {
+                $imei = trim($request->imei);
+                $query->whereHas('stock', function ($q) use ($imei) {
+                    $q->where('imei', 'like', '%' . $imei . '%')
+                        ->orWhere('serial_number', 'like', '%' . $imei . '%');
+                });
+            }
+            if ($request->filled('reference_id')) {
+                $query->where('reference_id', 'like', '%' . $refInput . '%');
+            }
         }
 
         $assignments = $query->paginate(25)->withQueryString();

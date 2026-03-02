@@ -57,4 +57,24 @@ class PartsRepairAssignment extends Model
     {
         return $this->repaired_at !== null;
     }
+
+    /**
+     * Unique repair barcode: RPR-{id}-{imei_or_ref} so scanning/filtering finds this record.
+     * Alphanumeric only for Code 128. Used for print repair barcode and filter lookup.
+     */
+    public function getRepairBarcodeAttribute(): string
+    {
+        $suffix = '';
+        if ($this->relationLoaded('stock') && $this->stock) {
+            $s = $this->stock;
+            $suffix = preg_replace('/[^A-Za-z0-9]/', '', ($s->imei ?? '') . ($s->serial_number ?? ''));
+        }
+        if ($suffix === '' && $this->reference_id) {
+            $suffix = preg_replace('/[^A-Za-z0-9]/', '', substr($this->reference_id, 0, 20));
+        }
+        if ($suffix === '') {
+            $suffix = 'R' . $this->id;
+        }
+        return 'RPR-' . $this->id . '-' . substr($suffix, 0, 24);
+    }
 }

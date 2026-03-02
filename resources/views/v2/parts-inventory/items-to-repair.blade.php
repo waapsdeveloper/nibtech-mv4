@@ -54,8 +54,8 @@
                             </select>
                         </div>
                         <div class="col-md-2">
-                            <label class="form-label">IMEI / Serial</label>
-                            <input type="text" name="imei" class="form-control" value="{{ request('imei') }}" placeholder="Search by IMEI or serial">
+                            <label class="form-label">IMEI / Serial / Barcode</label>
+                            <input type="text" name="imei" class="form-control" value="{{ request('imei') }}" placeholder="IMEI, serial, or scan repair barcode (RPR-...)">
                         </div>
                         <div class="col-md-2">
                             <label class="form-label">Reference ID</label>
@@ -136,6 +136,9 @@
                                                             </form>
                                                         </li>
                                                     @endif
+                                                    @if ($a->repaired_at)
+                                                        <li><a class="dropdown-item" href="#" data-bs-toggle="modal" data-bs-target="#repair-barcode-modal" data-repair-barcode="{{ $a->repair_barcode }}"><i class="fe fe-printer me-2"></i>Print repair barcode</a></li>
+                                                    @endif
                                                     <li><hr class="dropdown-divider"></li>
                                                     @if ($s)
                                                         <li><a class="dropdown-item" href="{{ url('belfast_inventory') }}?grade[]={{ $s->variation->grade ?? 8 }}&status={{ $s->status }}" target="_blank">Belfast Inventory</a></li>
@@ -159,4 +162,80 @@
         </div>
     </div>
 </div>
+
+{{-- Print repair barcode modal: 2x2 cm barcode, scannable and searchable in filters --}}
+<div class="modal fade" id="repair-barcode-modal" tabindex="-1" aria-labelledby="repair-barcode-modal-label" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="repair-barcode-modal-label">Print repair barcode</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center">
+                <p class="small text-muted mb-2">Scan or search this code in the Items to Repair filter to find the record.</p>
+                <div id="repair-barcode-print-wrap" class="repair-barcode-print-wrap d-inline-block p-3 bg-light rounded">
+                    <svg id="repair-barcode-svg" class="repair-barcode-svg"></svg>
+                    <div id="repair-barcode-text" class="small mt-1 font-monospace"></div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="repair-barcode-print-btn"><i class="fe fe-printer me-1"></i>Print barcode</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    body * { visibility: hidden; }
+    #repair-barcode-print-wrap, #repair-barcode-print-wrap * { visibility: visible; }
+    #repair-barcode-print-wrap {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 2cm;
+        height: 2cm;
+        margin: 0;
+        padding: 2mm;
+        border: none;
+        background: white;
+    }
+    .repair-barcode-svg { max-width: 100% !important; height: auto !important; }
+}
+.repair-barcode-print-wrap { min-width: 120px; }
+</style>
+<script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.6/dist/JsBarcode.all.min.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    var modal = document.getElementById('repair-barcode-modal');
+    var svg = document.getElementById('repair-barcode-svg');
+    var textEl = document.getElementById('repair-barcode-text');
+    var printBtn = document.getElementById('repair-barcode-print-btn');
+    if (!modal || !svg) return;
+    modal.addEventListener('show.bs.modal', function(e) {
+        var trigger = e.relatedTarget;
+        var barcode = trigger && trigger.getAttribute('data-repair-barcode');
+        if (!barcode) return;
+        svg.innerHTML = '';
+        try {
+            JsBarcode(svg, barcode, {
+                format: 'CODE128',
+                width: 1.2,
+                height: 32,
+                displayValue: false,
+                margin: 2
+            });
+            textEl.textContent = barcode;
+        } catch (err) {
+            textEl.textContent = barcode;
+        }
+    });
+    if (printBtn) {
+        printBtn.addEventListener('click', function() {
+            window.print();
+        });
+    }
+});
+</script>
 @endsection
