@@ -85,7 +85,7 @@
                 </div>
             <div class="tx-center">
                 <center><h4>@if ($order->status == 2)<small>(Pending)</small>@endif Purchase Order Detail</h4></center>
-                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name }} | Total Items: {{ $order->order_items->count() }} | Total Cost: {{ $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) }}</h5>
+                <h5>Reference: {{ $order->reference_id }} | Vendor: {{ $order->customer->first_name ?? '–' }} | Total Items: {{ $order->order_items->count() ?? 0 }} | Total Cost: {{ $order->currency_id ? $order->currency_id->sign.amount_formatter($order->order_items->sum('price'),2) : '–' }}</h5>
             </div>
                 <div class="justify-content-center mt-2">
                     <ol class="breadcrumb">
@@ -97,6 +97,54 @@
             </div>
         <!-- /breadcrumb -->
 
+        @if (isset($is_parts_order) && $is_parts_order)
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title mb-0">Parts Batch Receive</h5>
+            </div>
+            <div class="card-body">
+                <p class="text-muted small">This purchase order is linked to the following parts batch(es).</p>
+                @if (isset($part_batches) && $part_batches->isNotEmpty())
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm">
+                        <thead>
+                            <tr>
+                                <th>Batch</th>
+                                <th>Part</th>
+                                <th>SKU</th>
+                                <th>Qty received</th>
+                                <th>Qty remaining</th>
+                                <th>Unit cost</th>
+                                <th>Received at</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($part_batches as $pb)
+                            <tr>
+                                <td>{{ $pb->batch_number }}</td>
+                                <td>{{ $pb->repairPart->name ?? '–' }}</td>
+                                <td>{{ $pb->repairPart->sku ?? '–' }}</td>
+                                <td>{{ $pb->quantity_received }}</td>
+                                <td>{{ $pb->quantity_remaining }}</td>
+                                <td>{{ $pb->unit_cost }}</td>
+                                <td>{{ $pb->received_at ? $pb->received_at->format('Y-m-d') : '–' }}</td>
+                                <td>
+                                    <a href="{{ route('v2.parts-inventory.batch.edit', $pb->id) }}" class="btn btn-sm btn-outline-primary">Edit batch</a>
+                                    <a href="{{ url('v2/parts-inventory/catalog') }}" class="btn btn-sm btn-outline-secondary">Part catalog</a>
+                                </td>
+                            </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                </div>
+                <a href="{{ url('v2/parts-inventory/dashboard') }}" class="btn btn-outline-primary mt-2">Parts Inventory dashboard</a>
+                @else
+                <p class="mb-0">No part batches linked.</p>
+                @endif
+            </div>
+        </div>
+        @else
         <form action="{{ url('add_purchase_item').'/'.$order_id }}" method="POST">
             @csrf
             <div class="row">
@@ -201,6 +249,7 @@
                 </div>
             </div>
         </form>
+        @endif
         <hr style="border-bottom: 1px solid rgb(62, 45, 45);">
         {{-- Sold Stocks:-
         @foreach ($sold_summary as $sold_stock)

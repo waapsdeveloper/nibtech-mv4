@@ -15,6 +15,9 @@ use App\Models\RepairPart;
 use App\Models\RepairPartUsage;
 use App\Models\Stock_model;
 use App\Models\Variation_model;
+use App\Models\Order_model;
+use App\Models\PartsPurchaseOrder;
+use App\Models\Multi_type_model;
 use App\Services\Repair\RepairPartService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -40,7 +43,12 @@ class PartsInventoryController extends Controller
         $data['title_page'] = 'Parts Inventory – Part Catalog';
         session()->put('page_title', $data['title_page']);
 
-        $query = RepairPart::withCount('batches');
+        $query = RepairPart::withCount('batches')
+            ->withCount(['batches as batches_with_po_count' => function ($q) {
+                $q->where(function ($q2) {
+                    $q2->whereNotNull('order_id')->orWhereNotNull('parts_purchase_order_id');
+                });
+            }]);
 
         if ($request->filled('search')) {
             $q = $request->search;
@@ -315,9 +323,11 @@ class PartsInventoryController extends Controller
     {
         $data['title_page'] = 'Parts Inventory – Batch Receive';
         session()->put('page_title', $data['title_page']);
-        $suggestedSku = RepairPart::generateSuggestedSku();
+        $suggestedSku = $request->filled('sku') ? $request->sku : RepairPart::generateSuggestedSku();
+        $prefillName = $request->get('name', '');
+        $createPoChecked = $request->boolean('create_po');
 
-        return view('v2.parts-inventory.batch-receive', compact('suggestedSku'))->with($data);
+        return view('v2.parts-inventory.batch-receive', compact('suggestedSku', 'prefillName', 'createPoChecked'))->with($data);
     }
 
     public function batchReceiveStore(Request $request)
@@ -331,6 +341,7 @@ class PartsInventoryController extends Controller
             'purchase_date' => 'nullable|date',
             'supplier' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
+            'create_purchase_order' => 'nullable|boolean',
         ]);
 
         $sku = trim($request->sku);
@@ -357,7 +368,7 @@ class PartsInventoryController extends Controller
         $purchaseDate = $request->purchase_date ?: $receivedAt;
 
         $service = app(RepairPartService::class);
-        $service->receiveBatch(
+        $batch = $service->receiveBatch(
             (int) $part->id,
             $batchNumber,
             (int) $request->quantity_received,
@@ -370,6 +381,11 @@ class PartsInventoryController extends Controller
                 'notes' => $request->filled('notes') ? $request->notes : null,
             ]
         );
+
+        if ($request->boolean('create_purchase_order')) {
+            return redirect()->route('v2.parts-inventory.purchases.create', ['batch_id' => $batch->id])
+                ->with('success', 'Batch ' . $batchNumber . ' received. Select vendor and reference to create the purchase order.');
+        }
 
         return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Batch ' . $batchNumber . ' received successfully.');
     }
@@ -408,6 +424,72 @@ class PartsInventoryController extends Controller
     }
 
     /**
+     * List parts purchase orders (from dedicated parts_purchase_orders table) with filters.
+     */
+    public function purchasesIndex(Request $request)
+    {
+        $data['title_page'] = 'Parts Inventory – Purchases';
+        session()->put('page_title', $data['title_page']);
+
+        $query = PartsPurchaseOrder::with(['processedBy', 'customer', 'partBatches.repairPart.product']);
+
+        if ($request->filled('reference_id')) {
+            $query->where('reference_id', 'like', '%' . trim($request->reference_id) . '%');
+        }
+        if ($request->filled('start_date')) {
+            $query->whereDate('created_at', '>=', $request->start_date);
+        }
+        if ($request->filled('end_date')) {
+            $query->whereDate('created_at', '<=', $request->end_date);
+        }
+        if ($request->filled('status')) {
+            if ($request->status === 'pending') {
+                $query->where('status', PartsPurchaseOrder::STATUS_PENDING);
+            } elseif ($request->status === 'approved') {
+                $query->where('status', PartsPurchaseOrder::STATUS_APPROVED);
+            }
+        }
+
+        $orders = $query->orderByDesc('created_at')->orderByDesc('id')
+            ->paginate($request->input('per_page', 25))->withQueryString();
+
+        return view('v2.parts-inventory.purchases.index', compact('orders'))->with($data);
+    }
+
+    /**
+     * Show a single parts purchase order (dedicated view, not main purchase/detail).
+     */
+    public function purchaseDetail($id)
+    {
+        $po = PartsPurchaseOrder::with(['partBatches.repairPart.product', 'processedBy', 'customer'])->findOrFail($id);
+        $data['title_page'] = 'Parts Purchase Order – ' . $po->reference_id;
+        session()->put('page_title', $data['title_page']);
+        return view('v2.parts-inventory.purchases.detail', compact('po'))->with($data);
+    }
+
+    /**
+     * Approve a parts purchase order (admin / permission). Sets status to approved.
+     */
+    public function purchaseApprove($id)
+    {
+        $po = PartsPurchaseOrder::findOrFail($id);
+        if ((int) $po->status !== PartsPurchaseOrder::STATUS_PENDING) {
+            return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
+                ->with('info', 'This purchase order is not pending.');
+        }
+        $user = session('user');
+        $canApprove = $user && ($user->role_id == 1 || session('user_id') == 1 || (method_exists($user, 'hasPermission') && $user->hasPermission('purchase_approve')));
+        if (! $canApprove) {
+            return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
+                ->with('error', 'You do not have permission to approve purchase orders.');
+        }
+        $po->status = PartsPurchaseOrder::STATUS_APPROVED;
+        $po->save();
+        return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
+            ->with('success', 'Purchase order approved.');
+    }
+
+    /**
      * Edit a batch (batch number, quantity remaining, unit cost, received at, notes).
      */
     public function batchEdit($id)
@@ -438,6 +520,82 @@ class PartsInventoryController extends Controller
         $batch->notes = $request->filled('notes') ? $request->notes : null;
         $batch->save();
         return redirect()->route('v2.parts-inventory.inventory')->with('success', 'Batch updated.');
+    }
+
+    /**
+     * Create a purchase order for an existing batch and link it (action from Batches list).
+     * Redirects to the create form to select vendor and reference.
+     */
+    public function batchCreatePurchaseOrder($id)
+    {
+        $batch = PartBatch::with('repairPart')->findOrFail($id);
+        if ($batch->parts_purchase_order_id) {
+            return redirect()->route('v2.parts-inventory.purchases.detail', $batch->parts_purchase_order_id)
+                ->with('info', 'This batch is already linked to a purchase order.');
+        }
+        if ($batch->order_id) {
+            return redirect()->to(url('purchase/detail/' . $batch->order_id))
+                ->with('info', 'This batch is linked to a legacy purchase order.');
+        }
+
+        return redirect()->route('v2.parts-inventory.purchases.create', ['batch_id' => $batch->id])
+            ->with('info', 'Select vendor and reference to create the purchase order for batch ' . $batch->batch_number . '.');
+    }
+
+    /**
+     * Show form to create a parts purchase order (select vendor and reference). Requires batch_id.
+     */
+    public function purchaseCreateForm(Request $request)
+    {
+        $batchId = $request->query('batch_id');
+        if (! $batchId) {
+            return redirect()->route('v2.parts-inventory.purchases')
+                ->with('error', 'Missing batch. Use Batch Receive with "Create purchase order" or create from Batches list.');
+        }
+        $batch = PartBatch::with('repairPart')->findOrFail($batchId);
+        if ($batch->parts_purchase_order_id) {
+            return redirect()->route('v2.parts-inventory.purchases.detail', $batch->parts_purchase_order_id)
+                ->with('info', 'This batch is already linked to a purchase order.');
+        }
+
+        $data['title_page'] = 'Parts Inventory – Create Purchase Order';
+        session()->put('page_title', $data['title_page']);
+        $vendors = Customer_model::whereNotNull('is_vendor')->orderBy('first_name')->get()->mapWithKeys(function ($c) {
+            $label = trim($c->company ?? '') ?: $c->first_name;
+            return [$c->id => $label];
+        });
+        return view('v2.parts-inventory.purchases.create', compact('batch', 'vendors'))->with($data);
+    }
+
+    /**
+     * Store a new parts purchase order (from create form) and link the batch.
+     */
+    public function purchaseCreateStore(Request $request)
+    {
+        $request->validate([
+            'batch_id' => 'required|exists:part_batches,id',
+            'customer_id' => 'nullable|exists:customer,id',
+            'reference' => 'nullable|string|max:255',
+        ]);
+        $batch = PartBatch::with('repairPart')->findOrFail($request->batch_id);
+        if ($batch->parts_purchase_order_id) {
+            return redirect()->route('v2.parts-inventory.purchases.detail', $batch->parts_purchase_order_id)
+                ->with('info', 'This batch is already linked to a purchase order.');
+        }
+
+        $po = PartsPurchaseOrder::create([
+            'reference_id' => $batch->batch_number,
+            'reference' => $request->filled('reference') ? $request->reference : null,
+            'status' => PartsPurchaseOrder::STATUS_PENDING,
+            'currency' => 4,
+            'customer_id' => $request->filled('customer_id') ? $request->customer_id : null,
+            'processed_by' => session('user_id'),
+        ]);
+        $batch->parts_purchase_order_id = $po->id;
+        $batch->save();
+
+        return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
+            ->with('success', 'Purchase order created and linked to batch ' . $batch->batch_number . '.');
     }
 
     /**

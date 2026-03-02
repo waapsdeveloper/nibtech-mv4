@@ -46,6 +46,8 @@ use App\Models\Product_storage_sort_model;
 use App\Models\Stock_operations_model;
 use App\Models\Stock_movement_model;
 use App\Models\Vendor_grade_model;
+use App\Models\Multi_type_model;
+use App\Models\PartBatch;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
@@ -607,8 +609,14 @@ class Order extends Component
             $per_page = 10;
         }
 
+        $orderTypeIds = [1];
+        $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+        if ($partsOrderTypeId) {
+            $orderTypeIds[] = $partsOrderTypeId;
+        }
+
         $data['orders'] = Order_model::with('order_items', 'order_issues')->withCount('order_items_available as available_stock')
-        ->where('orders.order_type_id', 1)
+        ->whereIn('orders.order_type_id', $orderTypeIds)
         ->when(request('start_date'), function ($q) {
             return $q->where('orders.created_at', '>=', request('start_date'));
         })
@@ -826,6 +834,10 @@ class Order extends Component
         $data['order'] = Order_model::when($deleted == 1, function ($q) {
             return $q->withTrashed();
         })->where('id',$order_id)->first();
+
+        $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+        $data['is_parts_order'] = $partsOrderTypeId && $data['order'] && (int) $data['order']->order_type_id === $partsOrderTypeId;
+        $data['part_batches'] = $data['is_parts_order'] ? PartBatch::with('repairPart.product')->where('order_id', $order_id)->get() : collect();
 
         if(request('summary') == 1){
             $sold_total = [
