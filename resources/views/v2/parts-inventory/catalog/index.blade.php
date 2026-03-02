@@ -77,6 +77,9 @@
                                                 <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end">
                                                     <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.inventory') }}?search={{ urlencode($part->sku ?? $part->name) }}" target="_blank" rel="noopener noreferrer"><i class="fe fe-list me-2"></i>Batch list</a></li>
+                                                    @if (($part->batches_with_po_count ?? 0) === 0)
+                                                    <li><a class="dropdown-item text-primary" href="{{ route('v2.parts-inventory.batch-receive', ['sku' => $part->sku ?? '', 'name' => $part->name ?? '', 'create_po' => 1]) }}"><i class="fe fe-file-plus me-2"></i>Add PO</a></li>
+                                                    @endif
                                                     <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.part-broken.history', $part->id) }}"><i class="fe fe-alert-triangle me-2"></i>Broken history</a></li>
                                                     <li><hr class="dropdown-divider"></li>
                                                     <li>

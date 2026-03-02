@@ -14,6 +14,8 @@ class PartBatch extends Model
 
     protected $fillable = [
         'repair_part_id',
+        'order_id',
+        'parts_purchase_order_id',
         'batch_number',
         'name_label',
         'quantity_received',
@@ -38,6 +40,16 @@ class PartBatch extends Model
     public function repairPart()
     {
         return $this->belongsTo(RepairPart::class, 'repair_part_id');
+    }
+
+    public function order()
+    {
+        return $this->belongsTo(Order_model::class, 'order_id');
+    }
+
+    public function partsPurchaseOrder()
+    {
+        return $this->belongsTo(PartsPurchaseOrder::class, 'parts_purchase_order_id');
     }
 
     public function usages()

@@ -68,6 +68,18 @@
                                                 <button type="button" class="btn btn-link btn-sm p-0 border-0 text-dark" data-bs-toggle="dropdown" aria-expanded="false" title="Actions"><i class="fe fe-more-vertical"></i></button>
                                                 <ul class="dropdown-menu dropdown-menu-end">
                                                     <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.batch.edit', $b->id) }}"><i class="fe fe-edit-2 me-2"></i>Edit</a></li>
+                                                    @if ($b->parts_purchase_order_id)
+                                                    <li><a class="dropdown-item" href="{{ route('v2.parts-inventory.purchases.detail', $b->parts_purchase_order_id) }}"><i class="fe fe-file-text me-2"></i>View purchase order</a></li>
+                                                    @elseif ($b->order_id)
+                                                    <li><a class="dropdown-item" href="{{ url('purchase/detail/' . $b->order_id) }}"><i class="fe fe-file-text me-2"></i>View purchase order (legacy)</a></li>
+                                                    @else
+                                                    <li>
+                                                        <form method="POST" action="{{ route('v2.parts-inventory.batch.create-purchase-order', $b->id) }}" class="d-inline">
+                                                            @csrf
+                                                            <button type="submit" class="dropdown-item text-primary"><i class="fe fe-plus me-2"></i>Create purchase order</button>
+                                                        </form>
+                                                    </li>
+                                                    @endif
                                                 </ul>
                                             </div>
                                         </td>

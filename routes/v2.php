@@ -38,9 +38,15 @@ Route::prefix('v2')->group(function () {
     Route::get('parts-inventory/inventory', [PartsInventoryController::class, 'inventory'])->name('v2.parts-inventory.inventory');
     Route::get('parts-inventory/batches/{id}/edit', [PartsInventoryController::class, 'batchEdit'])->name('v2.parts-inventory.batch.edit');
     Route::put('parts-inventory/batches/{id}', [PartsInventoryController::class, 'batchUpdate'])->name('v2.parts-inventory.batch.update');
+    Route::post('parts-inventory/batches/{id}/create-purchase-order', [PartsInventoryController::class, 'batchCreatePurchaseOrder'])->name('v2.parts-inventory.batch.create-purchase-order');
     Route::get('parts-inventory/parts/{id}/batches', [PartsInventoryController::class, 'partBatches'])->name('v2.parts-inventory.part-batches');
     Route::get('parts-inventory/parts/{id}/broken', [PartsInventoryController::class, 'brokenHistory'])->name('v2.parts-inventory.part-broken.history');
     Route::get('parts-inventory/items-to-repair', [PartsInventoryController::class, 'itemsToRepair'])->name('v2.parts-inventory.items-to-repair');
+    Route::get('parts-inventory/purchases', [PartsInventoryController::class, 'purchasesIndex'])->name('v2.parts-inventory.purchases');
+    Route::get('parts-inventory/purchases/create', [PartsInventoryController::class, 'purchaseCreateForm'])->name('v2.parts-inventory.purchases.create');
+    Route::post('parts-inventory/purchases/create', [PartsInventoryController::class, 'purchaseCreateStore'])->name('v2.parts-inventory.purchases.create.store');
+    Route::get('parts-inventory/purchases/{id}', [PartsInventoryController::class, 'purchaseDetail'])->name('v2.parts-inventory.purchases.detail');
+    Route::post('parts-inventory/purchases/{id}/approve', [PartsInventoryController::class, 'purchaseApprove'])->name('v2.parts-inventory.purchases.approve');
     Route::get('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepair'])->name('v2.parts-inventory.items-to-repair.assign');
     Route::post('parts-inventory/items-to-repair/assign/{id}', [PartsInventoryController::class, 'itemAssignRepairStore'])->name('v2.parts-inventory.items-to-repair.assign.store');
     Route::post('parts-inventory/items-to-repair/mark-repaired/{id}', [PartsInventoryController::class, 'itemMarkRepaired'])->name('v2.parts-inventory.items-to-repair.mark-repaired');
