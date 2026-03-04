@@ -157,41 +157,41 @@
             </div>
         </div>
         <br>
-        <form action="" method="GET" id="search">
+        <form action="{{ url('order') }}" method="GET" id="search">
             <div class="row">
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" id="order_id_input" name="order_id" placeholder="Enter ID" value="@isset($_GET['order_id']){{$_GET['order_id']}}@endisset">
+                        <input type="text" class="form-control" id="order_id_input" name="order_id" placeholder="Enter ID" value="{{ request('order_id') }}">
                         <label for="order_id_input">Order Number</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="@isset($_GET['start_date']){{$_GET['start_date']}}@endisset">
+                        <input class="form-control" id="start_date_input" name="start_date" id="datetimepicker" type="date" value="{{ request('start_date') }}">
                         <label for="start_date_input">{{ __('locale.Start Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="start_time_input" name="start_time" id="timetimepicker" type="time" value="@isset($_GET['start_time']){{$_GET['start_time']}}@endisset">
+                        <input class="form-control" id="start_time_input" name="start_time" id="timetimepicker" type="time" value="{{ request('start_time') }}">
                         <label for="start_time_input">Time</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="@isset($_GET['end_date']){{$_GET['end_date']}}@endisset">
+                        <input class="form-control" id="end_date_input" name="end_date" id="datetimepicker" type="date" value="{{ request('end_date') }}">
                         <label for="end_date_input">{{ __('locale.End Date') }}</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input class="form-control" id="end_time_input" name="end_time" id="timetimepicker" type="time" value="@isset($_GET['end_time']){{$_GET['end_time']}}@endisset">
+                        <input class="form-control" id="end_time_input" name="end_time" id="timetimepicker" type="time" value="{{ request('end_time') }}">
                         <label for="end_time_input">Time</label>
                     </div>
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="@isset($_GET['sku']){{$_GET['sku']}}@endisset" autofocus>
+                        <input type="text" class="form-control focused" id="sku_input" name="sku" placeholder="Enter SKU" value="{{ request('sku') }}" autofocus>
                         <label for="sku_input" class="">SKU</label>
                     </div>
                 </div>
@@ -200,20 +200,20 @@
                         <select id="status_input" name="status" class="form-control form-select" data-bs-placeholder="Select Status">
                             <option value="">Status</option>
                             @foreach ($order_statuses as $id => $status)
-                                <option value="{{$id}}" @if(isset($_GET['status']) && $id == $_GET['status']) {{'selected'}}@endif>{{$status}}</option>
+                                <option value="{{$id}}" {{ request('status') == $id ? 'selected' : '' }}>{{$status}}</option>
                             @endforeach
                         </select>
                         {{-- <label for="status_input">Status</label>
                     </div> --}}
                 </div>
-                <button class="btn btn-primary" type="submit">{{ __('locale.Search') }}</button>
-                <a href="{{url('order')}}?per_page=10" class="btn btn-default">Reset</a>
+                <button class="btn btn-primary" type="submit">Search</button>
+                <a href="{{ url('order') }}" class="btn btn-default">Reset</a>
             </div>
                 <br>
             <div class="row">
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="@isset($_GET['imei']){{$_GET['imei']}}@endisset">
+                        <input type="text" class="form-control" name="imei" placeholder="Enter IMEI" value="{{ request('imei') }}">
                         <label for="">IMEI</label>
                     </div>
                 </div>
@@ -223,7 +223,7 @@
                             <option value="">Processed by</option>
                             <option value="0">None</option>
                             @foreach ($admins as $id => $adm)
-                                <option value="{{$id}}" @if(isset($_GET['adm']) && $id == $_GET['adm']) {{'selected'}}@endif>{{$adm }}</option>
+                                <option value="{{$id}}" {{ request('adm') == $id ? 'selected' : '' }}>{{$adm }}</option>
                             @endforeach
                         </select>
                         {{-- <label for="adm_input">Processed By</label> --}}
@@ -231,7 +231,7 @@
                 </div>
                 <div class="col-md col-sm-6">
                     <div class="form-floating">
-                        <input type="text" class="form-control" name="tracking_number" placeholder="Enter Tracking Number" value="@isset($_GET['tracking_number']){{$_GET['tracking_number']}}@endisset">
+                        <input type="text" class="form-control" name="tracking_number" placeholder="Enter Tracking Number" value="{{ request('tracking_number') }}">
                         <label for="">Tracking Number</label>
                     </div>
                 </div>
@@ -239,8 +239,8 @@
                 <div class="col-md col-sm-6">
                     <select name="with_stock" class="form-control form-select" data-bs-placeholder="Select With Stock">
                         <option value="">With & Without Stock</option>
-                        <option value="1" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 1) {{'selected'}}@endif>With Stock</option>
-                        <option value="2" @if(isset($_GET['with_stock']) && $_GET['with_stock'] == 2) {{'selected'}}@endif>Without Stock</option>
+                        <option value="1" {{ request('with_stock') == 1 ? 'selected' : '' }}>With Stock</option>
+                        <option value="2" {{ request('with_stock') == 2 ? 'selected' : '' }}>Without Stock</option>
                     </select>
                 </div>
 
@@ -248,16 +248,16 @@
                     <select name="exclude_topup[]" class="form-control form-select select2" multiple data-bs-placeholder="Exclude Topups">
                         <option value="">Exclude Topups</option>
                         @foreach ($topups as $id => $name)
-                            <option value="{{ $id }}" @if (isset($_GET['exclude_topup']) && in_array($id, $_GET['exclude_topup'])) {{ 'selected' }} @endif>
+                            <option value="{{ $id }}" {{ in_array($id, request('exclude_topup', [])) ? 'selected' : '' }}>
                                 {{ $name }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="col-md col-sm-6">
                     <select id="marketplace_input" name="marketplace" class="form-control form-select" data-bs-placeholder="Select Marketplace">
-                        <option value="0" @if (request('marketplace') == 0) {{'selected'}} @endif>All Marketplace</option>
+                        <option value="0" {{ request('marketplace') == 0 ? 'selected' : '' }}>All Marketplace</option>
                         @foreach ($marketplaces as $id => $name)
-                            <option value="{{$id}}" @if(isset($_GET['marketplace']) && $id == $_GET['marketplace']) {{'selected'}} @elseif (!isset($_GET['marketplace']) && $id == 1) {{'selected'}} @endif>{{$name }}</option>
+                            <option value="{{$id}}" {{ (request('marketplace') == $id || (!request()->has('marketplace') && $id == 1)) ? 'selected' : '' }}>{{$name }}</option>
                         @endforeach
                     </select>
                 </div>
@@ -283,15 +283,15 @@
                         <label class="form-check-label" for="status_zero">Order status 0</label>
                     </div>
                 </div>
-                <input type="hidden" name="page" value="{{ Request::get('page') }}">
-                @if (Request::get('care') == 1)
-                    <input type="hidden" name="care" value="{{ Request::get('care') }}">
+                <input type="hidden" name="page" value="{{ request('page') }}">
+                @if (request('care'))
+                    <input type="hidden" name="care" value="{{ request('care') }}">
                 @endif
-                @if (Request::get('missing'))
-                    <input type="hidden" name="missing" value="{{ Request::get('missing') }}">
+                @if (request('missing'))
+                    <input type="hidden" name="missing" value="{{ request('missing') }}">
                 @endif
-                @if (Request::get('transaction'))
-                    <input type="hidden" name="transaction" value="{{ Request::get('transaction') }}">
+                @if (request('transaction'))
+                    <input type="hidden" name="transaction" value="{{ request('transaction') }}">
                 @endif
             </div>
 
@@ -452,20 +452,20 @@
                                 {{-- <div class="form-group"> --}}
                                     <label for="perPage" class="card-title inline">Sort:</label>
                                     <select name="sort" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
-                                        <option value="1" {{ Request::get('sort') == 1 ? 'selected' : '' }}>Order DESC</option>
-                                        <option value="2" {{ Request::get('sort') == 2 ? 'selected' : '' }}>Order ASC</option>
-                                        <option value="3" {{ Request::get('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
-                                        <option value="4" {{ Request::get('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
+                                        <option value="1" {{ request('sort') == 1 ? 'selected' : '' }}>Order DESC</option>
+                                        <option value="2" {{ request('sort') == 2 ? 'selected' : '' }}>Order ASC</option>
+                                        <option value="3" {{ request('sort') == 3 ? 'selected' : '' }}>Name DESC</option>
+                                        <option value="4" {{ request('sort') == 4 ? 'selected' : '' }}>Name ASC</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
                                 {{-- </div>
                                 <div class="form-group"> --}}
                                     <label for="perPage" class="card-title inline">per page:</label>
                                     <select name="per_page" class="form-select form-select-sm" id="perPage" onchange="this.form.submit()" form="search">
-                                        <option value="10" {{ Request::get('per_page') == 10 ? 'selected' : '' }}>10</option>
-                                        <option value="20" {{ Request::get('per_page') == 20 ? 'selected' : '' }}>20</option>
-                                        <option value="50" {{ Request::get('per_page') == 50 ? 'selected' : '' }}>50</option>
-                                        <option value="100" {{ Request::get('per_page') == 100 ? 'selected' : '' }}>100</option>
+                                        <option value="10" {{ request('per_page') == 10 || !request()->has('per_page') ? 'selected' : '' }}>10</option>
+                                        <option value="20" {{ request('per_page') == 20 ? 'selected' : '' }}>20</option>
+                                        <option value="50" {{ request('per_page') == 50 ? 'selected' : '' }}>50</option>
+                                        <option value="100" {{ request('per_page') == 100 ? 'selected' : '' }}>100</option>
                                     </select>
                                     {{-- <button type="submit">Apply</button> --}}
                                 {{-- </div> --}}
@@ -1164,7 +1164,7 @@
                     <tfoot>
                         <tr>
                             <td colspan="4">
-                                {{ $orders->onEachSide(3)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
+                                {{ $orders->appends(request()->query())->onEachSide(3)->links() }} {{ __('locale.From') }} {{$orders->firstItem()}} {{ __('locale.To') }} {{$orders->lastItem()}} {{ __('locale.Out Of') }} {{$orders->total()}}
 
                             </td>
                             @if (request('missing_refund') || request('missing_reimburse'))
