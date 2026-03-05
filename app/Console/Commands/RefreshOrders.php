@@ -10,6 +10,7 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
+use App\Events\V2\OrderStatusChanged;
 use Illuminate\Support\Facades\DB;
 
 class RefreshOrders extends BaseCommand
@@ -62,8 +63,25 @@ class RefreshOrders extends BaseCommand
             // Sync new orders into DB so processed_at (from BM date_shipping) and other fields are updated.
             foreach ($resArray1 as $orderObj) {
                 if (!empty($orderObj)) {
+                    $referenceId = $orderObj->order_id ?? null;
+                    $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+                    $orderBefore = $referenceId ? Order_model::where('reference_id', $referenceId)
+                        ->where('marketplace_id', $marketplaceId)
+                        ->where('order_type_id', 3)
+                        ->first() : null;
+                    $oldStatus = $orderBefore ? $orderBefore->status : null;
+
                     $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
                     $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+
+                    $orderAfter = $referenceId ? Order_model::where('reference_id', $referenceId)
+                        ->where('marketplace_id', $marketplaceId)
+                        ->where('order_type_id', 3)
+                        ->first() : null;
+                    if ($orderAfter && $orderAfter->status == 3 && (int) $oldStatus !== 3) {
+                        $orderItems = Order_item_model::where('order_id', $orderAfter->id)->get();
+                        event(new OrderStatusChanged($orderAfter, (int) ($oldStatus ?? 0), 3, $orderItems));
+                    }
                 }
             }
 
@@ -139,8 +157,25 @@ class RefreshOrders extends BaseCommand
             $modifiedCount = count($resArray);
             foreach ($resArray as $orderObj) {
                 if (!empty($orderObj)) {
-                $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
-                $order_item_model->updateOrderItemsInDB($orderObj,null,$bm);
+                    $referenceId = $orderObj->order_id ?? null;
+                    $marketplaceId = (int) ($orderObj->marketplace_id ?? 1);
+                    $orderBefore = $referenceId ? Order_model::where('reference_id', $referenceId)
+                        ->where('marketplace_id', $marketplaceId)
+                        ->where('order_type_id', 3)
+                        ->first() : null;
+                    $oldStatus = $orderBefore ? $orderBefore->status : null;
+
+                    $order_model->updateOrderInDB($orderObj, false, $bm, $currency_codes, $country_codes);
+                    $order_item_model->updateOrderItemsInDB($orderObj, null, $bm);
+
+                    $orderAfter = $referenceId ? Order_model::where('reference_id', $referenceId)
+                        ->where('marketplace_id', $marketplaceId)
+                        ->where('order_type_id', 3)
+                        ->first() : null;
+                    if ($orderAfter && $orderAfter->status == 3 && (int) $oldStatus !== 3) {
+                        $orderItems = Order_item_model::where('order_id', $orderAfter->id)->get();
+                        event(new OrderStatusChanged($orderAfter, (int) ($oldStatus ?? 0), 3, $orderItems));
+                    }
                 }
             }
         } else {
