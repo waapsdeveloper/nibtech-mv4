@@ -15,7 +15,7 @@
                         <tr>
                             <th>Topup Ref</th>
                             <th>Pending Orders</th>
-                            <th>Orders arrived</th>
+                            <th>Orders In Between</th>
                             <th>Qty Before</th>
                             <th>Qty Added</th>
                             <th>Qty After</th>
@@ -28,7 +28,7 @@
                     </tbody>
                 </table>
                 <p class="small text-muted mt-2 mb-0">
-                    <strong>Note:</strong> For full verification (Topup Ref 9xxx): Qty Before = listed before this push, Qty Added = items scanned, Qty After = listed after push (may be scan − Pending Orders). <strong>Orders arrived</strong> = number of sales orders created between this verification and the next (or until now for the latest row).
+                    <strong>Note:</strong> For full verification (Topup Ref 9xxx): Qty Before = listed before this push, Qty Added = items scanned, Qty After = listed after push (may be scan − Pending Orders). <strong>Orders In Between</strong> = distinct marketplace (sales) orders between this verification and the next (or until now for the latest). Values are from the scheduled job when available (updated every 6h), otherwise computed on load.
                 </p>
             </div>
         </div>

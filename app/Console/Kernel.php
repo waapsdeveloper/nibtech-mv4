@@ -200,6 +200,13 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
+        // Listed stock verification: calculate orders_in_between (orders between previous and this verification)
+        $schedule->command('listed-stock:orders-in-between --days=30')
+            ->everySixHours()
+            ->withoutOverlapping(90)
+            ->onOneServer()
+            ->runInBackground();
+
         // queue:retry all removed from schedule (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
         // Retrying all failed jobs at once can spike connections. Run manually when needed:
         //   php artisan queue:retry all

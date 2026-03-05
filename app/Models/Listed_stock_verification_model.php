@@ -19,6 +19,7 @@ class Listed_stock_verification_model extends Model
         'process_id',
         'variation_id',
         'pending_orders',
+        'orders_in_between',
         'qty_from',
         'qty_change',
         'qty_to',

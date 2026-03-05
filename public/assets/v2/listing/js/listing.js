@@ -139,13 +139,13 @@ function show_variation_history(variationId, variationName) {
                     const ref = item.process_ref ?? '';
                     const is9xxx = /^9\d{3}$/.test(String(ref));
                     const refCell = is9xxx ? `${ref} <span class="badge bg-secondary ms-1" title="Full verification: Qty Added = scanned, Qty After = listed (scan − Pending Orders)">Verification</span>` : ref;
-                    const ordersArrived = item.orders_arrived_between !== undefined ? item.orders_arrived_between : '';
-                    const ordersArrivedTitle = 'Sales orders created between this verification and the next (or until now for the latest)';
+                    const ordersInBetween = (item.orders_in_between !== undefined && item.orders_in_between !== null) ? item.orders_in_between : (item.orders_arrived_between !== undefined ? item.orders_arrived_between : '');
+                    const ordersInBetweenTitle = 'Distinct marketplace orders between this verification and the next (from job when available, else computed)';
                     historyTable += `
                         <tr>
                             <td>${refCell}</td>
                             <td>${item.pending_orders ?? ''}</td>
-                            <td title="${ordersArrivedTitle}">${ordersArrived}</td>
+                            <td title="${ordersInBetweenTitle}">${ordersInBetween}</td>
                             <td>${item.qty_from ?? ''}</td>
                             <td>${item.qty_change ?? ''}</td>
                             <td>${item.qty_to ?? ''}</td>
