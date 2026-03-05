@@ -142,15 +142,14 @@ function show_variation_history(variationId, variationName) {
                     const ordersInBetween = (item.orders_in_between !== undefined && item.orders_in_between !== null) ? item.orders_in_between : (item.orders_arrived_between !== undefined ? item.orders_arrived_between : '');
                     const ordersInBetweenTitle = 'Distinct marketplace orders between this verification and the next (from job when available, else computed)';
                     const expectedFromQty = item.expected_orders_from_qty !== undefined && item.expected_orders_from_qty !== null ? item.expected_orders_from_qty : '—';
-                    const consistent = item.qty_consistent === true ? '<span class="text-success" title="Orders In Between matches Expected (from qty)">✓</span>' : (item.qty_consistent === false ? '<span class="text-danger" title="Mismatch: Expected ≠ Orders In Between">✗</span>' : '—');
+                    const consistentIcon = item.qty_consistent === true ? '<span class="text-success" title="Match">✓</span>' : (item.qty_consistent === false ? '<span class="text-danger" title="Mismatch">✗</span>' : '—');
                     const consistentCellClass = item.qty_consistent === false ? ' history-cell-inconsistent' : '';
+                    const inBetweenCell = `<td class="in-between-cell${consistentCellClass}" title="${ordersInBetweenTitle}"><span class="in-between-left">${ordersInBetween}</span><span class="in-between-right"><span class="text-muted small">exp: ${expectedFromQty}</span>${consistentIcon}</span></td>`;
                     historyTable += `
                         <tr>
                             <td>${refCell}</td>
                             <td>${item.pending_orders ?? ''}</td>
-                            <td title="${ordersInBetweenTitle}">${ordersInBetween}</td>
-                            <td>${expectedFromQty}</td>
-                            <td class="${consistentCellClass}">${consistent}</td>
+                            ${inBetweenCell}
                             <td>${item.qty_from ?? ''}</td>
                             <td>${item.qty_change ?? ''}</td>
                             <td>${item.qty_to ?? ''}</td>
@@ -159,13 +158,13 @@ function show_variation_history(variationId, variationName) {
                         </tr>`;
                 });
             } else {
-                historyTable = '<tr><td colspan="10" class="text-center text-muted">No history found</td></tr>';
+                historyTable = '<tr><td colspan="8" class="text-center text-muted">No history found</td></tr>';
             }
             $('#variationHistoryTable').html(historyTable);
         },
         error: function(xhr) {
             console.error(xhr.responseText);
-            $('#variationHistoryTable').html('<tr><td colspan="10" class="text-center text-danger">Error loading history</td></tr>');
+            $('#variationHistoryTable').html('<tr><td colspan="8" class="text-center text-danger">Error loading history</td></tr>');
         }
     });
 }
