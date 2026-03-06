@@ -98,7 +98,7 @@
 
                 @endif
                     @if ($process->status == 2 && $variations->count() == 0)
-                    <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}">
+                    <form class="form-inline" method="POST" action="{{url('repair/approve').'/'.$process->id}}" id="repair-approve-form">
                         @csrf
                         <div class="form-floating">
                             <input type="text" list="currencies" id="currency" name="currency" class="form-control" value="{{$process->currency_id->code}}">
@@ -110,11 +110,11 @@
                             <label for="currency">Currency</label>
                         </div>
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$process->exchange_rate}}" >
+                            <input type="text" class="form-control" id="rate" name="rate" placeholder="Enter Exchange Rate" value="{{$process->exchange_rate}}" inputmode="decimal">
                             <label for="rate">Exchange Rate</label>
                         </div>
                         <div class="form-floating">
-                            <input type="text" class="form-control" id="cost" name="cost" value="{{$process->process_stocks->sum('price')}}" placeholder="Enter Total Cost" required>
+                            <input type="text" class="form-control" id="cost" name="cost" value="{{$process->process_stocks->sum('price')}}" placeholder="Enter Total Cost (numbers only, e.g. 1883 or 1,883)" required inputmode="decimal">
                             <label for="cost">Total Cost</label>
                         </div>
                         <button type="submit" class="btn btn-success">Close</button>
@@ -773,6 +773,28 @@
         <script>
 
         $(document).ready(function() {
+            // Before submit: normalize cost and rate (strip commas/spaces) so server receives numeric values
+            $('#repair-approve-form').on('submit', function() {
+                var $cost = $(this).find('#cost');
+                var $rate = $(this).find('#rate');
+                function normalizeNumeric(val) {
+                    if (val == null || val === '') return val;
+                    return String(val).replace(/[\s,]/g, '');
+                }
+                var costVal = normalizeNumeric($cost.val());
+                var rateVal = normalizeNumeric($rate.val());
+                if (costVal !== '' && isNaN(parseFloat(costVal))) {
+                    alert('Total cost must be a valid number (e.g. 1883 or 1,883).');
+                    return false;
+                }
+                if (rateVal !== '' && isNaN(parseFloat(rateVal))) {
+                    alert('Exchange rate must be a valid number.');
+                    return false;
+                }
+                $cost.val(costVal !== '' ? costVal : $cost.val());
+                $rate.val(rateVal !== '' ? rateVal : $rate.val());
+            });
+
             $('#currency').on('input', function() {
                 var selectedCurrency = $(this).val();
                 var rate = $('#currencies').find('option[value="' + selectedCurrency + '"]').data('rate');
