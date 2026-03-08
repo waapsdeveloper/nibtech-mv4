@@ -164,5 +164,9 @@ Route::prefix('v2')->group(function () {
     });
 
     // Marketplace Sync Failures (Extras) - removed (feature not used)
+
+    // Extras: Orders In Between Summary (listed-stock:orders-in-between job result)
+    Route::get('extras/orders-in-between-summary', [\App\Http\Controllers\V2\OrdersInBetweenSummaryController::class, 'index'])->name('v2.extras.orders-in-between-summary.index');
+    Route::put('extras/orders-in-between-summary', [\App\Http\Controllers\V2\OrdersInBetweenSummaryController::class, 'update'])->name('v2.extras.orders-in-between-summary.update');
 });
 

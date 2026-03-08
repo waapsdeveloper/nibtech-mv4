@@ -1,6 +1,13 @@
 {{-- Variation History Modal --}}
 <div class="modal fade" id="variationHistoryModal" tabindex="-1" aria-labelledby="variationHistoryModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+    <style>
+        #variationHistoryModal .history-cell-inconsistent { background-color: #fff9c4 !important; }
+        #variationHistoryModal .modal-dialog { max-width: 95vw; width: 95%; }
+        #variationHistoryModal .in-between-cell { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
+        #variationHistoryModal .in-between-left { font-weight: 600; }
+        #variationHistoryModal .in-between-right { display: flex; align-items: center; gap: 0.35rem; }
+    </style>
+    <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
             <div class="modal-header">
                 <h5 id="variation_name"></h5>
@@ -15,7 +22,7 @@
                         <tr>
                             <th>Topup Ref</th>
                             <th>Pending Orders</th>
-                            <th>Orders arrived</th>
+                            <th>In Between</th>
                             <th>Qty Before</th>
                             <th>Qty Added</th>
                             <th>Qty After</th>
@@ -28,7 +35,7 @@
                     </tbody>
                 </table>
                 <p class="small text-muted mt-2 mb-0">
-                    <strong>Note:</strong> For full verification (Topup Ref 9xxx): Qty Before = listed before this push, Qty Added = items scanned, Qty After = listed after push (may be scan − Pending Orders). <strong>Orders arrived</strong> = number of sales orders created between this verification and the next (or until now for the latest row).
+                    <strong>Note:</strong> For full verification (Topup Ref 9xxx): Qty Before = listed before this push, Qty Added = items scanned, Qty After = listed after push (may be scan − Pending Orders). <strong>In Between</strong> = Orders In Between (left) vs Expected from qty (right); ✓ = match, ✗ = mismatch (cell highlighted in yellow).
                 </p>
             </div>
         </div>

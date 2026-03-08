@@ -17,6 +17,7 @@ use Carbon\Carbon;
 
 
 use App\Console\Commands\BaseCommand;
+use App\Events\V2\OrderStatusChanged;
 use GuzzleHttp\Client;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\DB;
@@ -229,9 +230,14 @@ class RefreshNew extends BaseCommand
 
             // Deduct listed_stock if conditions are met (pass $order to avoid duplicate fetch)
             $this->deductListedStockForOrder($orderObj, $order, $isNewOrder, $oldStatus);
+
+            // Fire OrderStatusChanged when order becomes completed (status 3) so ReduceStockOnOrderCompleted
+            // can sync BackMarket stock from API instead of double-reducing
+            if ($order->status == 3 && ($isNewOrder || (int) $oldStatus !== 3)) {
+                $orderItems = Order_item_model::where('order_id', $order->id)->get();
+                event(new OrderStatusChanged($order, (int) ($oldStatus ?? 0), 3, $orderItems));
+            }
         }
-
-
     }
 
     private function validateOrderlines($order_id, $sku, $bm)

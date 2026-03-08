@@ -232,9 +232,12 @@ class Repair extends Component
         $repair = Process_model::find($repair_id);
         $currency = Currency_model::where('code',request('currency'))->first();
 
-        if($currency != null && $currency->id != 4){
+        if ($currency != null && $currency->id != 4) {
             $repair->currency = $currency->id;
-            $repair->exchange_rate = request('rate');
+            $rate = $this->normalizeNumericInput(request('rate'));
+            if ($rate !== null && $rate >= 0) {
+                $repair->exchange_rate = $rate;
+            }
         }
         $repair->tracking_number = request('tracking_number');
         $repair->description = request('description');
@@ -259,16 +262,34 @@ class Repair extends Component
     public function repair_approve($repair_id){
         $repair = Process_model::find($repair_id);
 
-        $currency = Currency_model::where('code',request('currency'))->first();
-        if($currency != null && $currency->id != 4){
+        $currency = Currency_model::where('code', request('currency'))->first();
+        if ($currency != null && $currency->id != 4) {
             $repair->currency = $currency->id;
-            $repair->exchange_rate = request('rate');
+            $rateRaw = request('rate');
+            $rate = $this->normalizeNumericInput($rateRaw);
+            if ($rate === null || $rate < 0) {
+                session()->put('error', 'Exchange rate must be a valid positive number.');
+                return redirect()->back();
+            }
+            $repair->exchange_rate = $rate;
         }
 
-        $repair_stocks = $repair->process_stocks->where("status",2);
+        $repair_stocks = $repair->process_stocks->where('status', 2);
         $item_count = $repair_stocks->count();
-        $cost = request('cost');
-        $unit_cost = ($cost/$item_count) / ($repair->exchange_rate ?? 1);
+        if ($item_count === 0) {
+            session()->put('error', 'No processed items to approve.');
+            return redirect()->back();
+        }
+
+        $costRaw = request('cost');
+        $cost = $this->normalizeNumericInput($costRaw);
+        if ($cost === null || $cost < 0) {
+            session()->put('error', 'Total cost must be a valid positive number (e.g. 1883 or 1,883).');
+            return redirect()->back();
+        }
+
+        $exchangeRate = $repair->exchange_rate ?? 1;
+        $unit_cost = ($cost / $item_count) / $exchangeRate;
         foreach($repair_stocks as $item){
             $item->price = $unit_cost;
             $item->save();
@@ -300,6 +321,26 @@ class Repair extends Component
 
         return redirect()->back();
     }
+
+    /**
+     * Normalize user input that may contain thousand separators (e.g. "1,883" or "1.883,50").
+     * Strips commas and spaces, then returns a float or null if not numeric.
+     */
+    private function normalizeNumericInput($value): ?float
+    {
+        if ($value === null || $value === '') {
+            return null;
+        }
+        $cleaned = preg_replace('/[\s,]/', '', (string) $value);
+        if ($cleaned === '') {
+            return null;
+        }
+        if (!is_numeric($cleaned)) {
+            return null;
+        }
+        return (float) $cleaned;
+    }
+
     public function repair_revert_status($repair_id){
         $repair = Process_model::find($repair_id);
         if($repair->status > 1){

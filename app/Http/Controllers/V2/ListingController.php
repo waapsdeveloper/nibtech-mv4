@@ -817,6 +817,24 @@ class ListingController extends Controller
                 ->value('c') ?? 0);
         });
 
+        // Consistency check: derive "expected orders" from qty flow and compare to orders_in_between
+        // Rows are newest-first (index 0 = newest). For row i, "next" verification in time is row i-1.
+        // Expected orders in period = Qty_After(i) - Qty_Before(i-1).
+        for ($i = 1; $i < $listed_stock_verifications->count(); $i++) {
+            $curr = $listed_stock_verifications[$i];
+            $next = $listed_stock_verifications[$i - 1];
+            $curr->expected_orders_from_qty = (int) $curr->qty_to - (int) $next->qty_from;
+            $ordersValue = $curr->orders_in_between ?? $curr->orders_arrived_between ?? null;
+            $curr->qty_consistent = $ordersValue !== null && $ordersValue !== ''
+                ? ((int) $curr->expected_orders_from_qty === (int) $ordersValue)
+                : null;
+        }
+        // Newest row (index 0): no "next" verification in list, so no expected from qty
+        if ($listed_stock_verifications->isNotEmpty()) {
+            $listed_stock_verifications->first()->expected_orders_from_qty = null;
+            $listed_stock_verifications->first()->qty_consistent = null;
+        }
+
         return response()->json(['listed_stock_verifications' => $listed_stock_verifications]);
     }
 
