@@ -574,8 +574,7 @@ class ListingController extends Controller
         $page = request('page', 1);
         $perPage = request('per_page', 50); // Default 50 items per page
 
-        // Remove restrictive whereHas filter to show ALL available stocks
-        // Previously: ->whereHas('latest_listing_or_topup') was limiting results
+        // Source of truth: stocks table (details). Uses latest_closed_listing_or_topup.
         $stocksQuery = Stock_model::where('variation_id', $id)->where('status', 1)->whereHas('latest_closed_listing_or_topup');
 
         // Order by ID descending (latest stocks first)
@@ -584,8 +583,8 @@ class ListingController extends Controller
         // Get stock IDs from paginated items (for current page)
         $stockIds = $stocks->pluck('id');
 
-        // Get ALL stock IDs for this variation (for average cost calculation)
-        $allStockIds = Stock_model::where('variation_id', $id)->where('status', 1)->pluck('id');
+        // Get ALL stock IDs for this variation using same scope (for average cost calculation)
+        $allStockIds = (clone $stocksQuery)->pluck('id');
 
         // Get stock costs for current page stocks
         $stock_costs = Order_item_model::whereHas('order', function($q){

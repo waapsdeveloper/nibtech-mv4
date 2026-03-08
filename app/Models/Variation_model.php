@@ -29,6 +29,7 @@ class Variation_model extends Model
         'default_min_threshold',
         'default_max_threshold',
         'default_min_stock_required',
+        'available_count_override',
     ];
 
     protected $casts = [
@@ -38,14 +39,24 @@ class Variation_model extends Model
         'default_min_stock_required' => 'integer',
     ];
 
-    // protected static function booted()
-    // {
-    //     static::addGlobalScope(new Status_not_3_scope);
-    // }
+    protected $appends = ['display_available_count'];
 
-
-
-
+    /**
+     * Available count shown on listing card. Uses override (stocks table source of truth) when set.
+     */
+    public function getDisplayAvailableCountAttribute(): int
+    {
+        if (array_key_exists('available_count_override', $this->attributes) && $this->attributes['available_count_override'] !== null) {
+            return (int) $this->attributes['available_count_override'];
+        }
+        if (array_key_exists('available_stocks_count', $this->attributes)) {
+            return (int) $this->attributes['available_stocks_count'];
+        }
+        if ($this->relationLoaded('available_stocks')) {
+            return $this->available_stocks->count();
+        }
+        return 0;
+    }
 
     public function duplicates(){
         return $this->hasMany(Variation_model::class, 'product_id', 'product_id')

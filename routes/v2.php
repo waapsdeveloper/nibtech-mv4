@@ -168,5 +168,12 @@ Route::prefix('v2')->group(function () {
     // Extras: Orders In Between Summary (listed-stock:orders-in-between job result)
     Route::get('extras/orders-in-between-summary', [\App\Http\Controllers\V2\OrdersInBetweenSummaryController::class, 'index'])->name('v2.extras.orders-in-between-summary.index');
     Route::put('extras/orders-in-between-summary', [\App\Http\Controllers\V2\OrdersInBetweenSummaryController::class, 'update'])->name('v2.extras.orders-in-between-summary.update');
+
+    // Extras: Listing Available vs Stocks Table Discrepancies
+    Route::get('extras/listing-available-stock-discrepancies', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'index'])->name('v2.extras.listing-available-stock-discrepancies.index');
+    Route::get('extras/listing-available-stock-discrepancies/{id}', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'show'])->name('v2.extras.listing-available-stock-discrepancies.show');
+    Route::delete('extras/listing-available-stock-discrepancies/{id}', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'destroy'])->name('v2.extras.listing-available-stock-discrepancies.destroy');
+    Route::post('extras/listing-available-stock-discrepancies/run-check', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'runCheck'])->name('v2.extras.listing-available-stock-discrepancies.run-check');
+    Route::post('extras/listing-available-stock-discrepancies/fix', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'fix'])->name('v2.extras.listing-available-stock-discrepancies.fix');
 });
 
