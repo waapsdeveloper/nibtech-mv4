@@ -170,35 +170,32 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        // V2: Unified Order Sync - Daily Schedule
-        // New orders sync - every 2 hours during business hours
-        $schedule->command('v2:sync-orders --type=new')
-            ->everyTwoHours()
-            ->between('06:00', '22:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // V2: Unified Order Sync – DISABLED (V1 is single source of truth for orders; v2 can override order data)
+        // Re-enable when V2 order sync is trusted. Manual run: php artisan v2:sync-orders --type=new|modified|care|incomplete
+        // $schedule->command('v2:sync-orders --type=new')
+        //     ->everyTwoHours()
+        //     ->between('06:00', '22:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
 
-        // Modified orders sync - daily at 2 AM
-        $schedule->command('v2:sync-orders --type=modified')
-            ->dailyAt('02:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // $schedule->command('v2:sync-orders --type=modified')
+        //     ->dailyAt('02:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
 
-        // Care/replacement records sync - daily at 4 AM
-        $schedule->command('v2:sync-orders --type=care')
-            ->dailyAt('04:00')
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // $schedule->command('v2:sync-orders --type=care')
+        //     ->dailyAt('04:00')
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
 
-        // Incomplete orders sync - every 4 hours
-        $schedule->command('v2:sync-orders --type=incomplete')
-            ->everyFourHours()
-            ->withoutOverlapping()
-            ->onOneServer()
-            ->runInBackground();
+        // $schedule->command('v2:sync-orders --type=incomplete')
+        //     ->everyFourHours()
+        //     ->withoutOverlapping()
+        //     ->onOneServer()
+        //     ->runInBackground();
 
         // Listed stock verification: calculate orders_in_between (orders between previous and this verification)
         $schedule->command('listed-stock:orders-in-between --days=30')
