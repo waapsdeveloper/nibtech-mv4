@@ -89,7 +89,7 @@ Route::get('error501', Error501::class)->name('error');
 
 Route::middleware(['2fa'])->group(function () {
 
-    Route::group(function () {
+    Route::group([], function () {
         Horizon::routes();
     });
     // Route::get('/', [IndexController::class, 'index'])->name('index');
