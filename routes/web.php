@@ -56,6 +56,8 @@ use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
 use App\Http\Livewire\SupportTickets;
 use Illuminate\Http\Request;
+use Laravel\Horizon\Horizon;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -86,6 +88,10 @@ Route::get('error500', Error500::class)->name('error');
 Route::get('error501', Error501::class)->name('error');
 
 Route::middleware(['2fa'])->group(function () {
+
+    Route::group(function () {
+        Horizon::routes();
+    });
     // Route::get('/', [IndexController::class, 'index'])->name('index');
     Route::get('/', Index::class)->name('index');
     Route::get('index', Index::class)->name('index');
