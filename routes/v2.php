@@ -19,6 +19,11 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+use Laravel\Horizon\Horizon;
+Route::middleware(['auth', 'admin'])->group(function () {
+    Horizon::routes();
+});
+
 Route::prefix('v2')->group(function () {
     // Parts Inventory
     Route::get('parts-inventory/dashboard', [PartsInventoryController::class, 'dashboard'])->name('v2.parts-inventory.dashboard');
