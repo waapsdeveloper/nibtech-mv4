@@ -56,7 +56,6 @@ use App\Http\Livewire\Transaction;
 use App\Http\Livewire\Wholesale_return;
 use App\Http\Livewire\SupportTickets;
 use Illuminate\Http\Request;
-use Laravel\Horizon\Horizon;
 
 
 /*
@@ -89,9 +88,12 @@ Route::get('error501', Error501::class)->name('error');
 
 Route::middleware(['2fa'])->group(function () {
 
-    Route::group([], function () {
-        Horizon::routes();
-    });
+    $horizonClass = 'Laravel\Horizon\Horizon';
+    if (class_exists($horizonClass)) {
+        Route::group([], function () use ($horizonClass) {
+            $horizonClass::routes();
+        });
+    }
     // Route::get('/', [IndexController::class, 'index'])->name('index');
     Route::get('/', Index::class)->name('index');
     Route::get('index', Index::class)->name('index');
