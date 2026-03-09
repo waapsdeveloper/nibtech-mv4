@@ -19,10 +19,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-use Laravel\Horizon\Horizon;
-Route::middleware(['auth', 'admin'])->group(function () {
-    Horizon::routes();
-});
+// use Laravel\Horizon\Horizon;
+// Route::middleware(['auth', 'admin'])->group(function () {
+//     Horizon::routes();
+// });
 
 Route::prefix('v2')->group(function () {
     // Parts Inventory
