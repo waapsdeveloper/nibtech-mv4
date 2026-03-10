@@ -98,15 +98,11 @@
             </table>
             <div class="mt-3">
                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.index') }}" class="btn btn-secondary">Back to list</a>
-                @if((int)($discrepancy->difference ?? 0) < 0)
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $discrepancy->should_be }} in DB only (no Back Market push)?');">
                     @csrf
                     <input type="hidden" name="ids[]" value="{{ $discrepancy->id }}">
                     <button type="submit" class="btn btn-success">Fix (set Listed → {{ $discrepancy->should_be }}, DB only)</button>
                 </form>
-                @else
-                <span class="text-muted small">(Positive discrepancy — fix not applied)</span>
-                @endif
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.destroy', $discrepancy->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?');">
                     @csrf
                     @method('DELETE')

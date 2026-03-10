@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\DB;
 /**
  * Draft board for dashboard "Total Listed vs Should Be" discrepancies.
  * Lists variations (grade < 6) where variation.listed_stock != computed should_be.
- * Fix: set listed_stock = should_be in DB only (internal anomaly correction; no push to Back Market).
+ * Fix: set listed_stock = should_be in DB only (for both negative and positive discrepancies; no push to Back Market).
  */
 class ListingAvailableStockDiscrepancyController extends Controller
 {
@@ -89,11 +89,6 @@ class ListingAvailableStockDiscrepancyController extends Controller
                 continue;
             }
 
-            // Only fix negative discrepancies (listed < should be); skip positive or zero
-            if ((int) $discrepancy->difference >= 0) {
-                continue;
-            }
-
             $variation = Variation_model::find($discrepancy->variation_id);
             if (! $variation) {
                 continue;
@@ -125,7 +120,7 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
         $message = $fixed === 0
             ? 'No records fixed.'
-            : "Fixed {$fixed} record(s) (negative discrepancies only). Listed set to Should Be in DB only (no Back Market push).";
+            : "Fixed {$fixed} record(s). Listed set to Should Be in DB only (no Back Market push).";
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', $message);

@@ -70,12 +70,12 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="text-muted small mb-2"><strong>Listed</strong> = current <code>variation.listed_stock</code>. <strong>Should Be</strong> = same formula as dashboard: (stock count grade&lt;6 − process type 22 − pending order items qty). <strong>Fix</strong> only applies to <strong>negative</strong> discrepancies (listed &lt; should be): sets Listed to Should Be in our DB only (no Back Market push).</p>
+            <p class="text-muted small mb-2"><strong>Listed</strong> = current <code>variation.listed_stock</code>. <strong>Should Be</strong> = same formula as dashboard. <strong>Fix</strong> sets Listed → Should Be in DB only (corrects both under-count &amp; over-count; no Back Market push).</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
                         <tr>
-                            <th width="40"><input type="checkbox" id="select-all" title="Select all fixable (negative) on page"></th>
+                            <th width="40"><input type="checkbox" id="select-all" title="Select all on page"></th>
                             <th>Variation / SKU</th>
                             <th class="text-center">Listed</th>
                             <th class="text-center">Should Be</th>
@@ -85,14 +85,10 @@
                     </thead>
                     <tbody>
                         @forelse($discrepancies as $d)
-                        @php $rowDiff = (int)($d->difference ?? 0); $isNegative = $rowDiff < 0; @endphp
+                        @php $rowDiff = (int)($d->difference ?? 0); @endphp
                         <tr>
                             <td>
-                                @if($isNegative)
-                                    <input type="checkbox" class="discrepancy-cb fixable-cb" value="{{ $d->id }}" data-id="{{ $d->id }}">
-                                @else
-                                    <span class="text-muted">—</span>
-                                @endif
+                                <input type="checkbox" class="discrepancy-cb fixable-cb" value="{{ $d->id }}" data-id="{{ $d->id }}">
                             </td>
                             <td>
                                 @if($d->variation)
@@ -110,15 +106,11 @@
                                 <span class="badge {{ $rowDiff > 0 ? 'bg-warning text-dark' : 'bg-info' }}">{{ $rowDiff >= 0 ? '+' : '' }}{{ $rowDiff }}</span>
                             </td>
                             <td>
-                                @if($isNegative)
                                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $d->should_be }} in DB only (no Back Market push)?');">
                                     @csrf
                                     <input type="hidden" name="ids[]" value="{{ $d->id }}">
                                     <button type="submit" class="btn btn-sm btn-success">Fix</button>
                                 </form>
-                                @else
-                                <span class="text-muted small">(positive — no fix)</span>
-                                @endif
                                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.show', $d->id) }}" class="btn btn-sm btn-outline-secondary">View</a>
                                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.destroy', $d->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?');">
                                     @csrf
@@ -145,24 +137,24 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         var selectAll = document.getElementById('select-all');
-        var fixableCbs = document.querySelectorAll('.fixable-cb');
+        var fixableCbs = document.querySelectorAll('.discrepancy-cb');
         var fixSelectedForm = document.getElementById('fix-selected-form');
         var fixSelectedIds = document.getElementById('fix-selected-ids');
         var fixSelectedBtn = document.getElementById('fix-selected-btn');
 
         function updateFixSelected() {
-            var checked = document.querySelectorAll('.fixable-cb:checked');
+            var checked = document.querySelectorAll('.discrepancy-cb:checked');
             fixSelectedBtn.disabled = checked.length === 0;
             fixSelectedIds.value = Array.from(checked).map(function(cb) { return cb.value; }).join(',');
         }
 
         if (selectAll) {
             selectAll.addEventListener('change', function() {
-                document.querySelectorAll('.fixable-cb').forEach(function(cb) { cb.checked = selectAll.checked; });
+                document.querySelectorAll('.discrepancy-cb').forEach(function(cb) { cb.checked = selectAll.checked; });
                 updateFixSelected();
             });
         }
-        document.querySelectorAll('.fixable-cb').forEach(function(cb) {
+        document.querySelectorAll('.discrepancy-cb').forEach(function(cb) {
             cb.addEventListener('change', updateFixSelected);
         });
         updateFixSelected();
