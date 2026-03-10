@@ -150,7 +150,7 @@
         </div>
         <div class="d-flex justify-content-between">
 
-        @if ($process->status == 2)
+        @if ($process->status >= 2)
 
         <div class="p-2">
 
