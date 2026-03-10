@@ -3,32 +3,37 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
-use App\Http\Controllers\BackMarketAPIController;
 use App\Models\ListingAvailableStockDiscrepancy;
-use App\Models\Variation_model;
+use App\Models\Order_item_model;
+use App\Models\Process_stock_model;
 use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
+use App\Models\Variation_model;
+use App\Models\Order_model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
 
+/**
+ * Draft board for dashboard "Total Listed vs Should Be" discrepancies.
+ * Lists variations (grade < 6) where variation.listed_stock != computed should_be.
+ * Fix: set listed_stock = should_be in DB only (internal anomaly correction; no push to Back Market).
+ */
 class ListingAvailableStockDiscrepancyController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $data['title_page'] = 'Listing Available vs Stocks Table Discrepancies';
+        $data['title_page'] = 'Listed vs Should Be (Dashboard draft board)';
         session()->put('page_title', $data['title_page']);
 
         $discrepancies = ListingAvailableStockDiscrepancy::query()
             ->with('variation.product')
-            ->orderByDesc('difference')
+            ->orderByRaw('ABS(difference) DESC')
             ->paginate(50);
 
-        // Total stocks (table): same query as listing page get_variation_available_stocks (pagination.total)
-        $variationIds = $discrepancies->pluck('variation_id')->unique()->values()->all();
-        $stocksTableCounts = $this->getStocksTableCountsForVariations($variationIds);
+        $totals = $this->getDashboardTotals();
 
-        return view('v2.extras.listing-available-stock-discrepancies.index', compact('discrepancies', 'data', 'stocksTableCounts'));
+        return view('v2.extras.listing-available-stock-discrepancies.index', compact('discrepancies', 'data', 'totals'));
     }
 
     public function show(int $id)
@@ -36,17 +41,14 @@ class ListingAvailableStockDiscrepancyController extends Controller
         $discrepancy = ListingAvailableStockDiscrepancy::with('variation.product')->findOrFail($id);
         $data['title_page'] = 'Discrepancy: ' . ($discrepancy->variation_sku ?? 'Variation #' . $discrepancy->variation_id);
         session()->put('page_title', $data['title_page']);
+        $totals = $this->getDashboardTotals();
 
-        // Live count: same as listing page stocks table (get_variation_available_stocks)
-        $stocksTableCount = $this->getStocksTableCountsForVariations([$discrepancy->variation_id])[$discrepancy->variation_id] ?? $discrepancy->stocks_table_count;
-
-        return view('v2.extras.listing-available-stock-discrepancies.show', compact('discrepancy', 'data', 'stocksTableCount'));
+        return view('v2.extras.listing-available-stock-discrepancies.show', compact('discrepancy', 'data', 'totals'));
     }
 
     public function destroy(int $id)
     {
-        $discrepancy = ListingAvailableStockDiscrepancy::findOrFail($id);
-        $discrepancy->delete();
+        ListingAvailableStockDiscrepancy::findOrFail($id)->delete();
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', 'Discrepancy record deleted.');
@@ -66,8 +68,7 @@ class ListingAvailableStockDiscrepancyController extends Controller
     }
 
     /**
-     * Fix: set Listed (BM) to match Total stocks (table), push to Back Market, then remove discrepancy.
-     * Also sets available_count_override so the card "Available" matches.
+     * Fix: set variation.listed_stock and marketplace_stock.listed_stock to should_be (DB only; no Back Market push).
      */
     public function fix(Request $request)
     {
@@ -75,13 +76,12 @@ class ListingAvailableStockDiscrepancyController extends Controller
         if (is_string($ids)) {
             $ids = $ids ? array_filter(array_map('intval', explode(',', $ids))) : [];
         } elseif (! is_array($ids)) {
-            $ids = $ids ? [ (int) $ids ] : [];
+            $ids = $ids ? [(int) $ids] : [];
         } else {
             $ids = array_filter(array_map('intval', $ids));
         }
 
         $fixed = 0;
-        $errors = [];
 
         foreach ($ids as $id) {
             $discrepancy = ListingAvailableStockDiscrepancy::find($id);
@@ -89,16 +89,18 @@ class ListingAvailableStockDiscrepancyController extends Controller
                 continue;
             }
 
-            $variation = Variation_model::find($discrepancy->variation_id);
-            if (! $variation) {
-                $errors[] = "Variation {$discrepancy->variation_id} not found.";
+            // Only fix negative discrepancies (listed < should be); skip positive or zero
+            if ((int) $discrepancy->difference >= 0) {
                 continue;
             }
 
-            // Use live count (same as listing page stocks table), not stored value
-            $targetQty = (int) ($this->getStocksTableCountsForVariations([$variation->id])[$variation->id] ?? $discrepancy->stocks_table_count);
+            $variation = Variation_model::find($discrepancy->variation_id);
+            if (! $variation) {
+                continue;
+            }
 
-            // Back Market (marketplace_id = 1): update our DB and push to API
+            $targetQty = (int) $discrepancy->should_be;
+
             $marketplaceStock = MarketplaceStockModel::firstOrCreate(
                 [
                     'variation_id' => $variation->id,
@@ -111,75 +113,56 @@ class ListingAvailableStockDiscrepancyController extends Controller
                 ]
             );
 
-            $oldListed = (int) ($marketplaceStock->listed_stock ?? 0);
-
-            if ($variation->reference_id) {
-                try {
-                    $bm = new BackMarketAPIController();
-                    $response = $bm->updateOneListing(
-                        $variation->reference_id,
-                        json_encode(['quantity' => $targetQty]),
-                        null,
-                        true
-                    );
-                    if (is_string($response) || is_int($response) || $response === null) {
-                        $errors[] = ($variation->sku ?? "Variation {$variation->id}") . ': BM API error.';
-                        continue;
-                    }
-                    $apiQty = (int) (is_object($response) ? ($response->quantity ?? $targetQty) : $targetQty);
-                    $targetQty = $apiQty;
-                } catch (\Throwable $e) {
-                    Log::warning('ListingAvailableStockDiscrepancy fix: BM API failed', [
-                        'variation_id' => $variation->id,
-                        'error' => $e->getMessage(),
-                    ]);
-                    $errors[] = ($variation->sku ?? "Variation {$variation->id}") . ': ' . $e->getMessage();
-                    continue;
-                }
-            }
-
-            // Update our DB: Listed (BM) = Total stocks (table)
             $marketplaceStock->listed_stock = $targetQty;
-            $marketplaceStock->manual_adjustment = 0;
-            $marketplaceStock->last_synced_at = now();
-            $marketplaceStock->last_api_quantity = $targetQty;
             $marketplaceStock->save();
 
             $variation->listed_stock = $targetQty;
             $variation->save();
 
-            // Align card "Available" with stocks table (existing behaviour)
-            Variation_model::where('id', $discrepancy->variation_id)->update([
-                'available_count_override' => $targetQty,
-            ]);
-
             $discrepancy->delete();
             $fixed++;
         }
 
-        $message = $fixed === 0 && empty($errors)
+        $message = $fixed === 0
             ? 'No records fixed.'
-            : "Fixed {$fixed} record(s). Listed (BM) set to Total stocks (table) and pushed to Back Market.";
-        if (! empty($errors)) {
-            $message .= ' Errors: ' . implode(' ', array_slice($errors, 0, 3));
-            if (count($errors) > 3) {
-                $message .= ' (+' . (count($errors) - 3) . ' more)';
-            }
-        }
+            : "Fixed {$fixed} record(s) (negative discrepancies only). Listed set to Should Be in DB only (no Back Market push).";
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', $message);
     }
 
     /**
-     * Same count as listing page stocks table. Uses Stock_model::countForListingStocksTable (single source of truth).
+     * Dashboard-style totals: total listed (sum variation.listed_stock) and global should_be (widget formula).
      */
-    private function getStocksTableCountsForVariations(array $variationIds): array
+    private function getDashboardTotals(): array
     {
-        $result = [];
-        foreach ($variationIds as $vid) {
-            $result[$vid] = Stock_model::countForListingStocksTable($vid);
-        }
-        return $result;
+        $listedTotal = (int) Variation_model::where('listed_stock', '>', 0)->sum('listed_stock');
+
+        $aftersaleStockIds = Order_item_model::whereHas('order', function ($query) {
+            $query->where('order_type_id', 4)->where('status', '<', 3);
+        })->pluck('stock_id')->toArray();
+
+        $gradedInventory = Stock_model::select('variation.grade as grade_id', DB::raw('COUNT(*) as quantity'))
+            ->when(! empty($aftersaleStockIds), function ($query) use ($aftersaleStockIds) {
+                $query->whereNotIn('stock.id', $aftersaleStockIds);
+            })
+            ->where('stock.status', 1)
+            ->join('variation', 'stock.variation_id', '=', 'variation.id')
+            ->groupBy('variation.grade')
+            ->get();
+
+        $processCount = Process_stock_model::whereHas('process', function ($query) {
+            $query->where('process_type_id', 22)->where('status', '<', 3);
+        })->count();
+
+        $pendingOrderCount = Order_model::where('status', 2)->where('order_type_id', 3)->count();
+
+        $shouldBeTotal = max(0, $gradedInventory->where('grade_id', '<', 6)->sum('quantity') - $processCount - $pendingOrderCount);
+
+        return [
+            'listed_total' => $listedTotal,
+            'should_be_total' => $shouldBeTotal,
+            'difference_total' => $listedTotal - $shouldBeTotal,
+        ];
     }
 }

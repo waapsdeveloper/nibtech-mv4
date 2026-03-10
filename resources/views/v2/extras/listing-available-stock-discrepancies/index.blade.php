@@ -4,14 +4,14 @@
 <div class="container-fluid">
     <div class="breadcrumb-header justify-content-between">
         <div class="left-content">
-            <span class="main-content-title mg-b-0 mg-b-lg-1">{{ $data['title_page'] ?? 'Listing Available vs Stocks Discrepancies' }}</span>
+            <span class="main-content-title mg-b-0 mg-b-lg-1">{{ $data['title_page'] ?? 'Listed vs Should Be' }}</span>
         </div>
         <div class="justify-content-center mt-2">
             <ol class="breadcrumb">
                 <li class="breadcrumb-item tx-15"><a href="/">{{ __('locale.Dashboard') }}</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/listings') }}">V2</a></li>
                 <li class="breadcrumb-item tx-15"><a href="{{ url('v2/extras/listing-available-stock-discrepancies') }}">Extras</a></li>
-                <li class="breadcrumb-item active" aria-current="page">Available vs Stocks Discrepancies</li>
+                <li class="breadcrumb-item active" aria-current="page">Listed vs Should Be</li>
             </ol>
         </div>
     </div>
@@ -23,14 +23,43 @@
     </div>
     @endif
 
+    <div class="card mb-3">
+        <div class="card-header">
+            <h5 class="card-title mb-0">Dashboard totals (same formula as widget)</h5>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <span class="text-muted small d-block">Total Listed</span>
+                        <strong class="fs-4">{{ number_format($totals['listed_total'] ?? 0) }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <span class="text-muted small d-block">Should Be</span>
+                        <strong class="fs-4">{{ number_format($totals['should_be_total'] ?? 0) }}</strong>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="border rounded p-3">
+                        <span class="text-muted small d-block">Difference (Listed − Should Be)</span>
+                        @php $diff = $totals['difference_total'] ?? 0; @endphp
+                        <strong class="fs-4 {{ $diff > 0 ? 'text-warning' : ($diff < 0 ? 'text-info' : '') }}">{{ $diff >= 0 ? '+' : '' }}{{ number_format($diff) }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <div class="card">
         <div class="card-header d-flex flex-wrap justify-content-between align-items-center gap-2">
-            <h5 class="card-title mb-0">Discrepancy records</h5>
+            <h5 class="card-title mb-0">Discrepancy records (per variation, grade &lt; 6)</h5>
             <div class="d-flex flex-wrap align-items-center gap-2">
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" id="fix-selected-form" class="d-flex align-items-center gap-2">
                     @csrf
                     <input type="hidden" name="ids" id="fix-selected-ids" value="">
-                    <button type="submit" class="btn btn-success btn-sm" id="fix-selected-btn" disabled>Fix selected</button>
+                    <button type="submit" class="btn btn-success btn-sm" id="fix-selected-btn" disabled>Fix selected (set Listed → Should Be, DB only)</button>
                 </form>
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.run-check') }}" method="POST" class="d-flex align-items-center gap-2">
                     @csrf
@@ -41,22 +70,30 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="text-muted small mb-2"><strong>Two columns:</strong> Listed (BM) = Stock field on listing card. Total stocks (table) = same count as the stocks table in listing card details (get_variation_available_stocks). <strong>Fix</strong> sets Listed (BM) to Total stocks (table) and pushes to Back Market.</p>
+            <p class="text-muted small mb-2"><strong>Listed</strong> = current <code>variation.listed_stock</code>. <strong>Should Be</strong> = same formula as dashboard: (stock count grade&lt;6 − process type 22 − pending order items qty). <strong>Fix</strong> only applies to <strong>negative</strong> discrepancies (listed &lt; should be): sets Listed to Should Be in our DB only (no Back Market push).</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
                         <tr>
-                            <th width="40"><input type="checkbox" id="select-all" title="Select all on page"></th>
+                            <th width="40"><input type="checkbox" id="select-all" title="Select all fixable (negative) on page"></th>
                             <th>Variation / SKU</th>
-                            <th class="text-center" title="Stock field on listing card (Back Market)">Listed (BM)</th>
-                            <th class="text-center" title="Same as stocks table in listing card details">Total stocks (table)</th>
-                            <th width="160">Actions</th>
+                            <th class="text-center">Listed</th>
+                            <th class="text-center">Should Be</th>
+                            <th class="text-center">Difference</th>
+                            <th width="180">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($discrepancies as $d)
+                        @php $rowDiff = (int)($d->difference ?? 0); $isNegative = $rowDiff < 0; @endphp
                         <tr>
-                            <td><input type="checkbox" class="discrepancy-cb" value="{{ $d->id }}" data-id="{{ $d->id }}"></td>
+                            <td>
+                                @if($isNegative)
+                                    <input type="checkbox" class="discrepancy-cb fixable-cb" value="{{ $d->id }}" data-id="{{ $d->id }}">
+                                @else
+                                    <span class="text-muted">—</span>
+                                @endif
+                            </td>
                             <td>
                                 @if($d->variation)
                                     <a href="{{ url('listing') }}?variation_id={{ $d->variation_id }}" target="_blank">{{ $d->variation_sku ?? $d->variation->sku }}</a>
@@ -67,14 +104,21 @@
                                     {{ $d->variation_sku ?? 'Variation #' . $d->variation_id }}
                                 @endif
                             </td>
-                            <td class="text-center"><strong>{{ $d->variation ? ($d->variation->listed_stock ?? '—') : '—' }}</strong></td>
-                            <td class="text-center"><strong>{{ $stocksTableCounts[$d->variation_id] ?? $d->stocks_table_count }}</strong></td>
+                            <td class="text-center"><strong>{{ $d->listed_stock ?? '—' }}</strong></td>
+                            <td class="text-center"><strong>{{ $d->should_be ?? '—' }}</strong></td>
+                            <td class="text-center">
+                                <span class="badge {{ $rowDiff > 0 ? 'bg-warning text-dark' : 'bg-info' }}">{{ $rowDiff >= 0 ? '+' : '' }}{{ $rowDiff }}</span>
+                            </td>
                             <td>
-                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $stocksTableCounts[$d->variation_id] ?? $d->stocks_table_count }}) and push to Back Market?');">
+                                @if($isNegative)
+                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $d->should_be }} in DB only (no Back Market push)?');">
                                     @csrf
                                     <input type="hidden" name="ids[]" value="{{ $d->id }}">
                                     <button type="submit" class="btn btn-sm btn-success">Fix</button>
                                 </form>
+                                @else
+                                <span class="text-muted small">(positive — no fix)</span>
+                                @endif
                                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.show', $d->id) }}" class="btn btn-sm btn-outline-secondary">View</a>
                                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.destroy', $d->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?');">
                                     @csrf
@@ -85,7 +129,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="5" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
+                            <td colspan="6" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
                         </tr>
                         @endforelse
                     </tbody>
@@ -101,24 +145,24 @@
     <script>
     document.addEventListener('DOMContentLoaded', function() {
         var selectAll = document.getElementById('select-all');
-        var checkboxes = document.querySelectorAll('.discrepancy-cb');
+        var fixableCbs = document.querySelectorAll('.fixable-cb');
         var fixSelectedForm = document.getElementById('fix-selected-form');
         var fixSelectedIds = document.getElementById('fix-selected-ids');
         var fixSelectedBtn = document.getElementById('fix-selected-btn');
 
         function updateFixSelected() {
-            var checked = document.querySelectorAll('.discrepancy-cb:checked');
+            var checked = document.querySelectorAll('.fixable-cb:checked');
             fixSelectedBtn.disabled = checked.length === 0;
             fixSelectedIds.value = Array.from(checked).map(function(cb) { return cb.value; }).join(',');
         }
 
         if (selectAll) {
             selectAll.addEventListener('change', function() {
-                checkboxes.forEach(function(cb) { cb.checked = selectAll.checked; });
+                document.querySelectorAll('.fixable-cb').forEach(function(cb) { cb.checked = selectAll.checked; });
                 updateFixSelected();
             });
         }
-        checkboxes.forEach(function(cb) {
+        document.querySelectorAll('.fixable-cb').forEach(function(cb) {
             cb.addEventListener('change', updateFixSelected);
         });
         updateFixSelected();
