@@ -41,28 +41,22 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="text-muted small">Source of truth: stocks table. Select rows and click &quot;Fix selected&quot; to set the card &quot;Available&quot; to the stocks table count for those variations.</p>
-            <p class="text-muted small mb-2"><strong>Numbers match the listing variation card:</strong> Listed (BM) = Stock field / Back Market, Available = card &quot;Available&quot;, Total stocks = stocks table row count. <strong>Fix</strong> sets Listed (BM) to Total stocks (table), pushes to Back Market, and removes the discrepancy.</p>
+            <p class="text-muted small mb-2"><strong>Two columns:</strong> Listed (BM) = Stock field on listing card. Total stocks (table) = same count as the stocks table in listing card details (get_variation_available_stocks). <strong>Fix</strong> sets Listed (BM) to Total stocks (table) and pushes to Back Market.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
                         <tr>
                             <th width="40"><input type="checkbox" id="select-all" title="Select all on page"></th>
-                            <th>ID</th>
                             <th>Variation / SKU</th>
                             <th class="text-center" title="Stock field on listing card (Back Market)">Listed (BM)</th>
-                            <th class="text-center" title="Available count on card">Available (card)</th>
-                            <th class="text-center" title="Stocks table row count">Total stocks (table)</th>
-                            <th>Difference</th>
-                            <th>Detected at</th>
-                            <th width="140">Actions</th>
+                            <th class="text-center" title="Same as stocks table in listing card details">Total stocks (table)</th>
+                            <th width="160">Actions</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse($discrepancies as $d)
                         <tr>
                             <td><input type="checkbox" class="discrepancy-cb" value="{{ $d->id }}" data-id="{{ $d->id }}"></td>
-                            <td>{{ $d->id }}</td>
                             <td>
                                 @if($d->variation)
                                     <a href="{{ url('listing') }}?variation_id={{ $d->variation_id }}" target="_blank">{{ $d->variation_sku ?? $d->variation->sku }}</a>
@@ -74,12 +68,9 @@
                                 @endif
                             </td>
                             <td class="text-center"><strong>{{ $d->variation ? ($d->variation->listed_stock ?? '—') : '—' }}</strong></td>
-                            <td class="text-center">{{ $d->available_count }}</td>
-                            <td class="text-center">{{ $d->stocks_table_count }}</td>
-                            <td><span class="badge {{ $d->difference > 0 ? 'bg-warning' : 'bg-info' }}">{{ $d->difference }}</span></td>
-                            <td>{{ $d->detected_at ? $d->detected_at->format('Y-m-d H:i') : '—' }}</td>
+                            <td class="text-center"><strong>{{ $stocksTableCounts[$d->variation_id] ?? $d->stocks_table_count }}</strong></td>
                             <td>
-                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $d->stocks_table_count }}) and push to Back Market for this variation?');">
+                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $stocksTableCounts[$d->variation_id] ?? $d->stocks_table_count }}) and push to Back Market?');">
                                     @csrf
                                     <input type="hidden" name="ids[]" value="{{ $d->id }}">
                                     <button type="submit" class="btn btn-sm btn-success">Fix</button>
@@ -94,7 +85,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="9" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
+                            <td colspan="5" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
                         </tr>
                         @endforelse
                     </tbody>

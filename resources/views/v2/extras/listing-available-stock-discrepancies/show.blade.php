@@ -30,14 +30,9 @@
                     <td class="text-muted small">Stock field / Back Market</td>
                 </tr>
                 <tr>
-                    <th>Available (card)</th>
-                    <td class="fw-bold">{{ $discrepancy->available_count }}</td>
-                    <td class="text-muted small">Card &quot;Available&quot;</td>
-                </tr>
-                <tr>
                     <th>Total stocks (table)</th>
-                    <td class="fw-bold">{{ $discrepancy->stocks_table_count }}</td>
-                    <td class="text-muted small">Stocks table row count</td>
+                    <td class="fw-bold">{{ $stocksTableCount }}</td>
+                    <td class="text-muted small">Same as stocks table in listing card details</td>
                 </tr>
             </table>
             <table class="table table-bordered mb-0">
@@ -76,10 +71,10 @@
             </table>
             <div class="mt-3">
                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.index') }}" class="btn btn-secondary">Back to list</a>
-                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $discrepancy->stocks_table_count }}) and push to Back Market?');">
+                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $stocksTableCount }}) and push to Back Market?');">
                     @csrf
                     <input type="hidden" name="ids[]" value="{{ $discrepancy->id }}">
-                    <button type="submit" class="btn btn-success">Fix (set Listed BM to {{ $discrepancy->stocks_table_count }})</button>
+                    <button type="submit" class="btn btn-success">Fix (set Listed BM to {{ $stocksTableCount }})</button>
                 </form>
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.destroy', $discrepancy->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?');">
                     @csrf

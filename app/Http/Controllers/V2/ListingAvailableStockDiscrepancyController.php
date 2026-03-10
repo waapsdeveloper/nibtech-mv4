@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Controllers\BackMarketAPIController;
 use App\Models\ListingAvailableStockDiscrepancy;
 use App\Models\Variation_model;
+use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
@@ -23,7 +24,11 @@ class ListingAvailableStockDiscrepancyController extends Controller
             ->orderByDesc('difference')
             ->paginate(50);
 
-        return view('v2.extras.listing-available-stock-discrepancies.index', compact('discrepancies', 'data'));
+        // Total stocks (table): same query as listing page get_variation_available_stocks (pagination.total)
+        $variationIds = $discrepancies->pluck('variation_id')->unique()->values()->all();
+        $stocksTableCounts = $this->getStocksTableCountsForVariations($variationIds);
+
+        return view('v2.extras.listing-available-stock-discrepancies.index', compact('discrepancies', 'data', 'stocksTableCounts'));
     }
 
     public function show(int $id)
@@ -32,7 +37,10 @@ class ListingAvailableStockDiscrepancyController extends Controller
         $data['title_page'] = 'Discrepancy: ' . ($discrepancy->variation_sku ?? 'Variation #' . $discrepancy->variation_id);
         session()->put('page_title', $data['title_page']);
 
-        return view('v2.extras.listing-available-stock-discrepancies.show', compact('discrepancy', 'data'));
+        // Live count: same as listing page stocks table (get_variation_available_stocks)
+        $stocksTableCount = $this->getStocksTableCountsForVariations([$discrepancy->variation_id])[$discrepancy->variation_id] ?? $discrepancy->stocks_table_count;
+
+        return view('v2.extras.listing-available-stock-discrepancies.show', compact('discrepancy', 'data', 'stocksTableCount'));
     }
 
     public function destroy(int $id)
@@ -87,7 +95,8 @@ class ListingAvailableStockDiscrepancyController extends Controller
                 continue;
             }
 
-            $targetQty = (int) $discrepancy->stocks_table_count;
+            // Use live count (same as listing page stocks table), not stored value
+            $targetQty = (int) ($this->getStocksTableCountsForVariations([$variation->id])[$variation->id] ?? $discrepancy->stocks_table_count);
 
             // Back Market (marketplace_id = 1): update our DB and push to API
             $marketplaceStock = MarketplaceStockModel::firstOrCreate(
@@ -141,7 +150,7 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
             // Align card "Available" with stocks table (existing behaviour)
             Variation_model::where('id', $discrepancy->variation_id)->update([
-                'available_count_override' => $discrepancy->stocks_table_count,
+                'available_count_override' => $targetQty,
             ]);
 
             $discrepancy->delete();
@@ -160,5 +169,26 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', $message);
+    }
+
+    /**
+     * Same query as ListingController::get_variation_available_stocks (stocks table in listing card details).
+     * Returns [ variation_id => count ] for the given variation IDs.
+     */
+    private function getStocksTableCountsForVariations(array $variationIds): array
+    {
+        if (empty($variationIds)) {
+            return [];
+        }
+
+        return Stock_model::query()
+            ->whereIn('variation_id', $variationIds)
+            ->where('status', 1)
+            ->whereHas('latest_closed_listing_or_topup')
+            ->selectRaw('variation_id, count(*) as cnt')
+            ->groupBy('variation_id')
+            ->pluck('cnt', 'variation_id')
+            ->map(fn ($c) => (int) $c)
+            ->all();
     }
 }

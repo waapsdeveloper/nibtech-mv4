@@ -70,7 +70,8 @@ class ListingAvailableStockDiscrepancyCheckCommand extends Command
     }
 
     /**
-     * Count matching get_variation_available_stocks (stocks table in details).
+     * Count matching get_variation_available_stocks (stocks table in listing card details).
+     * Must use same scope as ListingController::get_variation_available_stocks so pagination.total matches.
      */
     private function getStocksTableCount(int $variationId): int
     {
