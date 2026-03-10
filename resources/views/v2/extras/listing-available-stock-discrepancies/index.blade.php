@@ -100,7 +100,7 @@
             </div>
         </div>
         <div class="card-body">
-            <p class="text-muted small mb-2"><strong>Listed</strong> = current <code>variation.listed_stock</code>. <strong>Should Be</strong> = same formula as dashboard. <strong>Fix</strong> sets Listed → Should Be in DB only (corrects both under-count &amp; over-count; no Back Market push).</p>
+            <p class="text-muted small mb-2"><strong>Listed</strong> = current <code>variation.listed_stock</code>. <strong>Should Be</strong> = same formula as dashboard. <strong>Fix</strong> sets Listed → Should Be in DB and pushes to Back Market (when the variation has a listing).</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
@@ -136,7 +136,7 @@
                                 <span class="badge {{ $rowDiff > 0 ? 'bg-warning text-dark' : 'bg-info' }}">{{ $rowDiff >= 0 ? '+' : '' }}{{ $rowDiff }}</span>
                             </td>
                             <td>
-                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $d->should_be }} in DB only (no Back Market push)?');">
+                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $d->should_be }} in DB and push to Back Market?');">
                                     @csrf
                                     <input type="hidden" name="ids[]" value="{{ $d->id }}">
                                     <button type="submit" class="btn btn-sm btn-success">Fix</button>

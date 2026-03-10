@@ -10,6 +10,7 @@ use App\Models\Stock_model;
 use App\Models\V2\MarketplaceStockModel;
 use App\Models\Variation_model;
 use App\Models\Order_model;
+use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\DB;
@@ -17,10 +18,14 @@ use Illuminate\Support\Facades\DB;
 /**
  * Draft board for dashboard "Total Listed vs Should Be" discrepancies.
  * Lists variations (grade < 6) where variation.listed_stock != computed should_be.
- * Fix: set listed_stock = should_be in DB only (for both negative and positive discrepancies; no push to Back Market).
+ * Fix: set listed_stock = should_be in DB and push to Back Market (when variation has reference_id).
  */
 class ListingAvailableStockDiscrepancyController extends Controller
 {
+    public function __construct(
+        protected MarketplaceAPIService $marketplaceApiService
+    ) {}
+
     public function index(Request $request)
     {
         $data['title_page'] = 'Listed vs Should Be (Dashboard draft board)';
@@ -68,7 +73,7 @@ class ListingAvailableStockDiscrepancyController extends Controller
     }
 
     /**
-     * Fix: set variation.listed_stock and marketplace_stock.listed_stock to should_be (DB only; no Back Market push).
+     * Fix: set variation.listed_stock and marketplace_stock.listed_stock to should_be in DB, then push to Back Market.
      */
     public function fix(Request $request)
     {
@@ -82,6 +87,9 @@ class ListingAvailableStockDiscrepancyController extends Controller
         }
 
         $fixed = 0;
+        $pushed = 0;
+        $pushSkipped = 0;
+        $pushErrors = 0;
 
         foreach ($ids as $id) {
             $discrepancy = ListingAvailableStockDiscrepancy::find($id);
@@ -114,16 +122,43 @@ class ListingAvailableStockDiscrepancyController extends Controller
             $variation->listed_stock = $targetQty;
             $variation->save();
 
+            if ($variation->reference_id) {
+                $response = $this->marketplaceApiService->updateStock($variation->id, 1, $targetQty);
+                if ($response !== null) {
+                    $pushed++;
+                } else {
+                    $pushErrors++;
+                }
+            } else {
+                $pushSkipped++;
+            }
+
             $discrepancy->delete();
             $fixed++;
         }
 
         $message = $fixed === 0
             ? 'No records fixed.'
-            : "Fixed {$fixed} record(s). Listed set to Should Be in DB only (no Back Market push).";
+            : $this->buildFixSuccessMessage($fixed, $pushed, $pushSkipped, $pushErrors);
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', $message);
+    }
+
+    private function buildFixSuccessMessage(int $fixed, int $pushed, int $pushSkipped, int $pushErrors): string
+    {
+        $msg = "Fixed {$fixed} record(s). Listed set to Should Be in DB.";
+        if ($pushed > 0) {
+            $msg .= " Pushed {$pushed} to Back Market.";
+        }
+        if ($pushSkipped > 0) {
+            $msg .= " {$pushSkipped} not on Back Market (no reference_id).";
+        }
+        if ($pushErrors > 0) {
+            $msg .= " {$pushErrors} Back Market push failed.";
+        }
+
+        return $msg;
     }
 
     /**

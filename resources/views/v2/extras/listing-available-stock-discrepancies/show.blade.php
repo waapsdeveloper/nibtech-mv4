@@ -98,7 +98,7 @@
             </table>
             <div class="mt-3">
                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.index') }}" class="btn btn-secondary">Back to list</a>
-                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $discrepancy->should_be }} in DB only (no Back Market push)?');">
+                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed to {{ $discrepancy->should_be }} in DB and push to Back Market?');">
                     @csrf
                     <input type="hidden" name="ids[]" value="{{ $discrepancy->id }}">
                     <button type="submit" class="btn btn-success">Fix (set Listed → {{ $discrepancy->should_be }}, DB only)</button>
