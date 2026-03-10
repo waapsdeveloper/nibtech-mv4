@@ -2,6 +2,8 @@ const mix = require('laravel-mix');
 const path = require('path');
 const fs = require('fs');
 
+// Source is resources/assets/ (must exist to run mix). If missing on server, do NOT run
+// npm run production — use the pre-built public/assets/ and mix-manifest.json from the repo.
 // Only copy directory if it exists (e.g. resources/assets/img may be missing on server)
 function copyDirIfExists(src, dest) {
     if (fs.existsSync(path.resolve(src))) {
