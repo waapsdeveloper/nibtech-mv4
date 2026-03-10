@@ -42,7 +42,7 @@
         </div>
         <div class="card-body">
             <p class="text-muted small">Source of truth: stocks table. Select rows and click &quot;Fix selected&quot; to set the card &quot;Available&quot; to the stocks table count for those variations.</p>
-            <p class="text-muted small mb-2"><strong>Numbers match the listing variation card:</strong> Listed (BM) = Stock field / Back Market, Available = card &quot;Available&quot;, Total stocks = stocks table row count.</p>
+            <p class="text-muted small mb-2"><strong>Numbers match the listing variation card:</strong> Listed (BM) = Stock field / Back Market, Available = card &quot;Available&quot;, Total stocks = stocks table row count. <strong>Fix</strong> sets Listed (BM) to Total stocks (table), pushes to Back Market, and removes the discrepancy.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
@@ -79,7 +79,7 @@
                             <td><span class="badge {{ $d->difference > 0 ? 'bg-warning' : 'bg-info' }}">{{ $d->difference }}</span></td>
                             <td>{{ $d->detected_at ? $d->detected_at->format('Y-m-d H:i') : '—' }}</td>
                             <td>
-                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set card Available to stocks table count ({{ $d->stocks_table_count }}) for this variation?');">
+                                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $d->stocks_table_count }}) and push to Back Market for this variation?');">
                                     @csrf
                                     <input type="hidden" name="ids[]" value="{{ $d->id }}">
                                     <button type="submit" class="btn btn-sm btn-success">Fix</button>

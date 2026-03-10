@@ -3,10 +3,13 @@
 namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
+use App\Http\Controllers\BackMarketAPIController;
 use App\Models\ListingAvailableStockDiscrepancy;
 use App\Models\Variation_model;
+use App\Models\V2\MarketplaceStockModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Log;
 
 class ListingAvailableStockDiscrepancyController extends Controller
 {
@@ -55,7 +58,8 @@ class ListingAvailableStockDiscrepancyController extends Controller
     }
 
     /**
-     * Fix numbers: set variation.available_count_override = stocks_table_count (source of truth), then remove discrepancy record.
+     * Fix: set Listed (BM) to match Total stocks (table), push to Back Market, then remove discrepancy.
+     * Also sets available_count_override so the card "Available" matches.
      */
     public function fix(Request $request)
     {
@@ -69,21 +73,90 @@ class ListingAvailableStockDiscrepancyController extends Controller
         }
 
         $fixed = 0;
+        $errors = [];
+
         foreach ($ids as $id) {
             $discrepancy = ListingAvailableStockDiscrepancy::find($id);
             if (! $discrepancy) {
                 continue;
             }
+
+            $variation = Variation_model::find($discrepancy->variation_id);
+            if (! $variation) {
+                $errors[] = "Variation {$discrepancy->variation_id} not found.";
+                continue;
+            }
+
+            $targetQty = (int) $discrepancy->stocks_table_count;
+
+            // Back Market (marketplace_id = 1): update our DB and push to API
+            $marketplaceStock = MarketplaceStockModel::firstOrCreate(
+                [
+                    'variation_id' => $variation->id,
+                    'marketplace_id' => 1,
+                ],
+                [
+                    'listed_stock' => 0,
+                    'manual_adjustment' => 0,
+                    'locked_stock' => 0,
+                ]
+            );
+
+            $oldListed = (int) ($marketplaceStock->listed_stock ?? 0);
+
+            if ($variation->reference_id) {
+                try {
+                    $bm = new BackMarketAPIController();
+                    $response = $bm->updateOneListing(
+                        $variation->reference_id,
+                        json_encode(['quantity' => $targetQty]),
+                        null,
+                        true
+                    );
+                    if (is_string($response) || is_int($response) || $response === null) {
+                        $errors[] = ($variation->sku ?? "Variation {$variation->id}") . ': BM API error.';
+                        continue;
+                    }
+                    $apiQty = (int) (is_object($response) ? ($response->quantity ?? $targetQty) : $targetQty);
+                    $targetQty = $apiQty;
+                } catch (\Throwable $e) {
+                    Log::warning('ListingAvailableStockDiscrepancy fix: BM API failed', [
+                        'variation_id' => $variation->id,
+                        'error' => $e->getMessage(),
+                    ]);
+                    $errors[] = ($variation->sku ?? "Variation {$variation->id}") . ': ' . $e->getMessage();
+                    continue;
+                }
+            }
+
+            // Update our DB: Listed (BM) = Total stocks (table)
+            $marketplaceStock->listed_stock = $targetQty;
+            $marketplaceStock->manual_adjustment = 0;
+            $marketplaceStock->last_synced_at = now();
+            $marketplaceStock->last_api_quantity = $targetQty;
+            $marketplaceStock->save();
+
+            $variation->listed_stock = $targetQty;
+            $variation->save();
+
+            // Align card "Available" with stocks table (existing behaviour)
             Variation_model::where('id', $discrepancy->variation_id)->update([
                 'available_count_override' => $discrepancy->stocks_table_count,
             ]);
+
             $discrepancy->delete();
             $fixed++;
         }
 
-        $message = $fixed === 0
+        $message = $fixed === 0 && empty($errors)
             ? 'No records fixed.'
-            : "Fixed {$fixed} record(s). Card \"Available\" will show stocks table count.";
+            : "Fixed {$fixed} record(s). Listed (BM) set to Total stocks (table) and pushed to Back Market.";
+        if (! empty($errors)) {
+            $message .= ' Errors: ' . implode(' ', array_slice($errors, 0, 3));
+            if (count($errors) > 3) {
+                $message .= ' (+' . (count($errors) - 3) . ' more)';
+            }
+        }
 
         return redirect()->route('v2.extras.listing-available-stock-discrepancies.index')
             ->with('success', $message);

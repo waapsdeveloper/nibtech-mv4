@@ -76,10 +76,10 @@
             </table>
             <div class="mt-3">
                 <a href="{{ route('v2.extras.listing-available-stock-discrepancies.index') }}" class="btn btn-secondary">Back to list</a>
-                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set card Available to stocks table count ({{ $discrepancy->stocks_table_count }}) for this variation?');">
+                <form action="{{ route('v2.extras.listing-available-stock-discrepancies.fix') }}" method="POST" class="d-inline" onsubmit="return confirm('Set Listed (BM) to Total stocks ({{ $discrepancy->stocks_table_count }}) and push to Back Market?');">
                     @csrf
                     <input type="hidden" name="ids[]" value="{{ $discrepancy->id }}">
-                    <button type="submit" class="btn btn-success">Fix</button>
+                    <button type="submit" class="btn btn-success">Fix (set Listed BM to {{ $discrepancy->stocks_table_count }})</button>
                 </form>
                 <form action="{{ route('v2.extras.listing-available-stock-discrepancies.destroy', $discrepancy->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Delete this record?');">
                     @csrf
