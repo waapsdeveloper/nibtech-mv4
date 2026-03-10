@@ -10,6 +10,8 @@ use App\Models\Currency_model;
 use App\Models\Country_model;
 use App\Models\CommandRunLog;
 use App\Console\Commands\BaseCommand;
+use App\Models\Variation_model;
+use App\Models\V2\MarketplaceStockModel;
 use App\Events\V2\OrderStatusChanged;
 use Illuminate\Support\Facades\DB;
 
@@ -186,6 +188,13 @@ class RefreshOrders extends BaseCommand
         $note = "New: {$newCount}, Modified: {$modifiedCount}";
         if ($statusCorrected > 0) $note .= "; status corrected: {$statusCorrected}";
         if ($shippedSyncDispatched > 0) $note .= "; shipped sync jobs: {$shippedSyncDispatched}";
+
+        // Sync stock from Back Market only for listings touched by this run (orders just processed)
+        $stockSynced = $this->syncStockForProcessedListings($bm, $resArray1 ?? [], $resArray ?? []);
+        if ($stockSynced > 0) {
+            $note .= "; BM stock synced: {$stockSynced} listing(s)";
+        }
+
         CommandRunLog::recordEnd('refresh-orders', $totalProcessed, $totalProcessed, 0, $note, 'completed');
 
         return 0;
@@ -205,4 +214,82 @@ class RefreshOrders extends BaseCommand
         return $result;
     }
 
+    /**
+     * Sync stock from Back Market only for listings that appear in the orders
+     * just processed by this run (new + modified). One getOneListing API call per
+     * unique listing – keeps the run short instead of full bulk sync.
+     *
+     * @param \App\Http\Controllers\BackMarketAPIController $bm
+     * @param array $newOrders    Orders from getNewOrders()
+     * @param array $modifiedOrders Orders from getAllOrders() (modified)
+     * @return int Number of listings whose stock was updated
+     */
+    private function syncStockForProcessedListings($bm, array $newOrders, array $modifiedOrders): int
+    {
+        $listingIds = [];
+
+        foreach (array_merge($newOrders, $modifiedOrders) as $orderObj) {
+            if (empty($orderObj->orderlines)) {
+                continue;
+            }
+            foreach ($orderObj->orderlines as $orderline) {
+                $listingId = $orderline->listing_id ?? $orderline->listing ?? null;
+                if ($listingId !== null && $listingId !== '') {
+                    $listingIds[(string) $listingId] = true;
+                }
+            }
+        }
+
+        $listingIds = array_keys($listingIds);
+        if (empty($listingIds)) {
+            return 0;
+        }
+
+        $synced = 0;
+        $marketplaceId = 1; // Back Market
+
+        foreach ($listingIds as $referenceId) {
+            $referenceId = trim((string) $referenceId);
+            if ($referenceId === '') {
+                continue;
+            }
+
+            try {
+                $apiListing = $bm->getOneListing($referenceId);
+                if (!$apiListing || !isset($apiListing->quantity)) {
+                    continue;
+                }
+                $apiQuantity = (int) $apiListing->quantity;
+            } catch (\Throwable $e) {
+                continue;
+            }
+
+            $variation = Variation_model::where('reference_id', $referenceId)->first();
+            if (!$variation) {
+                continue;
+            }
+
+            $marketplaceStock = MarketplaceStockModel::where('marketplace_id', $marketplaceId)
+                ->where('variation_id', $variation->id)
+                ->first();
+            if (!$marketplaceStock) {
+                continue;
+            }
+
+            $oldListedStock = $marketplaceStock->listed_stock ?? 0;
+            $lockedStock = $marketplaceStock->locked_stock ?? 0;
+            $marketplaceStock->listed_stock = $apiQuantity;
+            $marketplaceStock->available_stock = max(0, $apiQuantity - $lockedStock);
+            $marketplaceStock->last_synced_at = now();
+            $marketplaceStock->last_api_quantity = $apiQuantity;
+            $marketplaceStock->save();
+
+            $variation->listed_stock = $apiQuantity;
+            $variation->save();
+
+            $synced++;
+        }
+
+        return $synced;
+    }
 }
