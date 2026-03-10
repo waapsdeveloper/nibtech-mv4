@@ -24,6 +24,11 @@ class Kernel extends ConsoleKernel
     /**
      * Define the application's command schedule.
      *
+     * When QUEUE_CONNECTION=redis we run the same codebase as the "scheduler" instance:
+     * we do not run commands directly; we push all scheduled work as Redis jobs so the
+     * Horizon instance (other server) runs them. When queue is not redis we run commands
+     * directly as usual.
+     *
      * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
      * @return void
      */
@@ -33,20 +38,20 @@ class Kernel extends ConsoleKernel
         // $schedule->command('tenant:cron')->everyMinute();
         // Staggered schedule to avoid connection spikes (see docs/DB_CONNECTION_ANALYSIS_LAST_WEEK.md).
         // Every-5-min commands at :01–:04; every-10-min at :05–:09.
-        $schedule->command('price:handler')
+        $this->scheduleCommandOrJob($schedule, 'price:handler')
             ->cron('1,11,21,31,41,51 * * * *') // ~every 10 min at :01, :11, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refresh:latest')
+        $this->scheduleCommandOrJob($schedule, 'refresh:latest')
             ->cron('2,7,12,17,22,27,32,37,42,47,52,57 * * * *') // every 5 min at :02, :07, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         // Critical: new/pending orders sync – every 2 min (uses getNewOrders response directly, no per-order getOneOrder).
-        $schedule->command('refresh:new')
+        $this->scheduleCommandOrJob($schedule, 'refresh:new')
             ->cron('*/2 * * * *')
             ->before(function () {
                 echo '[' . now()->format('Y-m-d H:i:s') . "] 🔄 FIRING: refresh:new\n";
@@ -55,25 +60,25 @@ class Kernel extends ConsoleKernel
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('refresh:orders')
+        $this->scheduleCommandOrJob($schedule, 'refresh:orders')
             ->cron('3,8,13,18,23,28,33,38,43,48,53,58 * * * *') // every 5 min at :03, :08, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
         if ($this->hasRefurbedMarketplace()) {
-            $schedule->command('refurbed:new')
+            $this->scheduleCommandOrJob($schedule, 'refurbed:new')
                 ->cron('4,9,14,19,24,29,34,39,44,49,54,59 * * * *') // every 5 min at :04, :09, …
                 ->withoutOverlapping()
                 ->onOneServer()
                 ->runInBackground();
 
-            $schedule->command('refurbed:orders')
+            $this->scheduleCommandOrJob($schedule, 'refurbed:orders')
                 ->hourly()
                 ->withoutOverlapping()
                 ->onOneServer();
 
-            $schedule->command('refurbed:link-tickets')
+            $this->scheduleCommandOrJob($schedule, 'refurbed:link-tickets')
                 ->cron('5,15,25,35,45,55 * * * *') // ~every 10 min at :05, :15, …
                 ->withoutOverlapping()
                 ->onOneServer()
@@ -90,7 +95,7 @@ class Kernel extends ConsoleKernel
         //     ->withoutOverlapping()
         //     ->onOneServer()
         //     ->runInBackground();
-        $schedule->command('functions:ten')
+        $this->scheduleCommandOrJob($schedule, 'functions:ten')
             ->cron('6,16,26,36,46,56 * * * *') // ~every 10 min at :06, :16, …
             ->withoutOverlapping()
             ->onOneServer()
@@ -111,26 +116,26 @@ class Kernel extends ConsoleKernel
         //     ->hourly()
         //     ->between('6:00', '02:00');
 
-        $schedule->command('functions:daily')
+        $this->scheduleCommandOrJob($schedule, 'functions:daily')
             ->everyFourHours();
 
-        $schedule->command('fetch:exchange-rates')
+        $this->scheduleCommandOrJob($schedule, 'fetch:exchange-rates')
             ->hourly()
             ->between('6:00', '02:00');
 
-        $schedule->command('api-request:process')
+        $this->scheduleCommandOrJob($schedule, 'api-request:process')
             ->cron('0,5,10,15,20,25,30,35,40,45,50,55 * * * *') // every 5 min at :00, :05, … (offset from others)
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('support:sync')
+        $this->scheduleCommandOrJob($schedule, 'support:sync')
             ->cron('7,17,27,37,47,57 * * * *') // ~every 10 min at :07, :17, …
             ->withoutOverlapping()
             ->onOneServer()
             ->runInBackground();
 
-        $schedule->command('bmpro:orders')
+        $this->scheduleCommandOrJob($schedule, 'bmpro:orders')
             ->cron('8,18,28,38,48,58 * * * *') // ~every 10 min at :08, :18, …
             ->withoutOverlapping()
             ->onOneServer()
@@ -138,7 +143,7 @@ class Kernel extends ConsoleKernel
 
         // V2: Marketplace Stock Sync (6-hour interval per marketplace with staggered scheduling)
         // Using optimized bulk sync for BackMarket (95% fewer API calls)
-        $schedule->command('v2:marketplace:sync-stock-bulk --marketplace=1')
+        $this->scheduleCommandOrJob($schedule, 'v2:marketplace:sync-stock-bulk', ['--marketplace' => '1'])
             ->everySixHours()
             ->at('00:00') // Back Market at midnight
             ->withoutOverlapping()
@@ -154,7 +159,7 @@ class Kernel extends ConsoleKernel
         //     ->runInBackground();
 
         if ($this->hasRefurbedMarketplace()) {
-            $schedule->command('v2:marketplace:sync-stock --marketplace=4')
+            $this->scheduleCommandOrJob($schedule, 'v2:marketplace:sync-stock', ['--marketplace' => '4'])
                 ->everySixHours()
                 ->at('03:00') // Refurbed at 3 AM (staggered)
                 ->withoutOverlapping()
@@ -163,7 +168,7 @@ class Kernel extends ConsoleKernel
         }
 
         // Sync all other marketplaces every 6 hours starting at 6 AM
-        $schedule->command('v2:marketplace:sync-stock')
+        $this->scheduleCommandOrJob($schedule, 'v2:marketplace:sync-stock')
             ->everySixHours()
             ->at('06:00')
             ->withoutOverlapping()
@@ -198,7 +203,7 @@ class Kernel extends ConsoleKernel
         //     ->runInBackground();
 
         // Listed stock verification: calculate orders_in_between (orders between previous and this verification)
-        $schedule->command('listed-stock:orders-in-between --days=30')
+        $this->scheduleCommandOrJob($schedule, 'listed-stock:orders-in-between', ['--days' => '30'])
             ->everySixHours()
             ->withoutOverlapping(90)
             ->onOneServer()
@@ -208,6 +213,29 @@ class Kernel extends ConsoleKernel
         // Retrying all failed jobs at once can spike connections. Run manually when needed:
         //   php artisan queue:retry all
         // or retry specific job IDs: php artisan queue:retry <id>
+    }
+
+    /**
+     * Schedule a command to run directly or as a Redis job depending on queue connection.
+     * When QUEUE_CONNECTION=redis we push ExecuteArtisanCommandJob so Horizon runs it;
+     * otherwise we schedule the artisan command to run directly on this instance.
+     *
+     * @param  \Illuminate\Console\Scheduling\Schedule  $schedule
+     * @param  string  $command  Artisan command signature (e.g. 'refresh:new' or 'v2:marketplace:sync-stock-bulk')
+     * @param  array  $options  Command options (e.g. ['--marketplace' => '1'])
+     * @param  string|null  $queue  Queue name when using Redis (e.g. 'listings-sync'); null = default queue
+     * @return \Illuminate\Console\Scheduling\Event
+     */
+    protected function scheduleCommandOrJob(Schedule $schedule, string $command, array $options = [], ?string $queue = null)
+    {
+        if (config('queue.default') === 'redis') {
+            $job = new ExecuteArtisanCommandJob($command, $options);
+            if ($queue !== null) {
+                $job->onQueue($queue);
+            }
+            return $schedule->job($job);
+        }
+        return $schedule->command($command, $options);
     }
 
     /**
