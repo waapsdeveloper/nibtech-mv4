@@ -386,4 +386,16 @@ class Stock_model extends Model
         }
     }
 
+    /**
+     * Count used by listing page "stocks table" (get_variation_available_stocks pagination.total).
+     * Single source of truth: status=1 + latest_closed_listing_or_topup (process 21 status 2 or 22 status 3).
+     */
+    public static function countForListingStocksTable(int $variationId): int
+    {
+        return (int) static::query()
+            ->where('variation_id', $variationId)
+            ->where('status', 1)
+            ->whereHas('latest_closed_listing_or_topup')
+            ->count();
+    }
 }

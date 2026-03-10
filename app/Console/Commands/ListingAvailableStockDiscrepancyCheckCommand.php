@@ -71,14 +71,10 @@ class ListingAvailableStockDiscrepancyCheckCommand extends Command
 
     /**
      * Count matching get_variation_available_stocks (stocks table in listing card details).
-     * Must use same scope as ListingController::get_variation_available_stocks so pagination.total matches.
+     * Uses Stock_model::countForListingStocksTable (single source of truth).
      */
     private function getStocksTableCount(int $variationId): int
     {
-        return Stock_model::query()
-            ->where('variation_id', $variationId)
-            ->where('status', 1)
-            ->whereHas('latest_closed_listing_or_topup')
-            ->count();
+        return Stock_model::countForListingStocksTable($variationId);
     }
 }

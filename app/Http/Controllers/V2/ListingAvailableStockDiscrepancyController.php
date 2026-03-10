@@ -172,23 +172,14 @@ class ListingAvailableStockDiscrepancyController extends Controller
     }
 
     /**
-     * Same query as ListingController::get_variation_available_stocks (stocks table in listing card details).
-     * Returns [ variation_id => count ] for the given variation IDs.
+     * Same count as listing page stocks table. Uses Stock_model::countForListingStocksTable (single source of truth).
      */
     private function getStocksTableCountsForVariations(array $variationIds): array
     {
-        if (empty($variationIds)) {
-            return [];
+        $result = [];
+        foreach ($variationIds as $vid) {
+            $result[$vid] = Stock_model::countForListingStocksTable($vid);
         }
-
-        return Stock_model::query()
-            ->whereIn('variation_id', $variationIds)
-            ->where('status', 1)
-            ->whereHas('latest_closed_listing_or_topup')
-            ->selectRaw('variation_id, count(*) as cnt')
-            ->groupBy('variation_id')
-            ->pluck('cnt', 'variation_id')
-            ->map(fn ($c) => (int) $c)
-            ->all();
+        return $result;
     }
 }
