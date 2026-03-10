@@ -26,9 +26,9 @@ class EventServiceProvider extends ServiceProvider
         // \App\Events\V2\OrderCreated::class => [
         //     \App\Listeners\V2\LockStockOnOrderCreated::class,
         // ],
-        \App\Events\V2\OrderStatusChanged::class => [
-            \App\Listeners\V2\ReduceStockOnOrderCompleted::class,
-        ],
+        // \App\Events\V2\OrderStatusChanged::class => [
+        //     \App\Listeners\V2\ReduceStockOnOrderCompleted::class,
+        // ],
     ];
 
     /**
