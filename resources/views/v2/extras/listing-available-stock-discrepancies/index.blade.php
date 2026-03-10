@@ -66,6 +66,18 @@
             @if(($totals['difference_total'] ?? 0) > 0 && ($totals['listed_grade_6_plus'] ?? 0) > 0)
             <p class="text-muted small mb-0 mt-2"><strong>Why no discrepancy records?</strong> Total Listed includes <strong>all grades</strong>. Should Be and the table below only consider <strong>grade &lt; 6</strong>. The +{{ number_format($totals['difference_total']) }} is usually the <strong>Listed (grade ≥ 6)</strong> amount above — those variations are not in the per-variation check, so no rows appear. To reduce the dashboard difference you would set <code>listed_stock</code> to 0 (or the correct value) on grade 6+ variations that shouldn’t be listed.</p>
             @endif
+            @if(($totals['difference_total'] ?? 0) != 0 && ($totals['listed_grade_6_plus'] ?? 0) == 0)
+            <div class="border rounded p-3 mt-2 bg-light">
+                <h6 class="mb-2">Why is there a difference when there are no discrepancy rows?</h6>
+                <p class="small mb-1">The widget <strong>Should Be</strong> formula subtracts <strong>pending order count</strong> (number of orders). The per-variation check subtracts <strong>pending order items</strong> (sum of quantities). So:</p>
+                <ul class="small mb-1">
+                    <li>Pending marketplace orders (status 2, type 3): <strong>{{ number_format($totals['pending_order_count'] ?? 0) }}</strong> orders</li>
+                    <li>Total pending order items (quantity): <strong>{{ number_format($totals['total_pending_order_items'] ?? 0) }}</strong> items</li>
+                    <li>Gap (orders − items): <strong>{{ number_format($totals['order_count_minus_items'] ?? 0) }}</strong></li>
+                </ul>
+                <p class="small mb-0">If this gap matches the +{{ number_format($totals['difference_total']) }} above, then Total Listed equals the sum of per-variation Should Be (so no discrepancy rows), and the difference vs global Should Be is because the widget uses <strong>order count</strong> instead of <strong>order items</strong>. The formula is unchanged; this is for debugging only.</p>
+            </div>
+            @endif
         </div>
     </div>
 

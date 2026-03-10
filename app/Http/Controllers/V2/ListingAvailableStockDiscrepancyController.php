@@ -156,6 +156,12 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
         $pendingOrderCount = Order_model::where('status', 2)->where('order_type_id', 3)->count();
 
+        $totalPendingOrderItems = (int) Order_item_model::query()
+            ->whereHas('order', function ($query) {
+                $query->where('status', 2)->where('order_type_id', 3);
+            })
+            ->sum('quantity');
+
         $shouldBeTotal = max(0, $gradedInventory->where('grade_id', '<', 6)->sum('quantity') - $processCount - $pendingOrderCount);
 
         return [
@@ -164,6 +170,9 @@ class ListingAvailableStockDiscrepancyController extends Controller
             'listed_grade_6_plus' => $listedGrade6Plus,
             'should_be_total' => $shouldBeTotal,
             'difference_total' => $listedTotal - $shouldBeTotal,
+            'pending_order_count' => $pendingOrderCount,
+            'total_pending_order_items' => $totalPendingOrderItems,
+            'order_count_minus_items' => $pendingOrderCount - $totalPendingOrderItems,
         ];
     }
 }
