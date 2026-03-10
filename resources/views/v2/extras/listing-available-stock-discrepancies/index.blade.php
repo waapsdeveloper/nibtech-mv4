@@ -49,6 +49,23 @@
                     </div>
                 </div>
             </div>
+            <div class="row g-3 mt-1">
+                <div class="col-md-6">
+                    <div class="border rounded p-2 bg-light">
+                        <span class="text-muted small">Listed (grade &lt; 6):</span> <strong>{{ number_format($totals['listed_grade_under_6'] ?? 0) }}</strong>
+                        <span class="text-muted small ms-2">— only this is compared to Should Be</span>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="border rounded p-2 bg-light">
+                        <span class="text-muted small">Listed (grade ≥ 6):</span> <strong>{{ number_format($totals['listed_grade_6_plus'] ?? 0) }}</strong>
+                        <span class="text-muted small ms-2">— not in widget formula; explains excess when no rows below</span>
+                    </div>
+                </div>
+            </div>
+            @if(($totals['difference_total'] ?? 0) > 0 && ($totals['listed_grade_6_plus'] ?? 0) > 0)
+            <p class="text-muted small mb-0 mt-2"><strong>Why no discrepancy records?</strong> Total Listed includes <strong>all grades</strong>. Should Be and the table below only consider <strong>grade &lt; 6</strong>. The +{{ number_format($totals['difference_total']) }} is usually the <strong>Listed (grade ≥ 6)</strong> amount above — those variations are not in the per-variation check, so no rows appear. To reduce the dashboard difference you would set <code>listed_stock</code> to 0 (or the correct value) on grade 6+ variations that shouldn’t be listed.</p>
+            @endif
         </div>
     </div>
 

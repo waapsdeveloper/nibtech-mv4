@@ -128,10 +128,14 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
     /**
      * Dashboard-style totals: total listed (sum variation.listed_stock) and global should_be (widget formula).
+     * Also breaks down Total Listed by grade so we can see when the excess is from grade 6+ (not in Should Be).
      */
     private function getDashboardTotals(): array
     {
         $listedTotal = (int) Variation_model::where('listed_stock', '>', 0)->sum('listed_stock');
+
+        $listedGradeUnder6 = (int) Variation_model::where('listed_stock', '>', 0)->where('grade', '<', 6)->sum('listed_stock');
+        $listedGrade6Plus = (int) Variation_model::where('listed_stock', '>', 0)->where('grade', '>=', 6)->sum('listed_stock');
 
         $aftersaleStockIds = Order_item_model::whereHas('order', function ($query) {
             $query->where('order_type_id', 4)->where('status', '<', 3);
@@ -156,6 +160,8 @@ class ListingAvailableStockDiscrepancyController extends Controller
 
         return [
             'listed_total' => $listedTotal,
+            'listed_grade_under_6' => $listedGradeUnder6,
+            'listed_grade_6_plus' => $listedGrade6Plus,
             'should_be_total' => $shouldBeTotal,
             'difference_total' => $listedTotal - $shouldBeTotal,
         ];
