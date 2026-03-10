@@ -22,6 +22,24 @@
             <h5 class="card-title mb-0">Discrepancy #{{ $discrepancy->id }}</h5>
         </div>
         <div class="card-body">
+            <h6 class="text-muted mb-2">Exact numbers (as on listing variation card)</h6>
+            <table class="table table-bordered mb-3">
+                <tr>
+                    <th width="220">Listed (BM)</th>
+                    <td class="fw-bold">{{ $discrepancy->variation ? ($discrepancy->variation->listed_stock ?? '—') : '—' }}</td>
+                    <td class="text-muted small">Stock field / Back Market</td>
+                </tr>
+                <tr>
+                    <th>Available (card)</th>
+                    <td class="fw-bold">{{ $discrepancy->available_count }}</td>
+                    <td class="text-muted small">Card &quot;Available&quot;</td>
+                </tr>
+                <tr>
+                    <th>Total stocks (table)</th>
+                    <td class="fw-bold">{{ $discrepancy->stocks_table_count }}</td>
+                    <td class="text-muted small">Stocks table row count</td>
+                </tr>
+            </table>
             <table class="table table-bordered mb-0">
                 <tr>
                     <th width="200">Variation ID</th>
@@ -43,14 +61,6 @@
                     <td>{{ $discrepancy->variation->product->model ?? '—' }}</td>
                 </tr>
                 @endif
-                <tr>
-                    <th>Available (card)</th>
-                    <td>{{ $discrepancy->available_count }}</td>
-                </tr>
-                <tr>
-                    <th>Stocks table count</th>
-                    <td>{{ $discrepancy->stocks_table_count }}</td>
-                </tr>
                 <tr>
                     <th>Difference</th>
                     <td><span class="badge {{ $discrepancy->difference > 0 ? 'bg-warning' : 'bg-info' }}">{{ $discrepancy->difference }}</span> (stocks table − available)</td>

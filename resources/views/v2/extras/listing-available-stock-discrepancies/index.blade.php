@@ -42,6 +42,7 @@
         </div>
         <div class="card-body">
             <p class="text-muted small">Source of truth: stocks table. Select rows and click &quot;Fix selected&quot; to set the card &quot;Available&quot; to the stocks table count for those variations.</p>
+            <p class="text-muted small mb-2"><strong>Numbers match the listing variation card:</strong> Listed (BM) = Stock field / Back Market, Available = card &quot;Available&quot;, Total stocks = stocks table row count.</p>
             <div class="table-responsive">
                 <table class="table table-bordered table-hover mb-0">
                     <thead>
@@ -49,8 +50,9 @@
                             <th width="40"><input type="checkbox" id="select-all" title="Select all on page"></th>
                             <th>ID</th>
                             <th>Variation / SKU</th>
-                            <th>Available (card)</th>
-                            <th>Stocks table</th>
+                            <th class="text-center" title="Stock field on listing card (Back Market)">Listed (BM)</th>
+                            <th class="text-center" title="Available count on card">Available (card)</th>
+                            <th class="text-center" title="Stocks table row count">Total stocks (table)</th>
                             <th>Difference</th>
                             <th>Detected at</th>
                             <th width="140">Actions</th>
@@ -71,8 +73,9 @@
                                     {{ $d->variation_sku ?? 'Variation #' . $d->variation_id }}
                                 @endif
                             </td>
-                            <td>{{ $d->available_count }}</td>
-                            <td>{{ $d->stocks_table_count }}</td>
+                            <td class="text-center"><strong>{{ $d->variation ? ($d->variation->listed_stock ?? '—') : '—' }}</strong></td>
+                            <td class="text-center">{{ $d->available_count }}</td>
+                            <td class="text-center">{{ $d->stocks_table_count }}</td>
                             <td><span class="badge {{ $d->difference > 0 ? 'bg-warning' : 'bg-info' }}">{{ $d->difference }}</span></td>
                             <td>{{ $d->detected_at ? $d->detected_at->format('Y-m-d H:i') : '—' }}</td>
                             <td>
@@ -91,7 +94,7 @@
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="8" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
+                            <td colspan="9" class="text-center text-muted">No discrepancy records. Run the check to populate.</td>
                         </tr>
                         @endforelse
                     </tbody>
