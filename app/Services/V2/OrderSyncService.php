@@ -79,6 +79,9 @@ class OrderSyncService
         $isNewOrder = $existingOrder === null;
         $oldStatus = $existingOrder ? $existingOrder->status : null;
 
+        // Resolve currency for the initial insert (required: orders.currency has no default)
+        $currencyId = $this->resolveCurrencyForCreate($orderObj);
+
         try {
             // Use updateOrCreate to prevent race conditions - atomic operation
             $order = Order_model::updateOrCreate(
@@ -90,6 +93,7 @@ class OrderSyncService
                     // Default values only used when creating new order
                     'marketplace_id' => $marketplaceId,
                     'order_type_id' => 3, // Marketplace order - ensure it's always set
+                    'currency' => $currencyId,
                 ]
             );
 
@@ -254,6 +258,26 @@ class OrderSyncService
         $orderItems = Order_item_model::where('order_id', $order->id)->get();
 
         return $orderItems;
+    }
+
+    /**
+     * Resolve currency id for use when creating a new order (so INSERT includes currency).
+     * Uses order object currency code if present, otherwise defaults to EUR (e.g. BackMarket).
+     */
+    protected function resolveCurrencyForCreate($orderObj): int
+    {
+        $code = $orderObj->currency ?? null;
+        if ($code !== null && isset($this->currencyCodes[$code])) {
+            return (int) $this->currencyCodes[$code];
+        }
+        // Default to EUR then GBP for marketplaces like BackMarket when currency not yet set
+        $fallback = $this->currencyCodes['EUR'] ?? $this->currencyCodes['GBP'] ?? null;
+        if ($fallback !== null) {
+            return (int) $fallback;
+        }
+        // Last resort: first available currency so INSERT never omits currency
+        $first = reset($this->currencyCodes);
+        return $first !== false ? (int) $first : 1;
     }
 
     /**

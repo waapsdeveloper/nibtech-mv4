@@ -1,4 +1,15 @@
 const mix = require('laravel-mix');
+const path = require('path');
+const fs = require('fs');
+
+// Source is resources/assets/ (must exist to run mix). If missing on server, do NOT run
+// npm run production — use the pre-built public/assets/ and mix-manifest.json from the repo.
+// Only copy directory if it exists (e.g. resources/assets/img may be missing on server)
+function copyDirIfExists(src, dest) {
+    if (fs.existsSync(path.resolve(src))) {
+        mix.copyDirectory(src, dest);
+    }
+}
 
 /*
  |--------------------------------------------------------------------------
@@ -92,9 +103,9 @@ mix.sass('resources/assets/css/skin-modes.scss', 'public/assets/css')
 mix.sass('resources/assets/css/style-transparent.scss', 'public/assets/css')
 mix.sass('resources/assets/scss/style.scss', 'public/assets/css')
 
-mix.copyDirectory('resources/assets/img', 'public/assets/img')
-mix.copyDirectory('resources/assets/plugins', 'public/assets/plugins')
-mix.copyDirectory('resources/assets/switcher', 'public/assets/switcher')
+copyDirIfExists('resources/assets/img', 'public/assets/img');
+copyDirIfExists('resources/assets/plugins', 'public/assets/plugins');
+copyDirIfExists('resources/assets/switcher', 'public/assets/switcher');
 
 mix.options({
     processCssUrls: false
