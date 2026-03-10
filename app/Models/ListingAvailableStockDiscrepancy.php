@@ -6,7 +6,9 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
- * One row per variation where "Available" (card) count != stocks table count.
+ * One row per variation where "Listed" (dashboard Total Listed) differs from "Should Be"
+ * (same formula as dashboard widget: graded stock grade<6 - process type 22 - pending order items).
+ * Draft board: fix sets variation.listed_stock to should_be and pushes to Back Market.
  */
 class ListingAvailableStockDiscrepancy extends Model
 {
@@ -14,8 +16,8 @@ class ListingAvailableStockDiscrepancy extends Model
 
     protected $fillable = [
         'variation_id',
-        'available_count',
-        'stocks_table_count',
+        'listed_stock',
+        'should_be',
         'difference',
         'variation_sku',
         'detected_at',

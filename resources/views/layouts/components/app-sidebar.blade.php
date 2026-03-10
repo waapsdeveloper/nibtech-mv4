@@ -124,7 +124,7 @@
                                                     <a class="side-menu__item ps-0" href="{{ url('v2/extras/orders-in-between-summary') }}">Orders In Between Summary</a>
                                                 </li>
                                                 <li class="slide">
-                                                    <a class="side-menu__item ps-0" href="{{ url('v2/extras/listing-available-stock-discrepancies') }}">Available vs Stocks Discrepancies</a>
+                                                    <a class="side-menu__item ps-0" href="{{ url('v2/extras/listing-available-stock-discrepancies') }}">Listed vs Should Be (Draft board)</a>
                                                 </li>
                                             </ul>
                                         </li>
