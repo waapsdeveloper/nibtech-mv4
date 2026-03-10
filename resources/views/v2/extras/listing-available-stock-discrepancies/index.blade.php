@@ -96,6 +96,7 @@
                     <input type="number" name="chunk" id="chunk" value="500" min="100" max="2000" step="100" class="form-control form-control-sm" style="width: 80px;">
                     <button type="submit" class="btn btn-primary btn-sm">Run check</button>
                 </form>
+                <a href="{{ route('v2.extras.listing-card-discrepancies.index') }}" class="btn btn-outline-secondary btn-sm">Stock vs Available vs Table</a>
             </div>
         </div>
         <div class="card-body">

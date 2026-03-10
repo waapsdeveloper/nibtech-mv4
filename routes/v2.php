@@ -175,5 +175,11 @@ Route::prefix('v2')->group(function () {
     Route::delete('extras/listing-available-stock-discrepancies/{id}', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'destroy'])->name('v2.extras.listing-available-stock-discrepancies.destroy');
     Route::post('extras/listing-available-stock-discrepancies/run-check', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'runCheck'])->name('v2.extras.listing-available-stock-discrepancies.run-check');
     Route::post('extras/listing-available-stock-discrepancies/fix', [\App\Http\Controllers\V2\ListingAvailableStockDiscrepancyController::class, 'fix'])->name('v2.extras.listing-available-stock-discrepancies.fix');
+
+    // Extras: Listing card mismatches (Stock vs Available vs Stocks table)
+    Route::get('extras/listing-card-discrepancies', [\App\Http\Controllers\V2\ListingCardDiscrepancyController::class, 'index'])->name('v2.extras.listing-card-discrepancies.index');
+    Route::post('extras/listing-card-discrepancies/run-check', [\App\Http\Controllers\V2\ListingCardDiscrepancyController::class, 'runCheck'])->name('v2.extras.listing-card-discrepancies.run-check');
+    Route::delete('extras/listing-card-discrepancies/{id}', [\App\Http\Controllers\V2\ListingCardDiscrepancyController::class, 'destroy'])->name('v2.extras.listing-card-discrepancies.destroy');
+    Route::post('extras/listing-card-discrepancies/fix', [\App\Http\Controllers\V2\ListingCardDiscrepancyController::class, 'fix'])->name('v2.extras.listing-card-discrepancies.fix');
 });
 

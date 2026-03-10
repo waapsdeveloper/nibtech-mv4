@@ -125,6 +125,7 @@
                                                 </li>
                                                 <li class="slide">
                                                     <a class="side-menu__item ps-0" href="{{ url('v2/extras/listing-available-stock-discrepancies') }}">Listed vs Should Be (Draft board)</a>
+                                                    <a class="side-menu__item ps-0" href="{{ route('v2.extras.listing-card-discrepancies.index') }}">Stock vs Available vs Table</a>
                                                 </li>
                                             </ul>
                                         </li>

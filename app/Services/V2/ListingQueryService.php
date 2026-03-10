@@ -5,6 +5,7 @@ namespace App\Services\V2;
 use App\Models\Variation_model;
 use App\Models\Products_model;
 use App\Models\Storage_model;
+use App\Models\ListingCardDiscrepancy;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
@@ -128,13 +129,13 @@ class ListingQueryService
                 });
             })
             ->when($request->filled('stock_mismatch'), function ($q) {
-                // Mismatch when (available - pending orders) ≠ listed stock (same logic as stock_mismatch_report.log).
-                // Use subqueries in HAVING so pagination count query works (withCount/withSum are not in count subquery).
-                $availableSub = '(SELECT COUNT(*) FROM stock s WHERE s.variation_id = variation.id AND s.status = 1 AND s.deleted_at IS NULL)';
-                $pendingSub = '(SELECT COALESCE(SUM(oi.quantity), 0) FROM order_items oi INNER JOIN orders o ON oi.order_id = o.id WHERE oi.variation_id = variation.id AND o.order_type_id = 3 AND o.status = 2 AND oi.deleted_at IS NULL)';
-                $diff = "({$availableSub} - {$pendingSub})";
-                return $q->havingRaw("{$diff} != variation.listed_stock OR {$diff} != (SELECT COALESCE(ms.listed_stock, 0) FROM marketplace_stock ms WHERE ms.variation_id = variation.id AND ms.marketplace_id = 1 AND ms.deleted_at IS NULL LIMIT 1)");
-            });
+                // Show only variations that have a Stock vs Available vs Table mismatch (from listing_card_discrepancies).
+                $variationIds = ListingCardDiscrepancy::pluck('variation_id');
+                if ($variationIds->isEmpty()) {
+                    return $q->whereRaw('1 = 0');
+                }
+                return $q->whereIn('id', $variationIds);
+            })
         
         // Apply state filter - matches original order (before sale_40, handler_status, whereNotNull)
         $state = $request->input('state');
