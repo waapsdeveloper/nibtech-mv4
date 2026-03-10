@@ -1054,6 +1054,17 @@
                     stocksTable = datass;
                     $('#stocks_'+variationId).html(datass);
 
+                    // When listed stock (updatedQuantity) and stocks table total don't match, show table count in Stock input and flag mismatch
+                    let tableTotal = data.pagination ? (data.pagination.total || 0) : data.stocks.length;
+                    let listedQty = (data.updatedQuantity != null) ? parseInt(data.updatedQuantity, 10) : parseInt($('#quantity_'+variationId).val(), 10) || 0;
+                    let mismatchEl = $('#stock_mismatch_'+variationId);
+                    if (mismatchEl.length && tableTotal !== listedQty) {
+                        $('#quantity_'+variationId).val(tableTotal);
+                        mismatchEl.html('Listed was '+listedQty+'; table: '+tableTotal+' — <a href="{{ route("v2.extras.listing-available-stock-discrepancies.index") }}" target="_blank">Draft board</a>').show();
+                    } else if (mismatchEl.length) {
+                        mismatchEl.hide().empty();
+                    }
+
                     // Create pagination HTML function
                     function createPaginationHtml(pagination, variationId, isHeader = false) {
                         let paginationHtml = '<div class="d-flex justify-content-center align-items-center gap-1">';
@@ -1419,7 +1430,7 @@
                         let stocksTable = '';
                         let listingsTable = '';
                         let stockPrices = [];
-                        let listedStock = fetchUpdatedQuantity(variation.id);
+                        let listedStock = (variation.listed_stock != null && variation.listed_stock !== '') ? variation.listed_stock : 0;
                         let m_min_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.min_price));
                         let m_price = Math.min(...variation.listings.filter(listing => listing.country === 73).map(listing => listing.price));
                         let exchange_rates = {!! json_encode($exchange_rates) !!};
@@ -1626,9 +1637,10 @@
                                         @csrf
                                         <input type="hidden" name="process_id" value="{{$process_id}}">
                                         <div class="form-floating">
-                                            <input type="text" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock || 0}" style="width:50px;" disabled>
+                                            <input type="text" class="form-control" name="stock" id="quantity_${variation.id}" value="${listedStock}" style="width:50px;" disabled>
                                             <label for="">Stock</label>
                                         </div>
+                                        <span id="stock_mismatch_${variation.id}" class="small text-warning ms-1" style="display:none;"></span>
                                         <div class="form-floating">
                                             <input type="number" class="form-control" name="stock" id="add_${variation.id}" value="" style="width:60px;" oninput="toggleButtonOnChange(${variation.id}, this)" onkeydown="if(event.ctrlKey && event.key === 'ArrowDown') { event.preventDefault(); moveToNextInput(this, 'add_'); } else if(event.ctrlKey && event.key === 'ArrowUp') { event.preventDefault(); moveToNextInput(this, 'add_', true); }">
                                             <label for="">Add</label>
