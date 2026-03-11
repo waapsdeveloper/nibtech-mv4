@@ -161,7 +161,8 @@ class ListingController extends Controller
             return $q->whereIn('storage', $storageSearch);
         })
         ->when($request->filled('sku'), function ($q) use ($request) {
-            return $q->where('sku', $request->input('sku'));
+            $sku = $request->input('sku');
+            return $q->where('sku', 'like', '%' . $sku . '%');
         })
         ->when($request->filled('color'), function ($q) use ($request) {
             return $q->where('color', $request->input('color'));
@@ -503,7 +504,8 @@ class ListingController extends Controller
             return $q->whereIn('storage', $storage_search);
         })
         ->when(request('sku') != '', function ($q) {
-            return $q->where('sku', request('sku'));
+            $sku = request('sku');
+            return $q->where('sku', 'like', '%' . $sku . '%');
         })
         // ->when(request('color') != '', function ($q) {
         //     return $q->where('color', request('color'));
