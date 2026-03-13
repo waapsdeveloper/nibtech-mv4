@@ -992,7 +992,7 @@ class ListingController extends Controller
                 'message' => 'Listing not found or empty response.',
             ], 404);
         }
-
+        Log::info('Back Market API response:', (array) $response);
         $list = is_array($response) ? (object) $response : $response;
 
         $listingId = trim((string) (property_exists($list, 'listing_id') ? $list->listing_id : ($list->id ?? $referenceId)));
