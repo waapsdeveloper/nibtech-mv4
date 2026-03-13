@@ -32,7 +32,6 @@ use App\Events\VariationStockUpdated;
 use App\Services\Marketplace\StockDistributionService;
 use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -2676,14 +2675,23 @@ class ListingController extends Controller
     public function runThirty()
     {
         try {
-            set_time_limit(1800); // 30 minutes
-            Artisan::call('functions:thirty');
+            $artisan = base_path('artisan');
+            $php = PHP_BINARY;
+            $logFile = storage_path('logs/functions_thirty_manual.log');
+
+            // Run in background so the HTTP response returns immediately
+            if (PHP_OS_FAMILY === 'Windows') {
+                pclose(popen("start /B {$php} {$artisan} functions:thirty >> \"{$logFile}\" 2>&1", 'r'));
+            } else {
+                exec("{$php} {$artisan} functions:thirty >> \"{$logFile}\" 2>&1 &");
+            }
+
             return response()->json([
                 'success' => true,
-                'message' => 'functions:thirty completed successfully'
+                'message' => 'functions:thirty started in background'
             ]);
         } catch (\Exception $e) {
-            Log::error('Error queuing functions:thirty: ' . $e->getMessage());
+            Log::error('Error starting functions:thirty: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
                 'message' => 'Error: ' . $e->getMessage()
