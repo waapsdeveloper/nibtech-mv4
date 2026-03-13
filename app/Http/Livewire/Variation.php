@@ -40,7 +40,7 @@ class Variation extends Component
         $data['order_statuses'] = Order_status_model::get();
 
             if(request('per_page') != null){
-                $per_page = min((int) request('per_page'), 25);
+                $per_page = request('per_page');
             }else{
                 $per_page = 10;
             }
