@@ -1004,7 +1004,7 @@ class BackMarketAPIController extends Controller
         ]);
 
         // Increase page size for better performance (API allows up to 100)
-        $pageSize = 100; // Increased from 50 to reduce API calls by 50%
+        $pageSize = 50; // Increased from 50 to reduce API calls by 50%
 
         foreach($country_codes as $id => $code){
             $countryStartTime = microtime(true);

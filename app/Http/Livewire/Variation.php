@@ -39,7 +39,7 @@ class Variation extends Component
         $data['order_statuses'] = Order_status_model::get();
 
             if(request('per_page') != null){
-                $per_page = request('per_page');
+                $per_page = min((int) request('per_page'), 25);
             }else{
                 $per_page = 10;
             }
@@ -100,6 +100,7 @@ class Variation extends Component
                     });
                 })
                 ->withCount('available_stocks')
+                ->with(['same_products' => fn($q) => $q->select('id', 'product_id', 'color')])
                 // ->orderBy('name','desc')
                 ->orderByDesc('id')
                 ->paginate($per_page)
