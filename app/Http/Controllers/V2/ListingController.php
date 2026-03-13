@@ -32,6 +32,7 @@ use App\Events\VariationStockUpdated;
 use App\Services\Marketplace\StockDistributionService;
 use App\Services\V2\MarketplaceAPIService;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 
@@ -2665,6 +2666,26 @@ class ListingController extends Controller
             return response()->json([
                 'success' => false,
                 'error' => 'Error fixing stock mismatch: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Dispatch functions:thirty artisan command in the background.
+     */
+    public function runThirty()
+    {
+        try {
+            Artisan::queue('functions:thirty');
+            return response()->json([
+                'success' => true,
+                'message' => 'functions:thirty command queued successfully'
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Error queuing functions:thirty: ' . $e->getMessage());
+            return response()->json([
+                'success' => false,
+                'message' => 'Error: ' . $e->getMessage()
             ], 500);
         }
     }

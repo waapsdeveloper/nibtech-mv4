@@ -139,6 +139,43 @@
         @endforeach
     };
 
+    // Run functions:thirty command manually
+    document.addEventListener('DOMContentLoaded', function () {
+        const runThirtyBtn = document.getElementById('runThirtyBtn');
+        const runThirtyStatus = document.getElementById('runThirtyStatus');
+
+        if (runThirtyBtn && runThirtyStatus) {
+            runThirtyBtn.addEventListener('click', function () {
+                if (!confirm('Are you sure you want to run functions:thirty now?')) return;
+
+                runThirtyBtn.disabled = true;
+                runThirtyBtn.textContent = 'Queuing...';
+                runThirtyStatus.textContent = '';
+
+                fetch("{{ url('v2/listings/run_thirty') }}", {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    },
+                })
+                    .then((res) => res.json().then((data) => ({ status: res.status, data })))
+                    .then(({ status, data }) => {
+                        runThirtyStatus.textContent = data.message || (status < 300 ? 'Queued.' : 'Failed.');
+                        runThirtyStatus.className = data.success ? 'text-success small' : 'text-danger small';
+                    })
+                    .catch((err) => {
+                        runThirtyStatus.textContent = 'Request failed: ' + err.message;
+                        runThirtyStatus.className = 'text-danger small';
+                    })
+                    .finally(() => {
+                        runThirtyBtn.disabled = false;
+                        runThirtyBtn.textContent = 'Run Thirty';
+                    });
+            });
+        }
+    });
+
     // Fetch a single Back Market listing and upsert its variation
     document.addEventListener('DOMContentLoaded', function () {
         const fetchBtn = document.getElementById('fetchListingBtn');

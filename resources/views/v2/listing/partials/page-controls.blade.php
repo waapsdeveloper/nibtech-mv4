@@ -20,6 +20,10 @@
         <a href="{{ url('listed_stock_verification') }}" class="btn btn-primary btn-sm" id="start_verification">
             Verification
         </a>
+        <button class="btn btn-warning btn-sm" type="button" id="runThirtyBtn">
+            Run Thirty
+        </button>
+        <span id="runThirtyStatus" class="text-muted small"></span>
         @if(request('special') != 'verify_listing')
             <button class="btn btn-link" type="button" id="open_all_variations">
                 Toggle All

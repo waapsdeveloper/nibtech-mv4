@@ -72,6 +72,7 @@ Route::prefix('v2')->group(function () {
     Route::get('listings/get_marketplace_stock_comparison/{id}', [V2ListingController::class, 'getMarketplaceStockComparison'])->name('v2.listing.get_marketplace_stock_comparison');
     Route::post('listings/fix_stock_mismatch/{id}', [V2ListingController::class, 'fixStockMismatch'])->name('v2.listing.fix_stock_mismatch');
     Route::post('listings/fetch_one', [V2ListingController::class, 'fetchOneListing'])->name('v2.listing.fetch_one');
+    Route::post('listings/run_thirty', [V2ListingController::class, 'runThirty'])->name('v2.listing.run_thirty');
 
     // Marketplace routes
     Route::get('marketplace', [Marketplace::class, 'render'])->name('v2.view_marketplace');
