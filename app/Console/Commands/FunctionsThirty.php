@@ -50,24 +50,32 @@ class FunctionsThirty extends BaseCommand
 
         // Check if local sync mode is enabled
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-        
+
         // Log command start (Slack + file)
-        Log::channel('functions_thirty')->info('Functions:thirty started', [
-            'command' => 'functions:thirty',
-            'started_at' => now()->toDateTimeString(),
-            'local_mode' => $syncDataInLocal,
-        ]);
-        SlackLogService::post(
-            'listing_sync',
-            'info',
-            "���� Functions:thirty command started (BackMarket listings sync)",
-            [
+        try {
+            Log::channel('functions_thirty')->info('Functions:thirty started', [
                 'command' => 'functions:thirty',
                 'started_at' => now()->toDateTimeString(),
-                'local_mode' => $syncDataInLocal
-            ]
-        );
-        
+                'local_mode' => $syncDataInLocal,
+            ]);
+        } catch (\Throwable $e) {
+            Log::warning('functions:thirty: could not write to functions_thirty channel: ' . $e->getMessage());
+        }
+        try {
+            SlackLogService::post(
+                'listing_sync',
+                'info',
+                "Functions:thirty command started (BackMarket listings sync)",
+                [
+                    'command' => 'functions:thirty',
+                    'started_at' => now()->toDateTimeString(),
+                    'local_mode' => $syncDataInLocal
+                ]
+            );
+        } catch (\Throwable $e) {
+            Log::warning('functions:thirty: could not post to Slack: ' . $e->getMessage());
+        }
+
         if ($syncDataInLocal) {
             // $this->info("��ᴩ�  Local Mode: Will only fetch data, no POST/PUT to BackMarket or Refurbed APIs");
             // SlackLogService::post(
@@ -82,13 +90,17 @@ class FunctionsThirty extends BaseCommand
         }
 
         // refresh:new skipped (enable when needed to sync orders before stock sync)
-        Log::channel('functions_thirty')->info('Functions:thirty: refresh:new skipped', [
-            'command' => 'functions:thirty',
-            'skipped_at' => now()->toDateTimeString(),
-        ]);
+        try {
+            Log::channel('functions_thirty')->info('Functions:thirty: refresh:new skipped', [
+                'command' => 'functions:thirty',
+                'skipped_at' => now()->toDateTimeString(),
+            ]);
+        } catch (\Throwable $e) {
+            // Silently ignore log permission errors
+        }
 
         ini_set('max_execution_time', 1200);
-        
+
         // Statistics tracking
         $overallStats = [
             'get_listings' => [
@@ -109,20 +121,20 @@ class FunctionsThirty extends BaseCommand
                 'variations_not_found' => 0,
             ]
         ];
-        
+
         try {
         // Run get_listings
         $this->get_listings($overallStats['get_listings']);
-        
+
         // Run get_listingsBi
         $this->get_listingsBi($overallStats['get_listingsBi']);
-        
+
         // Calculate duration
         $duration = round(microtime(true) - $startTime, 2);
-        
+
         // Prepare summary message
         $summaryParts = [];
-        
+
         // get_listings summary
         $glStats = $overallStats['get_listings'];
         if ($glStats['listings_fetched'] > 0 || $glStats['variations_updated'] > 0 || $glStats['listings_updated'] > 0) {
@@ -141,7 +153,7 @@ class FunctionsThirty extends BaseCommand
             }
             $summaryParts[] = "get_listings(" . implode(", ", $glParts) . ")";
         }
-        
+
         // get_listingsBi summary
         $glBiStats = $overallStats['get_listingsBi'];
         if ($glBiStats['listings_fetched'] > 0 || $glBiStats['variations_updated'] > 0 || $glBiStats['listings_updated'] > 0) {
@@ -157,45 +169,49 @@ class FunctionsThirty extends BaseCommand
             }
             $summaryParts[] = "get_listingsBi(" . implode(", ", $glBiParts) . ")";
         }
-        
-        $summaryText = !empty($summaryParts) 
+
+        $summaryText = !empty($summaryParts)
             ? " | " . implode(" | ", $summaryParts)
             : " | No listings processed";
-        
+
         $totalProcessed = $glStats['listings_fetched'] + $glBiStats['listings_fetched'];
         $processedOk = $glStats['listings_updated'] + $glStats['variations_updated'] + $glBiStats['listings_updated'] + $glBiStats['variations_updated'];
         CommandRunLog::recordEnd('functions-thirty', (int) $totalProcessed, (int) $processedOk, 0, $summaryText, 'completed');
-        
+
         // Log command completion with statistics (Slack + file)
-        Log::channel('functions_thirty')->info('Functions:thirty completed', [
-            'command' => 'functions:thirty',
-            'completed_at' => now()->toDateTimeString(),
-            'duration_seconds' => $duration,
-            'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
-            'statistics' => $overallStats,
-        ]);
-        SlackLogService::post(
-            'listing_sync',
-            'info',
-            "ԣ� Functions:thirty command completed{$summaryText} | Duration: {$duration}s",
-            [
+        try {
+            Log::channel('functions_thirty')->info('Functions:thirty completed', [
                 'command' => 'functions:thirty',
                 'completed_at' => now()->toDateTimeString(),
                 'duration_seconds' => $duration,
                 'local_mode' => env('SYNC_DATA_IN_LOCAL', false),
                 'statistics' => $overallStats,
-                'total_duration' => $duration
-            ]
-        );
+            ]);
+        } catch (\Throwable $logEx) { /* ignore log permission errors */ }
+        try {
+            SlackLogService::post(
+                'listing_sync',
+                'info',
+                "Functions:thirty command completed | Duration: {$duration}s",
+                [
+                    'command' => 'functions:thirty',
+                    'completed_at' => now()->toDateTimeString(),
+                    'duration_seconds' => $duration,
+                    'statistics' => $overallStats,
+                ]
+            );
+        } catch (\Throwable $logEx) { /* ignore Slack errors */ }
 
         return 0;
         } catch (\Throwable $e) {
             CommandRunLog::recordEnd('functions-thirty', 0, 0, 1, 'Failed: ' . $e->getMessage(), 'failed');
-            Log::channel('functions_thirty')->error('Functions:thirty failed', [
-                'command' => 'functions:thirty',
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString(),
-            ]);
+            try {
+                Log::channel('functions_thirty')->error('Functions:thirty failed', [
+                    'command' => 'functions:thirty',
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString(),
+                ]);
+            } catch (\Throwable $logEx) { /* ignore log permission errors */ }
             throw $e;
         }
     }
@@ -702,10 +718,7 @@ class FunctionsThirty extends BaseCommand
                         }
 
                     } catch (\Exception $e) {
-                        Log::channel('functions_thirty')->error("Refurbed: Error processing offer", [
-                            'offer_id' => $offerId ?? 'unknown',
-                            'error' => $e->getMessage()
-                        ]);
+                        try { Log::channel('functions_thirty')->error("Refurbed: Error processing offer", ['offer_id' => $offerId ?? 'unknown', 'error' => $e->getMessage()]); } catch (\Throwable $logEx) { /* ignore */ }
                         continue;
                     }
                 }
@@ -857,18 +870,11 @@ class FunctionsThirty extends BaseCommand
 
             echo "Processed listings: {$processedListings} across {$totalOffers} offers in {$countryCount} countries\n";
 
-            Log::channel('functions_thirty')->info("Refurbed: Completed listing sync", [
-                'total_listings' => $processedListings,
-                'total_offers' => $totalOffers,
-                'countries_processed' => $countryCount,
-            ]);
+            try { Log::channel('functions_thirty')->info("Refurbed: Completed listing sync", ['total_listings' => $processedListings, 'total_offers' => $totalOffers, 'countries_processed' => $countryCount]); } catch (\Throwable $logEx) { /* ignore */ }
             echo "Refurbed sync complete: {$processedListings} listings processed ({$totalOffers} offers) across {$countryCount} countries\n";
 
         } catch (\Exception $e) {
-            Log::channel('functions_thirty')->error("Refurbed: Fatal error in get_refurbed_listings", [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
+            try { Log::channel('functions_thirty')->error("Refurbed: Fatal error in get_refurbed_listings", ['error' => $e->getMessage(), 'trace' => $e->getTraceAsString()]); } catch (\Throwable $logEx) { /* ignore */ }
             echo "\nRefurbed sync failed: " . $e->getMessage() . "\n";
         }
     }
@@ -1246,13 +1252,13 @@ class FunctionsThirty extends BaseCommand
 
         // Check if local sync mode is enabled - prevent live data updates to Refurbed
         $syncDataInLocal = env('SYNC_DATA_IN_LOCAL', false);
-        
+
         if ($syncDataInLocal) {
             // Skip live API update when in local testing mode
             // Log through SlackLogService to named log file
             // SlackLogService::post(
-            //     'listing_sync', 
-            //     'info', 
+            //     'listing_sync',
+            //     'info',
             //     "FunctionsThirty: Skipping Refurbed price update API call (SYNC_DATA_IN_LOCAL=true) - SKU: {$sku}",
             //     [
             //         'sku' => $sku,
@@ -1273,10 +1279,7 @@ class FunctionsThirty extends BaseCommand
                 'set_market_prices' => array_values($setMarketPrices),
             ]);
         } catch (\Throwable $e) {
-            Log::channel('functions_thirty')->error('Refurbed: Failed to push price update', [
-                'sku' => $sku,
-                'error' => $e->getMessage(),
-            ]);
+            try { Log::channel('functions_thirty')->error('Refurbed: Failed to push price update', ['sku' => $sku, 'error' => $e->getMessage()]); } catch (\Throwable $logEx) { /* ignore */ }
         }
     }
 

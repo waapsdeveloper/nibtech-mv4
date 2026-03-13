@@ -2676,6 +2676,7 @@ class ListingController extends Controller
     public function runThirty()
     {
         try {
+            set_time_limit(1800); // 30 minutes
             Artisan::call('functions:thirty');
             return response()->json([
                 'success' => true,
