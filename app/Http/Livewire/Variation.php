@@ -31,6 +31,7 @@ class Variation extends Component
     }
     public function render()
     {
+        ini_set('memory_limit', '2048M');
 
         $data['title_page'] = "Variations";
         session()->put('page_title', $data['title_page']);
