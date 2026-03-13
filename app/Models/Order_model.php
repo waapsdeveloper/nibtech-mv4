@@ -30,6 +30,7 @@ class Order_model extends Model
         'currency',
         'processed_by',
         'order_type_id',
+        'batch_reference',
         'scanned',
     ];
 
