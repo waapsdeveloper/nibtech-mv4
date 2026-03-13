@@ -2647,6 +2647,10 @@ class Order extends Component
             $order->currency = 4;
             $order->order_type_id = $purchase->type;
             $order->processed_by = session('user_id');
+            $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+            if ($partsOrderTypeId && (int) $purchase->type === $partsOrderTypeId) {
+                $order->reference = config('parts.purchase_order_reference_slug', 'parts-purchase');
+            }
             $order->save();
 
             return redirect(url('purchase/detail').'/'.$order->id);
@@ -2734,6 +2738,10 @@ class Order extends Component
         $order->currency = 4;
         $order->order_type_id = $purchase->type;
         $order->processed_by = session('user_id');
+        $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+        if ($partsOrderTypeId && (int) $purchase->type === $partsOrderTypeId) {
+            $order->reference = config('parts.purchase_order_reference_slug', 'parts-purchase');
+        }
         $order->save();
 
         $storages = Storage_model::pluck('name','id')->toArray();

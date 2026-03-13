@@ -25,6 +25,7 @@ class Order_model extends Model
     protected $fillable = [
         // other fields...
         'reference_id',
+        'reference',
         'marketplace_id',
         'status',
         'currency',
@@ -243,6 +244,41 @@ class Order_model extends Model
         return $this->hasOne(Address_model::class, 'order_id', 'id')->where('type', 28)->orderByDesc('id');
     }
 
+    /** Parts inventory: batches linked to this order (when order is parts purchase). */
+    public function partBatches()
+    {
+        return $this->hasMany(PartBatch::class, 'order_id');
+    }
+
+    /**
+     * Scope: orders in the parts purchase series (reference = configured slug).
+     */
+    public function scopePartsPurchaseSeries($query)
+    {
+        $slug = config('parts.purchase_order_reference_slug', 'parts-purchase');
+
+        return $query->where(function ($q) use ($slug) {
+            $q->where('reference', $slug)
+                ->orWhere('reference', 'like', $slug . '%');
+        });
+    }
+
+    /**
+     * Scope: all parts purchase orders (by slug or by order_type_id = Parts Batch Receive).
+     */
+    public function scopePartsPurchase($query)
+    {
+        $slug = config('parts.purchase_order_reference_slug', 'parts-purchase');
+        $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+
+        return $query->where(function ($q) use ($slug, $partsOrderTypeId) {
+            $q->where('reference', $slug)
+                ->orWhere('reference', 'like', $slug . '%');
+            if ($partsOrderTypeId) {
+                $q->orWhere('order_type_id', $partsOrderTypeId);
+            }
+        });
+    }
 
     public function updateOrderInDB($orderObj, $invoice = false, $bm, $currency_codes, $country_codes)
     {

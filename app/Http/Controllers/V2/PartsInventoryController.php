@@ -400,6 +400,7 @@ class PartsInventoryController extends Controller
                 'processed_by' => session('user_id'),
             ]);
             $batch->parts_purchase_order_id = $po->id;
+            $this->createOrderForPartsPo($po, $batch, $sku);
             $batch->save();
             return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
                 ->with('success', 'Batch ' . $batchNumber . ' received and purchase order created.');
@@ -442,34 +443,64 @@ class PartsInventoryController extends Controller
     }
 
     /**
-     * List parts purchase orders (from dedicated parts_purchase_orders table) with filters.
+     * List parts purchases: same screen pattern/layout as legacy purchase page.
+     * Uses orders table as reference (parts purchase series), joined to parts_purchase_orders
+     * and part_batches for full information.
      */
     public function purchasesIndex(Request $request)
     {
         $data['title_page'] = 'Parts Inventory – Purchases';
         session()->put('page_title', $data['title_page']);
+        $data['vendors'] = Customer_model::whereNotNull('is_vendor')->orderBy('first_name')->get()->mapWithKeys(function ($c) {
+            $label = trim($c->company ?? '') ?: ($c->first_name ?? '');
+            return [$c->id => $label ?: ('#' . $c->id)];
+        });
 
-        $query = PartsPurchaseOrder::with(['processedBy', 'customer', 'partBatches.repairPart.product']);
+        $perPage = (int) $request->input('per_page', 10);
+        if (! in_array($perPage, [10, 20, 50, 100], true)) {
+            $perPage = 10;
+        }
 
-        if ($request->filled('reference_id')) {
-            $query->where('reference_id', 'like', '%' . trim($request->reference_id) . '%');
+        $query = Order_model::query()
+            ->partsPurchase()
+            ->with(['partBatches.partsPurchaseOrder', 'partBatches.repairPart.product', 'customer'])
+            ->withSum('partBatches', 'total_cost')
+            ->withSum('partBatches', 'quantity_remaining')
+            ->withSum('partBatches', 'quantity_received');
+
+        if ($request->filled('order_id')) {
+            $query->where('reference_id', 'like', trim($request->order_id) . '%');
+        }
+        if ($request->filled('customer_id')) {
+            $query->where('customer_id', $request->customer_id);
         }
         if ($request->filled('start_date')) {
-            $query->whereDate('created_at', '>=', $request->start_date);
+            $query->whereDate('orders.created_at', '>=', $request->start_date);
         }
         if ($request->filled('end_date')) {
-            $query->whereDate('created_at', '<=', $request->end_date);
-        }
-        if ($request->filled('status')) {
-            if ($request->status === 'pending') {
-                $query->where('status', PartsPurchaseOrder::STATUS_PENDING);
-            } elseif ($request->status === 'approved') {
-                $query->where('status', PartsPurchaseOrder::STATUS_APPROVED);
-            }
+            $query->where('orders.created_at', '<=', $request->end_date . ' 23:59:59');
         }
 
-        $orders = $query->orderByDesc('created_at')->orderByDesc('id')
-            ->paginate($request->input('per_page', 25))->withQueryString();
+        $status = $request->input('status');
+        if ($status === 'pending') {
+            $query->whereHas('partBatches.partsPurchaseOrder', function ($q) {
+                $q->where('status', PartsPurchaseOrder::STATUS_PENDING);
+            });
+        } elseif ($status === 'active') {
+            $query->whereHas('partBatches.partsPurchaseOrder', function ($q) {
+                $q->where('status', PartsPurchaseOrder::STATUS_APPROVED);
+            });
+            $query->having('part_batches_sum_quantity_remaining', '>', 0);
+        } elseif ($status === 'closed') {
+            $query->whereHas('partBatches.partsPurchaseOrder', function ($q) {
+                $q->where('status', PartsPurchaseOrder::STATUS_APPROVED);
+            });
+            $query->having('part_batches_sum_quantity_remaining', '=', 0);
+        }
+
+        $orders = $query->orderByDesc('orders.reference_id')
+            ->paginate($perPage)
+            ->withQueryString();
 
         return view('v2.parts-inventory.purchases.index', compact('orders'))->with($data);
     }
@@ -610,10 +641,35 @@ class PartsInventoryController extends Controller
             'processed_by' => session('user_id'),
         ]);
         $batch->parts_purchase_order_id = $po->id;
+        $this->createOrderForPartsPo($po, $batch);
         $batch->save();
 
         return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
             ->with('success', 'Purchase order created and linked to batch ' . $batch->batch_number . '.');
+    }
+
+    /**
+     * Create a row in orders for a parts purchase (slug in reference) and link the batch.
+     */
+    private function createOrderForPartsPo(PartsPurchaseOrder $po, PartBatch $batch, ?string $batchReference = null): Order_model
+    {
+        $slug = config('parts.purchase_order_reference_slug', 'parts-purchase');
+        $partsOrderTypeId = (int) Multi_type_model::where('table_name', 'orders')->where('name', 'Parts Batch Receive')->value('id');
+
+        $order = Order_model::create([
+            'reference' => $slug,
+            'reference_id' => $po->reference_id,
+            'order_type_id' => $partsOrderTypeId ?: null,
+            'batch_reference' => $batchReference ?? $batch->repairPart?->sku,
+            'status' => 2,
+            'currency' => $po->currency ?? 4,
+            'customer_id' => $po->customer_id,
+            'processed_by' => $po->processed_by,
+        ]);
+
+        $batch->order_id = $order->id;
+
+        return $order;
     }
 
     /**
