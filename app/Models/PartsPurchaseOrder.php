@@ -15,6 +15,7 @@ class PartsPurchaseOrder extends Model
     protected $fillable = [
         'reference_id',
         'reference',
+        'batch_reference',
         'status',
         'currency',
         'customer_id',

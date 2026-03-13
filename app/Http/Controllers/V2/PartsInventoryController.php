@@ -327,7 +327,12 @@ class PartsInventoryController extends Controller
         $prefillName = $request->get('name', '');
         $createPoChecked = $request->boolean('create_po');
 
-        return view('v2.parts-inventory.batch-receive', compact('suggestedSku', 'prefillName', 'createPoChecked'))->with($data);
+        $vendors = Customer_model::whereNotNull('is_vendor')->orderBy('first_name')->get()->mapWithKeys(function ($c) {
+            $label = trim($c->company ?? '') ?: $c->first_name;
+            return [$c->id => $label];
+        });
+
+        return view('v2.parts-inventory.batch-receive', compact('suggestedSku', 'prefillName', 'createPoChecked', 'vendors'))->with($data);
     }
 
     public function batchReceiveStore(Request $request)
@@ -342,6 +347,8 @@ class PartsInventoryController extends Controller
             'supplier' => 'nullable|string|max:255',
             'notes' => 'nullable|string|max:500',
             'create_purchase_order' => 'nullable|boolean',
+            'po_customer_id' => 'nullable|exists:customer,id',
+            'po_reference' => 'nullable|string|max:255',
         ]);
 
         $sku = trim($request->sku);
@@ -383,8 +390,19 @@ class PartsInventoryController extends Controller
         );
 
         if ($request->boolean('create_purchase_order')) {
-            return redirect()->route('v2.parts-inventory.purchases.create', ['batch_id' => $batch->id])
-                ->with('success', 'Batch ' . $batchNumber . ' received. Select vendor and reference to create the purchase order.');
+            $po = PartsPurchaseOrder::create([
+                'reference_id' => $batchNumber,
+                'reference' => $request->filled('po_reference') ? $request->po_reference : null,
+                'batch_reference' => $sku,
+                'status' => PartsPurchaseOrder::STATUS_PENDING,
+                'currency' => 4,
+                'customer_id' => $request->filled('po_customer_id') ? $request->po_customer_id : null,
+                'processed_by' => session('user_id'),
+            ]);
+            $batch->parts_purchase_order_id = $po->id;
+            $batch->save();
+            return redirect()->route('v2.parts-inventory.purchases.detail', $po->id)
+                ->with('success', 'Batch ' . $batchNumber . ' received and purchase order created.');
         }
 
         return redirect()->route('v2.parts-inventory.catalog')->with('success', 'Batch ' . $batchNumber . ' received successfully.');

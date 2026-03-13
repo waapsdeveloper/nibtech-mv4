@@ -61,26 +61,48 @@
                                         <label class="form-label">Received date</label>
                                         <input type="date" name="received_at" class="form-control" value="{{ old('received_at', date('Y-m-d')) }}">
                                     </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Purchase date</label>
-                                        <input type="date" name="purchase_date" class="form-control" value="{{ old('purchase_date') }}">
-                                        <small class="form-text text-muted">If blank, received date is used.</small>
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Supplier</label>
-                                        <input type="text" name="supplier" class="form-control" value="{{ old('supplier') }}" maxlength="255">
-                                    </div>
-                                    <div class="col-md-6">
-                                        <label class="form-label">Notes</label>
-                                        <input type="text" name="notes" class="form-control" value="{{ old('notes') }}" maxlength="500">
+                                    <div class="col-12 mt-4">
+                                        <h6 class="border-bottom pb-2 mb-3">Purchase order</h6>
+                                        <div class="form-check mb-3">
+                                            <input type="checkbox" class="form-check-input" name="create_purchase_order" id="create_purchase_order" value="1" {{ old('create_purchase_order', $createPoChecked ?? false) ? 'checked' : '' }}>
+                                            <label class="form-check-label" for="create_purchase_order">Create purchase order</label>
+                                        </div>
+                                        <small class="form-text text-muted d-block mb-3">When checked, a new purchase order is created automatically when you receive the batch.</small>
+
+                                        {{-- Shown when "Create purchase order" is checked --}}
+                                        <div id="purchase-order-section" class="p-3 bg-light rounded mb-3">
+                                            <div class="row g-3">
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Purchase date</label>
+                                                    <input type="date" name="purchase_date" id="purchase_date" class="form-control" value="{{ old('purchase_date') }}">
+                                                    <small class="form-text text-muted">If blank, received date is used.</small>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Supplier</label>
+                                                    <input type="text" name="supplier" id="supplier" class="form-control" value="{{ old('supplier') }}" maxlength="255">
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">Vendor (optional)</label>
+                                                    <select name="po_customer_id" id="po_customer_id" class="form-select">
+                                                        <option value="">— None —</option>
+                                                        @foreach ($vendors ?? [] as $id => $label)
+                                                            <option value="{{ $id }}" {{ old('po_customer_id') == $id ? 'selected' : '' }}>{{ $label }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <label class="form-label">PO reference (optional)</label>
+                                                    <input type="text" name="po_reference" id="po_reference" class="form-control" value="{{ old('po_reference') }}" maxlength="255">
+                                                </div>
+                                                <div class="col-12">
+                                                    <label class="form-label">Notes</label>
+                                                    <input type="text" name="notes" id="notes" class="form-control" value="{{ old('notes') }}" maxlength="500">
+                                                </div>
+                                            </div>
+                                        </div>
                                     </div>
                                     <div class="col-12">
-                                        <div class="form-check mb-2">
-                                            <input type="checkbox" class="form-check-input" name="create_purchase_order" id="create_purchase_order" value="1" {{ old('create_purchase_order', $createPoChecked ?? false) ? 'checked' : '' }}>
-                                            <label class="form-check-label" for="create_purchase_order">Create purchase order and open it after receive</label>
-                                        </div>
-                                        <small class="form-text text-muted">When checked, a purchase order (Parts Batch Receive) is created and linked to this batch; you are redirected to the purchase order detail. You can also create a purchase order later from the Batches list.</small>
-                                        <button type="submit" class="btn btn-primary">Update</button>
+                                        <button type="submit" class="btn btn-primary">Receive batch</button>
                                     </div>
                                 </div>
                             </div>
@@ -129,6 +151,22 @@ document.addEventListener('DOMContentLoaded', function() {
     var defaultPlaceholder = skuInput ? skuInput.placeholder : '';
     var barcodeSvg = document.getElementById('barcode-svg');
     var barcodePlaceholder = document.getElementById('barcode-placeholder');
+
+    var createPoCheckbox = document.getElementById('create_purchase_order');
+    var purchaseOrderSection = document.getElementById('purchase-order-section');
+
+    function togglePurchaseOrderSection() {
+        var createChecked = createPoCheckbox && createPoCheckbox.checked;
+        if (purchaseOrderSection) {
+            purchaseOrderSection.style.display = createChecked ? 'block' : 'none';
+            var poInputs = purchaseOrderSection.querySelectorAll('input, select');
+            poInputs.forEach(function(el) { el.disabled = !createChecked; });
+        }
+    }
+    if (createPoCheckbox) {
+        createPoCheckbox.addEventListener('change', togglePurchaseOrderSection);
+        togglePurchaseOrderSection();
+    }
 
     function updateBarcode() {
         var sku = (skuInput && skuInput.value) ? String(skuInput.value).trim() : '';
