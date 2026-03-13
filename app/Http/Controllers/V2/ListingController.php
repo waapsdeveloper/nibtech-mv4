@@ -2676,10 +2676,10 @@ class ListingController extends Controller
     public function runThirty()
     {
         try {
-            Artisan::queue('functions:thirty');
+            Artisan::call('functions:thirty');
             return response()->json([
                 'success' => true,
-                'message' => 'functions:thirty command queued successfully'
+                'message' => 'functions:thirty completed successfully'
             ]);
         } catch (\Exception $e) {
             Log::error('Error queuing functions:thirty: ' . $e->getMessage());
